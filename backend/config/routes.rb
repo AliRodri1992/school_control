@@ -28,6 +28,7 @@ Rails.application.routes.draw do
     resources :grades, only: %i[index create]
     resources :calendar_events, only: %i[index create update destroy]
     resources :announcements, only: %i[index create destroy]
+    resource :dashboard_preference, only: %i[show update]
     get "dashboard", to: "dashboard#show"
   end
 end

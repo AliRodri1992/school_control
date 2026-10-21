@@ -39,3 +39,7 @@ Las integraciones de correo, pagos y sistemas oficiales requieren configuración
 9. Recuperación de respaldos probada, monitoreo de errores y auditoría consultable por administración.
 
 Estas son ampliaciones propuestas; no deben confundirse con funciones implementadas en la entrega inicial.
+
+## Plataforma inteligente y mobile-first
+
+El alcance confirmado el 21 de octubre, el estado real de la primera entrega y el orden de desarrollo están en [Plataforma inteligente](PLATAFORMA_INTELIGENTE.md). Incluye React Grid Layout, Uppy, SweetAlert2, Noticed, comunicación, Stripe/CFDI, Classroom, offline, convivencia, psicología e IA asistida.

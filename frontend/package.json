@@ -1,6 +1,30 @@
 {
-  "name": "school-control-frontend", "private": true, "version": "1.0.0", "type": "module",
-  "scripts": {"dev": "vite --host 0.0.0.0", "build": "tsc -b && vite build", "test": "vitest run", "preview": "vite preview --host 0.0.0.0"},
-  "dependencies": {"react": "19.3.1", "react-dom": "19.3.1", "lucide-react": "^0.468.0"},
-  "devDependencies": {"@types/react": "^19.0.0", "@types/react-dom": "^19.0.0", "@vitejs/plugin-react": "^5.0.0", "typescript": "~5.9.3", "vite": "8.3.4", "vitest": "^3.2.0"}
+  "name": "school-control-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc -b && vite build",
+    "test": "vitest run",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "dependencies": {
+    "@uppy/core": "^6.3.0",
+    "@uppy/dashboard": "^6.0.2",
+    "lucide-react": "^0.468.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-grid-layout": "^2.3.0",
+    "recharts": "^3.10.1",
+    "sweetalert2": "^11.26.25"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "~5.9.3",
+    "vite": "8.3.4",
+    "vitest": "^3.2.0"
+  }
 }

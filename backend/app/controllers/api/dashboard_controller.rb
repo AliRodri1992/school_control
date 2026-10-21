@@ -8,7 +8,9 @@ module Api
       end
       render json: { students: students_scope.count, enrollments: scope.where(status: "active").count,
         pending_admissions: Admission.where(student: students_scope, status: "submitted").count,
-        groups: groups_scope.count, alerts: alerts }
+        groups: groups_scope.count, alerts: alerts,
+        attendance_chart: Attendance.where(enrollment: scope, on: 30.days.ago.to_date..Date.current).group(:status).count,
+        admission_chart: Admission.where(student: students_scope).group(:status).count }
     end
   end
 end

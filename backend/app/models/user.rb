@@ -1,4 +1,5 @@
 class User < ApplicationRecord
+  has_one :dashboard_preference, dependent: :destroy
   has_secure_password
   normalizes :email, with: ->(value) { value.strip.downcase }
   has_many :children, class_name: "Student", foreign_key: :guardian_id, dependent: :restrict_with_error
