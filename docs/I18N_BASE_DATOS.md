@@ -24,7 +24,7 @@ Aplicar claves foráneas, índices únicos compuestos, restricciones de estados 
 
 ## Idiomas y traducción asistida
 
-1. Usuario con permiso crea un idioma: código validado, nombre y nombre nativo, dirección del texto y estado. Español es el idioma fuente inicial; inglés será el primer destino completo. Otros idiomas dependen de la cobertura del proveedor y de revisión.
+1. Los idiomas del lanzamiento acordados son español (`es`) e inglés (`en`), con español como predeterminado y fuente e inglés como destino completo. Ambos deben cubrir los cuatro portales, validaciones, correos y reportes. El catálogo permite futuras ampliaciones mediante un usuario autorizado: código validado, nombre y nombre nativo, dirección del texto y estado. No se incorporan otros idiomas al alcance inicial.
 2. El sistema identifica claves fuente sin traducción o cuyo texto fuente cambió y crea un lote en segundo plano. Crear una nueva clave o solicitar una nueva traducción genera trabajo para los idiomas destino configurados.
 3. Un adaptador consulta la API configurada solo para textos de interfaz. Preservar claves, variables como `%{count}`, nombres protegidos, plurales y formato; no enviar datos de alumnos, calificaciones, documentos o conversaciones.
 4. Guardar resultados como borradores con proveedor, fecha, huella del texto fuente y estado. El operador revisa/corrige y publica; nunca sobrescribir una traducción manual aprobada sin una acción explícita.
