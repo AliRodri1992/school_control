@@ -28,6 +28,15 @@ RSpec.describe "Personal dashboard", type: :request do
     expect(response.parsed_body.fetch("configuration")).to be_nil
   end
 
+  it "ignores injected ownership and unrelated attributes" do
+    other = create(:user)
+    login(user)
+    put "/api/dashboard_preference", params: { user_id: other.id, configuration: configuration.merge(admin: true) }, as: :json
+    expect(response).to have_http_status(:ok)
+    expect(DashboardPreference.last.user).to eq(user)
+    expect(DashboardPreference.last.configuration.keys).to contain_exactly("widgets", "layouts")
+  end
+
   it "rejects malformed layouts and unsupported data sources" do
     login(user)
     configuration[:widgets][0][:kind] = "psychological_records"
