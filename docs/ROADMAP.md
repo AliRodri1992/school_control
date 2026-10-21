@@ -12,6 +12,8 @@ La revisión de los portales de administración, familias y alumnos, sus faltant
 
 Se incorpora como base del nuevo desarrollo el [RBAC configurable y centro de reportes](RBAC_REPORTES.md): roles y permisos por módulo y acción mediante switches, ámbitos de datos, estadísticas y exportaciones reales a Excel y PDF. La versión actual solo tiene roles fijos, indicadores básicos y una boleta imprimible desde el navegador.
 
+También se incorpora [Internacionalización y diseño inicial de datos](I18N_BASE_DATOS.md): catálogo de idiomas, traducción automática asistida al crear traducciones, generación YAML/JSON, revisión y publicación, y consolidación de migraciones iniciales antes de la primera instalación. El usuario confirma que todavía no ha creado su base de datos; esta autorización no incluye borrar una base existente de otro entorno.
+
 | Etapa | Ampliaciones pendientes |
 | --- | --- |
 | Operación escolar | Expedientes documentales, varios tutores, contactos de emergencia, autorizados para recoger alumnos, inscripción guiada, correcciones de documentos, listas de espera, bajas, traslados, cambios de grupo y reingresos con historial. |
