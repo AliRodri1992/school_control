@@ -8,6 +8,8 @@ Se incorpora al alcance la ampliaci처n del portal con captura por grupo, panel �
 
 ## Etapas acordadas
 
+La revisi처n de los portales de administraci처n, familias y alumnos, sus faltantes y propuestas de diferenciaci처n se conserva en [Revisi처n y evoluci처n de portales](REVISION_PORTALES.md). Complementa el alcance docente y distingue funciones existentes de trabajo pendiente.
+
 | Etapa | Ampliaciones pendientes |
 | --- | --- |
 | Operaci처n escolar | Expedientes documentales, varios tutores, contactos de emergencia, autorizados para recoger alumnos, inscripci처n guiada, correcciones de documentos, listas de espera, bajas, traslados, cambios de grupo y reingresos con historial. |
