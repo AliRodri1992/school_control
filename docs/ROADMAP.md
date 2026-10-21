@@ -1,4 +1,24 @@
-# Evolución propuesta
+# Alcance acordado y evolución
+
+## Portal de profesores y evaluación
+
+El portal docente existe en la entrega inicial: permite registrar y corregir calificaciones y asistencia, añadir observaciones, consultar horarios, calendario y comunicados, con acceso académico limitado a sus asignaciones. Actualmente la captura es individual y las calificaciones guardadas quedan disponibles para consulta; todavía no existe el circuito de borrador, revisión, cierre y publicación.
+
+Se incorpora al alcance la ampliación del portal con captura por grupo, panel «Mi día», planeación, tareas, evidencias, acompañamiento y el flujo de autorización de correcciones. La especificación y sus criterios de aceptación están en [Portal docente y evaluación](PORTAL_DOCENTE.md).
+
+## Etapas acordadas
+
+| Etapa | Ampliaciones pendientes |
+| --- | --- |
+| Operación escolar | Expedientes documentales, varios tutores, contactos de emergencia, autorizados para recoger alumnos, inscripción guiada, correcciones de documentos, listas de espera, bajas, traslados, cambios de grupo y reingresos con historial. |
+| Gestión académica | Periodos y criterios configurables, revisión y publicación, correcciones autorizadas, cierre de ciclo, promoción por lotes con excepciones y horarios con disponibilidad, recreos y sustituciones. |
+| Comunicación y acceso | Recuperación de contraseña, verificación de correo, invitaciones, permisos por función, revocación de sesiones, mensajes, citatorios, avisos y confirmación de lectura. |
+| Diferenciadores | Panel «Mi día» por perfil, acompañamiento con responsable y acuerdos, portafolio de progreso, reinscripción sin recaptura y propuestas explicables de formación de grupos con revisión humana. |
+| Operación avanzada | Asistencia con conexión intermitente, entrega controlada de alumnos, importaciones con revisión de errores y duplicados, reportes y exportaciones. |
+| Módulos opcionales | Cobros y becas, biblioteca e inventario, transporte, comedor y varias escuelas; activables según las necesidades de cada institución. |
+| Puesta en operación | Recorrido integral del ciclo, concurrencia, aislamiento de permisos, respaldos y restauración probada, monitoreo, accesibilidad y validación en celulares. |
+
+Las integraciones de correo, pagos y sistemas oficiales requieren configuración y acceso al proveedor correspondiente. Los reportes internos no se presentarán como documentos oficiales sin definir los requisitos aplicables.
 
 ## Extensiones de mayor valor
 
