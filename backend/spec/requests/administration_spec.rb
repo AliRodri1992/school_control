@@ -7,6 +7,10 @@ RSpec.describe "Administration workflows", type: :request do
     post "/api/session", params: { email: admin.email, password: "School-test-password-26" }, as: :json
   end
 
+  it "keeps test database preparation independent of seed credentials" do
+    expect { load Rails.root.join("db/seeds.rb") }.not_to change { [ School.count, User.count ] }
+  end
+
   it "configures school identity" do
     School.create!(name: "Original")
     patch "/api/school", params: { name: "Primaria Horizonte", code: "DEMO" }, as: :json

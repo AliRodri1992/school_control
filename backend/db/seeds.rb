@@ -1,3 +1,6 @@
+# Test records are created by factories, without administrator credentials.
+return if Rails.env.test?
+
 school = School.first_or_create!(name: ENV.fetch("SCHOOL_NAME", "Primaria · Aula"))
 admin = User.find_or_initialize_by(email: ENV.fetch("ADMIN_EMAIL", "admin@school.test"))
 if admin.new_record?
