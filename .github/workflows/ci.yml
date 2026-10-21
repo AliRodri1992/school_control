@@ -70,6 +70,6 @@ jobs:
       - run: docker compose run --rm backend bundle exec rails db:prepare db:seed
       - run: docker compose run --rm backend bundle exec rails db:seed
       - run: docker compose up -d --wait
-      - run: curl --fail http://localhost:5173/api/school
+      - run: curl --fail-with-body http://localhost:5173/api/school
       - run: docker compose logs
         if: failure()
