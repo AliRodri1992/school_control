@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+if [ ! -f .env ]; then
+  umask 077
+  cat > .env <<EOF
+DB_PASSWORD=$(openssl rand -hex 24)
+ADMIN_EMAIL=admin@school.test
+ADMIN_PASSWORD=$(openssl rand -hex 18)
+DEMO_SEEDS=true
+DEMO_PASSWORD=$(openssl rand -hex 18)
+SCHOOL_NAME=Primaria Aula
+EOF
+fi
+docker compose build
+docker compose up -d db
+docker compose run --rm backend bundle exec rails db:prepare db:seed
+docker compose up -d
+printf '\nAbre http://localhost:5173. Consulta ADMIN_PASSWORD y DEMO_PASSWORD en .env.\n'

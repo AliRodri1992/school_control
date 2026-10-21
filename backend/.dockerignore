@@ -1,0 +1,7 @@
+log/*
+tmp/*
+storage/*
+coverage
+config/master.key
+.env
+.git

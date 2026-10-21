@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: school
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Run bin/setup first}
+      POSTGRES_DB: school_development
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U school -d school_development"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+  backend:
+    build: ./backend
+    env_file: .env
+    environment:
+      DB_HOST: db
+      DB_USER: school
+      RAILS_ENV: development
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - school_uploads:/rails/storage
+    ports:
+      - "127.0.0.1:3000:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+  frontend:
+    build:
+      context: ./frontend
+      target: development
+    ports:
+      - "127.0.0.1:5173:5173"
+    depends_on:
+      - backend
+volumes:
+  postgres_data:
+  school_uploads:

@@ -1,0 +1,40 @@
+es:
+  errors:
+    format: "%{attribute} %{message}"
+    messages:
+      blank: "es obligatorio"
+      taken: "ya está registrado"
+      invalid: "no es válido"
+      inclusion: "no está permitido"
+      not_a_number: "debe ser un número"
+      not_an_integer: "debe ser un entero"
+      greater_than: "debe ser mayor que %{count}"
+      greater_than_or_equal_to: "debe ser mayor o igual a %{count}"
+      less_than_or_equal_to: "debe ser menor o igual a %{count}"
+      too_short: "debe tener al menos %{count} caracteres"
+      too_long: "debe tener como máximo %{count} caracteres"
+      confirmation: "no coincide con %{attribute}"
+      in: "debe estar entre %{count}"
+  activerecord:
+    attributes:
+      user:
+        name: Nombre
+        email: Correo
+        password: Contraseña
+        password_confirmation: Confirmación
+        role: Perfil
+      student:
+        first_name: Nombre
+        last_name: Apellidos
+        curp: CURP
+        birth_date: Fecha de nacimiento
+        guardian: Tutor
+      admission:
+        grade_level: Grado
+        student: Alumno
+      group:
+        capacity: Cupo
+        section: Sección
+      grade:
+        score: Calificación
+        term: Trimestre

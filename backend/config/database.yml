@@ -1,0 +1,16 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
+  host: <%= ENV.fetch("DB_HOST", "localhost") %>
+  username: <%= ENV.fetch("DB_USER", "school") %>
+  password: <%= ENV.fetch("DB_PASSWORD", "school_dev") %>
+development:
+  <<: *default
+  database: school_development
+test:
+  <<: *default
+  database: school_test
+production:
+  <<: *default
+  url: <%= ENV["DATABASE_URL"] %>
