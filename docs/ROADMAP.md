@@ -10,6 +10,8 @@ Se incorpora al alcance la ampliación del portal con captura por grupo, panel �
 
 La revisión de los portales de administración, familias y alumnos, sus faltantes y propuestas de diferenciación se conserva en [Revisión y evolución de portales](REVISION_PORTALES.md). Complementa el alcance docente y distingue funciones existentes de trabajo pendiente.
 
+Se incorpora como base del nuevo desarrollo el [RBAC configurable y centro de reportes](RBAC_REPORTES.md): roles y permisos por módulo y acción mediante switches, ámbitos de datos, estadísticas y exportaciones reales a Excel y PDF. La versión actual solo tiene roles fijos, indicadores básicos y una boleta imprimible desde el navegador.
+
 | Etapa | Ampliaciones pendientes |
 | --- | --- |
 | Operación escolar | Expedientes documentales, varios tutores, contactos de emergencia, autorizados para recoger alumnos, inscripción guiada, correcciones de documentos, listas de espera, bajas, traslados, cambios de grupo y reingresos con historial. |
