@@ -15,6 +15,8 @@ class NotifySchoolActivity
     return if %w[message.read document.downloaded].include?(event.action)
     model, page, title = MODELS.fetch(event.record_type, [ nil, "dashboard", "Se registró una actualización en tu portal" ])
     record = model&.find_by(id: event.record_id)
+    # Drafts and internal reviews must not notify families before publication.
+    return if record.is_a?(Grade) && !%w[grade.published grade.corrected].include?(event.action)
     recipients = [ event.user ]
     if record.is_a?(InstitutionalMessage)
       recipients << record.recipient

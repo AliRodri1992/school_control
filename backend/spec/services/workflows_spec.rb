@@ -68,7 +68,11 @@ RSpec.describe "Academic workflows" do
   it "closes a fully graded enrollment and preserves the record" do
     enrollment = create(:enrollment)
     course = create(:course, group: enrollment.group)
-    (1..3).each { |term| Grade.create!(enrollment: enrollment, course: course, term: term, score: 9) }
+    (1..3).each do |term|
+      grade = Grade.create!(enrollment: enrollment, course: course, term: term, score: 9)
+      GradeWorkflow.review(grade: grade, actor: admin)
+      GradeWorkflow.publish(grade: grade, actor: admin)
+    end
     CompleteEnrollment.call(enrollment: enrollment, outcome: "promoted", actor: admin)
     expect(enrollment.reload.outcome).to eq("promoted")
     expect(enrollment.grades.count).to eq(3)

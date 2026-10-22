@@ -49,7 +49,12 @@ Rails.application.routes.draw do
       post :complete, on: :member
     end
     resources :attendances, only: %i[index create]
-    resources :grades, only: %i[index create]
+    resources :grades, only: %i[index create] do
+      post :review, on: :member
+      post :publish, on: :member
+      post :correct, on: :member
+      get :history, on: :member
+    end
     resources :calendar_events, only: %i[index create update destroy]
     resources :announcements, only: %i[index create destroy]
     resource :dashboard_preference, only: %i[show update]

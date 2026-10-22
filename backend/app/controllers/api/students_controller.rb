@@ -40,9 +40,16 @@ module Api
       student = students_scope.find(params[:id])
       enrollments = enrollments_scope.where(student: student).includes(:academic_year, :group).order(:academic_year_id)
       render json: { student: present(student), years: enrollments.map { |enrollment|
-        { enrollment: present(enrollment), grades: enrollment.grades.includes(course: :subject).map { |grade| present(grade) },
+        { enrollment: present(enrollment), grades: report_grades(enrollment).includes(course: :subject).map { |grade| present(grade) },
           attendance: enrollment.attendances.group(:status).count }
       } }
+    end
+    private
+
+    def report_grades(enrollment)
+      return enrollment.grades if current_user.admin?
+      return enrollment.grades.where(course: current_user.courses) if current_user.teacher?
+      enrollment.grades.published
     end
   end
 end

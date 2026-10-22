@@ -34,9 +34,9 @@ Las semillas son idempotentes: ejecutar `docker compose run --rm backend bundle 
 4. Administración aprueba y asigna grupo. Solicitud e inscripción se guardan en una transacción, con control de cupo y de duplicados. El expediente del aspirante se convierte en matrícula sin crear otra persona.
 5. Administración crea un acceso de alumno y lo vincula al expediente desde **Usuarios**. El alumno solo consulta su información; las familias ven a todos sus hijos.
 6. Genera el horario del grupo o agrega sesiones manualmente. Se comprueban conflictos de docente, grupo y aula. La generación es atómica; si la carga no cabe, no deja un horario incompleto.
-7. Docentes registran y corrigen asistencia diaria y notas de tres trimestres; solo pueden calificar sus clases. Las familias y alumnos consultan su horario, asistencia, notas y retroalimentación.
+7. Docentes registran asistencia y borradores de notas de tres trimestres; solo pueden calificar sus clases. Administración revisa y publica las notas. Las familias y alumnos consultan únicamente las notas publicadas y su retroalimentación.
 8. **Expedientes → Boleta e historial** muestra el historial por ciclo y permite imprimir/guardar como PDF desde el navegador. Es una boleta de consulta, no un certificado oficial.
-9. Administración cierra cada inscripción con promoción, repetición o egreso de sexto, exigiendo calificaciones de las materias en los tres trimestres. La siguiente solicitud solo acepta el grado que corresponda al resultado anterior.
+9. Administración cierra cada inscripción con promoción, repetición o egreso de sexto, exigiendo calificaciones publicadas de las materias en los tres trimestres. La siguiente solicitud solo acepta el grado que corresponda al resultado anterior.
 10. Programa exámenes, reuniones, suspensiones y actividades, para un grupo o toda la escuela. Publica comunicados para familias, docentes, alumnos o todos.
 
 ## Diferenciadores implementados
@@ -128,3 +128,13 @@ Aula virtual permite publicar tareas por clase, entregar texto desde el portal d
 El centro de notificaciones usa Noticed y muestra avisos persistentes, contador de no leídos y enlaces al módulo. Perfil permite elegir si se reciben correos. Administración edita la plantilla de avisos; incluye nombre y logotipo de la escuela. En desarrollo, los correos se consultan en `http://localhost:3000/letter_opener`. En producción se requiere configurar SMTP, `MAIL_FROM`, `PORTAL_URL` y `ENABLE_EMAIL_DELIVERY=true`; staging conserva el envío deshabilitado.
 
 Sidekiq procesa las entregas mediante el servicio `worker`. Redis persiste su cola en `redis_data` con AOF, sin publicar su puerto al host. Los avisos se crean junto al registro de auditoría, y los trabajos esperan al cierre de la transacción. Esto no sustituye un respaldo ni promete entrega externa exactamente una vez.
+
+## Revisión, publicación y corrección de calificaciones
+
+Las nuevas notas se guardan como **Borrador**. Administración las marca como **Revisada** y después **Publicada** desde Calificaciones. Editar una nota revisada la devuelve a borrador y elimina la revisión anterior. Una nota publicada no puede sobrescribirse desde la captura ordinaria.
+
+Las familias y alumnos solo ven notas publicadas, tanto en el listado como en Boleta e historial. No reciben avisos por borradores ni revisiones internas. Los docentes consultan en las boletas únicamente las materias que tienen asignadas.
+
+Administración puede **Corregir** una nota publicada con motivo obligatorio. Se conservan valor y retroalimentación anteriores y nuevos, autor y fecha en un historial inmutable desde la aplicación. Las correcciones se permiten después del cierre, sin modificar automáticamente la decisión de promoción o egreso. El guardado rechaza pantallas desactualizadas; la actualización, el historial y la auditoría son una sola transacción. Las familias reciben el aviso de publicación o corrección, sin el motivo administrativo interno.
+
+La migración conserva como publicadas las notas anteriores, que ya eran visibles antes de este flujo. Las notas nuevas requieren revisión y publicación antes de cerrar el ciclo.
