@@ -5,6 +5,20 @@ on:
 permissions:
   contents: read
 jobs:
+  hooks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4.5'
+      - run: bundle install
+      - run: bundle exec overcommit --install
+      - run: bundle exec overcommit --sign
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hooks-lock
+          path: Gemfile.lock
   backend:
     runs-on: ubuntu-latest
     services:
@@ -35,6 +49,11 @@ jobs:
           bundler-cache: true
           working-directory: backend
       - run: bundle exec rails db:prepare
+      - run: bundle exec rails db:schema:dump
+      - uses: actions/upload-artifact@v4
+        with:
+          name: database-schema
+          path: backend/db/schema.rb
       - run: bundle exec rails zeitwerk:check
       - run: bundle exec rspec
       - run: bundle exec rubocop

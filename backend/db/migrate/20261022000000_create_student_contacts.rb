@@ -1,4 +1,4 @@
-class CreateStudentContacts < ActiveRecord::Migration[8.1 ]
+class CreateStudentContacts < ActiveRecord::Migration[8.1]
   def change
     create_table :student_contacts do |t|
       t.references :student, null: false, foreign_key: true

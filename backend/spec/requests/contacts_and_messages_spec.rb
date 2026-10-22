@@ -84,7 +84,7 @@ RSpec.describe "Family contacts and institutional messages", type: :request do
 
   it "prevents messaging unrelated families and teachers, and excludes inactive recipients" do
     login(guardian)
-    [ create(:user), create(:user, role: "teacher"), create(:user, role: "admin", active: false)].each do |recipient|
+    [ create(:user), create(:user, role: "teacher"), create(:user, role: "admin", active: false) ].each do |recipient|
       post "/api/messages", params: { recipient_id: recipient.id, subject: "Hi", body: "Hello" }, as: :json
       expect(response).to have_http_status(:not_found)
     end

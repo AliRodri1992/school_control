@@ -1,4 +1,5 @@
 class Student < ApplicationRecord
+  has_many :student_documents, dependent: :restrict_with_error
   has_many :student_contacts, dependent: :destroy
   belongs_to :guardian, class_name: "User"
   belongs_to :user, optional: true

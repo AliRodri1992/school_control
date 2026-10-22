@@ -2,8 +2,8 @@ if ENV["COVERAGE"] == "true"
   require "simplecov"
   SimpleCov.start "rails" do
     enable_coverage :branch
-    add_filter "/spec/"
-    track_files "app/**/*.rb"
+    skip "/spec/"
+    cover "app/**/*.rb"
   end
 end
 ENV["RAILS_ENV"] ||= "test"

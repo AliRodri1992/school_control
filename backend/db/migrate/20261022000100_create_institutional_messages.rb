@@ -1,4 +1,4 @@
-class CreateInstitutionalMessages < ActiveRecord::Migration[8.1 ]
+class CreateInstitutionalMessages < ActiveRecord::Migration[8.1]
   def change
     create_table :institutional_messages do |t|
       t.references :sender, null: false, foreign_key: { to_table: :users }
