@@ -65,6 +65,8 @@ jobs:
       - uses: actions/checkout@v4
       - run: cp .env.example .env
       - run: docker compose config --quiet
+      - run: cp .env.staging.example .env.staging
+      - run: docker compose --project-name school-staging --env-file .env.staging -f compose.yml -f compose.staging.yml config --quiet
       - run: docker compose build
       - run: docker compose up -d db
       - run: docker compose run --rm backend bundle exec rails db:prepare db:seed

@@ -1,0 +1,22 @@
+# Use --project-name school-staging and --env-file .env.staging.
+services:
+  db:
+    environment:
+      POSTGRES_DB: school_staging
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U school -d school_staging"]
+  backend:
+    env_file: !override
+      - .env.staging
+    environment:
+      RAILS_ENV: staging
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:?Set an independent staging secret}
+      DATABASE_URL: ${DATABASE_URL:?Set the staging PostgreSQL URL}
+      DEMO_SEEDS: "false"
+    ports: !override
+      - "127.0.0.1:3100:3000"
+  frontend:
+    build:
+      target: production
+    ports: !override
+      - "127.0.0.1:8180:80"

@@ -1,0 +1,14 @@
+PreCommit:
+  TrailingWhitespace:
+    enabled: true
+  MergeConflicts:
+    enabled: true
+  SchoolLint:
+    enabled: true
+    required_executable: docker
+    command: ['./bin/lint']
+PrePush:
+  SchoolQuality:
+    enabled: true
+    required_executable: docker
+    command: ['./bin/quality']

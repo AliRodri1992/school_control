@@ -6,6 +6,11 @@ Rails.application.routes.draw do
     delete "session", to: "sessions#destroy"
     post "registration", to: "sessions#register"
     resource :school, only: %i[show update]
+    resources :student_contacts, only: %i[index create update destroy]
+    resources :messages, only: %i[index create] do
+      get :recipients, on: :collection
+      post :read, on: :member
+    end
     resources :users, only: %i[index create update]
     resources :academic_years, only: %i[index create update]
     resources :groups, only: %i[index create update] do

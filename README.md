@@ -94,3 +94,21 @@ Antes de operar con alumnos reales: configurar dominio y TLS, respaldos y restau
 Esta entrega implementa el circuito académico descrito. No se presenta como un producto terminado para cualquier escuela: todavía no incluye integración SEP/SIGED, boletas oficiales firmadas, pagos, biblioteca, transporte, tareas/entregas, recuperación de contraseña por correo ni notificaciones externas. El calendario registra exámenes; no es un motor para resolver exámenes en línea.
 
 El generador usa asignación determinista de bloques, no un optimizador con preferencias individuales. La repetición/promoción es una decisión administrativa explícita; no se presume una normativa oficial a partir del promedio. La alerta de faltas es un indicador operativo, no una evaluación psicológica ni una predicción de desempeño.
+
+## Contactos y mensajería
+
+Contactos familiares permite a administración y a la familia responsable gestionar contactos de emergencia y autorizados de recogida por expediente. Esta lista no concede acceso al portal ni constituye por sí sola una validación de tutela legal. La mensajería interna permite contactar a administración y a los docentes/familias/alumnos vinculados por una inscripción activa. Solo el destinatario puede confirmar lectura; no se envían correos ni mensajes externos desde este módulo.
+
+## Staging
+
+Copia `.env.staging.example` a `.env.staging` y configura contraseñas y un secreto independientes. Utiliza siempre el nombre de proyecto indicado para separar los volúmenes de desarrollo y producción. El correo de staging queda deshabilitado. Se requiere un proxy TLS frente al puerto 8180.
+
+```bash
+docker compose --project-name school-staging --env-file .env.staging -f compose.yml -f compose.staging.yml build
+docker compose --project-name school-staging --env-file .env.staging -f compose.yml -f compose.staging.yml run --rm backend bundle exec rails db:prepare db:seed
+docker compose --project-name school-staging --env-file .env.staging -f compose.yml -f compose.staging.yml up -d
+```
+
+## Hooks locales
+
+Con Ruby y Bundler instalados, ejecuta `bundle install` desde la raíz y `bundle exec overcommit --install`. Revisa los hooks de `.git-hooks` y firma su versión con `bundle exec overcommit --sign`. PreCommit ejecuta RuboCop y compilación TypeScript/React; PrePush ejecuta `bin/quality`, incluida la suite de backend y frontend. Requieren Docker y el entorno preparado con `bin/setup`. CI sigue siendo la validación independiente de los hooks locales.

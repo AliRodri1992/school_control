@@ -12,3 +12,7 @@
 **/config/credentials/*.key
 .DS_Store
 *.tsbuildinfo
+
+.env.staging
+
+!.env.staging.example

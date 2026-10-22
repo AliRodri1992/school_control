@@ -14,3 +14,7 @@ test:
 production:
   <<: *default
   url: <%= ENV["DATABASE_URL"] %>
+staging:
+  <<: *default
+  database: school_staging
+  url: <%= ENV["DATABASE_URL"] %>

@@ -1,3 +1,4 @@
+import Messages from './Messages';
 import LogoUploader from './LogoUploader';
 import Dashboard from './Dashboard';
 import {notify} from './notifications';
@@ -7,7 +8,7 @@ import {api,timeLabel,mean} from './api';
 import {modules,labels,type Row,type Field} from './modules';
 const nav = [
  ['dashboard','Resumen',LayoutDashboard],['students','Expedientes',Users],['admissions','Inscripciones',FileCheck2],
- ['enrollments','Trayectoria',GraduationCap],['schedule','Horarios',Clock],['attendances','Asistencia',ClipboardCheck],
+ ['student_contacts','Contactos familiares',Users],['messages','Mensajes',Bell],['enrollments','Trayectoria',GraduationCap],['schedule','Horarios',Clock],['attendances','Asistencia',ClipboardCheck],
  ['grades','Calificaciones',BookOpen],['calendar_events','Calendario',CalendarDays],['announcements','Comunicados',Bell],
  ['groups','Grupos',Users],['courses','Clases',BookOpen],['subjects','Materias',BookOpen],
  ['academic_years','Ciclos escolares',CalendarDays],['users','Usuarios',ShieldCheck],['school','Mi escuela',Settings]
@@ -24,13 +25,13 @@ export default function App(){
  const [groupFilter,setGroupFilter] = useState('');
  async function refresh(who = user){
    if(!who) return;
-   const keys = Object.keys(modules).filter(k=>k!=='users'||who.role==='admin');
+   const keys = Object.keys(modules).filter(k=>(k!=='users'||who.role==='admin')&&(k!=='student_contacts'||['admin','guardian'].includes(who.role)));
    const results = await Promise.all(keys.map(async key=>[key,await api(key)] as const));
    results.push(['schedule_slots',await api('schedule_slots')]);
    setData(Object.fromEntries(results)); setSummary(await api('dashboard'));
  }
  useEffect(()=>{Promise.all([api('session'),api('school')]).then(async ([session,branding])=>{setSchool(branding);setUser(session.user);await refresh(session.user);}).catch(e=>setError(e.message)).finally(()=>setLoading(false));},[]);
- async function perform(action:()=>Promise<void>){setError('');setBusy(true);try{await action();setNotice('Cambios guardados correctamente.');await refresh();}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
+ async function perform(action:()=>Promise<void>){setError('');setBusy(true);try{await action();void notify('Cambios guardados correctamente.');await refresh();}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
  function options(source:string, values:Row = {}):Row[]{
    if(source==='guardians')return (data.users||[]).filter(x=>x.role==='guardian');
    if(source==='teachers')return (data.users||[]).filter(x=>x.role==='teacher'&&x.active);
@@ -44,6 +45,7 @@ export default function App(){
  function createOrEdit(record?:Row){
    const module = modules[page];
    let fields = module.fields.filter(f=>!(f.key==='guardian_id'&&user?.role==='guardian'));
+   if(page==='student_contacts'&&record)fields=fields.filter(f=>f.key!=='student_id');
    if(page==='users'&&record)fields=fields.filter(f=>['name','email'].includes(f.key));
    setDialog({title:`${record?'Editar':'Registrar'} ${module.singular}`,fields,values:record||{},submit:async(values)=>{
      const updateAsCreate=['attendances','grades'].includes(page);
@@ -69,18 +71,20 @@ export default function App(){
  if(!user)return <Login school={school} initialError={error} onLogin={async account=>{setUser(account);setError('');await refresh(account);}}/>;
  return <div className="app"><aside className={mobile?'sidebar open':'sidebar'}><div className="brand">{school.logo_url?<img src={school.logo_url} alt="Logotipo de la escuela"/>:<div className="brand-icon"><BookOpen/></div>}<div><strong>{school.name}</strong><small>COMUNIDAD ESCOLAR</small></div><button className="mobile close" onClick={()=>setMobile(false)} aria-label="Cerrar menú"><X/></button></div>
  <div className="workspace"><span className="status-dot"/>{labels[user.role]}<span className="tag">Portal</span></div>
- <div className="nav-label">MI ESPACIO</div><nav>{nav.filter(([key])=>!adminPages.includes(key)||user.role==='admin').map(([key,title,Icon])=><button key={key} className={page===key?'selected':''} onClick={()=>{setPage(key);setQuery('');setNotice('');setMobile(false);}}><Icon size={18}/>{title}{key==='admissions'&&summary.pending_admissions>0&&<b>{summary.pending_admissions}</b>}</button>)}</nav>
+ <div className="nav-label">MI ESPACIO</div><nav>{nav.filter(([key])=>(!adminPages.includes(key)||user.role==='admin')&&(key!=='student_contacts'||['admin','guardian'].includes(user.role))).map(([key,title,Icon])=><button key={key} className={page===key?'selected':''} onClick={()=>{setPage(key);setQuery('');setNotice('');setMobile(false);}}><Icon size={18}/>{title}{key==='admissions'&&summary.pending_admissions>0&&<b>{summary.pending_admissions}</b>}</button>)}</nav>
  <div className="sidebar-bottom"><div className="avatar">{user.name.slice(0,2).toUpperCase()}</div><div><strong>{user.name}</strong><small>{labels[user.role]}</small></div><button aria-label="Cerrar sesión" onClick={async()=>{try{await api('session','DELETE');setUser(null);setData({});setSummary({});setNotice('');setPage('dashboard');void notify('Sesión cerrada correctamente.');}catch(e){setError((e as Error).message);}}}><LogOut size={18}/></button></div></aside>
- <main><header className="topbar"><button className="mobile" onClick={()=>setMobile(true)} aria-label="Abrir menú"><Menu/></button><span>Mi escuela <span className="separator">/</span> {page==='dashboard'?'Resumen':page==='schedule'?'Horarios':page==='school'?'Configuración':modules[page]?.title}</span><span className="today">{new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'})}</span></header>
+ <main><header className="topbar"><button className="mobile" onClick={()=>setMobile(true)} aria-label="Abrir menú"><Menu/></button><span>Mi escuela <span className="separator">/</span> {page==='dashboard'?'Resumen':page==='schedule'?'Horarios':page==='school'?'Configuración':page==='messages'?'Mensajes':modules[page]?.title}</span><span className="today">{new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'})}</span></header>
  <div className="content">{error&&<div className="error" role="alert">{error}<button aria-label="Cerrar error" onClick={()=>setError('')}><X size={16}/></button></div>}{notice&&<div className="success" role="status"><Check size={16}/>{notice}</div>}
  {page==='dashboard'?<><div className="page-heading"><div><div className="eyebrow">CADA ALUMNO, UNA HISTORIA</div><h1>Hola, {user.name.split(' ')[0]}.</h1><p>Tu comunidad escolar, conectada y al día.</p></div><div className="pill"><span className="status-dot"/>Portal {labels[user.role].toLowerCase()}</div></div>
  <Dashboard summary={summary} data={data}/></>:
+ page==='messages'?<Messages userId={user.id}/>:
  page==='school'?<SchoolSettings school={school} busy={busy} onSave={form=>perform(async()=>setSchool(await api('school','PATCH',form)))}/>:
  page==='schedule'?<><div className="page-heading"><div><div className="eyebrow">ORGANIZA TU SEMANA</div><h1>Horarios</h1><p>Cada clase en su lugar. Sin cruces de grupo, docente ni aula.</p></div>{user.role==='admin'&&<button className="primary" onClick={manualSlot}><Plus size={18}/>Agregar sesión</button>}</div><div className="toolbar"><label>Grupo <select value={groupFilter} onChange={e=>setGroupFilter(e.target.value)}><option value="">Todos mis grupos</option>{(data.groups||[]).map(g=><option key={g.id} value={g.id}>{g.label}</option>)}</select></label>{user.role==='admin'&&<button className="primary" disabled={!groupFilter||busy} onClick={()=>perform(async()=>{await api(`groups/${groupFilter}/generate_schedule`,'POST');})}>Generar horario del grupo</button>}</div><div className="week-grid">{['Lunes','Martes','Miércoles','Jueves','Viernes'].map((day,i)=><section key={day}><h3>{day}</h3>{(data.schedule_slots||[]).filter(s=>s.weekday===i+1&&(!groupFilter||String(s.group_id)===groupFilter)).map(slot=><article key={slot.id}><small>{timeLabel(slot.starts_minute)} — {timeLabel(slot.ends_minute)}</small><strong>{slot.course_label}</strong><p>{slot.teacher_name}</p><span>{slot.room}</span>{user.role==='admin'&&<button className="text-button danger" disabled={busy} onClick={()=>perform(async()=>{await api(`schedule_slots/${slot.id}`,'DELETE');})}>Eliminar</button>}</article>)}</section>)}</div><p className="footnote">Generador: sesiones de 50 minutos, lunes a viernes; descanso de 10:30 a 11:00. La carga se define en Clases.</p></>:
  <><div className="page-heading"><div><div className="eyebrow">{user.role==='student'?'MI APRENDIZAJE':'GESTIÓN ESCOLAR'}</div><h1>{modules[page].title}</h1><p>{modules[page].subtitle}</p></div>{editable&&<button className="primary" onClick={()=>createOrEdit()}><Plus size={18}/>Registrar {modules[page].singular}</button>}</div>
  {page==='academic_years'&&<div className="info">Las solicitudes solo se admiten dentro de las fechas de apertura y cierre configuradas para cada proceso.</div>}
  {page==='grades'&&<div className="info">Promedio de las calificaciones visibles: <strong>{mean(records.map(x=>Number(x.score)))}</strong>. La boleta detallada se encuentra en Expedientes.</div>}
  <section className="panel table-panel"><div className="toolbar"><div className="search"><Search size={17}/><input aria-label="Buscar registros" placeholder="Buscar…" value={query} onChange={e=>setQuery(e.target.value)}/></div><span className="count">{records.length} registros</span></div><div className="table-scroll"><table><thead><tr>{modules[page].columns.map(([key,title])=><th key={key}>{title}</th>)}<th>Acciones</th></tr></thead><tbody>{records.map(row=><tr key={row.id}>{modules[page].columns.map(([key])=><td key={key}>{['status','outcome','role','kind'].includes(key)?<span className={`badge ${row[key]||''}`}>{display(row[key])}</span>:key.endsWith('_at')?readableDate(row[key]):display(row[key])}</td>)}<td><div className="actions">
+ {page==='student_contacts'&&<button className="text-button danger" disabled={busy} onClick={()=>{if(window.confirm('¿Eliminar este contacto?'))void perform(async()=>{await api(`student_contacts/${row.id}`,'DELETE');});}}>Eliminar</button>}
  {page==='students'&&<button className="text-button" onClick={()=>perform(async()=>setReport(await api(`students/${row.id}/report`)))}>Boleta e historial</button>}
  {editable&&!['admissions','announcements'].includes(page)&&<button className="text-button" onClick={()=>createOrEdit(row)}>Editar</button>}
  {page==='admissions'&&user.role==='admin'&&row.status==='submitted'&&<><button className="text-button" onClick={()=>approve(row)}>Aprobar</button><button className="text-button danger" onClick={()=>reject(row)}>Rechazar</button></>}

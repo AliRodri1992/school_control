@@ -2,12 +2,13 @@ if ENV["COVERAGE"] == "true"
   require "simplecov"
   SimpleCov.start "rails" do
     enable_coverage :branch
-    skip "/spec/"
+    add_filter "/spec/"
+    track_files "app/**/*.rb"
   end
 end
 ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
-abort("Production environment!") if Rails.env.production?
+abort("Tests require RAILS_ENV=test") unless Rails.env.test?
 require "rspec/rails"
 require "shoulda/matchers"
 ActiveRecord::Migration.maintain_test_schema!
