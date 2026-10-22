@@ -32,7 +32,7 @@ module Api
 
     def correct
       grade = GradeWorkflow.correct(grade: find_grade, actor: current_user,
-        attributes: params.permit(:score, :feedback).to_h.symbolize_keys, reason: params.require(:reason), expected_version: params.require(:lock_version))
+        attributes: params.permit(:score, :feedback).to_h.symbolize_keys, reason: params.permit(:reason)[:reason], expected_version: params.require(:lock_version))
       render json: present(grade)
     end
 

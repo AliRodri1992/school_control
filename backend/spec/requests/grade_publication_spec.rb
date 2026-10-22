@@ -110,16 +110,32 @@ RSpec.describe "Grade publication and corrections", type: :request do
     expect(response.parsed_body.first.fetch("reason")).to eq("Error de captura verificado")
   end
 
-  it "rolls back invalid corrections, including missing reasons and out-of-range scores" do
+  [ nil, "", " ", "x" * 2001 ].each do |invalid_reason|
+    it "rejects invalid correction reason #{invalid_reason.inspect} without side effects" do
+      publish
+      login(admin)
+      original_version = grade.lock_version
+      notifications = enrollment.student.guardian.notifications.count
+      attributes = { lock_version: original_version, score: 9 }
+      attributes[:reason] = invalid_reason unless invalid_reason.nil?
+      post "/api/grades/#{grade.id}/correct", params: attributes, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body.fetch("errors")).to have_key("reason")
+      expect(grade.reload.score).to eq(8)
+      expect(grade.lock_version).to eq(original_version)
+      expect(grade.corrections.count).to eq(0)
+      expect(AuditEvent.where(action: "grade.corrected", record_id: grade.id)).not_to exist
+      expect(enrollment.student.guardian.notifications.count).to eq(notifications)
+    end
+  end
+
+  it "rolls back an out-of-range correction" do
     publish
     login(admin)
-    post "/api/grades/#{grade.id}/correct", params: { lock_version: grade.lock_version, score: 9, reason: " " }, as: :json
-    expect(response).to have_http_status(:unprocessable_content)
-    expect(grade.reload.score).to eq(8)
-    expect(grade.corrections.count).to eq(0)
     post "/api/grades/#{grade.id}/correct", params: { lock_version: grade.lock_version, score: 11, reason: "Invalid score" }, as: :json
     expect(response).to have_http_status(:unprocessable_content)
     expect(grade.reload.score).to eq(8)
+    expect(grade.corrections.count).to eq(0)
   end
 
   it "rolls the correction and mark back if audit persistence fails" do
