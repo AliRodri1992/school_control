@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_21_190000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_22_000200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -186,6 +186,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_21_190000) do
     t.check_constraint "grade_level >= 1 AND grade_level <= 6 AND (section::text = ANY (ARRAY['A'::character varying::text, 'B'::character varying::text])) AND capacity > 0"
   end
 
+  create_table "institutional_messages", force: :cascade do |t|
+    t.bigint "sender_id", null: false
+    t.bigint "recipient_id", null: false
+    t.string "subject", null: false
+    t.text "body", null: false
+    t.datetime "read_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["recipient_id", "read_at", "created_at"], name: "idx_messages_inbox"
+    t.index ["recipient_id"], name: "index_institutional_messages_on_recipient_id"
+    t.index ["sender_id"], name: "index_institutional_messages_on_sender_id"
+  end
+
   create_table "schedule_slots", force: :cascade do |t|
     t.bigint "course_id", null: false
     t.integer "weekday", null: false
@@ -205,6 +218,37 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_21_190000) do
     t.string "phone"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "student_contacts", force: :cascade do |t|
+    t.bigint "student_id", null: false
+    t.string "name", null: false
+    t.string "relationship", null: false
+    t.string "phone", null: false
+    t.string "email"
+    t.boolean "emergency", default: false, null: false
+    t.boolean "pickup_authorized", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["student_id", "name", "phone"], name: "index_student_contacts_on_student_id_and_name_and_phone", unique: true
+    t.index ["student_id"], name: "index_student_contacts_on_student_id"
+  end
+
+  create_table "student_documents", force: :cascade do |t|
+    t.bigint "student_id", null: false
+    t.bigint "uploader_id", null: false
+    t.bigint "reviewer_id"
+    t.string "title", null: false
+    t.string "status", default: "pending", null: false
+    t.text "review_notes"
+    t.datetime "reviewed_at"
+    t.integer "lock_version", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["reviewer_id"], name: "index_student_documents_on_reviewer_id"
+    t.index ["student_id"], name: "index_student_documents_on_student_id"
+    t.index ["uploader_id"], name: "index_student_documents_on_uploader_id"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'approved'::character varying, 'correction_requested'::character varying]::text[])", name: "student_documents_status"
   end
 
   create_table "students", force: :cascade do |t|
@@ -243,7 +287,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_21_190000) do
     t.check_constraint "role::text = ANY (ARRAY['admin'::character varying::text, 'teacher'::character varying::text, 'guardian'::character varying::text, 'student'::character varying::text])"
   end
 
-  add_foreign_key "dashboard_preferences", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "admissions", "academic_years"
@@ -255,6 +298,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_21_190000) do
   add_foreign_key "courses", "groups"
   add_foreign_key "courses", "subjects"
   add_foreign_key "courses", "users", column: "teacher_id"
+  add_foreign_key "dashboard_preferences", "users"
   add_foreign_key "enrollments", "academic_years"
   add_foreign_key "enrollments", "admissions"
   add_foreign_key "enrollments", "groups"
@@ -262,7 +306,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_21_190000) do
   add_foreign_key "grades", "courses"
   add_foreign_key "grades", "enrollments"
   add_foreign_key "groups", "academic_years"
+  add_foreign_key "institutional_messages", "users", column: "recipient_id"
+  add_foreign_key "institutional_messages", "users", column: "sender_id"
   add_foreign_key "schedule_slots", "courses"
+  add_foreign_key "student_contacts", "students"
+  add_foreign_key "student_documents", "students"
+  add_foreign_key "student_documents", "users", column: "reviewer_id"
+  add_foreign_key "student_documents", "users", column: "uploader_id"
   add_foreign_key "students", "users"
   add_foreign_key "students", "users", column: "guardian_id"
 end

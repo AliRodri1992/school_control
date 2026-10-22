@@ -1,4 +1,30 @@
 services:
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  worker:
+    build: ./backend
+    env_file: .env
+    environment:
+      DB_HOST: db
+      DB_USER: school
+      RAILS_ENV: development
+      REDIS_URL: redis://redis:6379/0
+    command: ["bundle", "exec", "sidekiq", "-c", "5"]
+    volumes:
+      - school_uploads:/rails/storage
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
   db:
     image: postgres:17-alpine
     environment:
@@ -19,6 +45,7 @@ services:
       DB_HOST: db
       DB_USER: school
       RAILS_ENV: development
+      REDIS_URL: redis://redis:6379/0
     depends_on:
       db:
         condition: service_healthy
@@ -40,5 +67,6 @@ services:
     depends_on:
       - backend
 volumes:
+  redis_data:
   postgres_data:
   school_uploads:

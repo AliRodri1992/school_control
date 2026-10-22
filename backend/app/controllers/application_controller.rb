@@ -51,6 +51,16 @@ class ApplicationController < ActionController::Base
 
   def audit(record, action)
     AuditEvent.create!(user: current_user, action: action, record_type: record.class.name, record_id: record.id)
+    recipients = [ current_user ]
+    recipients << record.recipient if record.is_a?(InstitutionalMessage) && action == "message.created"
+    recipients << record.student.guardian if record.is_a?(StudentDocument) && action == "document.reviewed"
+    page = case record
+    when InstitutionalMessage then "messages"
+    when StudentDocument then "documents"
+    when Assignment, AssignmentSubmission then "classroom"
+    else "dashboard"
+    end
+    ActivityNotifier.with(title: "Se registró una actualización en tu portal", page: page).deliver(recipients.uniq)
   end
 
   def invalid_record(error)

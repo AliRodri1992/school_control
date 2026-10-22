@@ -46,8 +46,12 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.4.5'
-          bundler-cache: true
           working-directory: backend
+      - run: bundle install
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backend-lock
+          path: backend/Gemfile.lock
       - run: bundle exec rails db:prepare
       - run: bundle exec rails db:schema:dump
       - uses: actions/upload-artifact@v4

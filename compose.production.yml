@@ -1,6 +1,14 @@
 # Place a TLS reverse proxy in front of 127.0.0.1:8080.
 # This override requires .env with SECRET_KEY_BASE and production DATABASE_URL.
 services:
+  worker:
+    env_file: !override
+      - .env
+    environment:
+      RAILS_ENV: production
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:?Set an independent secret}
+      DATABASE_URL: ${DATABASE_URL:?Set the PostgreSQL URL}
+      DEMO_SEEDS: "false"
   backend:
     environment:
       RAILS_ENV: production

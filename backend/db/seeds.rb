@@ -51,3 +51,5 @@ if ENV["DEMO_SEEDS"] == "true"
   end
   puts "Datos ficticios preparados sin duplicar registros."
 end
+
+EmailTemplate.activity.save! unless EmailTemplate.exists?(key: "activity")

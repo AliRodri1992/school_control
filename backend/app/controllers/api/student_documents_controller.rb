@@ -20,7 +20,7 @@ module Api
         record.save!
         audit(record, "document.uploaded")
       end
-      render json: serialize(record), status: :created
+      render json: serialize(record.reload), status: :created
     end
 
     def download

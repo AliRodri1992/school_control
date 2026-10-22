@@ -1,5 +1,13 @@
 # Use --project-name school-staging and --env-file .env.staging.
 services:
+  worker:
+    env_file: !override
+      - .env.staging
+    environment:
+      RAILS_ENV: staging
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:?Set an independent secret}
+      DATABASE_URL: ${DATABASE_URL:?Set the PostgreSQL URL}
+      DEMO_SEEDS: "false"
   db:
     environment:
       POSTGRES_DB: school_staging

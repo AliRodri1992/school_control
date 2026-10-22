@@ -1,3 +1,6 @@
+import Notifications from './Notifications';
+import Profile from './Profile';
+import Classroom from './Classroom';
 import Documents from './Documents';
 import Messages from './Messages';
 import LogoUploader from './LogoUploader';
@@ -8,13 +11,13 @@ import {BookOpen, LayoutDashboard, Users, CalendarDays, GraduationCap, Clipboard
 import {api,timeLabel,mean} from './api';
 import {modules,labels,type Row,type Field} from './modules';
 const nav = [
- ['dashboard','Resumen',LayoutDashboard],['students','Expedientes',Users],['admissions','Inscripciones',FileCheck2],
+ ['dashboard','Resumen',LayoutDashboard],['notifications','Notificaciones',Bell],['profile','Mi perfil',Users],['students','Expedientes',Users],['admissions','Inscripciones',FileCheck2],
  ['student_contacts','Contactos familiares',Users],['documents','Documentos',FileCheck2],['messages','Mensajes',Bell],['enrollments','Trayectoria',GraduationCap],['schedule','Horarios',Clock],['attendances','Asistencia',ClipboardCheck],
- ['grades','Calificaciones',BookOpen],['calendar_events','Calendario',CalendarDays],['announcements','Comunicados',Bell],
+ ['grades','Calificaciones',BookOpen],['classroom','Aula virtual',BookOpen],['calendar_events','Calendario',CalendarDays],['announcements','Comunicados',Bell],
  ['groups','Grupos',Users],['courses','Clases',BookOpen],['subjects','Materias',BookOpen],
- ['academic_years','Ciclos escolares',CalendarDays],['users','Usuarios',ShieldCheck],['school','Mi escuela',Settings]
+ ['email_templates','Plantillas de correo',Bell],['academic_years','Ciclos escolares',CalendarDays],['users','Usuarios',ShieldCheck],['school','Mi escuela',Settings]
 ] as const;
-const adminPages = ['groups','courses','subjects','users','school'];
+const adminPages = ['groups','courses','subjects','users','school','email_templates'];
 const display = (value: any): string => value === true ? 'Sí' : value === false ? 'No' : value == null || value === '' ? '—' : labels[value] || String(value);
 const localDateTime = (value: string) => { if (!value) return ''; const date = new Date(value); return new Date(date.getTime()-date.getTimezoneOffset()*60000).toISOString().slice(0,16); };
 const readableDate = (value: string) => new Date(value).toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'});
@@ -26,7 +29,7 @@ export default function App(){
  const [groupFilter,setGroupFilter] = useState('');
  async function refresh(who = user){
    if(!who) return;
-   const keys = Object.keys(modules).filter(k=>(k!=='users'||who.role==='admin')&&(k!=='student_contacts'||['admin','guardian'].includes(who.role)));
+   const keys = Object.keys(modules).filter(k=>(!['users','email_templates'].includes(k)||who.role==='admin')&&(k!=='student_contacts'||['admin','guardian'].includes(who.role)));
    const results = await Promise.all(keys.map(async key=>[key,await api(key)] as const));
    results.push(['schedule_slots',await api('schedule_slots')]);
    setData(Object.fromEntries(results)); setSummary(await api('dashboard'));
@@ -74,10 +77,13 @@ export default function App(){
  <div className="workspace"><span className="status-dot"/>{labels[user.role]}<span className="tag">Portal</span></div>
  <div className="nav-label">MI ESPACIO</div><nav>{nav.filter(([key])=>(!adminPages.includes(key)||user.role==='admin')&&(!['student_contacts','documents'].includes(key)||['admin','guardian'].includes(user.role))).map(([key,title,Icon])=><button key={key} className={page===key?'selected':''} onClick={()=>{setPage(key);setQuery('');setNotice('');setMobile(false);}}><Icon size={18}/>{title}{key==='admissions'&&summary.pending_admissions>0&&<b>{summary.pending_admissions}</b>}</button>)}</nav>
  <div className="sidebar-bottom"><div className="avatar">{user.name.slice(0,2).toUpperCase()}</div><div><strong>{user.name}</strong><small>{labels[user.role]}</small></div><button aria-label="Cerrar sesión" onClick={async()=>{try{await api('session','DELETE');setUser(null);setData({});setSummary({});setNotice('');setPage('dashboard');void notify('Sesión cerrada correctamente.');}catch(e){setError((e as Error).message);}}}><LogOut size={18}/></button></div></aside>
- <main><header className="topbar"><button className="mobile" onClick={()=>setMobile(true)} aria-label="Abrir menú"><Menu/></button><span>Mi escuela <span className="separator">/</span> {page==='dashboard'?'Resumen':page==='schedule'?'Horarios':page==='school'?'Configuración':page==='messages'?'Mensajes':page==='documents'?'Documentos':modules[page]?.title}</span><span className="today">{new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'})}</span></header>
+ <main><header className="topbar"><button className="mobile" onClick={()=>setMobile(true)} aria-label="Abrir menú"><Menu/></button><span>Mi escuela <span className="separator">/</span> {page==='dashboard'?'Resumen':page==='schedule'?'Horarios':page==='school'?'Configuración':page==='messages'?'Mensajes':page==='documents'?'Documentos':page==='classroom'?'Aula virtual':page==='profile'?'Mi perfil':page==='notifications'?'Notificaciones':modules[page]?.title}</span><span className="today">{new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'})}</span></header>
  <div className="content">{error&&<div className="error" role="alert">{error}<button aria-label="Cerrar error" onClick={()=>setError('')}><X size={16}/></button></div>}{notice&&<div className="success" role="status"><Check size={16}/>{notice}</div>}
  {page==='dashboard'?<><div className="page-heading"><div><div className="eyebrow">CADA ALUMNO, UNA HISTORIA</div><h1>Hola, {user.name.split(' ')[0]}.</h1><p>Tu comunidad escolar, conectada y al día.</p></div><div className="pill"><span className="status-dot"/>Portal {labels[user.role].toLowerCase()}</div></div>
  <Dashboard summary={summary} data={data}/></>:
+ page==='profile'?<Profile onChange={setUser}/>:
+ page==='notifications'?<Notifications navigate={target=>{if(nav.some(([key])=>key===target))setPage(target);}}/>:
+ page==='classroom'?<Classroom user={user} courses={data.courses||[]} enrollments={data.enrollments||[]}/>:
  page==='documents'?<Documents students={data.students||[]} admin={user.role==='admin'}/>:
  page==='messages'?<Messages userId={user.id}/>:
  page==='school'?<SchoolSettings school={school} busy={busy} onSave={form=>perform(async()=>setSchool(await api('school','PATCH',form)))}/>:

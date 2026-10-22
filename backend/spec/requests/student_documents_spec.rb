@@ -45,15 +45,16 @@ RSpec.describe "Private student documents", type: :request do
     login(guardian)
     post "/api/student_documents", params: { student_id: student.id, title: "Acta", file: upload }
     document = StudentDocument.last
-    post "/api/student_documents/#{document.id}/review", params: { status: "approved", lock_version: 0 }, as: :json
+    version = document.reload.lock_version
+    post "/api/student_documents/#{document.id}/review", params: { status: "approved", lock_version: version }, as: :json
     expect(response).to have_http_status(:forbidden)
     login(admin)
-    post "/api/student_documents/#{document.id}/review", params: { status: "correction_requested", lock_version: 0 }, as: :json
+    post "/api/student_documents/#{document.id}/review", params: { status: "correction_requested", lock_version: version }, as: :json
     expect(response).to have_http_status(:unprocessable_content)
-    post "/api/student_documents/#{document.id}/review", params: { status: "correction_requested", review_notes: "Falta una página", lock_version: 0 }, as: :json
+    post "/api/student_documents/#{document.id}/review", params: { status: "correction_requested", review_notes: "Falta una página", lock_version: version }, as: :json
     expect(response).to have_http_status(:ok)
     expect(document.reload.reviewer).to eq(admin)
-    post "/api/student_documents/#{document.id}/review", params: { status: "approved", lock_version: 0 }, as: :json
+    post "/api/student_documents/#{document.id}/review", params: { status: "approved", lock_version: version }, as: :json
     expect(response).to have_http_status(:conflict)
     expect(document.reload.status).to eq("correction_requested")
   end

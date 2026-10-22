@@ -1,4 +1,5 @@
 class User < ApplicationRecord
+  has_many :notifications, as: :recipient, dependent: :destroy, class_name: "Noticed::Notification"
   has_one :dashboard_preference, dependent: :destroy
   has_secure_password
   normalizes :email, with: ->(value) { value.strip.downcase }

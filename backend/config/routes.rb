@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
   get "up" => "rails/health#show", as: :rails_health_check
   namespace :api do
     get "session", to: "sessions#show"
@@ -6,6 +7,16 @@ Rails.application.routes.draw do
     delete "session", to: "sessions#destroy"
     post "registration", to: "sessions#register"
     resource :school, only: %i[show update]
+    resource :profile, only: %i[show update]
+    resources :email_templates, only: %i[index create update]
+    resources :notifications, only: :index do
+      post :read, on: :member
+    end
+    resources :assignments, only: %i[index create update] do
+      get :submissions, on: :member
+      post :submit, on: :member
+      post :review, on: :member
+    end
     resources :student_documents, only: %i[index create] do
       get :download, on: :member
       post :review, on: :member
