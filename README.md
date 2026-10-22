@@ -91,13 +91,13 @@ Antes de operar con alumnos reales: configurar dominio y TLS, respaldos y restau
 
 ## Alcance y siguientes ampliaciones
 
-Esta entrega implementa el circuito académico descrito. No se presenta como un producto terminado para cualquier escuela: todavía no incluye integración SEP/SIGED, boletas oficiales firmadas, pagos, biblioteca, transporte, tareas/entregas, recuperación de contraseña por correo ni notificaciones externas. El calendario registra exámenes; no es un motor para resolver exámenes en línea.
+Esta entrega implementa el circuito académico descrito. No se presenta como un producto terminado para cualquier escuela: todavía no incluye integración SEP/SIGED, boletas oficiales firmadas, pagos, biblioteca, transporte ni recuperación de contraseña por correo. Las tareas y los avisos por correo se describen abajo; requieren sus servicios configurados. El calendario registra exámenes; no es un motor para resolver exámenes en línea.
 
 El generador usa asignación determinista de bloques, no un optimizador con preferencias individuales. La repetición/promoción es una decisión administrativa explícita; no se presume una normativa oficial a partir del promedio. La alerta de faltas es un indicador operativo, no una evaluación psicológica ni una predicción de desempeño.
 
 ## Contactos y mensajería
 
-Contactos familiares permite a administración y a la familia responsable gestionar contactos de emergencia y autorizados de recogida por expediente. Esta lista no concede acceso al portal ni constituye por sí sola una validación de tutela legal. La mensajería interna permite contactar a administración y a los docentes/familias/alumnos vinculados por una inscripción activa. Solo el destinatario puede confirmar lectura; no se envían correos ni mensajes externos desde este módulo.
+Contactos familiares permite a administración y a la familia responsable gestionar contactos de emergencia y autorizados de recogida por expediente. Esta lista no concede acceso al portal ni constituye por sí sola una validación de tutela legal. La mensajería interna permite contactar a administración y a los docentes/familias/alumnos vinculados por una inscripción activa. Solo el destinatario puede confirmar lectura. Los correos opcionales avisan de una actualización sin copiar el contenido del mensaje.
 
 ## Staging
 
@@ -112,3 +112,11 @@ docker compose --project-name school-staging --env-file .env.staging -f compose.
 ## Hooks locales
 
 Con Ruby y Bundler instalados, ejecuta `bundle install` desde la raíz y `bundle exec overcommit --install`. Revisa los hooks de `.git-hooks` y firma su versión con `bundle exec overcommit --sign`. PreCommit ejecuta RuboCop y compilación TypeScript/React; PrePush ejecuta `bin/quality`, incluida la suite de backend y frontend. Requieren Docker y el entorno preparado con `bin/setup`. CI sigue siendo la validación independiente de los hooks locales.
+
+## Aula, avisos y correo
+
+Aula virtual permite publicar tareas por clase, entregar texto desde el portal del alumno, registrar entregas tardías y revisar con calificación y retroalimentación. Una entrega revisada queda protegida; las notas de tareas no sustituyen las notas trimestrales. La integración con Google Classroom y los adjuntos de tareas siguen pendientes.
+
+El centro de notificaciones usa Noticed y muestra avisos persistentes, contador de no leídos y enlaces al módulo. Perfil permite elegir si se reciben correos. Administración edita la plantilla de avisos; incluye nombre y logotipo de la escuela. En desarrollo, los correos se consultan en `http://localhost:3000/letter_opener`. En producción se requiere configurar SMTP, `MAIL_FROM`, `PORTAL_URL` y `ENABLE_EMAIL_DELIVERY=true`; staging conserva el envío deshabilitado.
+
+Sidekiq procesa las entregas mediante el servicio `worker`. Redis persiste su cola en `redis_data` con AOF, sin publicar su puerto al host. Los avisos se crean junto al registro de auditoría, y los trabajos esperan al cierre de la transacción. Esto no sustituye un respaldo ni promete entrega externa exactamente una vez.

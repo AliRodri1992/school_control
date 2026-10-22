@@ -47,7 +47,8 @@ jobs:
         with:
           ruby-version: '3.4.5'
           working-directory: backend
-      - run: bundle install
+          bundler-cache: true
+      - run: bundle check
       - uses: actions/upload-artifact@v4
         with:
           name: backend-lock
@@ -96,5 +97,14 @@ jobs:
       - run: docker compose run --rm backend bundle exec rails db:seed
       - run: docker compose up -d --wait
       - run: curl --fail-with-body http://localhost:5173/api/school
+      - run: docker compose run --rm backend bundle exec rails runner script/verify_worker.rb
+      - run: docker compose --project-name school-staging --env-file .env.staging -f compose.yml -f compose.staging.yml build
+      - run: docker compose --project-name school-staging --env-file .env.staging -f compose.yml -f compose.staging.yml run --rm backend bundle exec rails db:prepare db:seed
+      - run: docker compose --project-name school-staging --env-file .env.staging -f compose.yml -f compose.staging.yml up -d --wait
+      - run: |
+          curl --fail-with-body -H 'X-Forwarded-Proto: https' http://localhost:8180/api/school
+      - run: docker compose --project-name school-staging --env-file .env.staging -f compose.yml -f compose.staging.yml run --rm backend bundle exec rails runner 'abort "Staging mail enabled" if ActionMailer::Base.perform_deliveries'
+      - run: docker compose --project-name school-staging --env-file .env.staging -f compose.yml -f compose.staging.yml logs
+        if: failure()
       - run: docker compose logs
         if: failure()

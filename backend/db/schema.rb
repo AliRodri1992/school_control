@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_22_000200) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_22_000400) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -82,6 +82,37 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_22_000200) do
     t.check_constraint "audience::text = ANY (ARRAY['all'::character varying::text, 'guardian'::character varying::text, 'teacher'::character varying::text, 'student'::character varying::text])"
   end
 
+  create_table "assignment_submissions", force: :cascade do |t|
+    t.bigint "assignment_id", null: false
+    t.bigint "enrollment_id", null: false
+    t.text "body", null: false
+    t.datetime "submitted_at", null: false
+    t.decimal "score", precision: 4, scale: 2
+    t.text "feedback"
+    t.bigint "reviewer_id"
+    t.datetime "reviewed_at"
+    t.integer "lock_version", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["assignment_id", "enrollment_id"], name: "idx_on_assignment_id_enrollment_id_dbb9c7436c", unique: true
+    t.index ["assignment_id"], name: "index_assignment_submissions_on_assignment_id"
+    t.index ["enrollment_id"], name: "index_assignment_submissions_on_enrollment_id"
+    t.index ["reviewer_id"], name: "index_assignment_submissions_on_reviewer_id"
+    t.check_constraint "score >= 0::numeric AND score <= 10::numeric", name: "submission_score_range"
+  end
+
+  create_table "assignments", force: :cascade do |t|
+    t.bigint "course_id", null: false
+    t.string "title", null: false
+    t.text "instructions", null: false
+    t.datetime "due_at", null: false
+    t.boolean "published", default: false, null: false
+    t.integer "lock_version", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["course_id"], name: "index_assignments_on_course_id"
+  end
+
   create_table "attendances", force: :cascade do |t|
     t.bigint "enrollment_id", null: false
     t.date "on", null: false
@@ -143,6 +174,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_22_000200) do
     t.index ["user_id"], name: "index_dashboard_preferences_on_user_id", unique: true
   end
 
+  create_table "email_templates", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "subject", null: false
+    t.string "heading", null: false
+    t.text "body", null: false
+    t.string "footer", null: false
+    t.string "accent_color", default: "#2563eb", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["key"], name: "index_email_templates_on_key", unique: true
+  end
+
   create_table "enrollments", force: :cascade do |t|
     t.bigint "student_id", null: false
     t.bigint "academic_year_id", null: false
@@ -199,6 +242,31 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_22_000200) do
     t.index ["sender_id"], name: "index_institutional_messages_on_sender_id"
   end
 
+  create_table "noticed_events", force: :cascade do |t|
+    t.string "type"
+    t.string "record_type"
+    t.bigint "record_id"
+    t.jsonb "params"
+    t.integer "notifications_count"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["record_type", "record_id"], name: "index_noticed_events_on_record"
+  end
+
+  create_table "noticed_notifications", force: :cascade do |t|
+    t.string "type"
+    t.bigint "event_id", null: false
+    t.string "recipient_type", null: false
+    t.bigint "recipient_id", null: false
+    t.datetime "read_at"
+    t.datetime "seen_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id"], name: "index_noticed_notifications_on_event_id"
+    t.index ["read_at"], name: "index_noticed_notifications_on_read_at"
+    t.index ["recipient_type", "recipient_id"], name: "index_noticed_notifications_on_recipient"
+  end
+
   create_table "schedule_slots", force: :cascade do |t|
     t.bigint "course_id", null: false
     t.integer "weekday", null: false
@@ -248,7 +316,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_22_000200) do
     t.index ["reviewer_id"], name: "index_student_documents_on_reviewer_id"
     t.index ["student_id"], name: "index_student_documents_on_student_id"
     t.index ["uploader_id"], name: "index_student_documents_on_uploader_id"
-    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'approved'::character varying, 'correction_requested'::character varying]::text[])", name: "student_documents_status"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying::text, 'approved'::character varying::text, 'correction_requested'::character varying::text])", name: "student_documents_status"
   end
 
   create_table "students", force: :cascade do |t|
@@ -283,6 +351,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_22_000200) do
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "email_notifications", default: false, null: false
     t.index "lower((email)::text)", name: "index_users_on_lower_email", unique: true
     t.check_constraint "role::text = ANY (ARRAY['admin'::character varying::text, 'teacher'::character varying::text, 'guardian'::character varying::text, 'student'::character varying::text])"
   end
@@ -291,6 +360,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_22_000200) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "admissions", "academic_years"
   add_foreign_key "admissions", "students"
+  add_foreign_key "assignment_submissions", "assignments"
+  add_foreign_key "assignment_submissions", "enrollments"
+  add_foreign_key "assignment_submissions", "users", column: "reviewer_id"
+  add_foreign_key "assignments", "courses"
   add_foreign_key "attendances", "enrollments"
   add_foreign_key "audit_events", "users"
   add_foreign_key "calendar_events", "academic_years"
@@ -308,6 +381,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_22_000200) do
   add_foreign_key "groups", "academic_years"
   add_foreign_key "institutional_messages", "users", column: "recipient_id"
   add_foreign_key "institutional_messages", "users", column: "sender_id"
+  add_foreign_key "noticed_notifications", "noticed_events", column: "event_id"
   add_foreign_key "schedule_slots", "courses"
   add_foreign_key "student_contacts", "students"
   add_foreign_key "student_documents", "students"

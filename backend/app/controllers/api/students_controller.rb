@@ -14,7 +14,11 @@ module Api
       end
       attrs = params.permit(:first_name, :last_name, :curp, :birth_date, :emergency_phone, :address)
       attrs[:guardian_id] = current_user.admin? ? params.require(:guardian_id) : current_user.id
-      student = Student.create!(attrs)
+      student = Student.new(attrs)
+      student.transaction do
+        student.save!
+        audit(student, "student.created")
+      end
       render json: present(student), status: :created
     end
 
@@ -25,7 +29,10 @@ module Api
       end
       fields = %i[emergency_phone address]
       fields += %i[first_name last_name curp birth_date] if current_user.admin? || student.enrollments.empty?
-      student.update!(params.permit(*fields))
+      student.with_lock do
+        student.update!(params.permit(*fields))
+        audit(student, "student.updated")
+      end
       render json: present(student)
     end
 
