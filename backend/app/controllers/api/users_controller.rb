@@ -26,8 +26,10 @@ module Api
     def update
       user = User.find(params[:id])
       raise ArgumentError, "No puedes desactivar tu propia cuenta" if user == current_user && params[:active] == false
-      user.update!(params.permit(:name, :email, :active))
-      audit(user, "user.updated")
+      user.with_lock do
+        user.update!(params.permit(:name, :email, :active))
+        audit(user, "user.updated")
+      end
       render json: present(user)
     end
   end

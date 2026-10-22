@@ -1,0 +1,12 @@
+<div style="background:#f1f5f9;padding:32px 12px;font-family:Arial,sans-serif;color:#1e293b">
+  <table role="presentation" style="max-width:600px;width:100%;margin:auto;background:white;border-radius:16px;border-collapse:collapse"><tr><td style="padding:32px;border-top:6px solid #2563eb">
+    <% if attachments["school-logo"] %><%= image_tag attachments["school-logo"].url, alt: @school.name, width: 64 %><% end %>
+    <p style="font-size:14px;color:#64748b"><%= @school.name %></p>
+    <h1 style="font-size:28px">Recupera tu acceso</h1>
+    <p>Hola, <%= @recipient.name %>.</p>
+    <p style="line-height:1.7">Recibimos una solicitud para restablecer tu contraseña. Este enlace vence en 15 minutos y solo puede utilizarse una vez.</p>
+    <p style="padding:20px 0"><%= link_to "Restablecer contraseña", @reset_url, style: "background:#2563eb;color:white;text-decoration:none;padding:14px 22px;border-radius:8px;display:inline-block" %></p>
+    <p>Al guardar tu nueva contraseña se cerrarán todas las sesiones abiertas de tu cuenta.</p>
+    <hr style="border:0;border-top:1px solid #e2e8f0"><p style="font-size:12px;color:#64748b">Si no solicitaste este cambio, ignora este correo. Tu contraseña seguirá siendo la misma.</p>
+  </td></tr></table>
+</div>

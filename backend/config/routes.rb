@@ -7,7 +7,11 @@ Rails.application.routes.draw do
     delete "session", to: "sessions#destroy"
     post "registration", to: "sessions#register"
     resource :school, only: %i[show update]
-    resource :profile, only: %i[show update]
+    resource :password_reset, only: %i[create update]
+    resource :profile, only: %i[show update] do
+      patch :password, to: "account_security#update"
+      delete :sessions, to: "account_security#destroy"
+    end
     resources :email_templates, only: %i[index create update]
     resources :notifications, only: :index do
       post :read, on: :member

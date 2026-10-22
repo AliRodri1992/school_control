@@ -91,9 +91,17 @@ Antes de operar con alumnos reales: configurar dominio y TLS, respaldos y restau
 
 ## Alcance y siguientes ampliaciones
 
-Esta entrega implementa el circuito académico descrito. No se presenta como un producto terminado para cualquier escuela: todavía no incluye integración SEP/SIGED, boletas oficiales firmadas, pagos, biblioteca, transporte ni recuperación de contraseña por correo. Las tareas y los avisos por correo se describen abajo; requieren sus servicios configurados. El calendario registra exámenes; no es un motor para resolver exámenes en línea.
+Esta entrega implementa el circuito académico descrito. No se presenta como un producto terminado para cualquier escuela: todavía no incluye integración SEP/SIGED, boletas oficiales firmadas, pagos, biblioteca, transporte ni integración con Google Classroom. Las tareas y los avisos por correo se describen abajo; requieren sus servicios configurados. El calendario registra exámenes; no es un motor para resolver exámenes en línea.
 
 El generador usa asignación determinista de bloques, no un optimizador con preferencias individuales. La repetición/promoción es una decisión administrativa explícita; no se presume una normativa oficial a partir del promedio. La alerta de faltas es un indicador operativo, no una evaluación psicológica ni una predicción de desempeño.
+
+## Recuperación de acceso y sesiones
+
+En la pantalla de acceso, **¿Olvidaste tu contraseña?** envía un enlace válido por 15 minutos. El enlace se consume al guardar una contraseña válida, requiere confirmación y cierra todas las sesiones anteriores. Las respuestas de solicitud no revelan si el correo está registrado. El token viaja en el fragmento del enlace, se retira de la barra del navegador y se envía a la API en el cuerpo de la solicitud, filtrado de los logs. La cola recibe únicamente el identificador de usuario y la versión de acceso; genera el enlace al procesar el correo.
+
+**Mi perfil → Seguridad de tu cuenta** permite cambiar la contraseña o cerrar todas las sesiones, comprobando la contraseña actual. Cambiar el correo o desactivar una cuenta también invalida sus sesiones y enlaces anteriores; reactivarla no restaura esas sesiones. La migración de esta funcionalidad cierra las sesiones antiguas una sola vez: los usuarios deben volver a entrar.
+
+Los correos de recuperación son transaccionales y no dependen de la preferencia de avisos. Usan Sidekiq, el nombre y logotipo escolar y la misma configuración SMTP/Letter Opener. Staging conserva el envío deshabilitado. En producción, configurar `PORTAL_URL` con el origen HTTPS de la escuela y habilitar el correo antes de ofrecer recuperación a usuarios.
 
 ## Contactos y mensajería
 

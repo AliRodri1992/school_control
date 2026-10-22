@@ -12,6 +12,7 @@ module Api
       if user&.authenticate(params[:password].to_s)
         reset_session
         session[:user_id] = user.id
+        session[:session_version] = user.session_version
         show
       else
         render json: { error: "Correo o contraseña incorrectos" }, status: :unauthorized
@@ -22,6 +23,7 @@ module Api
       user = User.create!(params.permit(:name, :email, :password, :password_confirmation).merge(role: "guardian"))
       reset_session
       session[:user_id] = user.id
+      session[:session_version] = user.session_version
       show
     end
 

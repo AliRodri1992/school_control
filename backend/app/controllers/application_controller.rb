@@ -10,7 +10,7 @@ class ApplicationController < ActionController::Base
   private
 
   def current_user
-    @current_user ||= User.find_by(id: session[:user_id], active: true)
+    @current_user ||= User.find_by(id: session[:user_id], session_version: session[:session_version], active: true)
   end
 
   def require_user
@@ -51,7 +51,6 @@ class ApplicationController < ActionController::Base
 
   def audit(record, action)
     AuditEvent.create!(user: current_user, action: action, record_type: record.class.name, record_id: record.id)
-
   end
 
   def invalid_record(error)
