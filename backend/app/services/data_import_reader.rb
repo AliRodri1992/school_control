@@ -20,7 +20,7 @@ class DataImportReader
       raise ArgumentError, "Los encabezados deben ser únicos y no vacíos" if headers.any?(&:blank?) || headers.uniq.length != headers.length
       rows = (2..count).map do |number|
         values = sheet.row(number).map { |value| value.respond_to?(:iso8601) ? value.iso8601 : value.to_s.strip }
-        [number, headers.zip(values).to_h]
+        [ number, headers.zip(values).to_h ]
       end
       { headers: headers, rows: rows.reject { |_line, values| values.values.all?(&:blank?) } }
     end

@@ -34,3 +34,19 @@ This file tracks the implementation of the attached product specification in [SC
 9. Mobile/accessibility review and CI regression checks.
 
 Do not remove pre-existing modules or confuse newly documented features with implemented functionality.
+
+
+## Work completed in the current follow-up
+
+- Permission-filtered per-profile navigation under /admin, /teachers, /students and /tutors, with real browser history, breadcrumb context, account flyout, notification counter and live institutional clock. React Router remains a separate migration; current routing uses the History API.
+- First production SVG mascot asset and context card in the import wizard.
+- Initial Pundit student policies integrated with existing RBAC.
+- Polymorphic tables and associations for addresses, phone numbers, contacts and notes, not yet migrated from legacy student_contacts UI.
+- OpenAPI 3.1 initial contract with 95 existing operations, now expanded to import endpoints; detailed request/response schemas remain to be completed.
+- Role-specific React Grid Layout widget presets.
+- SweetAlert2 confirmation styling and input-level recovery validation.
+- Versioned PostgreSQL email templates, new school-themed responsive notification email.
+- CSV/XLSX import backend with explicit whitelist of student fields, map/validate/execute endpoints, background job and guided React interface.
+- Automated tests added to the modified areas.
+
+Outstanding acceptance items from the master document include the full portal-specific page migration, accessible combobox library, comprehensive translation publishing system, complete UI and API schema coverage, full person/contact migration and cross-device visual regression suite.

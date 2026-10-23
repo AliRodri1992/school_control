@@ -92,6 +92,9 @@
     },
     {
       "name": "dashboard"
+    },
+    {
+      "name": "data_imports"
     }
   ],
   "components": {
@@ -7241,6 +7244,291 @@
         "responses": {
           "200": {
             "description": "Contrato OpenAPI 3.1"
+          }
+        }
+      }
+    },
+    "/api/data_imports": {
+      "get": {
+        "tags": [
+          "data_imports"
+        ],
+        "operationId": "get__api_data_imports",
+        "summary": "Listar mis importaciones",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": [
+          "students.create",
+          "users.index"
+        ],
+        "description": "Permiso institucional necesario. XLSX y CSV; únicamente administradores autorizados.",
+        "responses": {
+          "200": {
+            "description": "Resultado de importación, JSON"
+          },
+          "403": {
+            "description": "Sin permisos institucionales"
+          },
+          "422": {
+            "description": "Error de formato, mapeo o validación"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "data_imports"
+        ],
+        "operationId": "post__api_data_imports",
+        "summary": "Cargar Excel o CSV",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": [
+          "students.create",
+          "users.index"
+        ],
+        "description": "Permiso institucional necesario. XLSX y CSV; únicamente administradores autorizados.",
+        "responses": {
+          "200": {
+            "description": "Resultado de importación, JSON"
+          },
+          "403": {
+            "description": "Sin permisos institucionales"
+          },
+          "422": {
+            "description": "Error de formato, mapeo o validación"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/data_imports/{id}": {
+      "get": {
+        "tags": [
+          "data_imports"
+        ],
+        "operationId": "get__api_data_imports__id_",
+        "summary": "Consultar estado de importación",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": [
+          "students.create",
+          "users.index"
+        ],
+        "description": "Permiso institucional necesario. XLSX y CSV; únicamente administradores autorizados.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado de importación, JSON"
+          },
+          "403": {
+            "description": "Sin permisos institucionales"
+          },
+          "422": {
+            "description": "Error de formato, mapeo o validación"
+          }
+        }
+      }
+    },
+    "/api/data_imports/{id}/preview": {
+      "get": {
+        "tags": [
+          "data_imports"
+        ],
+        "operationId": "get__api_data_imports__id__preview",
+        "summary": "Previsualizar encabezados y filas",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": [
+          "students.create",
+          "users.index"
+        ],
+        "description": "Permiso institucional necesario. XLSX y CSV; únicamente administradores autorizados.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado de importación, JSON"
+          },
+          "403": {
+            "description": "Sin permisos institucionales"
+          },
+          "422": {
+            "description": "Error de formato, mapeo o validación"
+          }
+        }
+      }
+    },
+    "/api/data_imports/{id}/validate": {
+      "post": {
+        "tags": [
+          "data_imports"
+        ],
+        "operationId": "post__api_data_imports__id__validate",
+        "summary": "Validar mapeo y registros",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": [
+          "students.create",
+          "users.index"
+        ],
+        "description": "Permiso institucional necesario. XLSX y CSV; únicamente administradores autorizados.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado de importación, JSON"
+          },
+          "403": {
+            "description": "Sin permisos institucionales"
+          },
+          "422": {
+            "description": "Error de formato, mapeo o validación"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/data_imports/{id}/execute": {
+      "post": {
+        "tags": [
+          "data_imports"
+        ],
+        "operationId": "post__api_data_imports__id__execute",
+        "summary": "Iniciar importación en segundo plano",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": [
+          "students.create",
+          "users.index"
+        ],
+        "description": "Permiso institucional necesario. XLSX y CSV; únicamente administradores autorizados.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado de importación, JSON"
+          },
+          "403": {
+            "description": "Sin permisos institucionales"
+          },
+          "422": {
+            "description": "Error de formato, mapeo o validación"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
           }
         }
       }

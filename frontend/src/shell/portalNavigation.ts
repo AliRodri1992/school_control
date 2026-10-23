@@ -30,7 +30,8 @@ export const portalGroups:Record<PortalId,NavGroup[]>={
 export function visibleGroups(portal:PortalId,can:(key:string)=>boolean):NavGroup[]{
  return portalGroups[portal].map(group=>({...group,items:group.items.flatMap(item=>{
    const children=item.children?.filter(child=>can(permissionFor(child.key)));
-   return can(permissionFor(item.key))||!!children?.length||item.key==='messages'?[{...item,children}]:[];
+   const allowed=item.key==='imports'?can('students.create')&&can('users.index'):(can(permissionFor(item.key))||!!children?.length||item.key==='messages');
+   return allowed?[{...item,children}]:[];
  })})).filter(group=>group.items.length>0);
 }
 export function makePortalUrl(portal:PortalId,page:string):string{
