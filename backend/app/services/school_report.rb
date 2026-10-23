@@ -98,10 +98,12 @@ class SchoolReport
   end
 
   def date_filter(scope, column)
-    scope = scope.where("#{column} >= ?", Date.iso8601(filters["from"])) if filters["from"].present?
+    # Use a column reference rather than interpolating SQL, even for trusted symbols.
+    attribute = scope.klass.arel_table[column]
+    scope = scope.where(attribute.gteq(Date.iso8601(filters["from"]))) if filters["from"].present?
     if filters["to"].present?
       finish = Date.iso8601(filters["to"])
-      scope = scope.where("#{column} < ?", finish + 1.day)
+      scope = scope.where(attribute.lt(finish + 1.day))
     end
     scope
   end
