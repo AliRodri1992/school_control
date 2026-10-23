@@ -5,6 +5,6 @@ module Api
     private
 
     def model = EmailTemplate
-    def attributes = params.permit(:key, :subject, :heading, :body, :footer, :accent_color)
+    def attributes = params.permit(:key, :locale, :status, :subject, :heading, :body, :html_body, :footer, :accent_color)
   end
 end

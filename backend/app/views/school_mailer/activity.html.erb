@@ -1,11 +1,30 @@
-<div style="background:#f1f5f9;padding:32px 12px;font-family:Arial,sans-serif;color:#1e293b">
-  <table role="presentation" style="max-width:600px;width:100%;margin:auto;background:white;border-radius:16px;border-collapse:collapse"><tr><td style="padding:32px;border-top:6px solid <%= @template.accent_color %>">
-    <% if attachments["school-logo"] %><%= image_tag attachments["school-logo"].url, alt: @school.name, width: 64 %><% end %>
-    <p style="font-size:14px;color:#64748b"><%= @school.name %></p>
-    <h1 style="font-size:28px"><%= @template.heading %></h1>
-    <p>Hola, <%= @recipient.name %>.</p>
-    <p style="line-height:1.7;white-space:pre-line"><%= @template.body %></p>
-    <p style="padding:20px 0"><%= link_to "Entrar a mi portal", @portal_url, style: "background:#{@template.accent_color};color:white;text-decoration:none;padding:14px 22px;border-radius:8px;display:inline-block" %></p>
-    <hr style="border:0;border-top:1px solid #e2e8f0"><p style="font-size:12px;color:#64748b"><%= @template.footer %></p>
-  </td></tr></table>
+<div style="margin:0;padding:32px 12px;background:#f4f6fb;font-family:Arial,Helvetica,sans-serif;color:#17233f">
+  <table role="presentation" align="center" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;border-collapse:separate;border-spacing:0;background:#ffffff;border-radius:16px;overflow:hidden">
+    <tr><td style="background:#111d42;padding:28px 36px">
+      <% if attachments["school-logo"] %>
+        <%= image_tag attachments["school-logo"].url, alt: @school.name, width: 58, style: "display:block;max-width:58px;height:auto;background:#ffffff;border-radius:10px;padding:5px;margin-bottom:12px" %>
+      <% end %>
+      <p style="margin:0;color:#d9e3ff;font-size:12px;font-weight:bold;letter-spacing:1px">SCHOOL CONTROL · COMUNIDAD ESCOLAR</p>
+      <p style="margin:9px 0 0;color:#ffffff;font-size:20px;font-weight:bold"><%= @school.name %></p>
+    </td></tr>
+    <tr><td style="padding:36px">
+      <p style="display:inline-block;background:#edf0ff;color:#405cf5;border-radius:20px;font-size:11px;padding:8px 12px;margin:0 0 22px;font-weight:bold">AVISO INSTITUCIONAL</p>
+      <h1 style="font-size:27px;line-height:1.22;letter-spacing:-.5px;color:#17233f;margin:0 0 20px"><%= @template.heading %></h1>
+      <p style="margin:0 0 16px;line-height:1.6;color:#334155;font-size:15px">Hola, <strong><%= @recipient.name %></strong>.</p>
+      <% if @template.html_body.present? %>
+        <div style="line-height:1.75;color:#475569;font-size:15px"><%= sanitize(@template.html_body, tags: %w[p strong em br ul ol li a], attributes: %w[href title]) %></div>
+      <% else %>
+        <p style="line-height:1.75;color:#475569;font-size:15px;white-space:pre-line;margin:0"><%= @template.body %></p>
+      <% end %>
+      <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:28px"><tr>
+        <td bgcolor="<%= @template.accent_color %>" style="background:<%= @template.accent_color %>;border-radius:9px">
+          <%= link_to "Entrar a mi portal", @portal_url, style: "display:inline-block;padding:15px 22px;color:#ffffff;text-decoration:none;font-size:14px;font-weight:bold" %>
+        </td>
+      </tr></table>
+      <p style="font-size:12px;line-height:1.7;color:#64748b;margin:30px 0 0;padding-top:20px;border-top:1px solid #e3e8f1"><%= @template.footer %></p>
+    </td></tr>
+    <tr><td style="background:#f8faff;border-top:1px solid #e3e8f1;padding:22px 36px;color:#64748b;font-size:11px;line-height:1.6">
+      Este correo se genera automáticamente desde la plataforma de tu escuela. No compartas tus credenciales.
+    </td></tr>
+  </table>
 </div>

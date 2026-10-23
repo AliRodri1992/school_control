@@ -52,4 +52,16 @@ if ENV["DEMO_SEEDS"] == "true"
   puts "Datos ficticios preparados sin duplicar registros."
 end
 
-EmailTemplate.activity.save! unless EmailTemplate.exists?(key: "activity")
+EmailTemplate.activity.save! unless EmailTemplate.exists?(key: "activity", locale: "es")
+{
+  "welcome" => [ "Bienvenido a nuestra comunidad", "¡Qué gusto tenerte aquí!", "Tu cuenta escolar está lista. Inicia sesión para conocer los recursos de tu portal." ],
+  "admission_update" => [ "Actualización de tu solicitud", "Tu trámite escolar tiene novedades", "Ingresa al portal para consultar el estado actualizado de tu solicitud." ],
+  "attendance_alert" => [ "Aviso de asistencia", "Seguimiento de asistencia", "Hay información nueva relacionada con la asistencia. Consulta tu portal para conocer los detalles." ],
+  "grade_published" => [ "Nuevas calificaciones disponibles", "Consulta los avances académicos", "Las evaluaciones publicadas están disponibles en el portal escolar." ],
+  "document_review" => [ "Revisión de documentos", "Revisa tus documentos", "Tu expediente tiene una actualización documental. Consulta el portal para revisar los detalles." ]
+}.each do |key, (subject, heading, body)|
+  EmailTemplate.find_or_create_by!(key: key, locale: "es") do |template|
+    template.assign_attributes(subject: subject, heading: heading, body: body,
+      footer: "Este mensaje fue enviado por tu comunidad escolar.", accent_color: "#405CF5", status: "draft")
+  end
+end
