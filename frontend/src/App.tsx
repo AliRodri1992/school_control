@@ -1,3 +1,4 @@
+import {useLocation,useNavigate} from 'react-router-dom';
 import ImportWizard from './features/imports/ImportWizard';
 import {confirmDanger} from './notifications';
 import {PortalChrome} from './shell/PortalChrome';
@@ -24,9 +25,10 @@ const display = (value: any): string => value === true ? 'Sí' : value === false
 const localDateTime = (value: string) => { if (!value) return ''; const date = new Date(value); return new Date(date.getTime()-date.getTimezoneOffset()*60000).toISOString().slice(0,16); };
 const readableDate = (value: string) => new Date(value).toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'});
 export default function App(){
+ const navigate=useNavigate();const location=useLocation();
  const [resetToken,setResetToken]=useState(()=>new URLSearchParams(window.location.hash.slice(1)).get('reset-password')||'');
  useEffect(()=>{if(resetToken)window.history.replaceState(null,'',window.location.pathname+window.location.search);},[resetToken]);
- function signedOut(){setUser(null);setData({});setSummary({});setPage('dashboard');setError('');setResetToken('');window.history.replaceState({},'','/login');}
+ function signedOut(){setUser(null);setData({});setSummary({});setPage('dashboard');setError('');setResetToken('');navigate('/login',{replace:true});}
 
  const [user,setUser] = useState<Row|null>(null),[school,setSchool] = useState<Row>({name:'Aula'});
  const [loading,setLoading] = useState(true),[page,setPage] = useState('dashboard'),[data,setData] = useState<Record<string,Row[]>>({}),[summary,setSummary] = useState<Row>({});
@@ -38,16 +40,16 @@ export default function App(){
    if(next!=='profile'&&next!=='notifications'&&next!=='messages'&&!user?.permissions?.[pagePermission(next)]?.length)return;
    setPage(next);setQuery('');setNotice('');setMobile(false);
    const url=makePortalUrl(portal,next);
-   if(window.location.pathname!==url)window.history.pushState({},'',url);
+   if(location.pathname!==url)navigate(url);
  }
  useEffect(()=>{
    if(!user)return;
    const base=makePortalUrl(currentPortal(user.role),'dashboard');
-   if(!window.location.pathname.startsWith(base))window.history.replaceState({},'',base);
-   const sync=()=>setPage(resolvePortalLocation(window.location.pathname,user.role,user.permissions));
-   sync();window.addEventListener('popstate',sync);
-   return()=>window.removeEventListener('popstate',sync);
- },[user?.id,user?.role]);
+   if(!location.pathname.startsWith(base)){navigate(base,{replace:true});return;}
+   const selected=resolvePortalLocation(location.pathname,user.role,user.permissions);
+   setPage(selected);
+   if(selected==='dashboard'&&location.pathname!==base)navigate(base,{replace:true});
+ },[user?.id,user?.role,location.pathname]);
 
  async function refresh(who = user){
    if(!who) return;
