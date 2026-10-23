@@ -65,3 +65,12 @@ EmailTemplate.activity.save! unless EmailTemplate.exists?(key: "activity", local
       footer: "Este mensaje fue enviado por tu comunidad escolar.", accent_color: "#405CF5", status: "draft")
   end
 end
+
+
+# Language catalog is repeatable and does not replace any reviewed translations.
+Language.find_or_create_by!(code: "es") do |language|
+  language.assign_attributes(name: "Español (México)", native_name: "Español", status: "active")
+end
+Language.find_or_create_by!(code: "en") do |language|
+  language.assign_attributes(name: "Inglés", native_name: "English", status: "active")
+end

@@ -3,6 +3,10 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
   namespace :api do
     get "docs", to: "docs#show"
+    resources :languages, only: %i[index create update] do
+      get :bundle, on: :member
+    end
+    resources :translation_entries, only: %i[index create update]
     get "session", to: "sessions#show"
     post "session", to: "sessions#create"
     delete "session", to: "sessions#destroy"
