@@ -25,7 +25,7 @@ it('requires matching passwords and sends the recovery token in the body',async(
   await userEvent.type(screen.getByLabelText('Nueva contraseña'),'New-school-password-26');
   await userEvent.type(screen.getByLabelText('Confirmar nueva contraseña'),'Other-school-password-26');
   await userEvent.click(screen.getByRole('button',{name:'Guardar nueva contraseña'}));
-  expect(screen.getByRole('alert').textContent).toBe('Las contraseñas no coinciden.');
+  expect(screen.getByRole('alert').textContent).toBe('Confirmar nueva contraseña no coincide.');
   expect(request).not.toHaveBeenCalled();
   await userEvent.clear(screen.getByLabelText('Confirmar nueva contraseña'));
   await userEvent.type(screen.getByLabelText('Confirmar nueva contraseña'),'New-school-password-26');
@@ -64,4 +64,11 @@ it('changes a password with current-password verification',async()=>{
   await userEvent.click(screen.getByRole('button',{name:'Actualizar contraseña y cerrar sesiones'}));
   await waitFor(()=>expect(signedOut).toHaveBeenCalledOnce());
   expect(request).toHaveBeenCalledWith('profile/password','PATCH',{current_password:'School-test-password-26',password:'New-school-password-26',password_confirmation:'New-school-password-26'});
+});
+
+it('shows missing recovery email under the email field without calling Rails',async()=>{
+ render(<PasswordRecovery schoolName="Primaria" onClose={vi.fn()}/>);
+ await userEvent.click(screen.getByRole('button',{name:'Enviar enlace'}));
+ expect(screen.getByText('Correo electrónico no puede estar vacío.')).toBeTruthy();
+ expect(request).not.toHaveBeenCalled();
 });
