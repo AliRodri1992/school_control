@@ -9,7 +9,11 @@ export async function api(path: string, method = 'GET', data?: unknown) {
   if (response.status === 204) return null;
   const result = await response.json();
   if (result.csrf_token) csrf = result.csrf_token;
-  if (!response.ok) throw new Error(result.error || 'No se pudo completar la operación.');
+  if (!response.ok) {
+    const error = new Error(result.error || 'No se pudo completar la operación.') as Error & { fieldErrors?: Record<string, string[]> };
+    if (result.errors && typeof result.errors === 'object') error.fieldErrors = result.errors;
+    throw error;
+  }
   return result;
 }
 export const timeLabel = (minute: number) => `${Math.floor(minute / 60).toString().padStart(2, '0')}:${(minute % 60).toString().padStart(2, '0')}`;
