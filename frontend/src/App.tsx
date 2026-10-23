@@ -14,7 +14,7 @@ import LogoUploader from './LogoUploader';
 import Dashboard from './Dashboard';
 import {notify} from './notifications';
 import {useEffect, useState} from 'react';
-import {BookOpen, Plus, Search, X, Check, Printer} from 'lucide-react';
+import {BookOpen, Plus, Search, X, Check, Printer, GraduationCap} from 'lucide-react';
 import {api,timeLabel,mean} from './api';
 import {modules,labels,type Row,type Field} from './modules';
 const pagePermission=(key:string)=>({schedule:'schedule_slots.index',school:'schools.update',documents:'student_documents.index',classroom:'assignments.index',dashboard:'dashboard.show'} as Record<string,string>)[key]||(key+'.index');
