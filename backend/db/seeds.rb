@@ -74,3 +74,49 @@ end
 Language.find_or_create_by!(code: "en") do |language|
   language.assign_attributes(name: "Inglés", native_name: "English", status: "active")
 end
+
+# Reviewed core shell translations. Future languages use the draft/publish workflow.
+[
+  ["shell.portal", "Portal", "Portal"],
+  ["shell.search_modules", "Buscar módulo…", "Search module…"],
+  ["shell.notifications", "Notificaciones", "Notifications"],
+  ["shell.no_notifications", "No hay notificaciones recientes.", "No recent notifications."],
+  ["shell.view_all", "Ver todas las notificaciones", "View all notifications"],
+  ["shell.profile", "Mi perfil y seguridad", "My profile and security"],
+  ["shell.signout", "Cerrar sesión", "Sign out"],
+  ["shell.locale", "Idioma", "Language"],
+  ["shell.help", "Inicio y ayuda", "Home and help"],
+  ["shell.current", "Inicio", "Home"],
+  ["nav.dashboard", "Resumen", "Overview"],
+  ["nav.students", "Alumnos y expedientes", "Students and records"],
+  ["nav.student_contacts", "Contactos familiares", "Family contacts"],
+  ["nav.documents", "Documentos", "Documents"],
+  ["nav.admissions", "Admisiones", "Admissions"],
+  ["nav.enrollments", "Matrícula y trayectoria", "Enrollment and records"],
+  ["nav.academic_years", "Ciclos escolares", "School years"],
+  ["nav.groups", "Grupos", "Groups"],
+  ["nav.courses", "Clases", "Classes"],
+  ["nav.subjects", "Materias", "Subjects"],
+  ["nav.schedule", "Horarios", "Schedules"],
+  ["nav.attendances", "Asistencia", "Attendance"],
+  ["nav.grades", "Calificaciones", "Grades"],
+  ["nav.classroom", "Aula virtual", "Virtual classroom"],
+  ["nav.messages", "Mensajes", "Messages"],
+  ["nav.announcements", "Comunicados", "Announcements"],
+  ["nav.calendar_events", "Calendario", "Calendar"],
+  ["nav.reports", "Reportes", "Reports"],
+  ["nav.imports", "Importaciones", "Imports"],
+  ["nav.users", "Usuarios", "Users"],
+  ["nav.access_roles", "Roles y permisos", "Roles and permissions"],
+  ["nav.school", "Mi escuela", "My school"],
+  ["nav.email_templates", "Plantillas de correo", "Email templates"],
+  ["nav.languages", "Idiomas y traducciones", "Languages and translations"],
+  ["nav.profile", "Mi perfil", "My profile"]
+].each do |key, es, en|
+  { "es" => es, "en" => en }.each do |locale, translated|
+    language = Language.find_by!(code: locale)
+    TranslationEntry.find_or_create_by!(language: language, key: key) do |entry|
+      entry.assign_attributes(text: translated, status: "published", reviewer: admin, published_at: Time.current)
+    end
+  end
+end

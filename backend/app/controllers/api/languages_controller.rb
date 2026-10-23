@@ -4,7 +4,8 @@ module Api
     before_action :require_translator, only: %i[create update]
 
     def index
-      render json: Language.active.order(:code).as_json(only: %i[id code name native_name text_direction])
+      scope = SchoolAccess.new(current_user, "access_roles.update").institution? ? Language.all : Language.active
+      render json: scope.order(:code).as_json(only: %i[id code name native_name text_direction status])
     end
 
     def create

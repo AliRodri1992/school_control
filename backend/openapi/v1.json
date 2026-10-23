@@ -95,6 +95,9 @@
     },
     {
       "name": "data_imports"
+    },
+    {
+      "name": "languages"
     }
   ],
   "components": {
@@ -7520,6 +7523,293 @@
             "description": "Error de formato, mapeo o validación"
           }
         },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/languages": {
+      "get": {
+        "summary": "Catálogo de idiomas activos o administrables",
+        "tags": [
+          "languages"
+        ],
+        "operationId": "get__api_languages",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": "access_roles.update",
+        "responses": {
+          "200": {
+            "description": "Resultado JSON"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "422": {
+            "description": "Validación"
+          }
+        }
+      },
+      "post": {
+        "summary": "Dar de alta idioma en borrador",
+        "tags": [
+          "languages"
+        ],
+        "operationId": "post__api_languages",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": "access_roles.update",
+        "responses": {
+          "200": {
+            "description": "Resultado JSON"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "422": {
+            "description": "Validación"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/languages/{id}": {
+      "patch": {
+        "summary": "Actualizar estado de idioma",
+        "tags": [
+          "languages"
+        ],
+        "operationId": "patch__api_languages__id_",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": "access_roles.update",
+        "responses": {
+          "200": {
+            "description": "Resultado JSON"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "422": {
+            "description": "Validación"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/languages/{id}/bundle": {
+      "get": {
+        "summary": "Traducciones publicadas de un idioma",
+        "tags": [
+          "languages"
+        ],
+        "operationId": "get__api_languages__id__bundle",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado JSON"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "422": {
+            "description": "Validación"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      }
+    },
+    "/api/translation_entries": {
+      "get": {
+        "summary": "Ver traducciones por idioma",
+        "tags": [
+          "languages"
+        ],
+        "operationId": "get__api_translation_entries",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": "access_roles.update",
+        "responses": {
+          "200": {
+            "description": "Resultado JSON"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "422": {
+            "description": "Validación"
+          }
+        }
+      },
+      "post": {
+        "summary": "Crear traducción revisable",
+        "tags": [
+          "languages"
+        ],
+        "operationId": "post__api_translation_entries",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": "access_roles.update",
+        "responses": {
+          "200": {
+            "description": "Resultado JSON"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "422": {
+            "description": "Validación"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/translation_entries/{id}": {
+      "patch": {
+        "summary": "Revisar o publicar traducción",
+        "tags": [
+          "languages"
+        ],
+        "operationId": "patch__api_translation_entries__id_",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": "access_roles.update",
+        "responses": {
+          "200": {
+            "description": "Resultado JSON"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "422": {
+            "description": "Validación"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {

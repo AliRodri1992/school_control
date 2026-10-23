@@ -1,0 +1,16 @@
+.sc-language-grid{display:grid;grid-template-columns:minmax(260px,1fr) minmax(0,1.6fr);gap:20px}
+.sc-language-grid .settings{margin:0}
+.sc-language-grid h2{display:flex;gap:10px;align-items:center}
+.sc-locale-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin:18px 0}
+.sc-locale-card{padding:12px;border:1px solid #e3e8f1;border-radius:10px;display:flex;flex-direction:column;gap:7px;align-items:flex-start;text-align:left}
+.sc-locale-card.active{border-color:#405cf5;background:#eff2ff}
+.sc-locale-card small{color:#64748b}
+.sc-locale-form{display:grid;gap:14px;margin-top:24px}
+.sc-locale-form h3{margin:0}
+.sc-locale-form label{display:grid;gap:7px}
+.sc-locale-form .primary{justify-self:start}
+.sc-language-header{display:flex;gap:12px;align-items:center;justify-content:space-between}
+.sc-locale-entries{max-height:390px;overflow:auto;margin:16px 0}
+.sc-locale-entry{padding:12px 0;border-bottom:1px solid #e3e8f1;display:grid;gap:6px}
+.sc-locale-entry p{overflow-wrap:anywhere}
+@media(max-width:880px){.sc-language-grid{grid-template-columns:1fr}}
