@@ -3,7 +3,7 @@ class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
   before_action :require_user
   before_action :authorize_permission
-  rescue_from Pundit::NotAuthorizedError, with: -> { render json: { error: 'No tienes permiso para esta acción' }, status: :forbidden }
+  rescue_from Pundit::NotAuthorizedError, with: -> { render json: { error: "No tienes permiso para esta acción" }, status: :forbidden }
   rescue_from ActiveRecord::RecordNotFound, with: -> { render json: { error: "Registro no encontrado" }, status: :not_found }
   rescue_from ActiveRecord::RecordInvalid, with: :invalid_record
   rescue_from ActiveRecord::RecordNotUnique, with: -> { render json: { error: "El registro ya existe" }, status: :conflict }

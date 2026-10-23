@@ -2,6 +2,7 @@ Rails.application.routes.draw do
   mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
   get "up" => "rails/health#show", as: :rails_health_check
   namespace :api do
+    get "docs", to: "docs#show"
     get "session", to: "sessions#show"
     post "session", to: "sessions#create"
     delete "session", to: "sessions#destroy"
