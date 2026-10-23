@@ -191,6 +191,8 @@ GEM
       actionpack (>= 7.0.0)
       activesupport (>= 7.0.0)
       rack
+    pundit (2.5.2)
+      activesupport (>= 3.0.0)
     public_suffix (7.0.5)
     puma (7.2.1)
       nio4r (~> 2.0)
@@ -344,6 +346,7 @@ DEPENDENCIES
   noticed (~> 2.9)
   pg (~> 1.6)
   propshaft
+  pundit (~> 2.5)
   puma (~> 7.0)
   rails (= 8.1.4)
   rspec-rails (~> 8.0)
