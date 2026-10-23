@@ -1,3 +1,4 @@
+import RecordForm from './shared/components/RecordForm';
 import LanguageManager from './features/languages/LanguageManager';
 import {useLocation,useNavigate} from 'react-router-dom';
 import ImportWizard from './features/imports/ImportWizard';
@@ -36,6 +37,7 @@ export default function App(){
  const [error,setError] = useState(''),[notice,setNotice] = useState(''),[query,setQuery] = useState(''),[mobile,setMobile] = useState(false),[busy,setBusy] = useState(false);
  const [dialog,setDialog] = useState<{title:string;fields:Field[];values:Row;submit:(values:Row)=>Promise<void>}|null>(null),[report,setReport] = useState<Row|null>(null);
  const [groupFilter,setGroupFilter] = useState('');
+ const [fieldErrors,setFieldErrors]=useState<Record<string,string[]>>({});
  const portal=currentPortal(user?.role||'admin');
  function go(next:string) {
    if(next!=='profile'&&next!=='notifications'&&next!=='messages'&&!user?.permissions?.[pagePermission(next)]?.length)return;
@@ -61,7 +63,7 @@ export default function App(){
    setData(Object.fromEntries(results)); setSummary(who.permissions?.['dashboard.show']?.length?await api('dashboard'):{});
  }
  useEffect(()=>{Promise.all([api('session'),api('school')]).then(async ([session,branding])=>{setSchool(branding);setUser(session.user);await refresh(session.user);}).catch(e=>setError(e.message)).finally(()=>setLoading(false));},[]);
- async function perform(action:()=>Promise<void>){setError('');setBusy(true);try{await action();void notify('Cambios guardados correctamente.');await refresh();}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
+ async function perform(action:()=>Promise<void>){setError('');setFieldErrors({});setBusy(true);try{await action();void notify('Cambios guardados correctamente.');await refresh();}catch(e){setError((e as Error).message);setFieldErrors((e as Error & {fieldErrors?:Record<string,string[]>}).fieldErrors||{});}finally{setBusy(false);}}
  function options(source:string, values:Row = {}):Row[]{
    if(source==='guardians')return (data.users||[]).filter(x=>x.role==='guardian');
    if(source==='teachers')return (data.users||[]).filter(x=>x.role==='teacher'&&x.active);
@@ -77,7 +79,7 @@ export default function App(){
    let fields = module.fields.filter(f=>!(f.key==='guardian_id'&&user?.role==='guardian'));
    if(page==='student_contacts'&&record)fields=fields.filter(f=>f.key!=='student_id');
    if(page==='users'&&record)fields=fields.filter(f=>['name','email'].includes(f.key));
-   setDialog({title:`${record?'Editar':'Registrar'} ${module.singular}`,fields,values:record||{},submit:async(values)=>{
+   setFieldErrors({});setDialog({title:`${record?'Editar':'Registrar'} ${module.singular}`,fields,values:record||{},submit:async(values)=>{
      const updateAsCreate=['attendances','grades'].includes(page);
      await api(record&&!updateAsCreate?`${page}/${record.id}`:page,record&&!updateAsCreate?'PATCH':'POST',values);setDialog(null);
    }});
@@ -131,16 +133,11 @@ export default function App(){
  {page==='users'&&can('users.update')&&row.id!==user.id&&<button className="text-button" onClick={()=>perform(async()=>{await api(`users/${row.id}`,'PATCH',{active:!row.active});})}>{row.active?'Desactivar':'Activar'}</button>}
  </div></td></tr>)}</tbody></table></div>{!records.length&&<Empty text={query?'No hay resultados para esta búsqueda.':'Aún no hay registros en esta sección.'}/>}</section></>}
  <footer>Aula · Una comunidad que aprende junta.<span>{school.name}</span></footer></div>
- {dialog&&<div className="overlay"><section role="dialog" aria-modal="true" aria-labelledby="dialog-title" className="dialog"><header><div><span className="eyebrow">CONTROL ESCOLAR</span><h2 id="dialog-title">{dialog.title}</h2></div><button aria-label="Cerrar formulario" onClick={()=>setDialog(null)}><X/></button></header><RecordForm fields={dialog.fields} initial={dialog.values} busy={busy} options={options} optionName={optionName} error={error} onCancel={()=>setDialog(null)} onSubmit={values=>perform(()=>dialog.submit(values))}/></section></div>}
+ {dialog&&<div className="overlay"><section role="dialog" aria-modal="true" aria-labelledby="dialog-title" className="dialog"><header><div><span className="eyebrow">CONTROL ESCOLAR</span><h2 id="dialog-title">{dialog.title}</h2></div><button aria-label="Cerrar formulario" onClick={()=>setDialog(null)}><X/></button></header><RecordForm fields={dialog.fields} initial={dialog.values} busy={busy} options={options} optionName={optionName} error={error} fieldErrors={fieldErrors} onCancel={()=>setDialog(null)} onSubmit={values=>perform(()=>dialog.submit(values))}/></section></div>}
  {report&&<div className="overlay"><section role="dialog" aria-modal="true" aria-label="Boleta e historial" className="dialog report"><header><div><span className="eyebrow">{school.name}</span><h2>{report.student.full_name}</h2><p>Boleta de consulta · {report.student.curp}</p></div><div className="actions"><button onClick={()=>window.print()} aria-label="Imprimir boleta"><Printer/></button><button onClick={()=>setReport(null)} aria-label="Cerrar boleta"><X/></button></div></header>{report.years.map((year:Row)=><article key={year.enrollment.id}><h3>{year.enrollment.group_label}</h3><p>{display(year.enrollment.status)} · {display(year.enrollment.outcome)}</p><table><thead><tr><th>Materia</th><th>Trimestre</th><th>Calificación</th><th>Observación</th></tr></thead><tbody>{year.grades.map((g:Row)=><tr key={g.id}><td>{g.subject_name}</td><td>{g.term}</td><td>{g.score}</td><td>{g.feedback}</td></tr>)}</tbody></table><p>Promedio registrado: <strong>{mean(year.grades.map((g:Row)=>Number(g.score)))}</strong></p><div className="actions">{Object.entries(year.attendance).map(([status,total])=><span className="badge" key={status}>{display(status)}: {String(total)}</span>)}</div></article>)}{!report.years.length&&<Empty text="Todavía no tiene inscripciones aprobadas."/>}<p className="footnote">Documento de consulta interna. No sustituye una certificación oficial.</p></section></div>}
  </PortalChrome>;
 }
 function Empty({text}:{text:string}){return <div className="empty"><BookOpen size={26}/><p>{text}</p></div>;}
-const fieldIsDateTime = (field: Field) => field.type === 'datetime-local';
-function RecordForm({fields,initial,onSubmit,onCancel,busy,options,optionName,error}:{fields:Field[];initial:Row;onSubmit:(v:Row)=>void;onCancel:()=>void;busy:boolean;options:(s:string,v:Row)=>Row[];optionName:(r:Row)=>string;error:string}){
- const [values,setValues]=useState<Row>(initial);
- return <form onSubmit={e=>{e.preventDefault();const clean:Row={};fields.forEach(f=>{clean[f.key]=values[f.key]===''?null:values[f.key]; if(fieldIsDateTime(f)&&values[f.key])clean[f.key]=new Date(values[f.key]).toISOString();});onSubmit(clean);}}><div className="form-grid">{fields.map(field=><label key={field.key} className={field.type==='textarea'?'full':''}>{field.label}{!field.optional&&<span className="required"> *</span>}{field.source||field.options?<select required={!field.optional} value={values[field.key]??''} onChange={e=>setValues({...values,[field.key]:e.target.value,...(field.key==='course_id'?{enrollment_id:''}:{})})}><option value="">Seleccione una opción</option>{(field.options||options(field.source!,values).map(r=>[String(r.id),optionName(r)])).map(([id,label])=><option key={id} value={id}>{label}</option>)}</select>:field.type==='textarea'?<textarea required={!field.optional} value={values[field.key]??''} placeholder={field.label} onChange={e=>setValues({...values,[field.key]:e.target.value})}/>:<input required={!field.optional} min={field.min} max={field.max} minLength={field.type==='password'?12:undefined} step={field.key==='score'?'0.1':field.type==='number'?'1':undefined} type={field.type||'text'} value={field.type==='datetime-local'?localDateTime(values[field.key]):values[field.key]??''} placeholder={field.label} onChange={e=>setValues({...values,[field.key]:e.target.value})}/>}</label>)}</div>{error&&<p className="error" role="alert">{error}</p>}<div className="form-actions"><button type="button" className="secondary" onClick={onCancel}>Cancelar</button><button className="primary" disabled={busy}>{busy?'Guardando…':'Guardar'}</button></div></form>;
-}
 function SchoolSettings({school,onSave,busy}:{school:Row;onSave:(form:FormData)=>void;busy:boolean}){
  const [preview,setPreview]=useState<string>();
  const [logoFile,setLogoFile]=useState<File|null>(null);

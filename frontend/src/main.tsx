@@ -8,4 +8,5 @@ import './styles/portal-shell.css';
 import './styles/dialogs.css';
 import './styles/imports.css';
 import './styles/languages.css';
+import './styles/forms.css';
 createRoot(document.getElementById('root')!).render(<React.StrictMode><BrowserRouter><Routes><Route path="*" element={<App/>}/></Routes></BrowserRouter></React.StrictMode>);
