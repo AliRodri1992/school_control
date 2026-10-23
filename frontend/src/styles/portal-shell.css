@@ -1,0 +1,54 @@
+/* School Control 2.0 portal shell */
+.sc-shell{background:#f4f6fb}
+.sc-sidebar{background:#111d42;border-color:#273c72;color:#eaf0ff}
+.sc-shell-brand .brand-icon{background:#405cf5;color:#fff}
+.sc-shell-brand strong{color:#fff}
+.sc-shell-brand small{color:#b6c6ef}
+.sc-workspace{background:#203466;border-color:#3a4e80;color:#eaf0ff;margin:22px 4px 12px}
+.sc-workspace .tag{background:#314a82;color:#e4ebff}
+.sc-sidebar .sidebar-bottom{border-color:#34476c}
+.sc-sidebar .sidebar-bottom strong{color:#fff}
+.sc-sidebar .sidebar-bottom small{color:#b7c5df}
+.sc-nav-search{display:flex;align-items:center;gap:9px;margin:0 4px 14px;padding:11px;background:#203365;border:1px solid #385084;border-radius:10px;color:#bdcdf1}
+.sc-nav-search input{width:100%;background:transparent;color:#fff;border:0;outline:none;font-size:13px}
+.sc-nav-search input::placeholder{color:#abbbdb}
+.sc-sidebar-nav{flex:1;overflow-y:auto}
+.sc-nav-section{margin-bottom:11px}
+.sc-nav-section-title{font-size:10px;letter-spacing:1.2px;font-weight:750;color:#9eacd0;padding:9px 11px;width:100%;justify-content:space-between}
+.sc-nav-item{display:flex;align-items:center;gap:3px;border-radius:9px;margin:2px 0}
+.sc-sidebar .sc-nav-main{flex:1;display:flex;justify-content:flex-start;padding:10px 8px;margin:0;color:#cad5ef;font-size:13px;text-align:left;min-height:39px}
+.sc-nav-mark{width:16px;display:grid;place-items:center;flex:none;opacity:.75}
+.sc-nav-item:hover{background:#283c70}
+.sc-nav-item.is-active{background:#405cf5}
+.sc-nav-item.is-active .sc-nav-main{color:#fff;font-weight:650}
+.sc-sidebar .sc-nav-expand{width:33px;flex:none;color:#c0ccef;margin:0}
+.sc-nav-count{margin-left:auto;border-radius:5px;padding:2px 7px;background:#f4a340;color:#182348;font-size:11px;font-weight:700}
+.sc-sidebar-foot{margin-top:auto}
+.sc-topbar{gap:12px;min-width:0;position:sticky;top:0;z-index:12;box-shadow:0 2px 12px rgba(17,29,66,.035)}
+.sc-main{min-width:0;flex:1}
+.sc-crumbs{display:flex;align-items:center;gap:9px;font-size:13px;color:#64748b;min-width:0}
+.sc-crumbs button{color:#405cf5;font-weight:600}
+.sc-crumbs [aria-current=page]{color:#17233f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc-top-actions{display:flex;align-items:center;gap:12px;margin-left:auto}
+.sc-clock{display:flex;gap:8px;align-items:center;white-space:nowrap;font-size:12px;color:#64748b}
+.sc-language{display:flex;align-items:center;gap:6px;background:#f3f5ff;border:1px solid #e2e8f7;border-radius:9px;padding:8px;color:#405cf5}
+.sc-language select{border:0;background:transparent;color:#273653;outline:0;font-weight:700;font-size:12px}
+.sc-flyout-holder{position:relative}
+.sc-icon-button,.sc-account-button{height:39px;border:1px solid #e2e8f1;background:#fff;border-radius:10px;padding:8px;position:relative}
+.sc-icon-button:hover,.sc-account-button:hover{background:#f3f5ff}
+.sc-notification-count{position:absolute;top:-6px;right:-6px;background:#405cf5;color:white;border-radius:99px;font-size:10px;min-width:17px;height:17px;padding:2px}
+.sc-account-button{display:flex;align-items:center;gap:7px;border-radius:99px}
+.sc-account-button span{background:#e9edff;color:#2d49c7;border-radius:99px;display:grid;place-items:center;width:27px;height:27px;font-weight:750;font-size:10px}
+.sc-flyout{position:absolute;top:calc(100% + 12px);right:0;width:min(345px,calc(100vw - 24px));box-shadow:0 20px 60px rgba(17,29,66,.17);background:white;color:#17233f;border:1px solid #e2e8f1;border-radius:14px;z-index:35;padding:12px}
+.sc-flyout-title,.sc-account-details{padding:8px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #edf0f5}
+.sc-account-details{display:flex;align-items:flex-start;flex-direction:column;gap:3px;margin-bottom:9px}
+.sc-account-details small{font-size:12px}
+.sc-flyout-link{padding:12px;width:100%;text-align:left;display:flex;justify-content:flex-start;gap:9px;border-radius:8px;font-size:13px;line-height:1.4}
+.sc-flyout-link:hover{background:#f3f5ff}
+.sc-unread{width:7px;height:7px;background:#405cf5;border-radius:50%;flex:none}
+.sc-all{font-weight:650;color:#405cf5}
+.sc-logout{color:#bb304c}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+@media(max-width:1160px){.sc-clock{display:none}}
+@media(max-width:760px){.sc-sidebar{width:min(300px,86vw)!important}.sc-topbar{position:sticky}.sc-crumbs{font-size:12px}.sc-top-actions{gap:6px}.sc-language{padding:5px}.sc-icon-button{height:36px}.sc-account-button{height:36px}}
+@media(max-width:380px){.sc-language svg{display:none}.sc-crumbs button{display:none}}
