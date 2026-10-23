@@ -19,6 +19,7 @@ class GradeWorkflow
       unless grade.lock_version == Integer(expected_version)
         raise ArgumentError, "La calificación cambió. Actualiza la pantalla antes de corregirla."
       end
+      raise ArgumentError, "Resuelve la solicitud pendiente antes de corregir directamente" if grade.change_requests.pending.exists?
       previous = { previous_score: grade.score, previous_feedback: grade.feedback }
       grade.correction_authorized = true
       grade.assign_attributes(attributes.slice(:score, :feedback))

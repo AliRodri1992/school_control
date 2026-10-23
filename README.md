@@ -138,3 +138,12 @@ Las familias y alumnos solo ven notas publicadas, tanto en el listado como en Bo
 Administración puede **Corregir** una nota publicada con motivo obligatorio. Se conservan valor y retroalimentación anteriores y nuevos, autor y fecha en un historial inmutable desde la aplicación. Las correcciones se permiten después del cierre, sin modificar automáticamente la decisión de promoción o egreso. El guardado rechaza pantallas desactualizadas; la actualización, el historial y la auditoría son una sola transacción. Las familias reciben el aviso de publicación o corrección, sin el motivo administrativo interno.
 
 La migración conserva como publicadas las notas anteriores, que ya eran visibles antes de este flujo. Las notas nuevas requieren revisión y publicación antes de cerrar el ciclo.
+
+
+### Solicitudes de corrección docente
+
+Desde una nota publicada, **Solicitudes de corrección** permite al docente de la materia proponer nota, retroalimentación y motivo. Administración también puede solicitar cambios, pero otra persona administradora debe aprobarlos o rechazarlos con un motivo. El servidor impide resolver la propia solicitud. No se modifica la nota vigente mientras esté pendiente.
+
+Solo se admite una solicitud pendiente por nota, con un índice único en PostgreSQL y bloqueo de la inscripción compartido con los otros cambios académicos. La aprobación comprueba la versión original y guarda nota, historial, resolución y auditoría en una transacción. Una solicitud desactualizada puede rechazarse y volver a capturarse; no sobrescribe una nota posterior. La corrección administrativa directa queda bloqueada mientras exista una solicitud pendiente. No cambia automáticamente la promoción o egreso.
+
+Las solicitudes y sus motivos son internos: solo administración y el docente asignado pueden consultarlos. Noticed avisa a administración de solicitudes nuevas y al solicitante de su resolución. Familias y alumnos reciben el aviso habitual únicamente cuando la corrección se aprueba y cambia la nota publicada. Los roles configurables y permisos delegados continúan pendientes; la resolución utiliza por ahora el rol administrador existente.

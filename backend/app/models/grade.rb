@@ -3,6 +3,7 @@ class Grade < ApplicationRecord
   belongs_to :course
   belongs_to :reviewer, class_name: "User", optional: true
   has_many :corrections, class_name: "GradeCorrection", dependent: :restrict_with_error
+  has_many :change_requests, class_name: "GradeChangeRequest", dependent: :restrict_with_error
   attr_accessor :correction_authorized
   scope :published, -> { where(status: "published") }
   validates :status, inclusion: { in: %w[draft reviewed published] }

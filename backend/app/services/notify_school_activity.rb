@@ -3,6 +3,7 @@ class NotifySchoolActivity
     "Student" => [ Student, "students", "Se actualizó un expediente" ],
     "Admission" => [ Admission, "admissions", "Hay una actualización en una solicitud" ],
     "Enrollment" => [ Enrollment, "enrollments", "Se actualizó una inscripción" ],
+    "GradeChangeRequest" => [ GradeChangeRequest, "grades", "Hay una actualización en una solicitud de corrección" ],
     "Grade" => [ Grade, "grades", "Hay una actualización de calificaciones" ],
     "Attendance" => [ Attendance, "attendances", "Se registró asistencia" ],
     "InstitutionalMessage" => [ InstitutionalMessage, "messages", "Tienes un mensaje institucional" ],
@@ -18,7 +19,10 @@ class NotifySchoolActivity
     # Drafts and internal reviews must not notify families before publication.
     return if record.is_a?(Grade) && !%w[grade.published grade.corrected].include?(event.action)
     recipients = [ event.user ]
-    if record.is_a?(InstitutionalMessage)
+    if record.is_a?(GradeChangeRequest)
+      recipients << record.requester
+      recipients.concat(User.where(role: "admin", active: true).to_a) if record.status == "pending"
+    elsif record.is_a?(InstitutionalMessage)
       recipients << record.recipient
     elsif record.is_a?(StudentDocument)
       recipients << record.student.guardian

@@ -2,7 +2,7 @@
 
 ## Portal de profesores y evaluación
 
-El portal docente existe en la entrega inicial: permite registrar y corregir calificaciones y asistencia, añadir observaciones, consultar horarios, calendario y comunicados, con acceso académico limitado a sus asignaciones. La captura sigue siendo individual. Ya existe el circuito de borrador, revisión y publicación; familias y alumnos solo consultan notas publicadas. También existe corrección administrativa con motivo e historial. Sigue pendiente la solicitud docente con aprobación o rechazo por otra persona.
+El portal docente existe en la entrega inicial: permite registrar y corregir calificaciones y asistencia, añadir observaciones, consultar horarios, calendario y comunicados, con acceso académico limitado a sus asignaciones. La captura sigue siendo individual. Ya existe el circuito de borrador, revisión y publicación; familias y alumnos solo consultan notas publicadas. También existe corrección administrativa con motivo e historial. Ya existe la solicitud docente con aprobación o rechazo motivado por otra persona administradora, control de duplicados y versiones, historial y avisos internos. Los permisos delegados configurables continúan pendientes.
 
 Se incorpora al alcance la ampliación del portal con captura por grupo, panel «Mi día», planeación, tareas, evidencias, acompañamiento y el flujo de autorización de correcciones. La especificación y sus criterios de aceptación están en [Portal docente y evaluación](PORTAL_DOCENTE.md).
 

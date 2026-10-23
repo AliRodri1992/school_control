@@ -54,6 +54,9 @@ Rails.application.routes.draw do
       post :publish, on: :member
       post :correct, on: :member
       get :history, on: :member
+      resources :change_requests, controller: "grade_change_requests", only: %i[index create] do
+        post :resolve, on: :member
+      end
     end
     resources :calendar_events, only: %i[index create update destroy]
     resources :announcements, only: %i[index create destroy]
