@@ -1,3 +1,5 @@
+import {PortalChrome} from './shell/PortalChrome';
+import {currentPortal,resolvePortalLocation,makePortalUrl} from './shell/portalNavigation';
 import Login from './auth/Login';
 import Reports from './Reports';
 import AccessRoles from './AccessRoles';
@@ -12,31 +14,39 @@ import LogoUploader from './LogoUploader';
 import Dashboard from './Dashboard';
 import {notify} from './notifications';
 import {useEffect, useState} from 'react';
-import {BookOpen, LayoutDashboard, Users, CalendarDays, GraduationCap, ClipboardCheck, FileCheck2, Settings, LogOut, Plus, Search, Menu, X, Bell, Check, Printer, Clock, ShieldCheck} from 'lucide-react';
+import {BookOpen, Plus, Search, X, Check, Printer} from 'lucide-react';
 import {api,timeLabel,mean} from './api';
 import {modules,labels,type Row,type Field} from './modules';
-const nav = [
- ['dashboard','Resumen',LayoutDashboard],['notifications','Notificaciones',Bell],['profile','Mi perfil',Users],['students','Expedientes',Users],['admissions','Inscripciones',FileCheck2],
- ['student_contacts','Contactos familiares',Users],['documents','Documentos',FileCheck2],['messages','Mensajes',Bell],['enrollments','Trayectoria',GraduationCap],['schedule','Horarios',Clock],['attendances','Asistencia',ClipboardCheck],
- ['grades','Calificaciones',BookOpen],['classroom','Aula virtual',BookOpen],['calendar_events','Calendario',CalendarDays],['announcements','Comunicados',Bell],
- ['groups','Grupos',Users],['courses','Clases',BookOpen],['subjects','Materias',BookOpen],
- ['email_templates','Plantillas de correo',Bell],['academic_years','Ciclos escolares',CalendarDays],['reports','Reportes',FileCheck2],['access_roles','Roles y permisos',ShieldCheck],['users','Usuarios',ShieldCheck],['school','Mi escuela',Settings]
-] as const;
-const pagePermission=(key:string)=>({schedule:'schedule_slots.index',school:'schools.update',documents:'student_documents.index',classroom:'assignments.index',dashboard:'dashboard.show'}[key]||`${key}.index`);
-const personalPages=['profile','notifications','messages'];
+const pagePermission=(key:string)=>({schedule:'schedule_slots.index',school:'schools.update',documents:'student_documents.index',classroom:'assignments.index',dashboard:'dashboard.show'} as Record<string,string>)[key]||(key+'.index');
 const display = (value: any): string => value === true ? 'Sí' : value === false ? 'No' : value == null || value === '' ? '—' : labels[value] || String(value);
 const localDateTime = (value: string) => { if (!value) return ''; const date = new Date(value); return new Date(date.getTime()-date.getTimezoneOffset()*60000).toISOString().slice(0,16); };
 const readableDate = (value: string) => new Date(value).toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'});
 export default function App(){
  const [resetToken,setResetToken]=useState(()=>new URLSearchParams(window.location.hash.slice(1)).get('reset-password')||'');
  useEffect(()=>{if(resetToken)window.history.replaceState(null,'',window.location.pathname+window.location.search);},[resetToken]);
- function signedOut(){setUser(null);setData({});setSummary({});setPage('dashboard');setError('');setResetToken('');}
+ function signedOut(){setUser(null);setData({});setSummary({});setPage('dashboard');setError('');setResetToken('');window.history.replaceState({},'','/login');}
 
  const [user,setUser] = useState<Row|null>(null),[school,setSchool] = useState<Row>({name:'Aula'});
  const [loading,setLoading] = useState(true),[page,setPage] = useState('dashboard'),[data,setData] = useState<Record<string,Row[]>>({}),[summary,setSummary] = useState<Row>({});
  const [error,setError] = useState(''),[notice,setNotice] = useState(''),[query,setQuery] = useState(''),[mobile,setMobile] = useState(false),[busy,setBusy] = useState(false);
  const [dialog,setDialog] = useState<{title:string;fields:Field[];values:Row;submit:(values:Row)=>Promise<void>}|null>(null),[report,setReport] = useState<Row|null>(null);
  const [groupFilter,setGroupFilter] = useState('');
+ const portal=currentPortal(user?.role||'admin');
+ function go(next:string) {
+   if(next!=='profile'&&next!=='notifications'&&next!=='messages'&&!user?.permissions?.[pagePermission(next)]?.length)return;
+   setPage(next);setQuery('');setNotice('');setMobile(false);
+   const url=makePortalUrl(portal,next);
+   if(window.location.pathname!==url)window.history.pushState({},'',url);
+ }
+ useEffect(()=>{
+   if(!user)return;
+   const base=makePortalUrl(currentPortal(user.role),'dashboard');
+   if(!window.location.pathname.startsWith(base))window.history.replaceState({},'',base);
+   const sync=()=>setPage(resolvePortalLocation(window.location.pathname,user.role,user.permissions));
+   sync();window.addEventListener('popstate',sync);
+   return()=>window.removeEventListener('popstate',sync);
+ },[user?.id,user?.role]);
+
  async function refresh(who = user){
    if(!who) return;
    const session=await api('session');who=session.user;setUser(who);if(!who)return;
@@ -86,18 +96,16 @@ export default function App(){
  if(loading)return <div className="boot"><BookOpen size={38}/><p>Preparando tu escuela…</p></div>;
  if(resetToken)return <PasswordRecovery schoolName={school.name} token={resetToken} onClose={signedOut}/>;
  if(!user)return <Login school={school} initialError={error} onLogin={async account=>{setUser(account);setError('');await refresh(account);}}/>;
- return <div className="app"><aside className={mobile?'sidebar open':'sidebar'}><div className="brand">{school.logo_url?<img src={school.logo_url} alt="Logotipo de la escuela"/>:<div className="brand-icon"><BookOpen/></div>}<div><strong>{school.name}</strong><small>COMUNIDAD ESCOLAR</small></div><button className="mobile close" onClick={()=>setMobile(false)} aria-label="Cerrar menú"><X/></button></div>
- <div className="workspace"><span className="status-dot"/>{labels[user.role]}<span className="tag">Portal</span></div>
- <div className="nav-label">MI ESPACIO</div><nav>{nav.filter(([key])=>personalPages.includes(key)||can(pagePermission(key))).map(([key,title,Icon])=><button key={key} className={page===key?'selected':''} onClick={()=>{setPage(key);setQuery('');setNotice('');setMobile(false);}}><Icon size={18}/>{title}{key==='admissions'&&summary.pending_admissions>0&&<b>{summary.pending_admissions}</b>}</button>)}</nav>
- <div className="sidebar-bottom"><div className="avatar">{user.name.slice(0,2).toUpperCase()}</div><div><strong>{user.name}</strong><small>{labels[user.role]}</small></div><button aria-label="Cerrar sesión" onClick={async()=>{try{await api('session','DELETE');setUser(null);setData({});setSummary({});setNotice('');setPage('dashboard');void notify('Sesión cerrada correctamente.');}catch(e){setError((e as Error).message);}}}><LogOut size={18}/></button></div></aside>
- <main><header className="topbar"><button className="mobile" onClick={()=>setMobile(true)} aria-label="Abrir menú"><Menu/></button><span>Mi escuela <span className="separator">/</span> {page==='dashboard'?'Resumen':page==='schedule'?'Horarios':page==='school'?'Configuración':page==='messages'?'Mensajes':page==='documents'?'Documentos':page==='classroom'?'Aula virtual':page==='profile'?'Mi perfil':page==='notifications'?'Notificaciones':page==='reports'?'Reportes':page==='access_roles'?'Roles y permisos':modules[page]?.title}</span><span className="today">{new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'})}</span></header>
+ return <PortalChrome user={user} school={school} page={page} mobile={mobile} onMobile={setMobile}
+ can={can} pendingAdmissions={Number(summary.pending_admissions||0)} onNavigate={go}
+ onSignOut={async()=>{try{await api('session','DELETE');signedOut();void notify('Sesión cerrada correctamente.');}catch(e){setError((e as Error).message);}}}>
  <div className="content">{error&&<div className="error" role="alert">{error}<button aria-label="Cerrar error" onClick={()=>setError('')}><X size={16}/></button></div>}{notice&&<div className="success" role="status"><Check size={16}/>{notice}</div>}
  {page==='dashboard'?<><div className="page-heading"><div><div className="eyebrow">CADA ALUMNO, UNA HISTORIA</div><h1>Hola, {user.name.split(' ')[0]}.</h1><p>Tu comunidad escolar, conectada y al día.</p></div><div className="pill"><span className="status-dot"/>Portal {labels[user.role].toLowerCase()}</div></div>
  <Dashboard summary={summary} data={data}/></>:
  page==='reports'?<Reports data={data}/>:
  page==='access_roles'?<AccessRoles can={can} onChanged={()=>refresh()}/>:
  page==='profile'?<Profile onChange={setUser} onSignedOut={signedOut}/>:
- page==='notifications'?<Notifications navigate={target=>{if(nav.some(([key])=>key===target))setPage(target);}}/>:
+ page==='notifications'?<Notifications navigate={target=>{if(target==='profile'||target==='notifications'||target==='messages'||modules[target]||['dashboard','reports','classroom','documents','schedule','school','access_roles'].includes(target))go(target);}}/>:
  page==='classroom'?<Classroom user={user} courses={data.courses||[]} enrollments={data.enrollments||[]}/>:
  page==='documents'?<Documents students={data.students||[]} admin={can('student_documents.review')}/>:
  page==='messages'?<Messages userId={user.id}/>:
@@ -115,10 +123,10 @@ export default function App(){
  {page==='enrollments'&&can('enrollments.complete')&&row.status==='active'&&<button className="text-button" onClick={()=>complete(row)}>Cerrar ciclo</button>}
  {page==='users'&&can('users.update')&&row.id!==user.id&&<button className="text-button" onClick={()=>perform(async()=>{await api(`users/${row.id}`,'PATCH',{active:!row.active});})}>{row.active?'Desactivar':'Activar'}</button>}
  </div></td></tr>)}</tbody></table></div>{!records.length&&<Empty text={query?'No hay resultados para esta búsqueda.':'Aún no hay registros en esta sección.'}/>}</section></>}
- <footer>Aula · Una comunidad que aprende junta.<span>{school.name}</span></footer></div></main>
+ <footer>Aula · Una comunidad que aprende junta.<span>{school.name}</span></footer></div>
  {dialog&&<div className="overlay"><section role="dialog" aria-modal="true" aria-labelledby="dialog-title" className="dialog"><header><div><span className="eyebrow">CONTROL ESCOLAR</span><h2 id="dialog-title">{dialog.title}</h2></div><button aria-label="Cerrar formulario" onClick={()=>setDialog(null)}><X/></button></header><RecordForm fields={dialog.fields} initial={dialog.values} busy={busy} options={options} optionName={optionName} error={error} onCancel={()=>setDialog(null)} onSubmit={values=>perform(()=>dialog.submit(values))}/></section></div>}
  {report&&<div className="overlay"><section role="dialog" aria-modal="true" aria-label="Boleta e historial" className="dialog report"><header><div><span className="eyebrow">{school.name}</span><h2>{report.student.full_name}</h2><p>Boleta de consulta · {report.student.curp}</p></div><div className="actions"><button onClick={()=>window.print()} aria-label="Imprimir boleta"><Printer/></button><button onClick={()=>setReport(null)} aria-label="Cerrar boleta"><X/></button></div></header>{report.years.map((year:Row)=><article key={year.enrollment.id}><h3>{year.enrollment.group_label}</h3><p>{display(year.enrollment.status)} · {display(year.enrollment.outcome)}</p><table><thead><tr><th>Materia</th><th>Trimestre</th><th>Calificación</th><th>Observación</th></tr></thead><tbody>{year.grades.map((g:Row)=><tr key={g.id}><td>{g.subject_name}</td><td>{g.term}</td><td>{g.score}</td><td>{g.feedback}</td></tr>)}</tbody></table><p>Promedio registrado: <strong>{mean(year.grades.map((g:Row)=>Number(g.score)))}</strong></p><div className="actions">{Object.entries(year.attendance).map(([status,total])=><span className="badge" key={status}>{display(status)}: {String(total)}</span>)}</div></article>)}{!report.years.length&&<Empty text="Todavía no tiene inscripciones aprobadas."/>}<p className="footnote">Documento de consulta interna. No sustituye una certificación oficial.</p></section></div>}
- </div>;
+ </PortalChrome>;
 }
 function Empty({text}:{text:string}){return <div className="empty"><BookOpen size={26}/><p>{text}</p></div>;}
 const fieldIsDateTime = (field: Field) => field.type === 'datetime-local';
