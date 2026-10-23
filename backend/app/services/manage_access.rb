@@ -2,8 +2,9 @@ class ManageAccess
   def self.transaction
     AccessRole.transaction do
       AccessRole.connection.execute("SELECT pg_advisory_xact_lock(730023)")
-      yield
+      result = yield
       ensure_manager!
+      result
     end
   end
 
@@ -28,6 +29,9 @@ class ManageAccess
     end
     keys = permissions.map { |grant| grant[:key] }
     permissions.each do |grant|
+      if grant[:key].start_with?("report_") && !keys.include?("reports.index")
+        raise ArgumentError, "Activa también el centro de reportes"
+      end
       mod, action = grant[:key].split(".")
       if action != "index" && PermissionCatalog::ACTIONS.fetch(mod).include?("index") && !keys.include?("#{mod}.index")
         raise ArgumentError, "Activa también el acceso a #{mod}"

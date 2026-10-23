@@ -21,3 +21,7 @@ gem "sidekiq", "~> 8.0"
 group :development do
   gem "letter_opener_web"
 end
+
+gem "caxlsx", "~> 4.4"
+gem "prawn", "~> 2.5"
+gem "prawn-table", "~> 0.2"

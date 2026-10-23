@@ -14,7 +14,7 @@ class Student < ApplicationRecord
   def full_name = "#{first_name} #{last_name}"
 
   def valid_identity
-    errors.add(:guardian, "debe ser una cuenta de padre o tutor") unless guardian&.guardian?
+    errors.add(:guardian, "debe ser una cuenta de padre o tutor") unless guardian && (guardian.guardian? || guardian.effective_permissions.values.any? { |scopes| scopes.include?("family") })
     errors.add(:user, "debe ser una cuenta de alumno") if user && !user.learner?
     errors.add(:birth_date, "debe estar en el pasado") if birth_date && birth_date >= Date.current
   end

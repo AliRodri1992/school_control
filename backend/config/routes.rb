@@ -30,6 +30,10 @@ Rails.application.routes.draw do
       get :recipients, on: :collection
       post :read, on: :member
     end
+    resources :reports, only: %i[index create show] do
+      get :preview, on: :collection
+      get :download, on: :member
+    end
     resources :access_roles, only: %i[index create update] do
       post :assign, on: :collection
     end

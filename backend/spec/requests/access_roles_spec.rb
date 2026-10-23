@@ -52,11 +52,11 @@ RSpec.describe "Configurable roles and permissions", type: :request do
   it "keeps teaching write scope separate from family read scope" do
     teacher = create(:user, role: "teacher")
     own = create(:enrollment)
-    own.student.update!(guardian: teacher)
     other_course = create(:course, group: own.group)
     mark = Grade.create!(course: other_course, enrollment: own, term: 1, score: 8)
     family = role_with("Tutor adicional", "grades.index" => "family", "students.index" => "family")
     teacher.access_roles << family
+    own.student.update!(guardian: teacher)
     login(teacher)
     get "/api/grades"
     expect(response.parsed_body).to eq([])

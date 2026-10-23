@@ -9,6 +9,10 @@ class PermissionCatalog
     "subjects" => %w[index create update], "schedule_slots" => %w[index create destroy],
     "calendar_events" => %w[index create update destroy], "announcements" => %w[index create destroy],
     "users" => %w[index create update], "schools" => %w[update], "email_templates" => %w[index create update],
+    "reports" => %w[index],
+    "report_enrollments" => %w[preview xlsx pdf], "report_grades" => %w[preview xlsx pdf],
+    "report_attendances" => %w[preview xlsx pdf], "report_admissions" => %w[preview xlsx pdf],
+    "report_schedules" => %w[preview xlsx pdf], "report_audit" => %w[preview xlsx pdf],
     "access_roles" => %w[index create update assign], "dashboard" => %w[show]
   }.freeze
   RELATIONAL = %w[students admissions enrollments grades grade_change_requests attendances assignments student_documents student_contacts groups courses schedule_slots calendar_events dashboard].freeze
@@ -20,6 +24,7 @@ class PermissionCatalog
 
   def self.scopes(key)
     return [] unless keys.include?(key)
+    return %w[institution assigned family self] if key.start_with?("report_") && !key.start_with?("report_audit.")
     mod, action = key.split(".")
     return %w[institution portal] if key == "announcements.index"
     return %w[institution] unless RELATIONAL.include?(mod)
@@ -42,6 +47,7 @@ class PermissionCatalog
     else []
     end
     scope = { "admin" => "institution", "teacher" => "assigned", "guardian" => "family", "student" => "self" }.fetch(profile)
+    selected += %w[reports.index report_grades.preview report_attendances.preview report_enrollments.preview report_schedules.preview] unless profile == "admin"
     selected.to_h { |key| [ key, key == "announcements.index" && profile != "admin" ? "portal" : (scopes(key).include?(scope) ? scope : scopes(key).first) ] }
   end
 end

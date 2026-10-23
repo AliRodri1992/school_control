@@ -1,3 +1,4 @@
+import Reports from './Reports';
 import AccessRoles from './AccessRoles';
 import GradeActions from './GradeActions';
 import PasswordRecovery from './PasswordRecovery';
@@ -18,7 +19,7 @@ const nav = [
  ['student_contacts','Contactos familiares',Users],['documents','Documentos',FileCheck2],['messages','Mensajes',Bell],['enrollments','Trayectoria',GraduationCap],['schedule','Horarios',Clock],['attendances','Asistencia',ClipboardCheck],
  ['grades','Calificaciones',BookOpen],['classroom','Aula virtual',BookOpen],['calendar_events','Calendario',CalendarDays],['announcements','Comunicados',Bell],
  ['groups','Grupos',Users],['courses','Clases',BookOpen],['subjects','Materias',BookOpen],
- ['email_templates','Plantillas de correo',Bell],['academic_years','Ciclos escolares',CalendarDays],['access_roles','Roles y permisos',ShieldCheck],['users','Usuarios',ShieldCheck],['school','Mi escuela',Settings]
+ ['email_templates','Plantillas de correo',Bell],['academic_years','Ciclos escolares',CalendarDays],['reports','Reportes',FileCheck2],['access_roles','Roles y permisos',ShieldCheck],['users','Usuarios',ShieldCheck],['school','Mi escuela',Settings]
 ] as const;
 const pagePermission=(key:string)=>({schedule:'schedule_slots.index',school:'schools.update',documents:'student_documents.index',classroom:'assignments.index',dashboard:'dashboard.show'}[key]||`${key}.index`);
 const personalPages=['profile','notifications','messages'];
@@ -88,10 +89,11 @@ export default function App(){
  <div className="workspace"><span className="status-dot"/>{labels[user.role]}<span className="tag">Portal</span></div>
  <div className="nav-label">MI ESPACIO</div><nav>{nav.filter(([key])=>personalPages.includes(key)||can(pagePermission(key))).map(([key,title,Icon])=><button key={key} className={page===key?'selected':''} onClick={()=>{setPage(key);setQuery('');setNotice('');setMobile(false);}}><Icon size={18}/>{title}{key==='admissions'&&summary.pending_admissions>0&&<b>{summary.pending_admissions}</b>}</button>)}</nav>
  <div className="sidebar-bottom"><div className="avatar">{user.name.slice(0,2).toUpperCase()}</div><div><strong>{user.name}</strong><small>{labels[user.role]}</small></div><button aria-label="Cerrar sesión" onClick={async()=>{try{await api('session','DELETE');setUser(null);setData({});setSummary({});setNotice('');setPage('dashboard');void notify('Sesión cerrada correctamente.');}catch(e){setError((e as Error).message);}}}><LogOut size={18}/></button></div></aside>
- <main><header className="topbar"><button className="mobile" onClick={()=>setMobile(true)} aria-label="Abrir menú"><Menu/></button><span>Mi escuela <span className="separator">/</span> {page==='dashboard'?'Resumen':page==='schedule'?'Horarios':page==='school'?'Configuración':page==='messages'?'Mensajes':page==='documents'?'Documentos':page==='classroom'?'Aula virtual':page==='profile'?'Mi perfil':page==='notifications'?'Notificaciones':page==='access_roles'?'Roles y permisos':modules[page]?.title}</span><span className="today">{new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'})}</span></header>
+ <main><header className="topbar"><button className="mobile" onClick={()=>setMobile(true)} aria-label="Abrir menú"><Menu/></button><span>Mi escuela <span className="separator">/</span> {page==='dashboard'?'Resumen':page==='schedule'?'Horarios':page==='school'?'Configuración':page==='messages'?'Mensajes':page==='documents'?'Documentos':page==='classroom'?'Aula virtual':page==='profile'?'Mi perfil':page==='notifications'?'Notificaciones':page==='reports'?'Reportes':page==='access_roles'?'Roles y permisos':modules[page]?.title}</span><span className="today">{new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'})}</span></header>
  <div className="content">{error&&<div className="error" role="alert">{error}<button aria-label="Cerrar error" onClick={()=>setError('')}><X size={16}/></button></div>}{notice&&<div className="success" role="status"><Check size={16}/>{notice}</div>}
  {page==='dashboard'?<><div className="page-heading"><div><div className="eyebrow">CADA ALUMNO, UNA HISTORIA</div><h1>Hola, {user.name.split(' ')[0]}.</h1><p>Tu comunidad escolar, conectada y al día.</p></div><div className="pill"><span className="status-dot"/>Portal {labels[user.role].toLowerCase()}</div></div>
  <Dashboard summary={summary} data={data}/></>:
+ page==='reports'?<Reports data={data}/>:
  page==='access_roles'?<AccessRoles can={can} onChanged={()=>refresh()}/>:
  page==='profile'?<Profile onChange={setUser} onSignedOut={signedOut}/>:
  page==='notifications'?<Notifications navigate={target=>{if(nav.some(([key])=>key===target))setPage(target);}}/>:
