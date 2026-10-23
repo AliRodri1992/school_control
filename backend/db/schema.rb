@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_22_000400) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_23_000100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -203,6 +203,46 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_22_000400) do
     t.check_constraint "(status::text = ANY (ARRAY['active'::character varying::text, 'completed'::character varying::text])) AND (outcome IS NULL OR (outcome::text = ANY (ARRAY['promoted'::character varying::text, 'repeat'::character varying::text, 'graduated'::character varying::text])))"
   end
 
+  create_table "grade_change_requests", force: :cascade do |t|
+    t.bigint "grade_id", null: false
+    t.bigint "requester_id", null: false
+    t.bigint "resolver_id"
+    t.integer "expected_version", null: false
+    t.decimal "previous_score", precision: 4, scale: 2, null: false
+    t.decimal "score", precision: 4, scale: 2, null: false
+    t.text "previous_feedback"
+    t.text "feedback"
+    t.text "reason", null: false
+    t.string "status", default: "pending", null: false
+    t.text "resolution_reason"
+    t.datetime "resolved_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["grade_id"], name: "index_grade_change_requests_on_grade_id"
+    t.index ["grade_id"], name: "one_pending_grade_change", unique: true, where: "((status)::text = 'pending'::text)"
+    t.index ["requester_id"], name: "index_grade_change_requests_on_requester_id"
+    t.index ["resolver_id"], name: "index_grade_change_requests_on_resolver_id"
+    t.check_constraint "resolver_id IS NULL OR resolver_id <> requester_id", name: "grade_change_separate_resolver"
+    t.check_constraint "score >= 0::numeric AND score <= 10::numeric AND previous_score >= 0::numeric AND previous_score <= 10::numeric", name: "grade_change_score_range"
+    t.check_constraint "status::text = 'pending'::text AND resolver_id IS NULL AND resolved_at IS NULL OR status::text <> 'pending'::text AND resolver_id IS NOT NULL AND resolved_at IS NOT NULL", name: "grade_change_resolution"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'approved'::character varying, 'rejected'::character varying]::text[])", name: "grade_change_status"
+  end
+
+  create_table "grade_corrections", force: :cascade do |t|
+    t.bigint "grade_id", null: false
+    t.bigint "actor_id", null: false
+    t.decimal "previous_score", precision: 4, scale: 2, null: false
+    t.decimal "score", precision: 4, scale: 2, null: false
+    t.text "previous_feedback"
+    t.text "feedback"
+    t.text "reason", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["actor_id"], name: "index_grade_corrections_on_actor_id"
+    t.index ["grade_id"], name: "index_grade_corrections_on_grade_id"
+    t.check_constraint "score >= 0::numeric AND score <= 10::numeric AND previous_score >= 0::numeric AND previous_score <= 10::numeric", name: "grade_correction_score_range"
+  end
+
   create_table "grades", force: :cascade do |t|
     t.bigint "enrollment_id", null: false
     t.bigint "course_id", null: false
@@ -211,9 +251,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_22_000400) do
     t.text "feedback"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "lock_version", default: 0, null: false
+    t.string "status", default: "draft", null: false
+    t.datetime "reviewed_at"
+    t.datetime "published_at"
+    t.bigint "reviewer_id"
     t.index ["course_id"], name: "index_grades_on_course_id"
     t.index ["enrollment_id", "course_id", "term"], name: "index_grades_on_enrollment_id_and_course_id_and_term", unique: true
     t.index ["enrollment_id"], name: "index_grades_on_enrollment_id"
+    t.index ["reviewer_id"], name: "index_grades_on_reviewer_id"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'reviewed'::character varying, 'published'::character varying]::text[])", name: "grade_publication_status"
     t.check_constraint "term >= 1 AND term <= 3 AND score >= 0::numeric AND score <= 10::numeric"
   end
 
@@ -352,6 +399,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_22_000400) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "email_notifications", default: false, null: false
+    t.integer "session_version", default: 0, null: false
     t.index "lower((email)::text)", name: "index_users_on_lower_email", unique: true
     t.check_constraint "role::text = ANY (ARRAY['admin'::character varying::text, 'teacher'::character varying::text, 'guardian'::character varying::text, 'student'::character varying::text])"
   end
@@ -376,8 +424,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_22_000400) do
   add_foreign_key "enrollments", "admissions"
   add_foreign_key "enrollments", "groups"
   add_foreign_key "enrollments", "students"
+  add_foreign_key "grade_change_requests", "grades"
+  add_foreign_key "grade_change_requests", "users", column: "requester_id"
+  add_foreign_key "grade_change_requests", "users", column: "resolver_id"
+  add_foreign_key "grade_corrections", "grades"
+  add_foreign_key "grade_corrections", "users", column: "actor_id"
   add_foreign_key "grades", "courses"
   add_foreign_key "grades", "enrollments"
+  add_foreign_key "grades", "users", column: "reviewer_id"
   add_foreign_key "groups", "academic_years"
   add_foreign_key "institutional_messages", "users", column: "recipient_id"
   add_foreign_key "institutional_messages", "users", column: "sender_id"

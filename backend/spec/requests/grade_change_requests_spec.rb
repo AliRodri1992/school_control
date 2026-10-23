@@ -100,7 +100,7 @@ RSpec.describe "Grade change requests", type: :request do
     submit_change
     expect(response).to have_http_status(:unprocessable_content)
     expect(GradeChangeRequest.count).to eq(1)
-    expect { request.dup.save! }.to raise_error(ActiveRecord::RecordNotUnique)
+    expect { GradeChangeRequest.transaction(requires_new: true) { request.dup.save! } }.to raise_error(ActiveRecord::RecordNotUnique)
   end
 
   it "does not let direct correction bypass a pending request" do

@@ -1,6 +1,6 @@
 # Portal docente y proceso de evaluación
 
-Estado: alcance acordado pendiente de implementación, salvo la base existente descrita a continuación. Este documento no modifica el comportamiento de la aplicación.
+Estado: base implementada actualizada el 23 de octubre de 2026. Las secciones de comportamiento objetivo conservan las ampliaciones pendientes.
 
 ## Base existente
 
@@ -10,7 +10,7 @@ Estado: alcance acordado pendiente de implementación, salvo la base existente d
 - Consulta de horarios, calendario, comunicados y alertas básicas de asistencia.
 - Restricciones en la API y registro de auditoría de las capturas.
 
-Actualmente el administrador también puede capturar notas, no hay estados de revisión/publicación y las notas guardadas son consultables por las familias y alumnos autorizados. Los permisos y la publicación descritos abajo son comportamiento objetivo, no garantías de la versión actual.
+La versión actual distingue borrador, revisada y publicada por nota. Familias y alumnos solo consultan notas publicadas. Existen correcciones administrativas auditadas y solicitudes de corrección del docente con aprobación o rechazo motivado por otra persona administradora. La versión original se valida antes de aprobar; se impiden solicitudes pendientes duplicadas y resoluciones repetidas. Permanecen pendientes los periodos configurables, captura masiva, evidencias adjuntas, versiones emitidas de boletas y permisos delegados por función.
 
 ## Organización del portal
 
