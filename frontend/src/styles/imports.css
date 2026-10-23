@@ -1,0 +1,23 @@
+.sc-import-layout{display:grid;grid-template-columns:minmax(0,1fr) 275px;gap:20px;align-items:start}
+.sc-import-panel{padding:26px;border-radius:16px}
+.sc-wizard-steps{margin:0 0 28px;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:8px}
+.sc-wizard-steps li{display:flex;gap:9px;align-items:center;font-size:12px;color:#73819c;padding:9px;border-radius:9px}
+.sc-wizard-steps li.active{color:#405cf5;background:#eff2ff}
+.sc-wizard-steps li span{width:27px;height:27px;display:grid;place-items:center;border:1px solid #cbd4e4;border-radius:50%;font-weight:750}
+.sc-wizard-steps li.active span{background:#405cf5;border-color:#405cf5;color:white}
+.sc-import-form{display:flex;flex-direction:column;gap:19px}
+.sc-import-form h2{color:#17233f}
+.sc-dropzone{display:grid;justify-items:center;gap:11px;border:2px dashed #b9c5ef;border-radius:16px;padding:32px;text-align:center;color:#405cf5;background:#f9faff;cursor:pointer}
+.sc-dropzone span{font-size:12px;color:#64748b}
+.sc-import-form input[type=file]{max-width:100%}
+.sc-import-form .primary,.sc-import-form .secondary{align-self:flex-start;min-height:44px}
+.sc-wizard-actions{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.sc-import-errors{max-height:300px;overflow:auto;background:#fff4f5;padding:12px;border-radius:12px}
+.sc-import-errors p{color:#a82c46;font-size:13px}
+.sc-import-count{display:flex;align-items:center;gap:10px;font-size:15px;color:#405cf5}
+.sc-import-assistant{position:sticky;top:96px;padding:22px;border-radius:16px}
+.sc-import-assistant img{max-height:215px;object-fit:contain;width:100%;margin-bottom:14px}
+.sc-import-assistant h3{margin:0 0 9px}
+.sc-import-history{margin-top:24px;padding:20px;border-radius:16px}
+@media(max-width:1000px){.sc-import-layout{grid-template-columns:1fr}.sc-import-assistant{position:static;display:flex;gap:18px;align-items:center}.sc-import-assistant img{width:85px;max-height:100px;margin:0}}
+@media(max-width:600px){.sc-import-panel{padding:15px}.sc-wizard-steps{display:grid;grid-template-columns:1fr 1fr}.sc-import-assistant{display:none}.sc-import-form .primary,.sc-import-form .secondary{width:100%}}

@@ -1,3 +1,4 @@
+import ImportWizard from './features/imports/ImportWizard';
 import {confirmDanger} from './notifications';
 import {PortalChrome} from './shell/PortalChrome';
 import {currentPortal,resolvePortalLocation,makePortalUrl} from './shell/portalNavigation';
@@ -18,7 +19,7 @@ import {useEffect, useState} from 'react';
 import {BookOpen, Plus, Search, X, Check, Printer, GraduationCap} from 'lucide-react';
 import {api,timeLabel,mean} from './api';
 import {modules,labels,type Row,type Field} from './modules';
-const pagePermission=(key:string)=>({schedule:'schedule_slots.index',school:'schools.update',documents:'student_documents.index',classroom:'assignments.index',dashboard:'dashboard.show'} as Record<string,string>)[key]||(key+'.index');
+const pagePermission=(key:string)=>({schedule:'schedule_slots.index',school:'schools.update',documents:'student_documents.index',classroom:'assignments.index',dashboard:'dashboard.show',imports:'students.create'} as Record<string,string>)[key]||(key+'.index');
 const display = (value: any): string => value === true ? 'Sí' : value === false ? 'No' : value == null || value === '' ? '—' : labels[value] || String(value);
 const localDateTime = (value: string) => { if (!value) return ''; const date = new Date(value); return new Date(date.getTime()-date.getTimezoneOffset()*60000).toISOString().slice(0,16); };
 const readableDate = (value: string) => new Date(value).toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'});
@@ -104,6 +105,7 @@ export default function App(){
  {page==='dashboard'?<><div className="page-heading"><div><div className="eyebrow">CADA ALUMNO, UNA HISTORIA</div><h1>Hola, {user.name.split(' ')[0]}.</h1><p>Tu comunidad escolar, conectada y al día.</p></div><div className="pill"><span className="status-dot"/>Portal {labels[user.role].toLowerCase()}</div></div>
  <Dashboard summary={summary} data={data} role={user.role}/></>:
  page==='reports'?<Reports data={data}/>:
+ page==='imports'?<ImportWizard/>:
  page==='access_roles'?<AccessRoles can={can} onChanged={()=>refresh()}/>:
  page==='profile'?<Profile onChange={setUser} onSignedOut={signedOut}/>:
  page==='notifications'?<Notifications navigate={target=>{if(target==='profile'||target==='notifications'||target==='messages'||modules[target]||['dashboard','reports','classroom','documents','schedule','school','access_roles'].includes(target))go(target);}}/>:
