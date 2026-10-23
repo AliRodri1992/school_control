@@ -2,3 +2,13 @@
 
 /* Mobile-first personal dashboard */
 .dashboard-controls,.widget-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.dashboard-controls{margin:24px 0}.widget-builder{display:flex;flex-wrap:wrap;gap:16px;padding:20px;background:#fff;border:1px solid #dbe8e2;border-radius:16px}.widget-builder label{display:flex;flex-direction:column;gap:8px;flex:1 1 220px}.widget-builder p{width:100%;font-size:13px}.dashboard-widget{background:#fff;border:1px solid #dbe8e2;border-radius:16px;display:flex;flex-direction:column;overflow:hidden}.widget-header{padding:12px 16px;border-bottom:1px solid #eef2ef;flex-wrap:nowrap}.widget-header h3{margin:0;font-size:15px;overflow-wrap:anywhere}.widget-handle{cursor:grab;touch-action:none;flex:1}.widget-body{padding:16px;overflow:auto;flex:1;min-height:0}.widget-number{font-size:42px;color:#187568}.widget-chart{height:170px;min-width:0}.chart-description{font-size:12px;color:#53675e}.widget-actions{display:flex}.widget-actions button{min-width:44px;min-height:44px}.school-toast.swal2-popup{border-radius:16px;border:1px solid #c5dfd5;box-shadow:0 12px 40px #173e2922;font-family:inherit;background:#f7fcf9;color:#183d30}.school-toast-title{font-size:15px!important}.react-resizable-handle{width:26px!important;height:26px!important}.content{min-width:0} @media(max-width:479px){.dashboard-controls>.primary{width:100%}.widget-builder{padding:12px}.dashboard-widget .widget-header{padding:10px}.react-grid-layout{margin-left:-4px;margin-right:-4px}}
+
+.permissions-dialog { max-width: 850px; }
+.permission-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 12px; margin: 20px 0; }
+.permission-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; }
+.permission-row label { display: flex; align-items: center; gap: 12px; margin: 0; }
+.permission-row input[type=checkbox] { width: 20px; height: 20px; flex-shrink: 0; accent-color: #217568; }
+.permission-row select { width: auto; max-width: 50%; }
+.permissions-dialog details { border-bottom: 1px solid #e4eae8; padding: 12px 0; }
+.permissions-dialog summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
+@media(max-width:600px) { .permission-row { flex-wrap: wrap; } .permission-row select { max-width: 100%; width: 100%; } }

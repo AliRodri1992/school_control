@@ -1,6 +1,7 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
   before_action :require_user
+  before_action :authorize_permission
   rescue_from ActiveRecord::RecordNotFound, with: -> { render json: { error: "Registro no encontrado" }, status: :not_found }
   rescue_from ActiveRecord::RecordInvalid, with: :invalid_record
   rescue_from ActiveRecord::RecordNotUnique, with: -> { render json: { error: "El registro ya existe" }, status: :conflict }
@@ -17,37 +18,27 @@ class ApplicationController < ActionController::Base
     render json: { error: "Inicia sesión" }, status: :unauthorized unless current_user
   end
 
-  def require_admin
-    render json: { error: "Acceso restringido a administración" }, status: :forbidden unless current_user.admin?
+  def permission_key
+    "#{controller_name}.#{action_name}"
   end
 
-  def require_educator
-    render json: { error: "Acceso restringido a docentes" }, status: :forbidden unless current_user.admin? || current_user.teacher?
+  def access = SchoolAccess.new(current_user, permission_key)
+  def institution_access? = access.institution?
+  def educator_access? = access.educator?
+
+  def authorize_permission
+    return if %w[sessions password_resets profiles account_security messages notifications dashboard_preferences].include?(controller_name)
+    return if controller_name == "schools" && action_name == "show"
+    render json: { error: "No tienes permiso para esta acción" }, status: :forbidden unless access.allows?
   end
 
-  def students_scope
-    return Student.all if current_user.admin?
-    return current_user.children if current_user.guardian?
-    return Student.where(user_id: current_user.id) if current_user.learner?
-    Student.where(id: Enrollment.where(group_id: groups_scope.select(:id)).select(:student_id))
-  end
-
-  def groups_scope
-    return Group.all if current_user.admin?
-    return Group.where(id: current_user.courses.select(:group_id)) if current_user.teacher?
-    Group.where(id: Enrollment.where(student_id: students_scope.select(:id)).select(:group_id))
-  end
-
-  def enrollments_scope
-    scope = Enrollment.where(student_id: students_scope.select(:id))
-    current_user.teacher? ? scope.where(group_id: groups_scope.select(:id)) : scope
-  end
-
-  def courses_scope
-    return Course.all if current_user.admin?
-    return current_user.courses if current_user.teacher?
-    Course.where(group_id: groups_scope.select(:id))
-  end
+  # All these controllers now authorize the specific module/action in the shared filter.
+  def require_admin = authorize_permission
+  def require_educator = authorize_permission
+  def students_scope = access.students
+  def groups_scope = access.groups
+  def enrollments_scope = access.enrollments
+  def courses_scope = access.courses
 
   def audit(record, action)
     AuditEvent.create!(user: current_user, action: action, record_type: record.class.name, record_id: record.id)

@@ -46,7 +46,7 @@ module Api
     private
 
     def require_family_or_admin
-      head :forbidden unless current_user.admin? || current_user.guardian?
+      authorize_permission
     end
 
     def collection = StudentDocument.where(student_id: students_scope.select(:id))

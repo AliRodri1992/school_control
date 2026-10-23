@@ -23,15 +23,14 @@ module Api
 
     def grade
       @grade ||= begin
-        scope = Grade.where(enrollment: enrollments_scope)
-        scope = scope.where(course: current_user.courses) if current_user.teacher?
+        scope = access.grades
         scope.find(params[:grade_id])
       end
     end
 
     def serialize(request)
       request.as_json.merge(requester_name: request.requester.name, resolver_name: request.resolver&.name,
-        can_resolve: current_user.admin? && request.status == "pending" && request.requester_id != current_user.id)
+        can_resolve: current_user.can?("grade_change_requests.resolve", request.grade) && request.status == "pending" && request.requester_id != current_user.id)
     end
   end
 end

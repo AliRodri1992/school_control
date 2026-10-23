@@ -33,7 +33,6 @@ module Api
     end
 
     def submit
-      return head :forbidden unless current_user.learner?
       record = collection.find(params[:id])
       enrollment = enrollments_scope.where(group_id: record.course.group_id, status: "active").find(params.require(:enrollment_id))
       enrollment.with_lock do
@@ -63,8 +62,10 @@ module Api
     private
 
     def collection
-      scope = Assignment.where(course: courses_scope)
-      current_user.admin? || current_user.teacher? ? scope : scope.where(published: true)
+      return Assignment.all if institution_access?
+      scope = Assignment.where(course: courses_scope, published: true)
+      scope = scope.or(Assignment.where(course: current_user.courses)) if access.scopes.include?("assigned")
+      scope
     end
 
     def attributes = params.permit(:title, :instructions, :due_at, :published)

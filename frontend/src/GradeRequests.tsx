@@ -3,7 +3,7 @@ import {api} from './api';
 import {notify} from './notifications';
 import type {Row} from './modules';
 
-export default function GradeRequests({grade,onChanged}:{grade:Row;onChanged:()=>Promise<void>}) {
+export default function GradeRequests({grade,onChanged,canCreate=true}:{grade:Row;canCreate?:boolean;onChanged:()=>Promise<void>}) {
   const [requests,setRequests]=useState<Row[]|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
   const endpoint=`grades/${grade.id}/change_requests`;
   async function open(){
@@ -42,7 +42,7 @@ export default function GradeRequests({grade,onChanged}:{grade:Row;onChanged:()=
         </form>}
       </article>)}
       {requests.length===0&&<p>No hay solicitudes registradas.</p>}
-      {!requests.some(request=>request.status==='pending')&&<form onSubmit={event=>submit(event)}>
+      {canCreate&&!requests.some(request=>request.status==='pending')&&<form onSubmit={event=>submit(event)}>
         <h3>Nueva solicitud</h3>
         <label>Calificación propuesta<input name="score" type="number" min={0} max={10} step="0.01" required defaultValue={grade.score}/></label>
         <label>Retroalimentación propuesta<textarea name="feedback" defaultValue={grade.feedback||''}/></label>

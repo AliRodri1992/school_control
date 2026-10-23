@@ -12,7 +12,7 @@ module Api
     def model = CalendarEvent
     def attributes = params.permit(:academic_year_id, :group_id, :title, :kind, :starts_at, :ends_at, :description)
     def collection
-      return CalendarEvent.all if current_user.admin?
+      return CalendarEvent.all if institution_access?
       CalendarEvent.where(group_id: nil).or(CalendarEvent.where(group_id: groups_scope.select(:id)))
     end
   end

@@ -30,6 +30,9 @@ Rails.application.routes.draw do
       get :recipients, on: :collection
       post :read, on: :member
     end
+    resources :access_roles, only: %i[index create update] do
+      post :assign, on: :collection
+    end
     resources :users, only: %i[index create update]
     resources :academic_years, only: %i[index create update]
     resources :groups, only: %i[index create update] do

@@ -11,8 +11,8 @@ class GradeWorkflow
     end
   end
 
-  def self.correct(grade:, actor:, attributes:, reason:, expected_version:)
-    raise ArgumentError, "Solo administración puede corregir calificaciones publicadas" unless actor.admin?
+  def self.correct(grade:, actor:, attributes:, reason:, expected_version:, permission: "grades.correct")
+    raise ArgumentError, "Solo administración puede corregir calificaciones publicadas" unless actor.can?(permission, grade)
     grade.enrollment.with_lock do
       grade.reload
       raise ArgumentError, "La calificación aún no está publicada" unless grade.status == "published"
@@ -35,7 +35,7 @@ class GradeWorkflow
   end
 
   def self.transition(grade, actor, from, to)
-    raise ArgumentError, "Solo administración puede revisar y publicar" unless actor.admin?
+    raise ArgumentError, "Solo administración puede revisar y publicar" unless actor.can?(to == "reviewed" ? "grades.review" : "grades.publish", grade)
     grade.enrollment.with_lock do
       grade.reload
       raise ArgumentError, "La calificación cambió de estado. Actualiza la pantalla." unless grade.status == from

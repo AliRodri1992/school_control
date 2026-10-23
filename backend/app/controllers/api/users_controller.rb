@@ -7,10 +7,13 @@ module Api
     end
 
     def create
-      User.transaction do
+      ManageAccess.transaction do
+        raise ArgumentError, "Se requiere permiso para asignar roles" unless current_user.can?("access_roles.assign")
         user = User.new(params.permit(:name, :email, :password, :password_confirmation))
         user.role = params.require(:role)
         user.save!
+        grants = user.access_roles.flat_map { |role| role.role_permissions.map { |p| { key: p.key, data_scope: p.data_scope } } }
+        ManageAccess.verify_grants!(current_user, grants)
         if user.learner?
           student = Student.find(params.require(:student_id))
           student.with_lock do
@@ -26,7 +29,8 @@ module Api
     def update
       user = User.find(params[:id])
       raise ArgumentError, "No puedes desactivar tu propia cuenta" if user == current_user && params[:active] == false
-      user.with_lock do
+      ManageAccess.transaction do
+        user.lock!
         user.update!(params.permit(:name, :email, :active))
         audit(user, "user.updated")
       end

@@ -9,11 +9,8 @@ module Api
     end
 
     def create
-      unless current_user.admin? || current_user.guardian?
-        return render json: { error: "No puedes registrar alumnos" }, status: :forbidden
-      end
       attrs = params.permit(:first_name, :last_name, :curp, :birth_date, :emergency_phone, :address)
-      attrs[:guardian_id] = current_user.admin? ? params.require(:guardian_id) : current_user.id
+      attrs[:guardian_id] = institution_access? ? params.require(:guardian_id) : current_user.id
       student = Student.new(attrs)
       student.transaction do
         student.save!
@@ -24,11 +21,8 @@ module Api
 
     def update
       student = students_scope.find(params[:id])
-      unless current_user.admin? || current_user.guardian?
-        return render json: { error: "Sin permiso para editar expedientes" }, status: :forbidden
-      end
       fields = %i[emergency_phone address]
-      fields += %i[first_name last_name curp birth_date] if current_user.admin? || student.enrollments.empty?
+      fields += %i[first_name last_name curp birth_date] if institution_access? || student.enrollments.empty?
       student.with_lock do
         student.update!(params.permit(*fields))
         audit(student, "student.updated")
@@ -47,9 +41,7 @@ module Api
     private
 
     def report_grades(enrollment)
-      return enrollment.grades if current_user.admin?
-      return enrollment.grades.where(course: current_user.courses) if current_user.teacher?
-      enrollment.grades.published
+      access.grades.where(enrollment: enrollment)
     end
   end
 end

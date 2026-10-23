@@ -3,7 +3,7 @@ import {api} from './api';
 import {notify} from './notifications';
 import type {Row} from './modules';
 export default function Classroom({user,courses,enrollments}:{user:Row;courses:Row[];enrollments:Row[]}) {
- const educator=['admin','teacher'].includes(user.role),learner=user.role==='student';
+ const educator=!!user.permissions?.['assignments.create']?.length,learner=!!user.permissions?.['assignments.submit']?.length&&user.role==='student';
  const [records,setRecords]=useState<Row[]>([]),[selected,setSelected]=useState<Row|null>(null),[submissions,setSubmissions]=useState<Row[]>([]),[error,setError]=useState(''),[busy,setBusy]=useState(false);
  async function refresh(){setRecords(await api('assignments'));}
  useEffect(()=>{void refresh().catch(e=>setError(e.message));},[]);

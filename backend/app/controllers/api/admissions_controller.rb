@@ -7,9 +7,6 @@ module Api
     end
 
     def create
-      unless current_user.admin? || current_user.guardian?
-        return render json: { error: "Solo los tutores o administración pueden solicitar inscripción" }, status: :forbidden
-      end
       student = students_scope.find(params.require(:student_id))
       admission = student.admissions.new(params.permit(:academic_year_id, :grade_level, :kind))
       admission.transaction do

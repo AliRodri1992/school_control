@@ -1,6 +1,6 @@
 class RequestGradeChange
   def self.call(grade:, actor:, attributes:, expected_version:)
-    unless actor.active? && (actor.admin? || (actor.teacher? && grade.course.teacher_id == actor.id))
+    unless actor.can?("grade_change_requests.create", grade)
       raise ArgumentError, "No puedes solicitar cambios en esta calificación"
     end
     grade.enrollment.with_lock do

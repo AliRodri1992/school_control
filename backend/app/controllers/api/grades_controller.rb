@@ -5,9 +5,7 @@ module Api
     before_action :require_admin, only: %i[review publish correct]
 
     def index
-      scope = Grade.where(enrollment: enrollments_scope)
-      scope = scope.where(course: current_user.courses) if current_user.teacher?
-      scope = scope.published unless current_user.admin? || current_user.teacher?
+      scope = access.grades
       render json: scope.includes(:course, enrollment: :student).order(:term, :id).map { |record| present(record) }
     end
 
@@ -46,8 +44,7 @@ module Api
     private
 
     def find_grade
-      scope = Grade.where(enrollment: enrollments_scope)
-      scope = scope.where(course: current_user.courses) if current_user.teacher?
+      scope = access.grades
       scope.find(params[:id])
     end
   end

@@ -1,6 +1,9 @@
 class User < ApplicationRecord
   has_many :notifications, as: :recipient, dependent: :destroy, class_name: "Noticed::Notification"
   has_one :dashboard_preference, dependent: :destroy
+  has_many :access_role_assignments, dependent: :destroy
+  has_many :access_roles, through: :access_role_assignments
+  after_create -> { AccessRole.assign_default!(self) }
   has_secure_password
   generates_token_for :password_recovery, expires_in: 15.minutes do
     session_version
@@ -14,6 +17,16 @@ class User < ApplicationRecord
   validates :email, uniqueness: { case_sensitive: false }, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :role, inclusion: { in: %w[admin teacher guardian student] }
   validates :password, length: { minimum: 12 }, allow_nil: true
+
+  def can?(permission, record = nil)
+    SchoolAccess.new(self, permission).allows?(record)
+  end
+
+  def effective_permissions
+    RolePermission.joins(access_role: :access_role_assignments)
+      .where(access_roles: { active: true }, access_role_assignments: { user_id: id })
+      .pluck(:key, :data_scope).group_by(&:first).transform_values { |values| values.map(&:last).uniq }
+  end
 
   def revoke_sessions!
     with_lock { increment!(:session_version) }
