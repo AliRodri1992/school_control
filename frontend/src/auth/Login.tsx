@@ -77,7 +77,7 @@ export default function Login({school,initialError,onLogin}:{school:Row;initialE
     const visible=(name==='password'&&showPassword)||(name==='password_confirmation'&&showConfirmation);
     const actualType=type==='password'&&visible?'text':type;
     return <div className="sc-field" key={name}>
-      <label htmlFor={'auth-'+name}>{label}{required&&<span className="sc-required"> *</span>}</label>
+      <label htmlFor={'auth-'+name}>{label}{required&&<span className="sc-required" aria-hidden="true"> *</span>}</label>
       <div className={'sc-input-wrap'+(errors[name]?' is-invalid':'')}>
         {name==='email'?<Mail size={19} aria-hidden="true"/>:name==='name'?<UserRound size={19} aria-hidden="true"/>:<LockKeyhole size={19} aria-hidden="true"/>}
         <input id={'auth-'+name} name={name} type={actualType} value={values[name]}

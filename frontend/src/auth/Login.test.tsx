@@ -23,7 +23,7 @@ it('shows accessible field-level errors before sending an empty login',async()=>
 
 it('validates email format and clears the field error on correction',async()=>{
  render(<Login school={school} initialError="" onLogin={vi.fn()}/>);
- const email=screen.getByLabelText('Correo electrónico');
+ const email=screen.getByLabelText(/^Correo electrónico/);
  await userEvent.type(email,'correo-invalido');
  await userEvent.click(screen.getByRole('button',{name:'Iniciar sesión'}));
  expect(screen.getByText('Correo electrónico no tiene un formato válido.')).toBeTruthy();
@@ -35,10 +35,10 @@ it('validates email format and clears the field error on correction',async()=>{
 it('requires matching passwords when creating a family account',async()=>{
  render(<Login school={school} initialError="" onLogin={vi.fn()}/>);
  await userEvent.click(screen.getByRole('button',{name:'Regístrate aquí'}));
- await userEvent.type(screen.getByLabelText('Nombre completo'),'Familia Ejemplo');
- await userEvent.type(screen.getByLabelText('Correo electrónico'),'familia@school.test');
- await userEvent.type(screen.getByLabelText('Contraseña'),'School-password-26');
- await userEvent.type(screen.getByLabelText('Confirmación de contraseña'),'Otra-contrasena-26');
+ await userEvent.type(screen.getByLabelText(/^Nombre completo/),'Familia Ejemplo');
+ await userEvent.type(screen.getByLabelText(/^Correo electrónico/),'familia@school.test');
+ await userEvent.type(screen.getByLabelText(/^Contraseña/),'School-password-26');
+ await userEvent.type(screen.getByLabelText(/^Confirmación de contraseña/),'Otra-contrasena-26');
  await userEvent.click(screen.getByRole('button',{name:'Crear cuenta familiar'}));
  expect(screen.getByText('Confirmación de contraseña no coincide.')).toBeTruthy();
  expect(request).not.toHaveBeenCalled();
@@ -48,10 +48,10 @@ it('shows server validation messages below the matching field',async()=>{
  request.mockRejectedValueOnce(Object.assign(new Error('Revisa los datos'),{fieldErrors:{email:['ya está registrado']}}));
  render(<Login school={school} initialError="" onLogin={vi.fn()}/>);
  await userEvent.click(screen.getByRole('button',{name:'Regístrate aquí'}));
- await userEvent.type(screen.getByLabelText('Nombre completo'),'Familia Ejemplo');
- await userEvent.type(screen.getByLabelText('Correo electrónico'),'familia@school.test');
- await userEvent.type(screen.getByLabelText('Contraseña'),'School-password-26');
- await userEvent.type(screen.getByLabelText('Confirmación de contraseña'),'School-password-26');
+ await userEvent.type(screen.getByLabelText(/^Nombre completo/),'Familia Ejemplo');
+ await userEvent.type(screen.getByLabelText(/^Correo electrónico/),'familia@school.test');
+ await userEvent.type(screen.getByLabelText(/^Contraseña/),'School-password-26');
+ await userEvent.type(screen.getByLabelText(/^Confirmación de contraseña/),'School-password-26');
  await userEvent.click(screen.getByRole('button',{name:'Crear cuenta familiar'}));
  expect(await screen.findByText('Correo electrónico ya está registrado.')).toBeTruthy();
 });
@@ -61,8 +61,8 @@ it('uses the existing Rails session and delegates success to the app',async()=>{
  request.mockResolvedValueOnce({user});
  const onLogin=vi.fn().mockResolvedValue(undefined);
  render(<Login school={school} initialError="" onLogin={onLogin}/>);
- await userEvent.type(screen.getByLabelText('Correo electrónico'),'familia@school.test');
- await userEvent.type(screen.getByLabelText('Contraseña'),'School-password-26');
+ await userEvent.type(screen.getByLabelText(/^Correo electrónico/),'familia@school.test');
+ await userEvent.type(screen.getByLabelText(/^Contraseña/),'School-password-26');
  await userEvent.click(screen.getByRole('button',{name:'Iniciar sesión'}));
  await waitFor(()=>expect(onLogin).toHaveBeenCalledWith(user));
  expect(request).toHaveBeenCalledWith('session','POST',{email:'familia@school.test',password:'School-password-26'});
