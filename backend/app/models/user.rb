@@ -1,4 +1,8 @@
 class User < ApplicationRecord
+  has_many :addresses, as: :addressable, dependent: :restrict_with_error
+  has_many :phone_numbers, as: :phoneable, dependent: :restrict_with_error
+  has_many :contacts, as: :contactable, dependent: :restrict_with_error
+  has_many :notes, as: :notable, dependent: :restrict_with_error
   has_many :notifications, as: :recipient, dependent: :destroy, class_name: "Noticed::Notification"
   has_one :dashboard_preference, dependent: :destroy
   has_many :access_role_assignments, dependent: :destroy

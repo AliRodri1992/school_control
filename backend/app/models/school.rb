@@ -1,4 +1,8 @@
 class School < ApplicationRecord
+  has_many :addresses, as: :addressable, dependent: :restrict_with_error
+  has_many :phone_numbers, as: :phoneable, dependent: :restrict_with_error
+  has_many :contacts, as: :contactable, dependent: :restrict_with_error
+  has_many :notes, as: :notable, dependent: :restrict_with_error
   has_one_attached :logo
   validates :name, presence: true
   validate :valid_logo
