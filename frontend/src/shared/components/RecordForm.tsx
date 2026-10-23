@@ -34,12 +34,12 @@ export default function RecordForm({fields,initial,onSubmit,onCancel,busy,option
  return <form noValidate onSubmit={handleSubmit}>
   <div className="form-grid">{fields.map(field=>{
    const value=String(values[field.key]??'');
-   const choices:Choice[]=(field.options||options(field.source!,values).map(r=>[String(r.id),optionName(r)] as [string,string]))
-    .map(([id,title])=>({value:String(id),label:String(title)}));
    const hasChoices=!!(field.source||field.options);
+   const choices:Choice[]=hasChoices?(field.options||options(field.source!,values).map(r=>[String(r.id),optionName(r)] as [string,string]))
+    .map(([id,title])=>({value:String(id),label:String(title)})):[];
    return <div className={'sc-record-field'+(field.type==='textarea'?' full':'')} key={field.key}>
     <label htmlFor={'record-'+field.key}>{field.label}{!field.optional&&<span className="required" aria-hidden="true"> *</span>}</label>
-    {hasChoices?<Combobox value={value} label={field.label} options={choices} invalid={!!errors[field.key]}
+    {hasChoices?<Combobox id={"record-"+field.key} value={value} label={field.label} options={choices} invalid={!!errors[field.key]}
        onChange={v=>update(field.key,v)}/>:
       field.type==='textarea'?<textarea id={'record-'+field.key} value={value} placeholder={field.label}
        aria-invalid={!!errors[field.key]} aria-describedby={errors[field.key]?'record-'+field.key+'-error':undefined}

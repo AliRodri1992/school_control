@@ -2,10 +2,10 @@ import {useEffect,useId,useRef,useState} from 'react';
 import {Check,ChevronDown,Search} from 'lucide-react';
 
 export type Choice = {value:string;label:string;disabled?:boolean};
-export default function Combobox({value,onChange,options,placeholder='Seleccione una opción',label,disabled=false,invalid=false}:{
- value:string;onChange:(value:string)=>void;options:Choice[];placeholder?:string;label:string;disabled?:boolean;invalid?:boolean;
+export default function Combobox({value,onChange,options,placeholder='Seleccione una opción',label,id:inputId,disabled=false,invalid=false}:{
+ value:string;onChange:(value:string)=>void;options:Choice[];placeholder?:string;label:string;id?:string;disabled?:boolean;invalid?:boolean;
 }) {
- const id=useId(),[open,setOpen]=useState(false),[query,setQuery]=useState('');
+ const fallbackId=useId(),id=inputId||fallbackId,[open,setOpen]=useState(false),[query,setQuery]=useState('');
  const root=useRef<HTMLDivElement>(null);
  const filtered=options.filter(opt=>opt.label.toLowerCase().includes(query.toLowerCase()));
  const current=options.find(opt=>opt.value===value);
