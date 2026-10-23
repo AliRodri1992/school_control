@@ -22,3 +22,9 @@ describe('dashboard configuration',()=>{
   }
  });
 });
+
+it('offers role-specific widget presets',()=>{
+ expect(defaultConfig('student').widgets.map(w=>w.kind)).not.toContain('pending_admissions');
+ expect(defaultConfig('teacher').widgets.map(w=>w.kind)).toContain('groups');
+ expect(defaultConfig('admin').widgets.map(w=>w.kind)).toContain('pending_admissions');
+});

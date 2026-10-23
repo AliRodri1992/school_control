@@ -3,18 +3,18 @@ import {Responsive, WidthProvider} from 'react-grid-layout/legacy';
 import {BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer} from 'recharts';
 import {api} from './api';
 import {notify} from './notifications';
-import {appendWidget, removeWidget, defaultConfig, widgetKinds, columns, type Config, type Kind} from './dashboardConfig';
+import {appendWidget, removeWidget, defaultConfig, widgetKinds, columns, type Config, type Kind, type DashboardRole} from './dashboardConfig';
 import type {Row} from './modules';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 const Grid = WidthProvider(Responsive);
 const statusLabels: Record<string,string> = {present:'Presente',absent:'Ausente',late:'Retardo',excused:'Justificada',submitted:'Enviada',approved:'Aprobada',rejected:'Rechazada'};
-export default function Dashboard({summary,data}:{summary:Row;data:Record<string,Row[]>}) {
- const [config,setConfig] = useState<Config>(defaultConfig);
+export default function Dashboard({summary,data,role='admin'}:{summary:Row;data:Record<string,Row[]>;role?:DashboardRole}) {
+ const [config,setConfig] = useState<Config>(()=>defaultConfig(role));
  const [version,setVersion] = useState<number|null>(null);
  const [ready,setReady] = useState(false),[editing,setEditing] = useState(false),[saving,setSaving] = useState(false);
  const [error,setError] = useState(''),[kind,setKind] = useState<Kind>('attendance_chart'),[title,setTitle] = useState('');
- useEffect(()=>{let active=true;api('dashboard_preference').then(result=>{if(active){setConfig(result.configuration||defaultConfig());setVersion(result.lock_version);setReady(true);}}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[]);
+ useEffect(()=>{let active=true;api('dashboard_preference').then(result=>{if(active){setConfig(result.configuration||defaultConfig(role));setVersion(result.lock_version);setReady(true);}}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[]);
  async function save(){setSaving(true);setError('');try{const result=await api('dashboard_preference','PUT',{configuration:config,lock_version:version});setVersion(result.lock_version);setEditing(false);void notify('Dashboard guardado correctamente.');}catch(e){setError((e as Error).message);}finally{setSaving(false);}}
  function content(widget: Config['widgets'][number]) {
   if(widget.kind.endsWith('_chart')) {
@@ -26,7 +26,7 @@ export default function Dashboard({summary,data}:{summary:Row;data:Record<string
   if(widget.kind==='announcements')return data.announcements?.length?[...data.announcements].reverse().slice(0,5).map(a=><p key={a.id}><strong>{a.title}</strong><br/>{a.body}</p>):<p>No hay comunicados.</p>;
   return <strong className="widget-number">{summary[widget.kind]??0}</strong>;
  }
- return <section aria-label="Dashboard personalizable"><div className="dashboard-controls"><div><h2>Mi dashboard</h2><p>Indicadores y gráficas de los registros a los que tienes acceso.</p></div>{!editing?<button className="primary" disabled={!ready} onClick={()=>setEditing(true)}>Personalizar</button>:<button className="primary" disabled={saving} onClick={save}>{saving?'Guardando…':'Guardar dashboard'}</button>}</div>
+ return <section aria-label="Dashboard personalizable"><div className="dashboard-controls"><div><h2>Mi dashboard</h2><p>Indicadores y gráficas de los registros a los que tienes acceso.</p></div>{!editing?<button className="primary" disabled={!ready} onClick={()=>setEditing(true)}>Personalizar</button>:<button className="primary" disabled={saving} onClick={save}>{saving?'Guardando…':'Guardar dashboard'}</button>}{editing&&<button className="secondary" disabled={saving} onClick={()=>setConfig(defaultConfig(role))}>Restablecer plantilla</button>}</div>
  {error&&<p className="error" role="alert">{error}</p>}{!ready&&!error&&<p>Cargando configuración…</p>}
  {editing&&<form className="widget-builder" onSubmit={e=>{e.preventDefault();setConfig(c=>appendWidget(c,kind,title.trim()||widgetKinds[kind]));setTitle('');}}><label>Contenido<select value={kind} onChange={e=>setKind(e.target.value as Kind)}>{Object.entries(widgetKinds).map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></label><label>Título del widget<input value={title} maxLength={80} placeholder={widgetKinds[kind]} onChange={e=>setTitle(e.target.value)}/></label><button className="secondary" disabled={saving||config.widgets.length>=24}>Añadir widget</button><p>Arrastra desde el título o ajusta la esquina. En móvil puedes cambiar el orden con las flechas. Guarda para conservar los cambios.</p></form>}
  {ready&&<Grid layouts={Object.fromEntries(Object.entries(config.layouts).map(([bp,items])=>[bp,items.map(item=>({...item,minH:2,maxH:20}))]))} breakpoints={{lg:1200,md:800,sm:480,xs:0}} cols={columns} rowHeight={48} margin={[16,16]} isDraggable={editing&&!saving} isResizable={editing&&!saving} draggableHandle=".widget-handle" onLayoutChange={(_,layouts)=>{if(!saving)setConfig(c=>({...c,layouts:Object.fromEntries(Object.entries(layouts).map(([bp,items])=>[bp,(items||[]).map(({i,x,y,w,h})=>({i,x,y,w,h}))]))}));}}>

@@ -101,7 +101,7 @@ export default function App(){
  onSignOut={async()=>{try{await api('session','DELETE');signedOut();void notify('Sesión cerrada correctamente.');}catch(e){setError((e as Error).message);}}}>
  <div className="content">{error&&<div className="error" role="alert">{error}<button aria-label="Cerrar error" onClick={()=>setError('')}><X size={16}/></button></div>}{notice&&<div className="success" role="status"><Check size={16}/>{notice}</div>}
  {page==='dashboard'?<><div className="page-heading"><div><div className="eyebrow">CADA ALUMNO, UNA HISTORIA</div><h1>Hola, {user.name.split(' ')[0]}.</h1><p>Tu comunidad escolar, conectada y al día.</p></div><div className="pill"><span className="status-dot"/>Portal {labels[user.role].toLowerCase()}</div></div>
- <Dashboard summary={summary} data={data}/></>:
+ <Dashboard summary={summary} data={data} role={user.role}/></>:
  page==='reports'?<Reports data={data}/>:
  page==='access_roles'?<AccessRoles can={can} onChanged={()=>refresh()}/>:
  page==='profile'?<Profile onChange={setUser} onSignedOut={signedOut}/>:

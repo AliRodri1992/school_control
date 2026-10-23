@@ -18,8 +18,15 @@ export function appendWidget(config: Config, kind: Kind, title: string, id: stri
 export function removeWidget(config: Config, id: string): Config {
  return {widgets:config.widgets.filter(w=>w.id!==id), layouts:Object.fromEntries(Object.entries(config.layouts).map(([bp,items])=>[bp,items.filter(i=>i.i!==id)]))};
 }
-export function defaultConfig(): Config {
- const config = (['students','enrollments','pending_admissions','attendance_chart','alerts','calendar'] as Kind[])
+export type DashboardRole='admin'|'teacher'|'guardian'|'student';
+export const presets: Record<DashboardRole,Kind[]> = {
+ admin:['students','enrollments','pending_admissions','attendance_chart','alerts','calendar'],
+ teacher:['groups','attendance_chart','alerts','calendar','announcements'],
+ guardian:['students','enrollments','attendance_chart','calendar','announcements'],
+ student:['attendance_chart','calendar','announcements']
+};
+export function defaultConfig(role: DashboardRole='admin'): Config {
+ const config = presets[role]
   .reduce((config,kind)=>appendWidget(config,kind,widgetKinds[kind],kind),{widgets:[],layouts:{}} as Config);
  for (const [bp, cols] of Object.entries(columns)) {
   const perRow = Math.max(1, Math.floor(cols / 4));
