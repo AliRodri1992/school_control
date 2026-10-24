@@ -1,12 +1,13 @@
 import {useEffect,useState,type ReactNode} from 'react';
 import {Bell,BookOpen,CalendarClock,ChevronDown,ChevronRight,HelpCircle,Languages,LogOut,Menu,Search,UserRound,X} from 'lucide-react';
 import {api} from '../api';
+import Combobox from '../shared/components/Combobox';
 import type {Row} from '../modules';
 import {currentPortal,makePortalUrl,portalLabels,visibleGroups,type NavItem} from './portalNavigation';
 
-export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmissions,onNavigate,onSignOut,children}:{
+export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmissions,onNavigate,onSignOut,children,childrenList=[],selectedChildId='',onSelectChild=()=>undefined}:{
  user:Row;school:Row;page:string;mobile:boolean;onMobile:(open:boolean)=>void;
- can:(permission:string)=>boolean;pendingAdmissions:number;onNavigate:(page:string)=>void;onSignOut:()=>Promise<void>;children:ReactNode;
+ can:(permission:string)=>boolean;pendingAdmissions:number;onNavigate:(page:string)=>void;onSignOut:()=>Promise<void>;children:ReactNode;childrenList?:Row[];selectedChildId?:string;onSelectChild?:(id:string)=>void;
 }) {
  const portal=currentPortal(user.role),groups=visibleGroups(portal,can);
  const [expanded,setExpanded]=useState<string[]>(['Inicio','Mi actividad','Mi escuela','Mi familia','Gestión escolar']);
@@ -99,6 +100,10 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    <main className="sc-main">
      <header className="topbar sc-topbar">
        <button className="mobile" aria-label="Abrir menú" onClick={()=>onMobile(true)}><Menu/></button>
+       {portal==='tutors'&&childrenList.length>0&&<div className="sc-child-picker">
+         <Combobox value={selectedChildId} label="Seleccionar hijo" placeholder="Todos mis hijos" onChange={onSelectChild}
+           options={childrenList.map(child=>({value:String(child.id),label:child.full_name||child.first_name}))}/>
+       </div>}
        <div className="sc-crumbs" aria-label="Ruta de navegación">
          <button type="button" onClick={()=>navigate('dashboard')}>{portalLabels[portal]}</button>
          <ChevronRight size={14}/><span aria-current="page">{label}</span>

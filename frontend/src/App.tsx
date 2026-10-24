@@ -37,11 +37,14 @@ export default function App(){
  const [error,setError] = useState(''),[notice,setNotice] = useState(''),[query,setQuery] = useState(''),[mobile,setMobile] = useState(false),[busy,setBusy] = useState(false);
  const [dialog,setDialog] = useState<{title:string;fields:Field[];values:Row;submit:(values:Row)=>Promise<void>}|null>(null),[report,setReport] = useState<Row|null>(null);
  const [groupFilter,setGroupFilter] = useState('');
+ const [sorting,setSorting]=useState('');
+ const [ascending,setAscending]=useState(true),[pageNumber,setPageNumber]=useState(0),[pageSize,setPageSize]=useState(15),[statusFilter,setStatusFilter]=useState(''),[advanced,setAdvanced]=useState(false);
+ const [selectedChild,setSelectedChild]=useState('');
  const [fieldErrors,setFieldErrors]=useState<Record<string,string[]>>({});
  const portal=currentPortal(user?.role||'admin');
  function go(next:string) {
    if(next!=='profile'&&next!=='notifications'&&next!=='messages'&&!user?.permissions?.[pagePermission(next)]?.length)return;
-   setPage(next);setQuery('');setNotice('');setMobile(false);
+   setPage(next);setQuery('');setNotice('');setMobile(false);setPageNumber(0);setStatusFilter('');setSorting('');
    const url=makePortalUrl(portal,next);
    if(location.pathname!==url)navigate(url);
  }
@@ -54,6 +57,12 @@ export default function App(){
    if(selected==='dashboard'&&location.pathname!==base)navigate(base,{replace:true});
  },[user?.id,user?.role,location.pathname]);
 
+ useEffect(()=>{
+   if(!user||user.role!=='guardian')return;
+   const saved=localStorage.getItem('school-child-'+user.id)||'';
+   setSelectedChild((data.students||[]).some(s=>String(s.id)===saved)?saved:'');
+ },[user?.id,user?.role,data.students]);
+ function selectChild(id:string){setSelectedChild(id);setPageNumber(0);if(user)localStorage.setItem('school-child-'+user.id,id);}
  async function refresh(who = user){
    if(!who) return;
    const session=await api('session');who=session.user;setUser(who);if(!who)return;
@@ -99,12 +108,27 @@ export default function App(){
  }});}
  const can=(key:string)=>!!user?.permissions?.[key]?.length;
  const editable = can(`${page}.create`);
- const records=(data[page]||[]).filter(row=>JSON.stringify(Object.values(row)).toLowerCase().includes(query.toLowerCase()));
+ const linkedEnrollments=new Set((data.enrollments||[]).filter(e=>String(e.student_id)===selectedChild).map(e=>String(e.id)));
+ const records=(data[page]||[]).filter(row=>{
+  if(user?.role==='guardian'&&selectedChild){
+   if(page==='students'&&String(row.id)!==selectedChild)return false;
+   if(row.student_id&&String(row.student_id)!==selectedChild)return false;
+   if(row.enrollment_id&&!linkedEnrollments.has(String(row.enrollment_id)))return false;
+  }
+  return (!statusFilter||String(row.status||'')===statusFilter)&&JSON.stringify(Object.values(row)).toLowerCase().includes(query.toLowerCase());
+ }).sort((a,b)=>!sorting?0:String(a[sorting]??'').localeCompare(String(b[sorting]??''),'es-MX',{numeric:true})*(ascending?1:-1));
+ const statuses=[...new Set((data[page]||[]).map(row=>String(row.status||'')).filter(Boolean))].sort();
+ const pages=Math.max(1,Math.ceil(records.length/pageSize));
+ const currentPage=Math.min(pageNumber,pages-1);
+ const shownRows=records.slice(currentPage*pageSize,(currentPage+1)*pageSize);
+ function sortBy(key:string){if(sorting===key)setAscending(value=>!value);else{setSorting(key);setAscending(true);}setPageNumber(0);}
+
  if(loading)return <div className="boot"><BookOpen size={38}/><p>Preparando tu escuela…</p></div>;
  if(resetToken)return <PasswordRecovery schoolName={school.name} token={resetToken} onClose={signedOut}/>;
  if(!user)return <Login school={school} initialError={error} onLogin={async account=>{setUser(account);setError('');await refresh(account);}}/>;
  return <PortalChrome user={user} school={school} page={page} mobile={mobile} onMobile={setMobile}
- can={can} pendingAdmissions={Number(summary.pending_admissions||0)} onNavigate={go}
+ can={can} pendingAdmissions={Number(summary.pending_admissions||0)} onNavigate={go} 
+  childrenList={user.role==='guardian'?data.students||[]:[]} selectedChildId={selectedChild} onSelectChild={selectChild}
  onSignOut={async()=>{try{await api('session','DELETE');signedOut();void notify('Sesión cerrada correctamente.');}catch(e){setError((e as Error).message);}}}>
  <div className="content">{error&&<div className="error" role="alert">{error}<button aria-label="Cerrar error" onClick={()=>setError('')}><X size={16}/></button></div>}{notice&&<div className="success" role="status"><Check size={16}/>{notice}</div>}
  {page==='dashboard'?<><div className="page-heading"><div><div className="eyebrow">CADA ALUMNO, UNA HISTORIA</div><h1>Hola, {user.name.split(' ')[0]}.</h1><p>Tu comunidad escolar, conectada y al día.</p></div><div className="pill"><span className="status-dot"/>Portal {labels[user.role].toLowerCase()}</div></div>
@@ -116,14 +140,22 @@ export default function App(){
  page==='profile'?<Profile onChange={setUser} onSignedOut={signedOut}/>:
  page==='notifications'?<Notifications navigate={target=>{if(target==='profile'||target==='notifications'||target==='messages'||modules[target]||['dashboard','reports','classroom','documents','schedule','school','access_roles'].includes(target))go(target);}}/>:
  page==='classroom'?<Classroom user={user} courses={data.courses||[]} enrollments={data.enrollments||[]}/>:
- page==='documents'?<Documents students={data.students||[]} admin={can('student_documents.review')}/>:
+ page==='documents'?<Documents students={(data.students||[]).filter(s=>user.role!=='guardian'||!selectedChild||String(s.id)===selectedChild)} admin={can('student_documents.review')}/>:
  page==='messages'?<Messages userId={user.id}/>:
  page==='school'?<SchoolSettings school={school} busy={busy} onSave={form=>perform(async()=>setSchool(await api('school','PATCH',form)))}/>:
  page==='schedule'?<><div className="page-heading"><div><div className="eyebrow">ORGANIZA TU SEMANA</div><h1>Horarios</h1><p>Cada clase en su lugar. Sin cruces de grupo, docente ni aula.</p></div>{can('schedule_slots.create')&&<button className="primary" onClick={manualSlot}><Plus size={18}/>Agregar sesión</button>}</div><div className="toolbar"><label>Grupo <select value={groupFilter} onChange={e=>setGroupFilter(e.target.value)}><option value="">Todos mis grupos</option>{(data.groups||[]).map(g=><option key={g.id} value={g.id}>{g.label}</option>)}</select></label>{can('groups.generate_schedule')&&<button className="primary" disabled={!groupFilter||busy} onClick={()=>perform(async()=>{await api(`groups/${groupFilter}/generate_schedule`,'POST');})}>Generar horario del grupo</button>}</div><div className="week-grid">{['Lunes','Martes','Miércoles','Jueves','Viernes'].map((day,i)=><section key={day}><h3>{day}</h3>{(data.schedule_slots||[]).filter(s=>s.weekday===i+1&&(!groupFilter||String(s.group_id)===groupFilter)).map(slot=><article key={slot.id}><small>{timeLabel(slot.starts_minute)} — {timeLabel(slot.ends_minute)}</small><strong>{slot.course_label}</strong><p>{slot.teacher_name}</p><span>{slot.room}</span>{can('schedule_slots.destroy')&&<button className="text-button danger" disabled={busy} onClick={()=>perform(async()=>{await api(`schedule_slots/${slot.id}`,'DELETE');})}>Eliminar</button>}</article>)}</section>)}</div><p className="footnote">Generador: sesiones de 50 minutos, lunes a viernes; descanso de 10:30 a 11:00. La carga se define en Clases.</p></>:
  <><div className="page-heading"><div><div className="eyebrow">{user.role==='student'?'MI APRENDIZAJE':'GESTIÓN ESCOLAR'}</div><h1>{modules[page].title}</h1><p>{modules[page].subtitle}</p></div>{editable&&<button className="primary" onClick={()=>createOrEdit()}><Plus size={18}/>Registrar {modules[page].singular}</button>}</div>
  {page==='academic_years'&&<div className="info">Las solicitudes solo se admiten dentro de las fechas de apertura y cierre configuradas para cada proceso.</div>}
  {page==='grades'&&<div className="info">{['admin','teacher'].includes(user.role)?'Las familias y alumnos solo ven calificaciones publicadas. Promedio visible: ' : 'Promedio de calificaciones publicadas: '} <strong>{mean(records.map(x=>Number(x.score)))}</strong>. La boleta detallada se encuentra en Expedientes.</div>}
- <section className="panel table-panel"><div className="toolbar"><div className="search"><Search size={17}/><input aria-label="Buscar registros" placeholder="Buscar…" value={query} onChange={e=>setQuery(e.target.value)}/></div><span className="count">{records.length} registros</span></div><div className="table-scroll"><table><thead><tr>{modules[page].columns.map(([key,title])=><th key={key}>{title}</th>)}<th>Acciones</th></tr></thead><tbody>{records.map(row=><tr key={row.id}>{modules[page].columns.map(([key])=><td key={key}>{['status','outcome','role','kind'].includes(key)?<span className={`badge ${row[key]||''}`}>{display(row[key])}</span>:key.endsWith('_at')?readableDate(row[key]):display(row[key])}</td>)}<td><div className="actions">
+ <section className="panel table-panel"><div className="toolbar"><div className="search"><Search size={17}/><input aria-label="Buscar registros" placeholder="Buscar…" value={query} onChange={e=>{setQuery(e.target.value);setPageNumber(0);}}/></div>{statuses.length>0&&<button className="secondary" type="button" aria-expanded={advanced} onClick={()=>setAdvanced(value=>!value)}>Filtros avanzados</button>}
+  <span className="count">{records.length} registros</span></div>
+  {advanced&&statuses.length>0&&<div className="sc-advanced-filters">
+  <label>Estado<select aria-label="Filtrar por estado" value={statusFilter} onChange={e=>{setStatusFilter(e.target.value);setPageNumber(0);}}>
+   <option value="">Todos los estados</option>{statuses.map(status=><option value={status} key={status}>{display(status)}</option>)}
+  </select></label>
+  <button className="text-button" onClick={()=>{setStatusFilter('');setQuery('');setSorting('');setPageNumber(0);}}>Limpiar filtros</button>
+  </div>}
+  <div className="table-scroll"><table><thead><tr>{modules[page].columns.map(([key,title])=><th key={key} aria-sort={sorting===key?(ascending?"ascending":"descending"):"none"}><button className="sc-sort-button" aria-label={"Ordenar por "+title} onClick={()=>sortBy(key)}>{title}{sorting===key?(ascending?" ↑":" ↓"):" ↕"}</button></th>)}<th>Acciones</th></tr></thead><tbody>{shownRows.map(row=><tr key={row.id}>{modules[page].columns.map(([key])=><td key={key}>{['status','outcome','role','kind'].includes(key)?<span className={`badge ${row[key]||''}`}>{display(row[key])}</span>:key.endsWith('_at')?readableDate(row[key]):display(row[key])}</td>)}<td><div className="actions">
  {page==='grades'&&<GradeActions grade={row} admin={user.role==='admin'} permissions={user.permissions} onChanged={()=>refresh()}/>}
  {page==='student_contacts'&&can('student_contacts.destroy')&&<button className="text-button danger" disabled={busy} onClick={()=>{void confirmDanger('Eliminar contacto','Este contacto dejará de estar disponible para el alumno.').then(ok=>{if(ok)void perform(async()=>{await api('student_contacts/'+row.id,'DELETE');});});}}>Eliminar</button>}
  {page==='students'&&can('students.report')&&<button className="text-button" onClick={()=>perform(async()=>setReport(await api(`students/${row.id}/report`)))}>Boleta e historial</button>}
@@ -131,7 +163,16 @@ export default function App(){
  {page==='admissions'&&(can('admissions.approve')||can('admissions.reject'))&&row.status==='submitted'&&<><button className="text-button" onClick={()=>approve(row)}>Aprobar</button><button className="text-button danger" onClick={()=>reject(row)}>Rechazar</button></>}
  {page==='enrollments'&&can('enrollments.complete')&&row.status==='active'&&<button className="text-button" onClick={()=>complete(row)}>Cerrar ciclo</button>}
  {page==='users'&&can('users.update')&&row.id!==user.id&&<button className="text-button" onClick={()=>perform(async()=>{await api(`users/${row.id}`,'PATCH',{active:!row.active});})}>{row.active?'Desactivar':'Activar'}</button>}
- </div></td></tr>)}</tbody></table></div>{!records.length&&<Empty text={query?'No hay resultados para esta búsqueda.':'Aún no hay registros en esta sección.'}/>}</section></>}
+ </div></td></tr>)}</tbody></table></div>{!records.length&&<Empty text={query||statusFilter?'No hay resultados para estos filtros.':'Aún no hay registros en esta sección.'}/>}
+  {records.length>0&&<div className="sc-pagination">
+    <label>Por página<select value={pageSize} onChange={e=>{setPageSize(Number(e.target.value));setPageNumber(0);}}>
+      <option value={10}>10</option><option value={15}>15</option><option value={25}>25</option><option value={50}>50</option>
+    </select></label>
+    <span>Mostrando {currentPage*pageSize+1}–{Math.min((currentPage+1)*pageSize,records.length)} de {records.length}</span>
+    <div className="sc-pager-actions"><button className="secondary" disabled={currentPage===0} onClick={()=>setPageNumber(n=>Math.max(0,n-1))}>Anterior</button>
+    <span>Página {currentPage+1} de {pages}</span>
+    <button className="secondary" disabled={currentPage===pages-1} onClick={()=>setPageNumber(n=>Math.min(pages-1,n+1))}>Siguiente</button></div>
+  </div>}</section></>}
  <footer>Aula · Una comunidad que aprende junta.<span>{school.name}</span></footer></div>
  {dialog&&<div className="overlay"><section role="dialog" aria-modal="true" aria-labelledby="dialog-title" className="dialog"><header><div><span className="eyebrow">CONTROL ESCOLAR</span><h2 id="dialog-title">{dialog.title}</h2></div><button aria-label="Cerrar formulario" onClick={()=>setDialog(null)}><X/></button></header><RecordForm fields={dialog.fields} initial={dialog.values} busy={busy} options={options} optionName={optionName} error={error} fieldErrors={fieldErrors} onCancel={()=>setDialog(null)} onSubmit={values=>perform(()=>dialog.submit(values))}/></section></div>}
  {report&&<div className="overlay"><section role="dialog" aria-modal="true" aria-label="Boleta e historial" className="dialog report"><header><div><span className="eyebrow">{school.name}</span><h2>{report.student.full_name}</h2><p>Boleta de consulta · {report.student.curp}</p></div><div className="actions"><button onClick={()=>window.print()} aria-label="Imprimir boleta"><Printer/></button><button onClick={()=>setReport(null)} aria-label="Cerrar boleta"><X/></button></div></header>{report.years.map((year:Row)=><article key={year.enrollment.id}><h3>{year.enrollment.group_label}</h3><p>{display(year.enrollment.status)} · {display(year.enrollment.outcome)}</p><table><thead><tr><th>Materia</th><th>Trimestre</th><th>Calificación</th><th>Observación</th></tr></thead><tbody>{year.grades.map((g:Row)=><tr key={g.id}><td>{g.subject_name}</td><td>{g.term}</td><td>{g.score}</td><td>{g.feedback}</td></tr>)}</tbody></table><p>Promedio registrado: <strong>{mean(year.grades.map((g:Row)=>Number(g.score)))}</strong></p><div className="actions">{Object.entries(year.attendance).map(([status,total])=><span className="badge" key={status}>{display(status)}: {String(total)}</span>)}</div></article>)}{!report.years.length&&<Empty text="Todavía no tiene inscripciones aprobadas."/>}<p className="footnote">Documento de consulta interna. No sustituye una certificación oficial.</p></section></div>}
