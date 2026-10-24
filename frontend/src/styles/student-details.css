@@ -1,0 +1,15 @@
+.sc-student-details{max-width:880px;max-height:94vh;overflow:auto;padding:28px}
+.sc-student-details>header h2{margin:5px 0}
+.sc-details-tabs{display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid #e3e8f1;padding-bottom:12px;margin-bottom:18px}
+.sc-details-tabs button{padding:11px 13px;border-radius:10px;display:flex;gap:8px;align-items:center}
+.sc-details-tabs button[aria-selected=true]{background:#eaf0ff;color:#405cf5;font-weight:700}
+.sc-details-tabs button:hover{background:#f4f6fb}
+.sc-details-heading{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:18px}
+.sc-details-list{display:grid;gap:10px;max-height:45vh;overflow:auto}
+.sc-details-card{border:1px solid #e3e8f1;border-radius:12px;padding:16px;display:flex;align-items:center;gap:13px;background:#fff}
+.sc-details-card>div:nth-child(2){flex:1;min-width:0}
+.sc-details-card strong{font-size:14px}
+.sc-details-card p{font-size:12px;margin-top:6px}
+.sc-details-blank{padding:30px;background:#f7f9fc;text-align:center;border-radius:12px}
+.sc-details-form{padding:18px;background:#f8faff;border-radius:12px;border:1px solid #e3e8f1}
+@media(max-width:760px){.sc-student-details{padding:18px}.sc-details-card{flex-wrap:wrap}.sc-details-card .actions{width:100%;justify-content:flex-end}}
