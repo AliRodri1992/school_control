@@ -9,6 +9,7 @@ class AccessRole < ApplicationRecord
     transaction do
       connection.execute("SELECT pg_advisory_xact_lock(730023)")
       role = find_by(default_profile: user.role)
+      new_role = !role
       unless role
         role = create!(name: { "admin" => "Dirección", "teacher" => "Docente", "guardian" => "Familia", "student" => "Alumno" }.fetch(user.role), default_profile: user.role)
       end
@@ -21,7 +22,7 @@ class AccessRole < ApplicationRecord
           grant.data_scope = scope
           grant.save! if grant.new_record? || grant.changed?
         end
-      elsif role.role_permissions.empty?
+      elsif new_role
         PermissionCatalog.defaults(user.role).each { |key, scope| role.role_permissions.create!(key: key, data_scope: scope) }
       end
 
