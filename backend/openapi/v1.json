@@ -98,6 +98,9 @@
     },
     {
       "name": "languages"
+    },
+    {
+      "name": "student_details"
     }
   ],
   "components": {
@@ -7976,6 +7979,782 @@
                 "additionalProperties": true
               }
             }
+          }
+        }
+      }
+    },
+    "/api/students/{student_id}/details/addresses": {
+      "get": {
+        "operationId": "get_student_addresses",
+        "summary": "get addresses vinculados al expediente",
+        "tags": [
+          "student_details"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": "students.show",
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado JSON de los registros autorizados"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "422": {
+            "description": "Validación de campos"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post_student_addresses",
+        "summary": "post addresses vinculados al expediente",
+        "tags": [
+          "student_details"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": "students.update",
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado JSON de los registros autorizados"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "422": {
+            "description": "Validación de campos"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/students/{student_id}/details/addresses/{id}": {
+      "patch": {
+        "operationId": "patch_student_addresses_record",
+        "summary": "patch addresses vinculados al expediente",
+        "tags": [
+          "student_details"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": "students.update",
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado JSON de los registros autorizados"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "422": {
+            "description": "Validación de campos"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete_student_addresses_record",
+        "summary": "delete addresses vinculados al expediente",
+        "tags": [
+          "student_details"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": "students.update",
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado JSON de los registros autorizados"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "422": {
+            "description": "Validación de campos"
+          }
+        }
+      }
+    },
+    "/api/students/{student_id}/details/phones": {
+      "get": {
+        "operationId": "get_student_phones",
+        "summary": "get phones vinculados al expediente",
+        "tags": [
+          "student_details"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": "students.show",
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado JSON de los registros autorizados"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "422": {
+            "description": "Validación de campos"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post_student_phones",
+        "summary": "post phones vinculados al expediente",
+        "tags": [
+          "student_details"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": "students.update",
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado JSON de los registros autorizados"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "422": {
+            "description": "Validación de campos"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/students/{student_id}/details/phones/{id}": {
+      "patch": {
+        "operationId": "patch_student_phones_record",
+        "summary": "patch phones vinculados al expediente",
+        "tags": [
+          "student_details"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": "students.update",
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado JSON de los registros autorizados"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "422": {
+            "description": "Validación de campos"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete_student_phones_record",
+        "summary": "delete phones vinculados al expediente",
+        "tags": [
+          "student_details"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": "students.update",
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado JSON de los registros autorizados"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "422": {
+            "description": "Validación de campos"
+          }
+        }
+      }
+    },
+    "/api/students/{student_id}/details/contacts": {
+      "get": {
+        "operationId": "get_student_contacts",
+        "summary": "get contacts vinculados al expediente",
+        "tags": [
+          "student_details"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": "students.show",
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado JSON de los registros autorizados"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "422": {
+            "description": "Validación de campos"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post_student_contacts",
+        "summary": "post contacts vinculados al expediente",
+        "tags": [
+          "student_details"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": "students.update",
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado JSON de los registros autorizados"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "422": {
+            "description": "Validación de campos"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/students/{student_id}/details/contacts/{id}": {
+      "patch": {
+        "operationId": "patch_student_contacts_record",
+        "summary": "patch contacts vinculados al expediente",
+        "tags": [
+          "student_details"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": "students.update",
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado JSON de los registros autorizados"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "422": {
+            "description": "Validación de campos"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete_student_contacts_record",
+        "summary": "delete contacts vinculados al expediente",
+        "tags": [
+          "student_details"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": "students.update",
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado JSON de los registros autorizados"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "422": {
+            "description": "Validación de campos"
+          }
+        }
+      }
+    },
+    "/api/students/{student_id}/details/notes": {
+      "get": {
+        "operationId": "get_student_notes",
+        "summary": "get notes vinculados al expediente",
+        "tags": [
+          "student_details"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": "students.show",
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado JSON de los registros autorizados"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "422": {
+            "description": "Validación de campos"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post_student_notes",
+        "summary": "post notes vinculados al expediente",
+        "tags": [
+          "student_details"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": "students.update",
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado JSON de los registros autorizados"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "422": {
+            "description": "Validación de campos"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/students/{student_id}/details/notes/{id}": {
+      "patch": {
+        "operationId": "patch_student_notes_record",
+        "summary": "patch notes vinculados al expediente",
+        "tags": [
+          "student_details"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": "students.update",
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado JSON de los registros autorizados"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "422": {
+            "description": "Validación de campos"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete_student_notes_record",
+        "summary": "delete notes vinculados al expediente",
+        "tags": [
+          "student_details"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": "students.update",
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado JSON de los registros autorizados"
+          },
+          "403": {
+            "description": "Sin permiso"
+          },
+          "422": {
+            "description": "Validación de campos"
           }
         }
       }
