@@ -131,3 +131,18 @@ body,.app{background:#f4f6fb;color:#17233f}
 .sc-import-assistant .sc-auli-guide img{height:180px;width:180px}
 .sc-import-assistant .sc-auli-guide-copy{text-align:center}
 @media(max-width:600px){.sc-auli-guide{flex-direction:column;text-align:center}.sc-auli-guide-copy{text-align:center}.sc-auli-empty{padding:16px}}
+
+
+/* Uniform content width and action alignment across all portal modules */
+.sc-main{width:100%;max-width:none;min-width:0}
+.sc-main .content{width:100%;max-width:none;margin:0;padding:clamp(18px,2.2vw,38px)}
+.sc-main .content>section,.sc-main .content>div,.sc-main .content>article{min-width:0;max-width:none}
+.sc-main .content .settings,.sc-main .content .report,.sc-main .content .sc-language-manager,.sc-main .content .sc-preferences{max-width:none;width:100%}
+.sc-main .content .table-panel{width:100%;min-width:0}
+.sc-main .content .toolbar,.sc-main .content .page-heading{min-width:0}
+.primary,.secondary,.form-actions>button,.sc-pager-actions>button,.sc-home-action{
+ display:inline-flex;align-items:center;justify-content:center;text-align:center;vertical-align:middle;gap:8px;line-height:1.3;
+}
+.primary svg,.secondary svg{flex-shrink:0}
+.sc-main .content .sc-home-action{display:grid;text-align:left}
+@media(max-width:760px){.sc-main .content{padding:18px 14px}}

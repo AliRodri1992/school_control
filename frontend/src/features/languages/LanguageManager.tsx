@@ -1,3 +1,4 @@
+import Combobox from '../../shared/components/Combobox';
 import {useEffect,useState,type FormEvent} from 'react';
 import {Languages,Plus,Check,BookOpen} from 'lucide-react';
 import {api} from '../../api';
@@ -52,7 +53,10 @@ export default function LanguageManager(){
        <h3>Nueva traducción</h3>
        <label>Clave<input value={key} placeholder="nav.home" required pattern="[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+" onChange={e=>setKey(e.target.value)}/></label>
        <label>Texto<textarea value={value} required onChange={e=>setValue(e.target.value)}/></label>
-       <label>Estado<select value={entryStatus} onChange={e=>setEntryStatus(e.target.value)}><option value="draft">Borrador</option><option value="published">Publicada y revisada</option></select></label>
+       <div className="sc-locale-status-field"><label>Estado</label>
+         <Combobox label="Estado de la traducción" value={entryStatus} onChange={setEntryStatus}
+           options={[{value:'draft',label:'Borrador'},{value:'published',label:'Publicada y revisada'}]}/>
+       </div>
        <button className="primary" disabled={busy}>Guardar traducción</button>
       </form>
     </>}

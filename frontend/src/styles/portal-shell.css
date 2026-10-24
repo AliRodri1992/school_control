@@ -58,3 +58,43 @@
 .sc-crumb-step>button:hover{color:#405cf5;background:#f0f3ff}
 .sc-crumb-step>span[aria-current=page]{font-size:12px;font-weight:650;color:#243960;white-space:nowrap}
 @media(max-width:1200px){.sc-crumb-step>button{max-width:100px;overflow:hidden;text-overflow:ellipsis}}
+
+
+/* 2.1 compact navigation, user identity and brand */
+.sc-sidebar .sc-sidebar-nav{margin-top:12px;min-height:0}
+.sc-sidebar-foot{position:relative;padding:14px 0 2px}
+.sc-sidebar-account{width:100%;min-height:60px;display:flex;align-items:center;justify-content:flex-start;text-align:left;gap:10px;padding:8px 10px;border-radius:12px;color:#eaf0ff}
+.sc-sidebar-account:hover,.sc-sidebar-account[aria-expanded=true]{background:#263b73}
+.sc-sidebar-account>svg{margin-left:auto;flex-shrink:0;color:#bacbf6}
+.sc-sidebar-avatar{background:#405cf5;color:#fff;width:38px;height:38px;display:grid;place-items:center;border-radius:12px;flex-shrink:0;font-weight:750;font-size:12px}
+.sc-sidebar-user{flex:1;min-width:0}
+.sc-sidebar-user strong{display:block;max-width:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#fff}
+.sc-sidebar-user small{display:block;margin-top:4px;font-size:11px;color:#b7c5df}
+.sc-sidebar-foot .sc-account-menu{position:absolute;left:0;right:auto;bottom:calc(100% + 8px);top:auto;width:min(330px,calc(100vw - 30px))}
+.sc-topbar-brand{flex-shrink:0;display:flex;gap:10px;align-items:center;padding:5px 8px 5px 0;text-align:left;min-width:0;max-width:235px}
+.sc-topbar-brand img,.sc-topbar-mark{width:40px;height:40px;flex:none;border-radius:11px;object-fit:contain;background:#eef1ff;color:#405cf5;display:grid;place-items:center}
+.sc-topbar-brand:hover .sc-topbar-mark{background:#dfe5ff}
+.sc-topbar-brand-text{display:grid;gap:4px;min-width:0}
+.sc-topbar-brand-text strong{color:#17233f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}
+.sc-topbar-brand-text small{color:#64748b;white-space:nowrap;font-size:10px}
+.sc-topbar .sc-crumbs{flex:1;min-width:0;overflow:hidden}
+.sc-top-actions{flex:none}
+.sc-topbar .sc-language{width:175px;min-width:120px;display:flex;align-items:center;gap:6px;padding:3px 8px;border-radius:11px;background:#f4f6ff;border:1px solid #dde5fb}
+.sc-topbar .sc-language>svg{flex:none;color:#405cf5}
+.sc-topbar .sc-language .sc-combobox{flex:1}
+.sc-topbar .sc-language .sc-combobox-trigger{min-height:36px;margin:0;border:0;background:transparent;font-weight:700;color:#273653;padding:3px 5px;font-size:12px;gap:4px}
+.sc-topbar .sc-language .sc-combobox-panel{min-width:205px;right:0;left:auto}
+.sc-topbar .sc-language .sc-combobox-trigger:hover{background:#eaf0ff}
+.sc-account-button{min-height:45px;height:auto;display:flex;align-items:center;gap:11px;padding:3px 7px 3px 12px;border-radius:12px;white-space:nowrap;background:transparent;border-color:transparent;text-align:left}
+.sc-account-button:hover,.sc-account-button[aria-expanded=true]{background:#edf1ff;border-color:#dee5fb}
+.sc-account-identity{display:grid;gap:4px;min-width:0;max-width:145px;justify-items:end;text-align:right}
+.sc-account-identity strong{font-weight:750;color:#17233f;font-size:12px;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.sc-account-identity small{font-size:10px;color:#64748b}
+.sc-account-button .sc-topbar-avatar{width:39px;height:39px;border-radius:12px;background:#405cf5;color:#fff;font-weight:750;font-size:12px;display:grid;place-items:center;flex:none}
+.sc-account-menu-divider{border-top:1px solid #edf0f5;margin:7px 0}
+.sc-account-menu .sc-flyout-link{display:flex;justify-content:flex-start;align-items:center;min-height:42px;text-align:left}
+.sc-account-menu .sc-logout{color:#b92d47}
+@media(max-width:1350px){.sc-topbar-brand{max-width:175px}.sc-topbar-brand-text{display:none}.sc-account-identity{max-width:110px}}
+@media(max-width:940px){.sc-topbar .sc-language{width:126px}.sc-topbar-brand{max-width:52px}}
+@media(max-width:760px){.sc-topbar-brand{display:none}.sc-account-identity{display:none}.sc-topbar .sc-language{width:115px}.sc-account-button{padding:3px 5px}.sc-topbar .sc-account-button .sc-topbar-avatar{width:34px;height:34px}}
+@media(max-width:390px){.sc-topbar .sc-language{width:84px}.sc-topbar .sc-language>svg{display:none}.sc-topbar .sc-language .sc-combobox-trigger{font-size:11px}}
