@@ -17,6 +17,7 @@ it('renders an SVG icon and shows a short tooltip on hover and focus',async()=>{
  expect(screen.getByRole('tooltip')).toHaveProperty('textContent','Editar');
  await userEvent.unhover(button);
  expect(screen.queryByRole('tooltip')).toBeNull();
+ button.blur();
  button.focus();
  expect(screen.getByRole('tooltip')).toHaveProperty('textContent','Editar');
  await userEvent.click(button);
