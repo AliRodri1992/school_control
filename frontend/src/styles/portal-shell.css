@@ -164,3 +164,30 @@
  .sc-main .sc-breadcrumb-bar .sc-crumbs{display:flex;font-size:12px}
  .sc-topbar .sc-language{width:auto}
 }
+
+
+/* Navigation refinements: readable hierarchy and unobstructed overlays */
+.sc-shell .sc-sidebar{z-index:60;padding-bottom:8px}
+.sc-shell .sc-sidebar-foot{padding-top:6px;padding-bottom:0}
+.sc-shell .sc-sidebar-account{min-height:44px}
+.sc-shell .sc-sidebar-foot .sc-account-menu{z-index:140}
+.sc-shell .sc-compact-flyout{z-index:130}
+.sc-shell-collapsed .sc-nav-section-title{padding:9px;min-height:46px;justify-content:center}
+.sc-shell-collapsed .sc-nav-section-title .sc-section-label,.sc-shell-collapsed .sc-nav-section-title .sc-section-chevron{display:none}
+.sc-shell-collapsed .sc-nav-section-title .sc-section-icon{display:grid;place-items:center;width:28px;height:28px;max-width:none;color:#dbe5ff}
+.sc-nav-section-title .sc-section-icon{display:none}
+.sc-shell-collapsed .sc-compact-flyout{top:auto;margin-top:-45px;left:76px}
+.sc-shell-collapsed .sc-compact-flyout .sc-nav-children{margin-left:8px}
+.sc-shell-collapsed .sc-compact-flyout .sc-nav-item{padding-left:4px!important}
+.sc-shell .sc-topbar{position:sticky;z-index:20}
+.sc-topbar .sc-clock{position:absolute;left:50%;transform:translateX(-50%);margin:0;white-space:nowrap}
+.sc-topbar .sc-top-actions{margin-left:auto}
+.sc-topbar .sc-language-menu{z-index:100}
+.sc-main .sc-breadcrumb-bar{margin-top:0!important;position:relative;z-index:2;width:100%}
+.sc-main .sc-breadcrumb-bar .sc-crumbs{flex:1;width:100%;max-width:none;overflow-x:auto;overflow-y:hidden;padding:8px 0}
+.sc-main .sc-breadcrumb-bar .sc-crumb-step{flex:none;white-space:nowrap}
+.sc-main .sc-breadcrumb-bar .sc-crumb-step button{max-width:none!important;overflow:visible;text-overflow:clip;white-space:nowrap}
+.sc-main .sc-breadcrumb-bar .sc-crumb-step [aria-current=page]{max-width:none!important;overflow:visible;text-overflow:clip;white-space:nowrap}
+@media(max-width:1350px){.sc-topbar .sc-clock{font-size:11px}}
+@media(max-width:1180px){.sc-topbar .sc-clock{display:none}}
+@media(max-width:760px){.sc-shell .sc-sidebar{z-index:100}.sc-topbar .sc-clock{display:none}}
