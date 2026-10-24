@@ -48,6 +48,15 @@ RSpec.describe "Family contacts and institutional messages", type: :request do
     expect(response).to have_http_status(:not_found)
   end
 
+  it "clears obsolete normalized phone numbers when the source number becomes invalid" do
+    legacy = StudentContact.create!(student: student, name: "Tía", relationship: "Tía", phone: "5512345678")
+    mirror = Contact.find_by!(legacy_student_contact_id: legacy.id)
+    expect(mirror.phone_numbers.count).to eq(1)
+    legacy.update!(phone: "1234567")
+    expect(mirror.reload.legacy_phone).to eq("1234567")
+    expect(mirror.phone_numbers.count).to eq(0)
+  end
+
   it "rejects duplicate and malformed contacts" do
     login(guardian)
     attrs = { student_id: student.id, name: "Tutor", relationship: "Tío", phone: "5512345678" }

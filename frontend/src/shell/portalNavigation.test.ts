@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {currentPortal,makePortalUrl,resolvePortalLocation,visibleGroups,permissionFor,findNavPath} from './portalNavigation';
+import {currentPortal,makePortalUrl,resolvePortalLocation,visibleGroups,permissionFor,findNavPath,canImportFromPermissions} from './portalNavigation';
 describe('portal route protections',()=>{
  it('uses distinct paths for each school audience',()=>{
   expect(currentPortal('admin')).toBe('admin');
@@ -27,6 +27,13 @@ describe('portal route protections',()=>{
   const sections=visibleGroups('admin',allowed);
   expect(findNavPath(sections,'courses').map(node=>node.key)).toEqual(['academic_years','groups','courses']);
   expect(findNavPath(visibleGroups('admin',key=>key==='academic_years.index'),'courses')).toEqual([]);
+ });
+
+ it('opens the importer only when an institution-level importer permission exists',()=>{
+  expect(canImportFromPermissions({'students.create':['family']})).toBe(false);
+  expect(canImportFromPermissions({'subjects.create':['institution']})).toBe(true);
+  expect(resolvePortalLocation('/admin/imports','admin',{'subjects.create':['institution']})).toBe('imports');
+  expect(resolvePortalLocation('/tutors/imports','guardian',{'students.create':['family']})).toBe('dashboard');
  });
 
 });

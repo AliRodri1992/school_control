@@ -11,7 +11,7 @@ import {useLocation,useNavigate} from 'react-router-dom';
 import ImportWizard from './features/imports/ImportWizard';
 import {confirmDanger} from './notifications';
 import {PortalChrome} from './shell/PortalChrome';
-import {currentPortal,resolvePortalLocation,makePortalUrl} from './shell/portalNavigation';
+import {currentPortal,resolvePortalLocation,makePortalUrl,canImportFromPermissions} from './shell/portalNavigation';
 import Login from './auth/Login';
 import Reports from './Reports';
 import AccessRoles from './AccessRoles';
@@ -50,7 +50,8 @@ export default function App(){
  const [fieldErrors,setFieldErrors]=useState<Record<string,string[]>>({});
  const portal=currentPortal(user?.role||'admin');
  function go(next:string) {
-   if(next!=='profile'&&next!=='notifications'&&next!=='messages'&&next!=='preferences'&&next!=='help'&&!user?.permissions?.[pagePermission(next)]?.length)return;
+   if(next==='imports'&&!canImportFromPermissions(user?.permissions))return;
+   if(next!=='imports'&&next!=='profile'&&next!=='notifications'&&next!=='messages'&&next!=='preferences'&&next!=='help'&&!user?.permissions?.[pagePermission(next)]?.length)return;
    setPage(next);setQuery('');setNotice('');setMobile(false);setPageNumber(0);setStatusFilter('');setSorting('');
    const url=makePortalUrl(portal,next);
    if(location.pathname!==url)navigate(url);

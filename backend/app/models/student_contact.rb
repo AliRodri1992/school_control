@@ -18,7 +18,10 @@ class StudentContact < ApplicationRecord
       legacy_phone: phone)
     contact.save!
     normalized = SchoolPhoneNormalizer.call(phone)
-    return unless normalized
+    unless normalized
+      contact.phone_numbers.where(purpose: "mobile").destroy_all
+      return
+    end
 
     record = contact.phone_numbers.find_or_initialize_by(purpose: "mobile")
     record.assign_attributes(number_e164: normalized, country_code: "MX")
