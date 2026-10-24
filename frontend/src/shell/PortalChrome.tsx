@@ -78,7 +78,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    }catch(e){setNoticeError((e as Error).message);}
  }
  function renderItem(item:NavItem,depth:number):ReactNode{
-   const children=item.children||[],isActive=item.key===page||findNavPath([{title:'',items:[item]}],page).length>0;
+   const children=item.children||[],isActive=(item.key==='students'&&page==='student_details')||item.key===page||findNavPath([{title:'',items:[item]}],page).length>0;
    const isOpen=expanded.includes(item.key);
    return <div className="sc-nav-node" key={item.key+'-'+depth}>
      <div className={'sc-nav-item'+(isActive?' is-active':'')} style={{paddingLeft:depth?19:4}}>
@@ -94,7 +94,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
      {children.length>0&&isOpen&&<div className="sc-nav-children">{children.map(child=>renderItem(child,depth+1))}</div>}
    </div>;
  }
- const trail=findNavPath(groups,page);
+ const trail=page==='student_details'?[{key:'students',title:portal==='tutors'?'Mis hijos':'Alumnos'},{key:'student_details',title:'Expediente'}]:findNavPath(groups,page);
  const label=translate('nav.'+page,page==='dashboard'?'Inicio':page==='profile'?'Mi perfil':page==='help'?'Ayuda':page==='notifications'?'Notificaciones':trail.at(-1)?.title||page);
  const tz=school.timezone||'America/Mexico_City';
  const formatted=new Intl.DateTimeFormat(locale==='es'?'es-MX':locale,{dateStyle:'medium',timeZone:tz}).format(clock);

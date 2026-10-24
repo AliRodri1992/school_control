@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {currentPortal,makePortalUrl,resolvePortalLocation,visibleGroups,permissionFor,findNavPath,canImportFromPermissions} from './portalNavigation';
+import {currentPortal,makePortalUrl,resolvePortalLocation,visibleGroups,permissionFor,findNavPath,canImportFromPermissions,studentRecordUrl,isStudentRecordUrl} from './portalNavigation';
 describe('portal route protections',()=>{
  it('uses distinct paths for each school audience',()=>{
   expect(currentPortal('admin')).toBe('admin');
@@ -34,6 +34,14 @@ describe('portal route protections',()=>{
   expect(canImportFromPermissions({'subjects.create':['institution']})).toBe(true);
   expect(resolvePortalLocation('/admin/imports','admin',{'subjects.create':['institution']})).toBe('imports');
   expect(resolvePortalLocation('/tutors/imports','guardian',{'students.create':['family']})).toBe('dashboard');
+ });
+
+ it('supports deep links to permitted full-page student records',()=>{
+  expect(studentRecordUrl('admin',42)).toBe('/admin/students/42');
+  expect(studentRecordUrl('tutors',42)).toBe('/tutors/students/42');
+  expect(isStudentRecordUrl('/tutors/students/42','guardian',{'students.show':['family']})).toBe(true);
+  expect(isStudentRecordUrl('/tutors/students/42','guardian',{})).toBe(false);
+  expect(isStudentRecordUrl('/tutors/students/../../users','guardian',{'students.show':['family']})).toBe(false);
  });
 
 });
