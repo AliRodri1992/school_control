@@ -34,3 +34,20 @@ it('shows the same tooltip when reached by keyboard',async()=>{
  expect(screen.getByRole('button',{name:'Editar'})).toHaveProperty('type','button');
  expect(await screen.findByRole('tooltip')).toHaveProperty('textContent','Editar');
 });
+
+it('keeps the tooltip visible while hovering its SVG in a scrollable table',async()=>{
+ const {container,unmount}=render(<div className="table-scroll"><table><tbody><tr><td>
+   <TableAction kind="view" tooltip="Expediente"/>
+ </td></tr></tbody></table></div>);
+ const action=screen.getByRole('button',{name:'Expediente'});
+ const svg=action.querySelector('svg')!;
+ await userEvent.hover(svg);
+ expect(screen.getByRole('tooltip').textContent).toBe('Expediente');
+ expect(screen.getByRole('tooltip').parentElement).toBe(document.body);
+ expect(action.getAttribute('title')).toBe('Expediente');
+ expect(container.contains(screen.getByRole('tooltip'))).toBe(false);
+ window.dispatchEvent(new Event('scroll'));
+ expect(screen.getByRole('tooltip').textContent).toBe('Expediente');
+ unmount();
+ expect(screen.queryByRole('tooltip')).toBeNull();
+});

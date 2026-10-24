@@ -102,7 +102,7 @@ export default function TableAction({kind,onClick,href,ariaLabel,tooltip,disable
  },[disabled,id,text]);
 
  const props={
-   ref:anchor,
+   ref:(node:HTMLAnchorElement|HTMLButtonElement|null)=>{anchor.current=node;},
    className:'sc-table-action is-'+kind+(className?' '+className:''),
    'aria-label':ariaLabel||text,
    title:text
