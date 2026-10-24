@@ -14,7 +14,10 @@ export default function RecordForm({fields,initial,onSubmit,onCancel,busy,option
    const text=fieldErrors[field.key]?.[0];
    if(text)mapped[field.key]=field.label+' '+text.replace(/\.$/,'')+'.';
   }
-  setErrors(existing=>({...existing,...mapped}));
+  if(Object.keys(mapped).length) setErrors(existing=>{
+    const unchanged=Object.entries(mapped).every(([key,value])=>existing[key]===value);
+    return unchanged?existing:{...existing,...mapped};
+  });
  },[fieldErrors,fields]);
  function update(key:string,value:string){setValues(v=>({...v,[key]:value,...(key==='course_id'?{enrollment_id:''}:{})}));setErrors(v=>({...v,[key]:''}));}
  function handleSubmit(event:FormEvent){

@@ -92,7 +92,14 @@ jobs:
       - run: cp .env.staging.example .env.staging
       - run: docker compose --project-name school-staging --env-file .env.staging -f compose.yml -f compose.staging.yml config --quiet
       - run: docker compose build
-      - run: docker compose up -d db
+      - name: Start PostgreSQL (retry transient registry errors)
+        run: |
+          for attempt in 1 2 3; do
+            if docker compose up -d db; then exit 0; fi
+            echo "Docker registry or image pull failed on attempt $attempt"
+            sleep 12
+          done
+          exit 1
       - run: docker compose run --rm backend bundle exec rails db:prepare db:seed
       - run: docker compose run --rm backend bundle exec rails db:seed
       - run: docker compose up -d --wait
