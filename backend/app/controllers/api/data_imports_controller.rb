@@ -8,7 +8,7 @@ module Api
     end
 
     def create
-      batch = current_user.data_imports.new(kind: "students", file: params.require(:file))
+      batch = current_user.data_imports.new(kind: params[:kind].presence || "students", file: params.require(:file))
       batch.save!
       render json: present_import(batch), status: :created
     end
@@ -20,13 +20,13 @@ module Api
     def preview
       dataset = DataImportReader.new(batch).call
       render json: { headers: dataset[:headers], sample: dataset[:rows].first(5).map { |number, data| { row: number, values: data } },
-        suggested_mapping: ValidateStudentImport.new(batch).suggest(dataset[:headers]),
+        suggested_mapping: validator.suggest(dataset[:headers]),
         total_rows: dataset[:rows].size }
     end
 
     def validate
       permitted = params.require(:mapping).to_unsafe_h.stringify_keys
-      result = ValidateStudentImport.new(batch).call(permitted)
+      result = validator.call(permitted)
       batch.update!(mapping: permitted, status: result[:errors].empty? ? "validated" : "uploaded",
         total_rows: result[:total_rows], row_errors: result[:errors])
       render json: present_import(batch)
@@ -46,8 +46,14 @@ module Api
     def batch = @batch ||= current_user.data_imports.find(params[:id])
 
     def require_school_importer
-      return if SchoolAccess.new(current_user, "students.create").institution? && current_user.can?("users.index")
-      render json: { error: "Sin permiso para importar alumnos" }, status: :forbidden
+      requested_kind = params[:id] ? batch.kind : params[:kind].presence || "students"
+      permission = { "students" => "students.create", "subjects" => "subjects.create", "groups" => "groups.create" }[requested_kind]
+      return if permission && SchoolAccess.new(current_user, permission).institution?
+      render json: { error: "Sin permiso para importar estos datos" }, status: :forbidden
+    end
+
+    def validator
+      batch.kind == "students" ? ValidateStudentImport.new(batch) : ValidateCatalogImport.new(batch)
     end
 
     def present_import(item)

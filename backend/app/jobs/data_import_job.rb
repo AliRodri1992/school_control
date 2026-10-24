@@ -8,16 +8,19 @@ class DataImportJob < ApplicationJob
       batch.update!(status: "processing")
     end
     dataset = DataImportReader.new(batch).call
-    validator = ValidateStudentImport.new(batch)
+    validator = batch.kind == "students" ? ValidateStudentImport.new(batch) : ValidateCatalogImport.new(batch)
     validator.validate_mapping!(dataset.fetch(:headers), batch.mapping)
-    imported = 0
+    imported = batch.data_import_items.count
     errors = []
     dataset.fetch(:rows).each do |line, values|
+      next if batch.data_import_items.exists?(row_number: line)
       begin
         attributes = validator.attributes(values, batch.mapping)
-        Student.transaction do
-          student = Student.create!(attributes)
-          AuditEvent.create!(user: batch.user, action: "student.imported", record_type: "Student", record_id: student.id)
+        model = batch.kind == "students" ? Student : validator.record_class
+        ActiveRecord::Base.transaction do
+          record = model.create!(attributes)
+          batch.data_import_items.create!(row_number: line, record_type: model.name, record_id: record.id)
+          AuditEvent.create!(user: batch.user, action: "#{batch.kind.singularize}.imported", record_type: model.name, record_id: record.id)
         end
         imported += 1
       rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique, ArgumentError => error
