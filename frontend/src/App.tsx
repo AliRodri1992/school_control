@@ -28,6 +28,7 @@ import {notify} from './notifications';
 import {lazy,Suspense,useEffect, useState} from 'react';
 import {BookOpen, Plus, Search, X, Check, Printer, GraduationCap} from 'lucide-react';
 import {api,timeLabel,mean} from './api';
+import {loadPortalCollections,type ModuleLoadError} from './shared/data/loadPortalCollections';
 import {modules,labels,type Row,type Field} from './modules';
 const pagePermission=(key:string)=>({schedule:'schedule_slots.index',school:'schools.update',documents:'student_documents.index',classroom:'assignments.index',dashboard:'dashboard.show',imports:'students.create',languages:'access_roles.update',api_docs:'access_roles.index'} as Record<string,string>)[key]||(key+'.index');
 const display = (value: any): string => value === true ? 'Sí' : value === false ? 'No' : value == null || value === '' ? '—' : labels[value] || String(value);
@@ -50,6 +51,7 @@ export default function App(){
  const [ascending,setAscending]=useState(true),[pageNumber,setPageNumber]=useState(0),[pageSize,setPageSize]=useState(15),[statusFilter,setStatusFilter]=useState(''),[advanced,setAdvanced]=useState(false);
  const [selectedChild,setSelectedChild]=useState('');
  const [fieldErrors,setFieldErrors]=useState<Record<string,string[]>>({});
+ const [moduleLoadErrors,setModuleLoadErrors]=useState<Record<string,ModuleLoadError>>({});
  const portal=currentPortal(user?.role||'admin');
  function go(next:string) {
    if(next==='imports'&&!canImportFromPermissions(user?.permissions))return;
@@ -101,9 +103,14 @@ export default function App(){
    if(!who) return;
    const session=await api('session');who=session.user;setUser(who);if(!who)return;
    const keys = Object.keys(modules).filter(k=>who.permissions?.[`${k}.index`]?.length);
-   const results = await Promise.all(keys.map(async key=>[key,await api(key)] as const));
-   if(who.permissions?.['schedule_slots.index']?.length)results.push(['schedule_slots',await api('schedule_slots')]);
-   setData(Object.fromEntries(results)); setSummary(who.permissions?.['dashboard.show']?.length?await api('dashboard'):{});
+   if(who.permissions?.['schedule_slots.index']?.length)keys.push('schedule_slots');
+   const loaded=await loadPortalCollections(keys,api);
+   setData(loaded.data);
+   setModuleLoadErrors(loaded.errors);
+   if(who.permissions?.['dashboard.show']?.length){
+     try {setSummary(await api('dashboard'));}
+     catch(cause){setSummary({});setError('No se pudo cargar el resumen: '+(cause as Error).message);}
+   } else setSummary({});
  }
  useEffect(()=>{Promise.all([api('session'),api('school')]).then(async ([session,branding])=>{setSchool(branding);setUser(session.user);await refresh(session.user);}).catch(e=>setError(e.message)).finally(()=>setLoading(false));},[]);
  async function perform(action:()=>Promise<void>){setError('');setFieldErrors({});setBusy(true);try{await action();void notify('Cambios guardados correctamente.');await refresh();}catch(e){setError((e as Error).message);setFieldErrors((e as Error & {fieldErrors?:Record<string,string[]>}).fieldErrors||{});}finally{setBusy(false);}}
@@ -209,7 +216,11 @@ export default function App(){
  {page==='admissions'&&(can('admissions.approve')||can('admissions.reject'))&&row.status==='submitted'&&<><button className="text-button" onClick={()=>approve(row)}>Aprobar</button><button className="text-button danger" onClick={()=>reject(row)}>Rechazar</button></>}
  {page==='enrollments'&&can('enrollments.complete')&&row.status==='active'&&<button className="text-button" onClick={()=>complete(row)}>Cerrar ciclo</button>}
  {page==='users'&&can('users.update')&&row.id!==user.id&&<button className="text-button" onClick={()=>perform(async()=>{await api(`users/${row.id}`,'PATCH',{active:!row.active});})}>{row.active?'Desactivar':'Activar'}</button>}
- </div></td></tr>)}</tbody></table></div>{!records.length&&(user.permissions?.[pagePermission(page)]?.length ? <Empty text={query||statusFilter?'No hay resultados para estos filtros.':'Aún no hay registros en esta sección.'}/> : <ForbiddenEmpty/>)}
+ </div></td></tr>)}</tbody></table></div>{!records.length&&(moduleLoadErrors[page] ?
+   (moduleLoadErrors[page].status===403 ? <ForbiddenEmpty/> :
+    <ModuleLoadFailure message={moduleLoadErrors[page].message} onRetry={()=>void refresh().catch(e=>setError((e as Error).message))}/>) :
+   user.permissions?.[pagePermission(page)]?.length ?
+     <Empty text={query||statusFilter?'No hay resultados para estos filtros.':'Aún no hay registros en esta sección.'}/> : <ForbiddenEmpty/>)}
   {records.length>0&&<div className="sc-pagination">
     <div className="sc-page-size"><label>Por página</label><Combobox label="Registros por página" value={String(pageSize)}
       onChange={value=>{setPageSize(Number(value));setPageNumber(0);}}
@@ -224,6 +235,10 @@ export default function App(){
   {dialog&&<div className="overlay"><section role="dialog" aria-modal="true" aria-labelledby="dialog-title" className="dialog"><header><div><span className="eyebrow">CONTROL ESCOLAR</span><h2 id="dialog-title">{dialog.title}</h2></div><button aria-label="Cerrar formulario" onClick={()=>setDialog(null)}><X/></button></header><RecordForm fields={dialog.fields} initial={dialog.values} busy={busy} options={options} optionName={optionName} error={error} fieldErrors={fieldErrors} onCancel={()=>setDialog(null)} onSubmit={values=>perform(()=>dialog.submit(values))}/></section></div>}
  {report&&<div className="overlay"><section role="dialog" aria-modal="true" aria-label="Boleta e historial" className="dialog report"><header><div><span className="eyebrow">{school.name}</span><h2>{report.student.full_name}</h2><p>Boleta de consulta · {report.student.curp}</p></div><div className="actions"><button onClick={()=>window.print()} aria-label="Imprimir boleta"><Printer/></button><button onClick={()=>setReport(null)} aria-label="Cerrar boleta"><X/></button></div></header>{report.years.map((year:Row)=><article key={year.enrollment.id}><h3>{year.enrollment.group_label}</h3><p>{display(year.enrollment.status)} · {display(year.enrollment.outcome)}</p><table><thead><tr><th>Materia</th><th>Trimestre</th><th>Calificación</th><th>Observación</th></tr></thead><tbody>{year.grades.map((g:Row)=><tr key={g.id}><td>{g.subject_name}</td><td>{g.term}</td><td>{g.score}</td><td>{g.feedback}</td></tr>)}</tbody></table><p>Promedio registrado: <strong>{mean(year.grades.map((g:Row)=>Number(g.score)))}</strong></p><div className="actions">{Object.entries(year.attendance).map(([status,total])=><span className="badge" key={status}>{display(status)}: {String(total)}</span>)}</div></article>)}{!report.years.length&&<Empty text="Todavía no tiene inscripciones aprobadas."/>}<p className="footnote">Documento de consulta interna. No sustituye una certificación oficial.</p></section></div>}
  </Suspense></PortalChrome>;
+}
+function ModuleLoadFailure({message,onRetry}:{message:string;onRetry:()=>void}){
+ return <div className="empty sc-auli-empty"><AuliGuide mood="warning" title="No fue posible cargar los registros" text={message} compact/>
+  <button type="button" className="secondary" onClick={onRetry}>Reintentar consulta</button></div>;
 }
 function ForbiddenEmpty(){return <div className="empty sc-auli-empty"><AuliGuide mood="warning" title="No tienes permisos para ver esta sección" text="Tu rol no tiene autorización para consultar los registros de este módulo." compact/></div>;}
 function Empty({text}:{text:string}){return <div className="empty sc-auli-empty"><AuliGuide mood="thinking" title="Todavía no hay registros" text={text} compact/></div>;}
