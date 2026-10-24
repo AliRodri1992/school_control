@@ -85,7 +85,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const matchText=(item:NavItem):string=>[item.title,...(item.children||[]).map(matchText)].join(' ');
  const matches=groups.map(g=>({...g,items:g.items.filter(item=>!query||matchText(item).toLowerCase().includes(query.toLowerCase()))})).filter(g=>g.items.length);
  const trail=findNavPath(groups,page);
- const label=translate('nav.'+page,page==='dashboard'?'Inicio':page==='profile'?'Mi perfil':page==='notifications'?'Notificaciones':trail.at(-1)?.title||page);
+ const label=translate('nav.'+page,page==='dashboard'?'Inicio':page==='profile'?'Mi perfil':page==='help'?'Ayuda':page==='notifications'?'Notificaciones':trail.at(-1)?.title||page);
  const tz=school.timezone||'America/Mexico_City';
  const formatted=new Intl.DateTimeFormat(locale==='es'?'es-MX':locale,{dateStyle:'medium',timeZone:tz}).format(clock);
  const time=new Intl.DateTimeFormat(locale==='es'?'es-MX':locale,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:tz}).format(clock);
@@ -155,7 +155,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
              <button className="sc-flyout-link" onClick={()=>navigate('preferences')}><Languages size={16}/>Preferencias</button>
              <button className="sc-flyout-link" onClick={()=>navigate('notifications')}><Bell size={16}/>Centro de notificaciones</button>
              <button className="sc-flyout-link" onClick={()=>setLanguage(availableLocales.find(l=>l.code!==locale)?.code||'es')}><Languages size={16}/>Idioma: {locale.toUpperCase()}</button>
-             <button className="sc-flyout-link" onClick={()=>navigate('dashboard')}><HelpCircle size={16}/>{translate("shell.help","Inicio y ayuda")}</button>
+             <button className="sc-flyout-link" onClick={()=>navigate('help')}><HelpCircle size={16}/>{translate("shell.help","Ayuda y guía de uso")}</button>
              <button className="sc-flyout-link sc-logout" onClick={()=>void onSignOut()}><LogOut size={16}/>{translate("shell.signout","Cerrar sesión")}</button>
            </section>}
          </div>

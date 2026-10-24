@@ -15,4 +15,5 @@ import './styles/student-details.css';
 import './styles/dashboard-context.css';
 import './styles/preferences.css';
 import './styles/portal-home.css';
+import './styles/help.css';
 createRoot(document.getElementById('root')!).render(<React.StrictMode><BrowserRouter><Routes><Route path="*" element={<App/>}/></Routes></BrowserRouter></React.StrictMode>);

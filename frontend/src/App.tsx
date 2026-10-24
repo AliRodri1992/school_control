@@ -1,3 +1,4 @@
+import HelpCenter from './features/help/HelpCenter';
 import PortalHome from './features/portal/PortalHome';
 import Preferences from './features/preferences/Preferences';
 import StudentDetails from './features/students/StudentDetails';
@@ -49,7 +50,7 @@ export default function App(){
  const [fieldErrors,setFieldErrors]=useState<Record<string,string[]>>({});
  const portal=currentPortal(user?.role||'admin');
  function go(next:string) {
-   if(next!=='profile'&&next!=='notifications'&&next!=='messages'&&next!=='preferences'&&!user?.permissions?.[pagePermission(next)]?.length)return;
+   if(next!=='profile'&&next!=='notifications'&&next!=='messages'&&next!=='preferences'&&next!=='help'&&!user?.permissions?.[pagePermission(next)]?.length)return;
    setPage(next);setQuery('');setNotice('');setMobile(false);setPageNumber(0);setStatusFilter('');setSorting('');
    const url=makePortalUrl(portal,next);
    if(location.pathname!==url)navigate(url);
@@ -146,7 +147,8 @@ export default function App(){
  page==='api_docs'?<ApiDocs/>:
  page==='email_templates'?<EmailTemplateDesigner schoolName={school.name}/>:
   page==='access_roles'?<AccessRoles can={can} onChanged={()=>refresh()}/>:
- page==='preferences'?<Preferences onSaved={prefs=>setPageSize(prefs.rows_per_page)}/>:
+ page==='help'?<HelpCenter role={user.role} can={can} onNavigate={go}/>:
+  page==='preferences'?<Preferences onSaved={prefs=>setPageSize(prefs.rows_per_page)}/>:
   page==='profile'?<Profile onChange={setUser} onSignedOut={signedOut}/>:
  page==='notifications'?<Notifications navigate={target=>{if(target==='profile'||target==='notifications'||target==='messages'||modules[target]||['dashboard','reports','classroom','documents','schedule','school','access_roles'].includes(target))go(target);}}/>:
  page==='classroom'?<Classroom user={user} courses={data.courses||[]} enrollments={data.enrollments||[]}/>:
