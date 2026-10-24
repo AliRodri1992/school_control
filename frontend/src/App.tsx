@@ -66,7 +66,7 @@ export default function App(){
    const studentBase=makePortalUrl(currentPortal(user.role),'students')+'/';
    if(isStudentRecordUrl(location.pathname,user.role,user.permissions)){
      const id=location.pathname.slice(studentBase.length);
-     if(!/^\\d+$/.test(id)||!user.permissions?.['students.show']?.length){navigate(base,{replace:true});return;}
+     if(!/^\d+$/.test(id)||!user.permissions?.['students.show']?.length){navigate(base,{replace:true});return;}
      setPage('student_details');
      setDetailStudent(existing=>String(existing?.id)===id?existing:null);
      let active=true;

@@ -65,7 +65,7 @@ export function studentRecordUrl(portal:PortalId,studentId:number|string):string
 }
 export function isStudentRecordUrl(path:string,role:string,permissions:Row={}):boolean{
  const base=makePortalUrl(currentPortal(role),'students')+'/';
- return path.startsWith(base)&&/^\\d+$/.test(path.slice(base.length))&&!!permissions?.['students.show']?.length;
+ return path.startsWith(base)&&/^\d+$/.test(path.slice(base.length))&&!!permissions?.['students.show']?.length;
 }
 export function makePortalUrl(portal:PortalId,page:string):string{
  return roots[portal]+(page==='dashboard'?'':('/'+page.replaceAll('_','-')));
