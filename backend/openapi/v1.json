@@ -181,6 +181,167 @@
           "email",
           "role"
         ]
+      },
+      "StudentInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "first_name",
+          "last_name",
+          "curp",
+          "birth_date"
+        ],
+        "properties": {
+          "first_name": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Lucía"
+          },
+          "last_name": {
+            "type": "string",
+            "minLength": 1,
+            "example": "García"
+          },
+          "curp": {
+            "type": "string",
+            "minLength": 18,
+            "maxLength": 18
+          },
+          "birth_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "emergency_phone": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "guardian_id": {
+            "type": "integer"
+          }
+        }
+      },
+      "AttendanceInput": {
+        "type": "object",
+        "required": [
+          "enrollment_id",
+          "on",
+          "status"
+        ],
+        "properties": {
+          "enrollment_id": {
+            "type": "integer"
+          },
+          "on": {
+            "type": "string",
+            "format": "date"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "present",
+              "absent",
+              "late",
+              "justified"
+            ]
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "GradeInput": {
+        "type": "object",
+        "required": [
+          "course_id",
+          "enrollment_id",
+          "term",
+          "score"
+        ],
+        "properties": {
+          "course_id": {
+            "type": "integer"
+          },
+          "enrollment_id": {
+            "type": "integer"
+          },
+          "term": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10
+          },
+          "feedback": {
+            "type": "string"
+          }
+        }
+      },
+      "AdmissionInput": {
+        "type": "object",
+        "required": [
+          "student_id",
+          "academic_year_id",
+          "kind",
+          "grade_level"
+        ],
+        "properties": {
+          "student_id": {
+            "type": "integer"
+          },
+          "academic_year_id": {
+            "type": "integer"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "new",
+              "reenrollment"
+            ]
+          },
+          "grade_level": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 6
+          }
+        }
+      },
+      "StudentContactInput": {
+        "type": "object",
+        "required": [
+          "student_id",
+          "name",
+          "relationship",
+          "phone"
+        ],
+        "properties": {
+          "student_id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "relationship": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "emergency": {
+            "type": "boolean"
+          },
+          "pickup_authorized": {
+            "type": "boolean"
+          }
+        }
       }
     }
   },
@@ -2283,12 +2444,10 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "additionalProperties": true
+                "$ref": "#/components/schemas/StudentContactInput"
               }
             }
           }
@@ -4948,12 +5107,10 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "additionalProperties": true
+                "$ref": "#/components/schemas/StudentInput"
               }
             }
           }
@@ -5314,12 +5471,10 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "additionalProperties": true
+                "$ref": "#/components/schemas/AdmissionInput"
               }
             }
           }
@@ -5781,12 +5936,10 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "additionalProperties": true
+                "$ref": "#/components/schemas/AttendanceInput"
               }
             }
           }
@@ -5919,12 +6072,10 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "additionalProperties": true
+                "$ref": "#/components/schemas/GradeInput"
               }
             }
           }
@@ -7248,7 +7399,13 @@
           "200": {
             "description": "Contrato OpenAPI 3.1"
           }
-        }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "x-rbac-permission": "access_roles.index"
       }
     },
     "/api/data_imports": {

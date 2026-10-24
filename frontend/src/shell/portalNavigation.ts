@@ -5,7 +5,7 @@ export type NavGroup={title:string;items:NavItem[]};
 export const roots:Record<PortalId,string>={admin:'/admin',teachers:'/teachers',students:'/students',tutors:'/tutors'};
 export const currentPortal=(role:string):PortalId=>({admin:'admin',teacher:'teachers',student:'students',guardian:'tutors'} as Record<string,PortalId>)[role]||'tutors';
 export const portalLabels:Record<PortalId,string>={admin:'Administración',teachers:'Docentes',students:'Alumnos',tutors:'Tutores'};
-const aliases:Record<string,string>={dashboard:'dashboard.show',documents:'student_documents.index',classroom:'assignments.index',schedule:'schedule_slots.index',school:'schools.update',imports:'students.create',languages:'access_roles.update'};
+const aliases:Record<string,string>={dashboard:'dashboard.show',documents:'student_documents.index',classroom:'assignments.index',schedule:'schedule_slots.index',school:'schools.update',imports:'students.create',languages:'access_roles.update',api_docs:'access_roles.index'};
 export const permissionFor=(key:string):string=>aliases[key]||(key+'.index');
 export const portalGroups:Record<PortalId,NavGroup[]>={
  admin:[
@@ -13,7 +13,7 @@ export const portalGroups:Record<PortalId,NavGroup[]>={
   {title:'Gestión escolar',items:[{key:'students',title:'Alumnos y expedientes',children:[{key:'student_contacts',title:'Contactos familiares'},{key:'documents',title:'Documentos'}]},{key:'admissions',title:'Admisiones',children:[{key:'enrollments',title:'Matrícula y trayectoria'}]}]},
   {title:'Gestión académica',items:[{key:'academic_years',title:'Ciclos escolares'},{key:'groups',title:'Grupos',children:[{key:'courses',title:'Clases'},{key:'subjects',title:'Materias'}]},{key:'schedule',title:'Horarios'},{key:'attendances',title:'Asistencia'},{key:'grades',title:'Calificaciones'}]},
   {title:'Comunicación',items:[{key:'classroom',title:'Aula virtual'},{key:'messages',title:'Mensajes'},{key:'announcements',title:'Comunicados'},{key:'calendar_events',title:'Calendario'}]},
-  {title:'Análisis y sistema',items:[{key:'reports',title:'Reportes'},{key:'imports',title:'Importaciones'},{key:'users',title:'Usuarios'},{key:'access_roles',title:'Roles y permisos'},{key:'school',title:'Mi escuela'},{key:'email_templates',title:'Plantillas de correo'},{key:'languages',title:'Idiomas y traducciones'}]}
+  {title:'Análisis y sistema',items:[{key:'reports',title:'Reportes'},{key:'imports',title:'Importaciones'},{key:'users',title:'Usuarios'},{key:'access_roles',title:'Roles y permisos'},{key:'school',title:'Mi escuela'},{key:'email_templates',title:'Plantillas de correo'},{key:'languages',title:'Idiomas y traducciones'},{key:'api_docs',title:'Documentación API'}]}
  ],
  teachers:[
   {title:'Mi actividad',items:[{key:'dashboard',title:'Mi día'},{key:'groups',title:'Mis grupos'},{key:'courses',title:'Mis clases'},{key:'schedule',title:'Mi horario'},{key:'attendances',title:'Asistencia'},{key:'grades',title:'Calificaciones'},{key:'classroom',title:'Aula virtual'}]},
