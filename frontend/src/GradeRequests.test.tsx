@@ -29,7 +29,8 @@ it('resolves a pending change with a reason and hides duplicate submission',asyn
   render(<GradeRequests grade={grade} onChanged={vi.fn().mockResolvedValue(undefined)}/>);
   await userEvent.click(screen.getByRole('button',{name:'Solicitudes de corrección'}));
   expect(screen.queryByRole('button',{name:'Enviar solicitud'})).toBeNull();
-  await userEvent.selectOptions(screen.getByLabelText('Resolución'),'rejected');
+  await userEvent.click(screen.getByRole('combobox',{name:'Resolución de solicitud 3'}));
+  await userEvent.click(screen.getByRole('option',{name:'Rechazar'}));
   await userEvent.type(screen.getByLabelText('Motivo de resolución'),'Sin evidencia suficiente');
   await userEvent.click(screen.getByRole('button',{name:'Guardar resolución'}));
   await waitFor(()=>expect(request).toHaveBeenCalledWith('grades/1/change_requests/3/resolve','POST',{decision:'rejected',resolution_reason:'Sin evidencia suficiente'}));
@@ -47,7 +48,8 @@ it('preserves the request after a stale approval error',async()=>{
   request.mockResolvedValueOnce([pending]).mockRejectedValueOnce(new Error('La calificación cambió.'));
   render(<GradeRequests grade={grade} onChanged={vi.fn()}/>);
   await userEvent.click(screen.getByRole('button',{name:'Solicitudes de corrección'}));
-  await userEvent.selectOptions(screen.getByLabelText('Resolución'),'approved');
+  await userEvent.click(screen.getByRole('combobox',{name:'Resolución de solicitud 3'}));
+  await userEvent.click(screen.getByRole('option',{name:'Aprobar'}));
   await userEvent.type(screen.getByLabelText('Motivo de resolución'),'Revisado');
   await userEvent.click(screen.getByRole('button',{name:'Guardar resolución'}));
   expect(await screen.findByRole('alert')).toHaveProperty('textContent','La calificación cambió.');
