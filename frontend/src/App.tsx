@@ -1,3 +1,4 @@
+import PortalHome from './features/portal/PortalHome';
 import Preferences from './features/preferences/Preferences';
 import StudentDetails from './features/students/StudentDetails';
 import AuliGuide from './shared/components/AuliGuide';
@@ -21,7 +22,6 @@ import Classroom from './Classroom';
 import Documents from './Documents';
 import Messages from './Messages';
 import LogoUploader from './LogoUploader';
-import Dashboard from './Dashboard';
 import {notify} from './notifications';
 import {useEffect, useState} from 'react';
 import {BookOpen, Plus, Search, X, Check, Printer, GraduationCap} from 'lucide-react';
@@ -138,9 +138,9 @@ export default function App(){
   childrenList={user.role==='guardian'?data.students||[]:[]} selectedChildId={selectedChild} onSelectChild={selectChild}
  onSignOut={async()=>{try{await api('session','DELETE');signedOut();void notify('Sesión cerrada correctamente.');}catch(e){setError((e as Error).message);}}}>
  <div className="content">{error&&<div className="error" role="alert">{error}<button aria-label="Cerrar error" onClick={()=>setError('')}><X size={16}/></button></div>}{notice&&<div className="success" role="status"><Check size={16}/>{notice}</div>}
- {page==='dashboard'?<><div className="page-heading"><div><div className="eyebrow">CADA ALUMNO, UNA HISTORIA</div><h1>Hola, {user.name.split(' ')[0]}.</h1><p>Tu comunidad escolar, conectada y al día.</p></div><div className="pill"><span className="status-dot"/>Portal {labels[user.role].toLowerCase()}</div></div>
- <Dashboard summary={summary} data={data} role={user.role} userId={user.id}/></>:
- page==='reports'?<Reports data={data}/>:
+ {page==='dashboard'?<PortalHome user={user} summary={summary} data={data} can={can}
+  onNavigate={go} selectedChildId={selectedChild} onSelectChild={selectChild}/>:
+  page==='reports'?<Reports data={data}/>:
  page==='imports'?<ImportWizard/>:
  page==='languages'?<LanguageManager/>:
  page==='api_docs'?<ApiDocs/>:
