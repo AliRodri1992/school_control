@@ -39,7 +39,7 @@ export default function ApiDocs(){
      {operation['x-rbac-permission']&&<p><ShieldCheck size={15}/> Permiso: <code>{String(operation['x-rbac-permission'])}</code></p>}
      <p>{operation.security?.length?'Requiere sesión autenticada.':'Operación pública o autenticación de sesión.'}</p>
      {operation.parameters&&<details><summary>Parámetros</summary><pre>{JSON.stringify(operation.parameters,null,2)}</pre></details>}
-     {operation.requestBody&&<details><summary>Cuerpo de solicitud</summary><pre>{JSON.stringify(operation.requestBody,null,2)}</pre></details>}
+     {!!operation.requestBody&&<details><summary>Cuerpo de solicitud</summary><pre>{JSON.stringify(operation.requestBody,null,2)}</pre></details>}
      <details open><summary>Respuestas HTTP</summary><pre>{JSON.stringify(operation.responses||{},null,2)}</pre></details>
     </div>}
    </article>;
