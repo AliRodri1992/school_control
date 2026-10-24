@@ -19,6 +19,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const [compactItem,setCompactItem]=useState<string|null>(null);
  const languageRef=useRef<HTMLDivElement>(null);
  useEffect(()=>{localStorage.setItem('school-sidebar-collapsed',String(collapsed));},[collapsed]);
+ useEffect(()=>{const changed=()=>setLocale(localStorage.getItem('school-locale')||'es');window.addEventListener('school-locale-changed',changed);return()=>window.removeEventListener('school-locale-changed',changed);},[]);
  useEffect(()=>{function close(event:PointerEvent){if(!languageRef.current?.contains(event.target as Node))setLanguageOpen(false);}document.addEventListener('pointerdown',close);return()=>document.removeEventListener('pointerdown',close);},[]);
  const compact=collapsed&&!mobile;
  const [clock,setClock]=useState(()=>new Date());

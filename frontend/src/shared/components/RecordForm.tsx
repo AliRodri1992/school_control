@@ -1,3 +1,4 @@
+import {useSchoolLocale} from '../i18n/LocaleContext';
 import {useEffect,useState,type FormEvent} from 'react';
 import type {Field,Row} from '../../modules';
 import Combobox,{type Choice} from './Combobox';
@@ -7,6 +8,7 @@ export default function RecordForm({fields,initial,onSubmit,onCancel,busy,option
  options:(source:string,values:Row)=>Row[];optionName:(record:Row)=>string;error:string;
  fieldErrors?:Record<string,string[]>;
 }) {
+ const {locale,ui}=useSchoolLocale();
  const [values,setValues]=useState<Row>(initial);
  const [errors,setErrors]=useState<Record<string,string>>({});
  useEffect(()=>{const mapped:Record<string,string>={};
@@ -25,9 +27,9 @@ export default function RecordForm({fields,initial,onSubmit,onCancel,busy,option
   const next:Record<string,string>={};const clean:Row={};
   for(const field of fields){
    const value=values[field.key]??'';
-   if(!field.optional&&String(value).trim()==='')next[field.key]=field.label+' no puede estar vacío.';
-   if(field.type==='email'&&value&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value)))next[field.key]=field.label+' no tiene un formato válido.';
-   if(field.type==='datetime-local'&&value){const date=new Date(value);if(!Number.isNaN(date.getTime()))clean[field.key]=date.toISOString();else next[field.key]=field.label+' no tiene una fecha válida.';}
+   if(!field.optional&&String(value).trim()==='')next[field.key]=field.label+(locale==='en'?' cannot be empty.':' no puede estar vacío.');
+   if(field.type==='email'&&value&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value)))next[field.key]=field.label+(locale==='en'?' has an invalid format.':' no tiene un formato válido.');
+   if(field.type==='datetime-local'&&value){const date=new Date(value);if(!Number.isNaN(date.getTime()))clean[field.key]=date.toISOString();else next[field.key]=field.label+(locale==='en'?' is not a valid date.':' no tiene una fecha válida.');}
    else clean[field.key]=value===''?null:value;
   }
   setErrors(next);
@@ -55,7 +57,7 @@ export default function RecordForm({fields,initial,onSubmit,onCancel,busy,option
    </div>;
   })}</div>
   {error&&<p className="error" role="alert">{error}</p>}
-  <div className="form-actions"><button type="button" className="secondary" onClick={onCancel}>Cancelar</button>
-   <button className="primary" type="submit" disabled={busy}>{busy?'Guardando…':'Guardar'}</button></div>
+  <div className="form-actions"><button type="button" className="secondary" onClick={onCancel}>{ui('Cancelar')}</button>
+   <button className="primary" type="submit" disabled={busy}>{busy?ui('Guardando…'):ui('Guardar')}</button></div>
  </form>;
 }

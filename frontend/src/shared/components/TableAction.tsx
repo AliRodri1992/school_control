@@ -1,3 +1,4 @@
+import {useSchoolLocale} from '../i18n/LocaleContext';
 import {useEffect,useId,useRef} from 'react';
 import {
   BadgeCheck,CheckCircle2,ClipboardCheck,ClipboardList,Download,Eye,FilePenLine,
@@ -44,8 +45,9 @@ type Props={
  * Keep the native title as a fallback if scripting or styling is interrupted.
  */
 export default function TableAction({kind,onClick,href,ariaLabel,tooltip,disabled=false,className=''}:Props){
+ const {ui}=useSchoolLocale();
  const {Icon,label}=actionConfig[kind];
- const text=tooltip||label;
+ const text=ui(tooltip||label);
  const id=useId();
  const anchor=useRef<HTMLButtonElement|HTMLAnchorElement>(null);
 

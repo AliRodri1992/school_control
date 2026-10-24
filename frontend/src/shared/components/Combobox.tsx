@@ -1,3 +1,4 @@
+import {useSchoolLocale} from '../i18n/LocaleContext';
 import {useEffect,useId,useRef,useState} from 'react';
 import {Check,ChevronDown,Search} from 'lucide-react';
 
@@ -5,6 +6,7 @@ export type Choice = {value:string;label:string;disabled?:boolean};
 export default function Combobox({value,onChange,options,placeholder='Seleccione una opción',label,id:inputId,disabled=false,invalid=false,describedBy}:{
  value:string;onChange:(value:string)=>void;options:Choice[];placeholder?:string;label:string;id?:string;disabled?:boolean;invalid?:boolean;describedBy?:string;
 }) {
+ const {ui,locale}=useSchoolLocale();
  const fallbackId=useId(),id=inputId||fallbackId,[open,setOpen]=useState(false),[query,setQuery]=useState('');
  const [highlighted,setHighlighted]=useState(0);
  const searchRef=useRef<HTMLInputElement>(null);
@@ -43,17 +45,17 @@ export default function Combobox({value,onChange,options,placeholder='Seleccione
    <button id={id} type="button" role="combobox" aria-label={label} aria-expanded={open} aria-controls={id+'-list'}
      aria-haspopup="listbox" aria-invalid={invalid} aria-describedby={describedBy} className="sc-combobox-trigger" disabled={disabled}
      onClick={()=>{setOpen(v=>!v);setQuery('');setHighlighted(0);}}>
-     <span className={current?'':'sc-combobox-placeholder'}>{current?.label||placeholder}</span><ChevronDown size={17} aria-hidden="true"/>
+     <span className={current?'':'sc-combobox-placeholder'}>{current?.label||ui(placeholder)}</span><ChevronDown size={17} aria-hidden="true"/>
    </button>
    {open&&<div className="sc-combobox-panel">
-     <div className="sc-combobox-search"><Search size={15}/><input ref={searchRef} aria-label={'Buscar en '+label} aria-activedescendant={filtered[highlighted]?id+'-option-'+highlighted:undefined} type="search" value={query}
-       placeholder="Buscar opción…" onChange={e=>{setQuery(e.target.value);setHighlighted(0);}}/></div>
+     <div className="sc-combobox-search"><Search size={15}/><input ref={searchRef} aria-label={(locale==='en'?'Search in ':'Buscar en ')+label} aria-activedescendant={filtered[highlighted]?id+'-option-'+highlighted:undefined} type="search" value={query}
+       placeholder={ui('Buscar opción…')} onChange={e=>{setQuery(e.target.value);setHighlighted(0);}}/></div>
      <div id={id+'-list'} role="listbox" aria-label={label} className="sc-combobox-list">
-       <button role="option" type="button" aria-selected={!value} className="sc-combobox-option" onClick={()=>select('')}>{placeholder}</button>
+       <button role="option" type="button" aria-selected={!value} className="sc-combobox-option" onClick={()=>select('')}>{ui(placeholder)}</button>
        {filtered.map((opt,index)=><button id={id+'-option-'+index} key={opt.value} type="button" role="option" aria-selected={opt.value===value}
          className="sc-combobox-option" disabled={opt.disabled} onMouseEnter={()=>setHighlighted(index)} onClick={()=>select(opt.value)}>
          <span>{opt.label}</span>{opt.value===value&&<Check size={16}/>}</button>)}
-       {!filtered.length&&<p className="sc-combobox-empty">No hay opciones para esta búsqueda.</p>}
+       {!filtered.length&&<p className="sc-combobox-empty">{ui('No hay opciones para esta búsqueda.')}</p>}
      </div>
    </div>}
  </div>;
