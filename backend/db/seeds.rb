@@ -9,6 +9,8 @@ if admin.new_record?
   admin.password = ENV.fetch("ADMIN_PASSWORD")
   admin.save!
 end
+# Existing installations may have an administrator role created before newer permissions.
+AccessRole.assign_default!(admin)
 puts "Escuela y administrador disponibles."
 
 if ENV["DEMO_SEEDS"] == "true"
