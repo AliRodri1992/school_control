@@ -20,7 +20,7 @@ RSpec.describe LegacySchoolDataBackfill do
   it "retains phone values needing human review instead of deleting them" do
     student = create(:student)
     legacy = StudentContact.create!(student: student, name: "Familiar",
-      relationship: "Otro", phone: "ext. 12345")
+      relationship: "Otro", phone: "1234567")
     described_class.new.call
     contact = Contact.find_by!(legacy_student_contact_id: legacy.id)
     expect(contact.legacy_phone).to eq(legacy.phone)
