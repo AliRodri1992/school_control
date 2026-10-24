@@ -76,7 +76,7 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
   finally{setBusy(false);}
  }
  async function remove(row:Row){
-  if(!await confirmDanger('Eliminar '+category.find(x=>x.kind===kind)?.title,'Esta información dejará de aparecer en el expediente.'))return;
+  if(!await confirmDanger(ui('Eliminar')+' '+ui(category.find(x=>x.kind===kind)?.title||''),ui('Esta información dejará de aparecer en el expediente.')))return;
   setBusy(true);setError('');
   try{await api(root+kind+'/'+row.id,'DELETE');await fetchItems(kind);}catch(e){setError((e as Error).message);}finally{setBusy(false);}
  }
@@ -103,16 +103,16 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
    </div>
   </div>
   <div className="sc-record-facts">
-   <article><IdCard size={20}/><div><small>{ui("CURP")}</small><strong>{student.curp||'Sin registrar'}</strong></div></article>
-   <article><CalendarDays size={20}/><div><small>{ui("Fecha de nacimiento")}</small><strong>{student.birth_date||'Sin registrar'}</strong></div></article>
-   <article><Phone size={20}/><div><small>{ui("Teléfono de emergencia")}</small><strong>{student.emergency_phone||'Sin registrar'}</strong></div></article>
+   <article><IdCard size={20}/><div><small>{ui("CURP")}</small><strong>{student.curp||ui('Sin registrar')}</strong></div></article>
+   <article><CalendarDays size={20}/><div><small>{ui("Fecha de nacimiento")}</small><strong>{student.birth_date||ui('Sin registrar')}</strong></div></article>
+   <article><Phone size={20}/><div><small>{ui("Teléfono de emergencia")}</small><strong>{student.emergency_phone||ui('Sin registrar')}</strong></div></article>
    <article><Users size={20}/><div><small>{ui("Expediente")}</small><strong>#{student.id}</strong></div></article>
   </div>
   <div className="sc-record-layout">
    <nav className="sc-details-tabs" aria-label={ui("Secciones del expediente")}>
     {category.map(section=>{const Icon=icon[section.kind];return <button key={section.kind} aria-current={kind===section.kind?'page':undefined}
       type="button" onClick={()=>{setKind(section.kind);setEditing(null);setCreating(false);setError('');}}>
-      <Icon size={18}/><span>{section.title}</span></button>;})}
+      <Icon size={18}/><span >{ui(section.title)}</span></button>;})}
    </nav>
    <section className="sc-record-content">
     {kind==='overview'?<>
@@ -120,25 +120,25 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
        <h2>{ui("Resumen del expediente")}</h2><p>{ui("Identidad registrada y seguimiento académico disponible.")}</p></div></div>
       <div className="sc-record-summary">
        <div><small>{ui("Nombre del alumno")}</small><strong>{student.full_name}</strong></div>
-       <div><small>{ui("CURP")}</small><strong>{student.curp||'Pendiente'}</strong></div>
-       <div><small>{ui("Fecha de nacimiento")}</small><strong>{student.birth_date||'Pendiente'}</strong></div>
-       <div><small>{ui("Dirección registrada")}</small><strong>{student.address||'Consulta la sección Direcciones'}</strong></div>
+       <div><small>{ui("CURP")}</small><strong>{student.curp||ui('Pendiente')}</strong></div>
+       <div><small>{ui("Fecha de nacimiento")}</small><strong>{student.birth_date||ui('Pendiente')}</strong></div>
+       <div><small>{ui("Dirección registrada")}</small><strong>{student.address||ui('Consulta la sección Direcciones')}</strong></div>
       </div>
       <div className="sc-record-history-heading"><BookOpen size={20}/><h3>{ui("Trayectoria académica")}</h3></div>
       {report?.years?.length?report.years.map((year:Row)=><article className="sc-record-year" key={year.enrollment.id}>
-        <div><strong>{year.enrollment.group_label||'Grupo escolar'}</strong><span>{year.enrollment.status||'Inscripción'}</span></div>
-        <small>{year.grades?.length||0} calificaciones · {Object.entries(year.attendance||{}).map(([status,count])=>status+': '+count).join(' · ')||'Sin asistencias registradas'}</small>
-       </article>):<p className="sc-details-blank">{canViewReport?'Sin inscripciones o calificaciones registradas.':'El historial académico no está disponible para tu perfil.'}</p>}
+        <div><strong>{year.enrollment.group_label||'Grupo escolar'}</strong><span >{ui(year.enrollment.status||'Inscripción')}</span></div>
+        <small>{year.grades?.length||0} calificaciones · {Object.entries(year.attendance||{}).map(([status,count])=>status+': '+count).join(' · ')||ui('Sin asistencias registradas')}</small>
+       </article>):<p className="sc-details-blank" >{ui(canViewReport?'Sin inscripciones o calificaciones registradas.':'El historial académico no está disponible para tu perfil.')}</p>}
     </>:<>
      <div className="sc-details-heading"><div><span className="eyebrow">{ui("EXPEDIENTE / INFORMACIÓN RELACIONADA")}</span>
-       <h2>{category.find(section=>section.kind===kind)?.title}</h2>
-       <p>{category.find(section=>section.kind===kind)?.description}</p></div>
+       <h2>{ui(category.find(section=>section.kind===kind)?.title||'')}</h2>
+       <p>{ui(category.find(section=>section.kind===kind)?.description||'')}</p></div>
        {writable&&!creating&&!editing&&<button className="primary" type="button" onClick={()=>{setCreating(true);setEditing(null);}}>
          <Plus size={17}/>{ui("Agregar registro")}</button>}
      </div>
      {error&&<div className="error" role="alert">{error}</div>}
      {(creating||editing)&&<div className="sc-details-form"><RecordForm key={kind+'-'+(editing?.id||'new')}
-       fields={fields[kind as DataKind]} initial={editing||{}}
+       fields={fields[kind as DataKind].map(field=>({...field,label:ui(field.label),options:field.options?.map(([id,label])=>[id,ui(label)] as [string,string])}))} initial={editing||{}}
        onSubmit={values=>void save(values)} onCancel={()=>{setEditing(null);setCreating(false);setError('');}} busy={busy}
        options={()=>[]} optionName={row=>String(row.name||row.id)} error={error} fieldErrors={fieldErrors}/></div>}
      {!creating&&!editing&&<div className="sc-details-list">
