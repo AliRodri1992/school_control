@@ -6,7 +6,7 @@ import {api} from './api';
 import {notify} from './notifications';
 import type {Row} from './modules';
 
-export default function GradeActions({grade,admin,permissions,onChanged}:{grade:Row;admin:boolean;permissions?:Record<string,string[]>;onChanged:()=>{ui("Promise")}<void>}) {
+export default function GradeActions({grade,admin,permissions,onChanged}:{grade:Row;admin:boolean;permissions?:Record<string,string[]>;onChanged:()=>Promise<void>}) {
   const can=(key:string)=>permissions?!!permissions[key]?.length:(key==='grades.history'||key==='grade_change_requests.index'||admin);
  const {ui}=useSchoolLocale();
   const [busy,setBusy]=useState(false),[error,setError]=useState(''),[editing,setEditing]=useState(false),[history,setHistory]=useState<Row[]|null>(null);

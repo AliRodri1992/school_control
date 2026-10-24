@@ -55,7 +55,7 @@ export default function ImportWizard(){
    return()=>{active=false;window.clearInterval(id);};
  },[batch?.id,batch?.status]);
 
- async function perform(fn:()=>{ui("Promise")}<void>){setBusy(true);setError('');setFieldError('');try{await fn();}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
+ async function perform(fn:()=>Promise<void>){setBusy(true);setError('');setFieldError('');try{await fn();}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
 
  function upload(event:FormEvent){event.preventDefault();if(!file){setFieldError('Archivo no puede estar vacío.');return;}
   void perform(async()=>{const fd=new FormData();fd.append('file',file);fd.append('kind',kind);

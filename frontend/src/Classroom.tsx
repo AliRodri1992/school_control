@@ -12,7 +12,7 @@ export default function Classroom({user,courses,enrollments}:{user:Row;courses:R
  const [records,setRecords]=useState<Row[]>([]),[selected,setSelected]=useState<Row|null>(null),[submissions,setSubmissions]=useState<Row[]>([]),[error,setError]=useState(''),[busy,setBusy]=useState(false);
  async function refresh(){setRecords(await api('assignments'));}
  useEffect(()=>{void refresh().catch(e=>setError(e.message));},[]);
- async function perform(action:()=>{ui("Promise")}<void>){setBusy(true);setError('');try{await action();void notify('Cambios guardados correctamente.');}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
+ async function perform(action:()=>Promise<void>){setBusy(true);setError('');try{await action();void notify('Cambios guardados correctamente.');}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
  async function open(record:Row){setError('');try{const rows=await api(`assignments/${record.id}/submissions`);setSubmissions(rows);setSelected(record);}catch(e){setError((e as Error).message);}}
  function create(event:FormEvent<HTMLFormElement>){event.preventDefault();
  if(!courseId){setError('Clase no puede estar vacía.');return;}

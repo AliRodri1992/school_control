@@ -6,7 +6,7 @@ import {api} from './api';
 import {notify} from './notifications';
 import type {Row} from './modules';
 
-export default function GradeRequests({grade,onChanged,canCreate=true}:{grade:Row;canCreate?:boolean;onChanged:()=>{ui("Promise")}<void>}) {
+export default function GradeRequests({grade,onChanged,canCreate=true}:{grade:Row;canCreate?:boolean;onChanged:()=>Promise<void>}) {
  const {ui}=useSchoolLocale();
   const [decisions,setDecisions]=useState<Record<number,string>>({});
   const [requests,setRequests]=useState<Row[]|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);

@@ -17,7 +17,7 @@ export default function LanguageManager(){
  async function refresh(){setLanguages(await api('languages'));}
  async function loadEntries(id:number){setSelected(id);setEntries(await api('translation_entries?language_id='+id));}
  useEffect(()=>{void refresh().catch(e=>setError(e.message));},[]);
- async function perform(action:()=>{ui("Promise")}<void>){setBusy(true);setError('');setNotice('');try{await action();setNotice('Cambios guardados correctamente.');await refresh();if(selected)await loadEntries(selected);}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
+ async function perform(action:()=>Promise<void>){setBusy(true);setError('');setNotice('');try{await action();setNotice('Cambios guardados correctamente.');await refresh();if(selected)await loadEntries(selected);}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
  function addLanguage(event:FormEvent){event.preventDefault();void perform(async()=>{
   await api('languages','POST',{code,name,native_name:nativeName,status:'draft',text_direction:'ltr'});
   setName('');setNativeName('');setCode('');
