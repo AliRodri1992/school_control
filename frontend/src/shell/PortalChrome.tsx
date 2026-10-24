@@ -15,7 +15,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const [query,setQuery]=useState('');
  const [clock,setClock]=useState(()=>new Date());
  const [locale,setLocale]=useState<string>(()=>localStorage.getItem('school-locale')||'es');
- const [availableLocales,setAvailableLocales]=useState<{id:number;code:string;name:string;native_name:string;status:string}[]>([]);
+ const [availableLocales,setAvailableLocales]=useState<{id:number;code:string;name:string;native_name:string;status:string;text_direction:string}[]>([]);
  const [translations,setTranslations]=useState<Record<string,string>>({});
  const translate=(key:string,fallback:string)=>translations[key]||fallback;
  const [accountOpen,setAccountOpen]=useState(false);
