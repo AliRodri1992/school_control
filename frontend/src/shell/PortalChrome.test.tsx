@@ -17,11 +17,17 @@ const user={id:15,name:'María González',email:'maria@example.test',role:'admin
 const props={user,school:{name:'Primaria Hidalgo',logo_url:'/logo.svg',timezone:'America/Mexico_City'},
  page:'dashboard',mobile:false,onMobile:vi.fn(),can:()=>true,pendingAdmissions:0,
  onNavigate:vi.fn(),onSignOut:vi.fn(async()=>undefined)};
-it('shows the school brand, removes sidebar search, and uses a language dropdown',()=>{
+it('shows school branding and an icon-only language menu without search',async()=>{
  render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
  expect(screen.getByRole('button',{name:'Ir al inicio de Primaria Hidalgo'})).toBeTruthy();
  expect(screen.queryByRole('searchbox',{name:'Buscar módulos'})).toBeNull();
- expect(screen.getByRole('combobox',{name:'Idioma'})).toBeTruthy();
+ const language=screen.getByRole('button',{name:'Idioma'});
+ expect(language.getAttribute('aria-expanded')).toBe('false');
+ await userEvent.click(language);
+ expect(language.getAttribute('aria-expanded')).toBe('true');
+ expect(screen.getByRole('button',{name:'Español · ES'})).toBeTruthy();
+ expect(screen.getByRole('button',{name:'English · EN'})).toBeTruthy();
+ expect(screen.queryByRole('searchbox',{name:/idioma/i})).toBeNull();
  expect(screen.getAllByRole('button',{name:'Opciones de cuenta de María González'})).toHaveLength(2);
 });
 it('makes logout and preferences accessible from the sidebar avatar and topbar avatar',async()=>{
