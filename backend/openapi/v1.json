@@ -101,6 +101,9 @@
     },
     {
       "name": "student_details"
+    },
+    {
+      "name": "import_mapping_templates"
     }
   ],
   "components": {
@@ -8906,6 +8909,126 @@
             "description": "No hay registros pendientes"
           }
         }
+      }
+    },
+    "/api/import_mapping_templates": {
+      "get": {
+        "tags": [
+          "import_mapping_templates"
+        ],
+        "operationId": "get_import_template",
+        "summary": "Listar mis mapeos reutilizables",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Plantillas del usuario"
+          },
+          "403": {
+            "description": "Sin permisos"
+          },
+          "422": {
+            "description": "Error de validación"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "import_mapping_templates"
+        ],
+        "operationId": "post_import_template",
+        "summary": "Guardar mapeo de columnas",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Plantillas del usuario"
+          },
+          "403": {
+            "description": "Sin permisos"
+          },
+          "422": {
+            "description": "Error de validación"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "kind",
+                  "mapping"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "students",
+                      "subjects",
+                      "groups",
+                      "teachers",
+                      "tutors",
+                      "grades"
+                    ]
+                  },
+                  "mapping": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/import_mapping_templates/{id}": {
+      "delete": {
+        "tags": [
+          "import_mapping_templates"
+        ],
+        "operationId": "delete_import_template",
+        "summary": "Eliminar mi mapeo",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Plantillas del usuario"
+          },
+          "403": {
+            "description": "Sin permisos"
+          },
+          "422": {
+            "description": "Error de validación"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
       }
     }
   }

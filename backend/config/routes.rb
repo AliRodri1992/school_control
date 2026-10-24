@@ -19,6 +19,7 @@ Rails.application.routes.draw do
       delete :sessions, to: "account_security#destroy"
     end
     resources :email_templates, only: %i[index create update]
+    resources :import_mapping_templates, only: %i[index create destroy]
     resources :data_imports, only: %i[index create show] do
       get :preview, on: :member
       post :validate, on: :member
