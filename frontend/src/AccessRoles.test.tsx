@@ -15,7 +15,8 @@ it('saves permission switches together with the required module access',async()=
  await userEvent.type(screen.getByLabelText('Buscar permiso'),'Calificaciones');
  await userEvent.click(screen.getByRole('switch',{name:'Crear'}));
  expect(screen.getByRole('switch',{name:'Acceder y listar'})).toHaveProperty('checked',true);
- await userEvent.selectOptions(screen.getByLabelText('Ámbito grades.create'),'assigned');
+ await userEvent.click(screen.getByRole('combobox',{name:'Ámbito grades.create'}));
+ await userEvent.click(screen.getByRole('option',{name:'Clases asignadas'}));
  await userEvent.click(screen.getByRole('button',{name:'Guardar permisos'}));
  await waitFor(()=>expect(changed).toHaveBeenCalledOnce());
  expect(api).toHaveBeenCalledWith('access_roles','POST',expect.objectContaining({name:'Evaluación',permissions:expect.arrayContaining([{key:'grades.create',data_scope:'assigned'},{key:'grades.index',data_scope:'institution'}])}));
