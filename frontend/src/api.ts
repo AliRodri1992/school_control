@@ -9,7 +9,7 @@ function apiError(message:string,status?:number,fieldErrors?:Record<string,strin
 function unexpectedResponse(path:string,status:number):ApiError {
   return apiError(
     'El servidor no devolvió una respuesta JSON para /api/'+path+' (HTTP '+status+'). '+
-    'Comprueba que abriste School Control en el puerto configurado (predeterminado http://localhost:3002). '+
+    'Comprueba que abriste School Control en el puerto configurado (predeterminado http://localhost:5173). '+
     'Revisa el error original del backend con: docker compose logs --tail=100 backend. '+
     'Comprueba también docker compose ps.',
     status
