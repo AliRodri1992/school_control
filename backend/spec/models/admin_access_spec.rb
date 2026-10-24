@@ -19,4 +19,24 @@ RSpec.describe "Acceso de administración" do
     admin.active = false
     expect(SchoolAccess.new(admin, "students.index").allows?).to be(false)
   end
+  it "incluye a alumnos existentes en el alcance del administrador" do
+    guardian = User.create!(name: "Tutora de prueba", email: "tutora.scope@example.test",
+      role: "guardian", password: "TestPassword123!")
+    student = Student.create!(first_name: "Alex", last_name: "Ejemplo",
+      curp: "DEMO200101HDFRNN01", birth_date: Date.new(2020, 1, 1), guardian: guardian)
+
+    expect(StudentPolicy::Scope.new(admin, Student).resolve).to include(student)
+  end
+
+  it "reconstruye permisos faltantes del rol administrador predeterminado" do
+    persisted_admin = User.create!(name: "Administrador de prueba",
+      email: "administrador.scope@example.test", role: "admin", password: "TestPassword123!")
+    role = AccessRole.find_by!(default_profile: "admin")
+    role.role_permissions.where(key: "students.index").delete_all
+
+    AccessRole.assign_default!(persisted_admin)
+
+    expect(role.role_permissions.find_by!(key: "students.index").data_scope).to eq("institution")
+  end
+
 end
