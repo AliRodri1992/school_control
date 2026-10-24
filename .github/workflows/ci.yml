@@ -91,6 +91,42 @@ jobs:
       - run: docker compose config --quiet
       - run: cp .env.staging.example .env.staging
       - run: docker compose --project-name school-staging --env-file .env.staging -f compose.yml -f compose.staging.yml config --quiet
+      - name: Validate host port isolation from Delta POS
+        run: |
+          python3 - <<'PY'
+          import json
+          import subprocess
+
+          def inspect(*args):
+              result = subprocess.check_output(
+                  ["docker", "compose", *args, "config", "--format", "json"],
+                  text=True,
+              )
+              return json.loads(result)["services"]
+
+          expected = {
+              "development": (inspect(), {"backend": 3200, "frontend": 5173}),
+              "staging": (
+                  inspect("--project-name", "school-staging", "--env-file", ".env.staging",
+                          "-f", "compose.yml", "-f", "compose.staging.yml"),
+                  {"backend": 3100, "frontend": 8180},
+              ),
+          }
+          for name, (services, published_expected) in expected.items():
+              exposed = {}
+              for service, configuration in services.items():
+                  for mapping in configuration.get("ports", []):
+                      host = int(mapping["published"])
+                      assert host not in (3000, 5432, 6379), (name, service, host)
+                      assert mapping.get("host_ip") == "127.0.0.1", (name, service, mapping)
+                      assert host not in exposed, (name, service, exposed[host])
+                      exposed[host] = service
+              for service, port in published_expected.items():
+                  assert exposed.get(port) == service, (name, service, port, exposed)
+              assert not services["db"].get("ports")
+              assert not services["redis"].get("ports")
+              print(f"{name}: isolated ports {exposed}")
+          PY
       - run: docker compose build
       - name: Start PostgreSQL (retry transient registry errors)
         run: |
@@ -102,8 +138,16 @@ jobs:
           exit 1
       - run: docker compose run --rm backend bundle exec rails db:prepare db:seed
       - run: docker compose run --rm backend bundle exec rails db:seed
-      - run: docker compose up -d --wait
-      - run: curl --fail-with-body http://localhost:5173/api/school
+      - name: Boot School Control while another Rails server occupies host port 3000
+        run: |
+          python3 -m http.server 3000 --bind 127.0.0.1 >/tmp/another-rails.log 2>&1 &
+          occupied_port_pid=$!
+          trap 'kill "$occupied_port_pid" 2>/dev/null || true' EXIT
+          sleep 1
+          kill -0 "$occupied_port_pid"
+          docker compose up -d --wait
+          curl --fail-with-body http://127.0.0.1:3200/up
+          curl --fail-with-body http://127.0.0.1:5173/api/school
       - run: docker compose run --rm backend bundle exec rails runner script/verify_worker.rb
       - run: docker compose --project-name school-staging --env-file .env.staging -f compose.yml -f compose.staging.yml build
       - run: docker compose --project-name school-staging --env-file .env.staging -f compose.yml -f compose.staging.yml run --rm backend bundle exec rails db:prepare db:seed

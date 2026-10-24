@@ -10,10 +10,17 @@ ADMIN_PASSWORD=$(openssl rand -hex 18)
 DEMO_SEEDS=true
 DEMO_PASSWORD=$(openssl rand -hex 18)
 SCHOOL_NAME=Primaria Aula
+SCHOOL_BACKEND_PORT=3200
+SCHOOL_FRONTEND_PORT=5173
 EOF
 fi
 docker compose build
 docker compose up -d db
 docker compose run --rm backend bundle exec rails db:prepare db:seed
 docker compose up -d
-printf '\nAbre http://localhost:5173. Consulta ADMIN_PASSWORD y DEMO_PASSWORD en .env.\n'
+frontend_host="$(docker compose port frontend 5173)"
+backend_host="$(docker compose port backend 3000)"
+printf '\nSchool Control (React): http://%s\n' "$frontend_host"
+printf 'School Control (Rails): http://%s\n' "$backend_host"
+printf 'Letter Opener (desarrollo): http://%s/letter_opener\n' "$backend_host"
+printf 'Consulta ADMIN_PASSWORD y DEMO_PASSWORD en .env.\n'

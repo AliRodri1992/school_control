@@ -54,7 +54,7 @@ services:
     volumes:
       - school_uploads:/rails/storage
     ports:
-      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:${SCHOOL_BACKEND_PORT:-3200}:3000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
       interval: 10s
@@ -65,7 +65,7 @@ services:
       context: ./frontend
       target: development
     ports:
-      - "127.0.0.1:5173:5173"
+      - "127.0.0.1:${SCHOOL_FRONTEND_PORT:-5173}:5173"
     depends_on:
       - backend
 volumes:

@@ -26,6 +26,41 @@ Con `DEMO_SEEDS=true`, se crean datos ficticios y estos accesos, cuya contraseñ
 
 Las semillas son idempotentes: ejecutar `docker compose run --rm backend bundle exec rails db:seed` nuevamente conserva las cuentas, contraseñas y datos existentes. No usar datos demo en producción.
 
+## Ejecutar junto con Delta POS (sin conflictos Docker)
+
+`sale_point` utiliza en el host los puertos `3000` (Rails), `5432` (PostgreSQL) y `6379` (Redis).
+School Control ejecuta **sus propios contenedores y volúmenes**: PostgreSQL y Redis no se publican en macOS; solo pueden verse dentro de la red privada del proyecto. Evita poner `container_name` compartidos o cambiar el nombre de proyecto de Compose si ya tienes datos.
+
+Puertos externos predeterminados de School Control:
+
+| Entorno | Interfaz web | Rails/API |
+| --- | --- | --- |
+| Desarrollo | http://localhost:5173 | http://localhost:3200 |
+| Staging | http://localhost:8180 | http://localhost:3100 |
+| Producción local (sin TLS) | http://localhost:8080 | Solo red Docker |
+
+Los contenedores de School Control **siguen utilizando los puertos internos** de Rails (`backend:3000`), PostgreSQL (`db:5432`) y Redis (`redis:6379`). React consulta el backend a través de su proxy interno; no apuntes el proxy Vite ni Nginx a `localhost:3200` dentro de los contenedores.
+
+Si ya existe el archivo `.env`, no necesitas regenerarlo. Los valores predeterminados se aplican automáticamente. Puedes añadir o cambiar estas variables para personalizar los puertos publicados:
+
+```dotenv
+SCHOOL_BACKEND_PORT=3200
+SCHOOL_FRONTEND_PORT=5173
+```
+
+Después reinicia **solo School Control**, sin detener Delta POS y sin eliminar los volúmenes:
+
+```bash
+docker compose up -d --build
+docker compose ps
+docker compose port backend 3000
+docker compose port frontend 5173
+```
+
+Para ver correos de desarrollo, abre **http://localhost:3200/letter_opener** (o el puerto personalizado). Los enlaces que Rails genera en desarrollo respetan `SCHOOL_BACKEND_PORT`.
+
+El `compose.staging.yml` utiliza los puertos independientes `3100` y `8180`, y un nombre de proyecto propio (`school-staging`). No ejecutes `docker compose down -v`: ese comando elimina las bases de datos y archivos persistentes del proyecto correspondiente.
+
 ## Recorrido funcional
 
 1. **Administración** configura nombre, CCT, teléfono, domicilio y logotipo PNG/JPG/WebP; el logotipo se muestra en los portales. Crea ciclos y ventanas de inscripción/reinscripción.
@@ -125,7 +160,7 @@ Con Ruby y Bundler instalados, ejecuta `bundle install` desde la raíz y `bundle
 
 Aula virtual permite publicar tareas por clase, entregar texto desde el portal del alumno, registrar entregas tardías y revisar con calificación y retroalimentación. Una entrega revisada queda protegida; las notas de tareas no sustituyen las notas trimestrales. La integración con Google Classroom y los adjuntos de tareas siguen pendientes.
 
-El centro de notificaciones usa Noticed y muestra avisos persistentes, contador de no leídos y enlaces al módulo. Perfil permite elegir si se reciben correos. Administración edita la plantilla de avisos; incluye nombre y logotipo de la escuela. En desarrollo, los correos se consultan en `http://localhost:3000/letter_opener`. En producción se requiere configurar SMTP, `MAIL_FROM`, `PORTAL_URL` y `ENABLE_EMAIL_DELIVERY=true`; staging conserva el envío deshabilitado.
+El centro de notificaciones usa Noticed y muestra avisos persistentes, contador de no leídos y enlaces al módulo. Perfil permite elegir si se reciben correos. Administración edita la plantilla de avisos; incluye nombre y logotipo de la escuela. En desarrollo, los correos se consultan en `http://localhost:3200/letter_opener` (o el puerto de `SCHOOL_BACKEND_PORT`). En producción se requiere configurar SMTP, `MAIL_FROM`, `PORTAL_URL` y `ENABLE_EMAIL_DELIVERY=true`; staging conserva el envío deshabilitado.
 
 Sidekiq procesa las entregas mediante el servicio `worker`. Redis persiste su cola en `redis_data` con AOF, sin publicar su puerto al host. Los avisos se crean junto al registro de auditoría, y los trabajos esperan al cierre de la transacción. Esto no sustituye un respaldo ni promete entrega externa exactamente una vez.
 
