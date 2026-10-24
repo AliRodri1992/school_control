@@ -1,3 +1,4 @@
+import {useSchoolLocale} from './shared/i18n/LocaleContext';
 import Combobox from './shared/components/Combobox';
 import TableAction from './shared/components/TableAction';
 import {useState, type FormEvent} from 'react';
@@ -5,7 +6,8 @@ import {api} from './api';
 import {notify} from './notifications';
 import type {Row} from './modules';
 
-export default function GradeRequests({grade,onChanged,canCreate=true}:{grade:Row;canCreate?:boolean;onChanged:()=>Promise<void>}) {
+export default function GradeRequests({grade,onChanged,canCreate=true}:{grade:Row;canCreate?:boolean;onChanged:()=>{ui("Promise")}<void>}) {
+ const {ui}=useSchoolLocale();
   const [decisions,setDecisions]=useState<Record<number,string>>({});
   const [requests,setRequests]=useState<Row[]|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
   const endpoint=`grades/${grade.id}/change_requests`;
@@ -28,10 +30,10 @@ export default function GradeRequests({grade,onChanged,canCreate=true}:{grade:Ro
   return <>
     <TableAction kind="requests" ariaLabel="Solicitudes de corrección" tooltip="Solicitudes" disabled={busy} onClick={open}/>
     {requests===null&&error&&<p role="alert" className="error">{error}</p>}
-    {requests!==null&&<div className="overlay"><section className="dialog" role="dialog" aria-modal="true" aria-label="Solicitudes de corrección">
-      <header><h2>Solicitudes de corrección</h2><button disabled={busy} aria-label="Cerrar solicitudes" onClick={()=>setRequests(null)}>×</button></header>
+    {requests!==null&&<div className="overlay"><section className="dialog" role="dialog" aria-modal="true" aria-label={ui("Solicitudes de corrección")}>
+      <header><h2>{ui("Solicitudes de corrección")}</h2><button disabled={busy} aria-label={ui("Cerrar solicitudes")} onClick={()=>setRequests(null)}>×</button></header>
       <p>{grade.student_name} · {grade.subject_name} · Trimestre {grade.term}</p>
-      <p>La nota publicada permanece vigente hasta que otra persona de administración apruebe el cambio. El motivo es interno.</p>
+      <p>{ui("La nota publicada permanece vigente hasta que otra persona de administración apruebe el cambio. El motivo es interno.")}</p>
       {error&&<p role="alert" className="error">{error}</p>}
       {requests.map(request=><article key={request.id}>
         <h3>{request.previous_score} → {request.score} · {({pending:'Pendiente',approved:'Aprobada',rejected:'Rechazada'} as Record<string,string>)[request.status]}</h3>
@@ -41,21 +43,21 @@ export default function GradeRequests({grade,onChanged,canCreate=true}:{grade:Ro
         <p>Retroalimentación propuesta: {request.feedback||'Sin retroalimentación'}</p>
         {request.resolver_name&&<p>{request.resolver_name}: {request.resolution_reason}</p>}
         {request.can_resolve&&<form onSubmit={event=>submit(event,request)}>
-          <div className="sc-form-dropdown"><label>Resolución</label><Combobox label={'Resolución de solicitud '+request.id}
+          <div className="sc-form-dropdown"><label>{ui("Resolución")}</label><Combobox label={'Resolución de solicitud '+request.id}
   value={decisions[request.id]||''} onChange={value=>setDecisions(previous=>({...previous,[request.id]:value}))}
-  placeholder="Selecciona una resolución" options={[{value:'approved',label:'Aprobar'},{value:'rejected',label:'Rechazar'}]}/>
+  placeholder={ui("Selecciona una resolución")} options={[{value:'approved',label:ui("Aprobar")},{value:'rejected',label:ui("Rechazar")}]}/>
   <input type="hidden" name="decision" value={decisions[request.id]||''}/></div>
-          <label>Motivo de resolución<textarea name="resolution_reason" required maxLength={2000}/></label>
-          <button className="primary" disabled={busy}>Guardar resolución</button>
+          <label>{ui("Motivo de resolución")}<textarea name="resolution_reason" required maxLength={2000}/></label>
+          <button className="primary" disabled={busy}>{ui("Guardar resolución")}</button>
         </form>}
       </article>)}
-      {requests.length===0&&<p>No hay solicitudes registradas.</p>}
+      {requests.length===0&&<p>{ui("No hay solicitudes registradas.")}</p>}
       {canCreate&&!requests.some(request=>request.status==='pending')&&<form onSubmit={event=>submit(event)}>
-        <h3>Nueva solicitud</h3>
-        <label>Calificación propuesta<input name="score" type="number" min={0} max={10} step="0.01" required defaultValue={grade.score}/></label>
-        <label>Retroalimentación propuesta<textarea name="feedback" defaultValue={grade.feedback||''}/></label>
-        <label>Motivo de solicitud<textarea name="reason" required maxLength={2000}/></label>
-        <button className="primary" disabled={busy}>Enviar solicitud</button>
+        <h3>{ui("Nueva solicitud")}</h3>
+        <label>{ui("Calificación propuesta")}<input name="score" type="number" min={0} max={10} step="0.01" required defaultValue={grade.score}/></label>
+        <label>{ui("Retroalimentación propuesta")}<textarea name="feedback" defaultValue={grade.feedback||''}/></label>
+        <label>{ui("Motivo de solicitud")}<textarea name="reason" required maxLength={2000}/></label>
+        <button className="primary" disabled={busy}>{ui("Enviar solicitud")}</button>
       </form>}
     </section></div>}
   </>;

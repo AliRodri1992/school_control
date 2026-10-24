@@ -1,3 +1,4 @@
+import {useSchoolLocale} from '../../shared/i18n/LocaleContext';
 import {useEffect,useState} from 'react';
 import {ArrowLeft,BookOpen,FileText,GraduationCap,IdCard,MapPin,Phone,Plus,Users,CalendarDays} from 'lucide-react';
 import {api} from '../../api';
@@ -50,6 +51,7 @@ function title(row:Row,kind:DataKind):string{
 export default function StudentDetails({student,onClose,canEdit,canWriteNotes,canViewReport=false}:{
  student:Row;onClose:()=>void;canEdit:boolean;canWriteNotes:boolean;canViewReport?:boolean;
 }){
+ const {ui}=useSchoolLocale();
  const [kind,setKind]=useState<Kind>('overview'),[items,setItems]=useState<Row[]>([]);
  const [editing,setEditing]=useState<Row|null>(null),[creating,setCreating]=useState(false);
  const [error,setError]=useState(''),[fieldErrors,setFieldErrors]=useState<Record<string,string[]>>({});
@@ -82,10 +84,10 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
  return <section className="sc-student-details" aria-label={'Expediente de '+student.full_name}>
   <div className="sc-record-hero">
    <div className="sc-record-hero-copy">
-    <button className="sc-record-back" type="button" onClick={onClose}><ArrowLeft size={17}/>Volver a alumnos</button>
-    <span className="eyebrow">CONTROL ESCOLAR / EXPEDIENTE DEL ALUMNO</span>
+    <button className="sc-record-back" type="button" onClick={onClose}><ArrowLeft size={17}/>{ui("Volver a alumnos")}</button>
+    <span className="eyebrow">{ui("CONTROL ESCOLAR / EXPEDIENTE DEL ALUMNO")}</span>
     <h1>{student.full_name}</h1>
-    <p>Consulta su información personal, contactos y trayectoria en una vista completa.</p>
+    <p>{ui("Consulta su información personal, contactos y trayectoria en una vista completa.")}</p>
     <span className="sc-record-identity"><IdCard size={16}/>{student.curp||'CURP no registrada'}</span>
    </div>
    <div className="sc-record-illustration" aria-hidden="true">
@@ -101,38 +103,38 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
    </div>
   </div>
   <div className="sc-record-facts">
-   <article><IdCard size={20}/><div><small>CURP</small><strong>{student.curp||'Sin registrar'}</strong></div></article>
-   <article><CalendarDays size={20}/><div><small>Fecha de nacimiento</small><strong>{student.birth_date||'Sin registrar'}</strong></div></article>
-   <article><Phone size={20}/><div><small>Teléfono de emergencia</small><strong>{student.emergency_phone||'Sin registrar'}</strong></div></article>
-   <article><Users size={20}/><div><small>Expediente</small><strong>#{student.id}</strong></div></article>
+   <article><IdCard size={20}/><div><small>{ui("CURP")}</small><strong>{student.curp||'Sin registrar'}</strong></div></article>
+   <article><CalendarDays size={20}/><div><small>{ui("Fecha de nacimiento")}</small><strong>{student.birth_date||'Sin registrar'}</strong></div></article>
+   <article><Phone size={20}/><div><small>{ui("Teléfono de emergencia")}</small><strong>{student.emergency_phone||'Sin registrar'}</strong></div></article>
+   <article><Users size={20}/><div><small>{ui("Expediente")}</small><strong>#{student.id}</strong></div></article>
   </div>
   <div className="sc-record-layout">
-   <nav className="sc-details-tabs" aria-label="Secciones del expediente">
+   <nav className="sc-details-tabs" aria-label={ui("Secciones del expediente")}>
     {category.map(section=>{const Icon=icon[section.kind];return <button key={section.kind} aria-current={kind===section.kind?'page':undefined}
       type="button" onClick={()=>{setKind(section.kind);setEditing(null);setCreating(false);setError('');}}>
       <Icon size={18}/><span>{section.title}</span></button>;})}
    </nav>
    <section className="sc-record-content">
     {kind==='overview'?<>
-      <div className="sc-details-heading"><div><span className="eyebrow">INFORMACIÓN GENERAL</span>
-       <h2>Resumen del expediente</h2><p>Identidad registrada y seguimiento académico disponible.</p></div></div>
+      <div className="sc-details-heading"><div><span className="eyebrow">{ui("INFORMACIÓN GENERAL")}</span>
+       <h2>{ui("Resumen del expediente")}</h2><p>{ui("Identidad registrada y seguimiento académico disponible.")}</p></div></div>
       <div className="sc-record-summary">
-       <div><small>Nombre del alumno</small><strong>{student.full_name}</strong></div>
-       <div><small>CURP</small><strong>{student.curp||'Pendiente'}</strong></div>
-       <div><small>Fecha de nacimiento</small><strong>{student.birth_date||'Pendiente'}</strong></div>
-       <div><small>Dirección registrada</small><strong>{student.address||'Consulta la sección Direcciones'}</strong></div>
+       <div><small>{ui("Nombre del alumno")}</small><strong>{student.full_name}</strong></div>
+       <div><small>{ui("CURP")}</small><strong>{student.curp||'Pendiente'}</strong></div>
+       <div><small>{ui("Fecha de nacimiento")}</small><strong>{student.birth_date||'Pendiente'}</strong></div>
+       <div><small>{ui("Dirección registrada")}</small><strong>{student.address||'Consulta la sección Direcciones'}</strong></div>
       </div>
-      <div className="sc-record-history-heading"><BookOpen size={20}/><h3>Trayectoria académica</h3></div>
+      <div className="sc-record-history-heading"><BookOpen size={20}/><h3>{ui("Trayectoria académica")}</h3></div>
       {report?.years?.length?report.years.map((year:Row)=><article className="sc-record-year" key={year.enrollment.id}>
         <div><strong>{year.enrollment.group_label||'Grupo escolar'}</strong><span>{year.enrollment.status||'Inscripción'}</span></div>
         <small>{year.grades?.length||0} calificaciones · {Object.entries(year.attendance||{}).map(([status,count])=>status+': '+count).join(' · ')||'Sin asistencias registradas'}</small>
        </article>):<p className="sc-details-blank">{canViewReport?'Sin inscripciones o calificaciones registradas.':'El historial académico no está disponible para tu perfil.'}</p>}
     </>:<>
-     <div className="sc-details-heading"><div><span className="eyebrow">EXPEDIENTE / INFORMACIÓN RELACIONADA</span>
+     <div className="sc-details-heading"><div><span className="eyebrow">{ui("EXPEDIENTE / INFORMACIÓN RELACIONADA")}</span>
        <h2>{category.find(section=>section.kind===kind)?.title}</h2>
        <p>{category.find(section=>section.kind===kind)?.description}</p></div>
        {writable&&!creating&&!editing&&<button className="primary" type="button" onClick={()=>{setCreating(true);setEditing(null);}}>
-         <Plus size={17}/>Agregar registro</button>}
+         <Plus size={17}/>{ui("Agregar registro")}</button>}
      </div>
      {error&&<div className="error" role="alert">{error}</div>}
      {(creating||editing)&&<div className="sc-details-form"><RecordForm key={kind+'-'+(editing?.id||'new')}
@@ -140,17 +142,17 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
        onSubmit={values=>void save(values)} onCancel={()=>{setEditing(null);setCreating(false);setError('');}} busy={busy}
        options={()=>[]} optionName={row=>String(row.name||row.id)} error={error} fieldErrors={fieldErrors}/></div>}
      {!creating&&!editing&&<div className="sc-details-list">
-       {loading?<p>Cargando información…</p>:items.length?items.map(row=><article className="sc-details-card" key={row.id}>
+       {loading?<p>{ui("Cargando información…")}</p>:items.length?items.map(row=><article className="sc-details-card" key={row.id}>
          <span className="sc-details-card-icon">{kind==='addresses'?<MapPin size={21}/>:kind==='phones'?<Phone size={21}/>:kind==='contacts'?<Users size={21}/>:<FileText size={21}/>}</span>
          <div><strong>{title(row,kind as DataKind)}</strong>
           <p>{kind==='addresses'?[row.locality,row.region,row.postal_code].filter(Boolean).join(' · '):kind==='phones'?row.purpose:kind==='contacts'?[row.relationship,row.email].filter(Boolean).join(' · '):row.category}</p>
-          {row.legacy_student_contact_id&&<small>Contacto vinculado a Contactos familiares</small>}
+          {row.legacy_student_contact_id&&<small>{ui("Contacto vinculado a Contactos familiares")}</small>}
          </div>
          {writable&&!row.legacy_student_contact_id&&<div className="actions">
-          <button className="secondary" type="button" onClick={()=>{setEditing(row);setFieldErrors({});}}>Editar</button>
-          <button className="secondary danger" type="button" disabled={busy} onClick={()=>void remove(row)}>Eliminar</button>
+          <button className="secondary" type="button" onClick={()=>{setEditing(row);setFieldErrors({});}}>{ui("Editar")}</button>
+          <button className="secondary danger" type="button" disabled={busy} onClick={()=>void remove(row)}>{ui("Eliminar")}</button>
          </div>}
-        </article>):<p className="sc-details-blank">No existen registros en esta sección. Puedes agregar información autorizada.</p>}
+        </article>):<p className="sc-details-blank">{ui("No existen registros en esta sección. Puedes agregar información autorizada.")}</p>}
      </div>}
     </>}
    </section>
