@@ -1,4 +1,5 @@
 class User < ApplicationRecord
+  has_one :user_preference, dependent: :destroy
   has_many :data_imports, dependent: :restrict_with_error
   has_many :addresses, as: :addressable, dependent: :restrict_with_error
   has_many :phone_numbers, as: :phoneable, dependent: :restrict_with_error

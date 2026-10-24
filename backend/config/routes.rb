@@ -13,6 +13,7 @@ Rails.application.routes.draw do
     post "registration", to: "sessions#register"
     resource :school, only: %i[show update]
     resource :password_reset, only: %i[create update]
+    resource :preferences, only: %i[show update]
     resource :profile, only: %i[show update] do
       patch :password, to: "account_security#update"
       delete :sessions, to: "account_security#destroy"

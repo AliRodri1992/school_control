@@ -8758,6 +8758,100 @@
           }
         }
       }
+    },
+    "/api/preferences": {
+      "get": {
+        "operationId": "get_preferences",
+        "summary": "Consultar preferencias personales",
+        "tags": [
+          "account"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Preferencias del usuario actual"
+          },
+          "422": {
+            "description": "Valores inválidos o hijo de otra familia"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "patch_preferences",
+        "summary": "Guardar idioma, tema y niño seleccionado",
+        "tags": [
+          "account"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Preferencias del usuario actual"
+          },
+          "422": {
+            "description": "Valores inválidos o hijo de otra familia"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "locale": {
+                    "type": "string"
+                  },
+                  "theme": {
+                    "type": "string",
+                    "enum": [
+                      "system",
+                      "light",
+                      "dark"
+                    ]
+                  },
+                  "rows_per_page": {
+                    "type": "integer",
+                    "enum": [
+                      10,
+                      15,
+                      25,
+                      50
+                    ]
+                  },
+                  "selected_child_id": {
+                    "anyOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
     }
   }
 }
