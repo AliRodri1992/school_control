@@ -5,7 +5,7 @@ import {api} from '../../api';
 
 type Batch={id:number;kind:string;status:string;mapping:Record<string,string>;total_rows:number;imported_rows:number;row_errors:{row:number;messages:string[]}[]};
 type Preview={headers:string[];sample:{row:number;values:Record<string,string>}[];suggested_mapping:Record<string,string>;total_rows:number};
-const fieldCatalog:Record<string,Record<string,string>>={students:{first_name:'Nombre del alumno',last_name:'Apellidos',curp:'CURP',birth_date:'Fecha de nacimiento',guardian_email:'Correo del tutor'},subjects:{name:'Nombre de la materia',code:'Clave de materia'},groups:{academic_year:'Ciclo escolar',grade_level:'Grado',section:'Sección',capacity:'Cupo máximo'}};
+const fieldCatalog:Record<string,Record<string,string>>={students:{first_name:'Nombre del alumno',last_name:'Apellidos',curp:'CURP',birth_date:'Fecha de nacimiento',guardian_email:'Correo del tutor'},subjects:{name:'Nombre de la materia',code:'Clave de materia'},groups:{academic_year:'Ciclo escolar',grade_level:'Grado',section:'Sección',capacity:'Cupo máximo'},teachers:{name:'Nombre del docente',email:'Correo del docente'},tutors:{name:'Nombre del tutor',email:'Correo del tutor'}};
 const stages=['Archivo','Asociación de columnas','Validación','Confirmación y resultado'] as const;
 
 export default function ImportWizard(){
@@ -57,7 +57,8 @@ export default function ImportWizard(){
     {error&&<div className="error" role="alert">{error}</div>}
     {step===0&&<form onSubmit={upload} className="sc-import-form" noValidate>
       <h2>1. Selecciona tipo y archivo</h2>
-       <label>Tipo de datos<select value={kind} onChange={e=>setKind(e.target.value)}><option value="students">Alumnos</option><option value="subjects">Materias</option><option value="groups">Grupos</option></select></label><p>Admite archivos .xlsx y .csv de hasta 5 MB con un máximo de 5,000 filas. La primera fila debe contener encabezados únicos.</p>
+       <label>Tipo de datos<select value={kind} onChange={e=>setKind(e.target.value)}><option value="students">Alumnos</option><option value="subjects">Materias</option><option value="groups">Grupos</option><option value="teachers">Docentes</option><option value="tutors">Padres y tutores</option></select></label><p>Admite archivos .xlsx y .csv de hasta 5 MB con un máximo de 5,000 filas. La primera fila debe contener encabezados únicos.</p>
+      {['teachers','tutors'].includes(kind)&&<p className="info">Los usuarios importados recibirán un correo para establecer su contraseña. No se generan contraseñas compartidas ni se muestran credenciales en pantalla.</p>}
       <label className="sc-dropzone" htmlFor="school-import-file"><UploadCloud size={36}/><strong>{file?file.name:'Selecciona un archivo Excel o CSV'}</strong><span>Los datos se almacenan de forma privada.</span></label>
       <input id="school-import-file" aria-describedby={fieldError?'school-import-file-error':undefined} aria-invalid={!!fieldError} type="file" accept=".csv,.xlsx" onChange={e=>{setFile(e.target.files?.[0]||null);setFieldError('');}}/>
       {fieldError&&<p id="school-import-file-error" className="sc-field-error" role="alert">{fieldError}</p>}

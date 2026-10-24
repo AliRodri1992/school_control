@@ -7477,6 +7477,17 @@
                   "file": {
                     "type": "string",
                     "format": "binary"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "students",
+                      "subjects",
+                      "groups",
+                      "teachers",
+                      "tutors"
+                    ],
+                    "description": "Tipo de datos a importar"
                   }
                 },
                 "required": [

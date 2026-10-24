@@ -8,7 +8,11 @@ class DataImportJob < ApplicationJob
       batch.update!(status: "processing")
     end
     dataset = DataImportReader.new(batch).call
-    validator = batch.kind == "students" ? ValidateStudentImport.new(batch) : ValidateCatalogImport.new(batch)
+    validator = case batch.kind
+    when "students" then ValidateStudentImport.new(batch)
+    when "teachers", "tutors" then ValidateUserImport.new(batch)
+    else ValidateCatalogImport.new(batch)
+    end
     validator.validate_mapping!(dataset.fetch(:headers), batch.mapping)
     imported = batch.data_import_items.count
     errors = []
@@ -17,11 +21,20 @@ class DataImportJob < ApplicationJob
       begin
         attributes = validator.attributes(values, batch.mapping)
         model = batch.kind == "students" ? Student : validator.record_class
+        if model == User
+          raise ArgumentError, "Sin permiso para asignar usuarios" unless batch.user.can?("users.create") &&
+            batch.user.can?("access_roles.assign")
+          grants = PermissionCatalog.defaults(attributes.fetch(:role)).map do |key, scope|
+            { key: key, data_scope: scope }
+          end
+          ManageAccess.verify_grants!(batch.user, grants)
+        end
         ActiveRecord::Base.transaction do
           record = model.create!(attributes)
           batch.data_import_items.create!(row_number: line, record_type: model.name, record_id: record.id)
           AuditEvent.create!(user: batch.user, action: "#{batch.kind.singularize}.imported", record_type: model.name, record_id: record.id)
         end
+        PasswordRecoveryJob.perform_later(record.id, record.session_version) if model == User
         imported += 1
       rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique, ArgumentError => error
         errors << { row: line, messages: [ error.message ] }

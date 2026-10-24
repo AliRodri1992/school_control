@@ -47,13 +47,31 @@ module Api
 
     def require_school_importer
       requested_kind = params[:id] ? batch.kind : params[:kind].presence || "students"
-      permission = { "students" => "students.create", "subjects" => "subjects.create", "groups" => "groups.create" }[requested_kind]
+      if action_name == "index"
+        return if import_permissions.any? { |permission| SchoolAccess.new(current_user, permission).institution? }
+        return render json: { error: "Sin permiso para consultar importaciones" }, status: :forbidden
+      end
+      permission = {
+        "students" => "students.create", "subjects" => "subjects.create",
+        "groups" => "groups.create", "teachers" => "users.create", "tutors" => "users.create"
+      }[requested_kind]
+      if %w[teachers tutors].include?(requested_kind) && !current_user.can?("access_roles.assign")
+        return render json: { error: "Sin permiso para asignar roles" }, status: :forbidden
+      end
       return if permission && SchoolAccess.new(current_user, permission).institution?
       render json: { error: "Sin permiso para importar estos datos" }, status: :forbidden
     end
 
+    def import_permissions
+      %w[students.create subjects.create groups.create users.create]
+    end
+
     def validator
-      batch.kind == "students" ? ValidateStudentImport.new(batch) : ValidateCatalogImport.new(batch)
+      case batch.kind
+      when "students" then ValidateStudentImport.new(batch)
+      when "teachers", "tutors" then ValidateUserImport.new(batch)
+      else ValidateCatalogImport.new(batch)
+      end
     end
 
     def present_import(item)
