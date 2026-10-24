@@ -52,3 +52,9 @@
 @media(max-width:1160px){.sc-clock{display:none}}
 @media(max-width:760px){.sc-sidebar{width:min(300px,86vw)!important}.sc-topbar{position:sticky}.sc-crumbs{font-size:12px}.sc-top-actions{gap:6px}.sc-language{padding:5px}.sc-icon-button{height:36px}.sc-account-button{height:36px}}
 @media(max-width:380px){.sc-language svg{display:none}.sc-crumbs button{display:none}}
+
+.sc-crumb-step{display:inline-flex;align-items:center;gap:7px;min-width:0}
+.sc-crumb-step>button{color:#64748b;white-space:nowrap;font-size:12px;padding:4px;border-radius:6px}
+.sc-crumb-step>button:hover{color:#405cf5;background:#f0f3ff}
+.sc-crumb-step>span[aria-current=page]{font-size:12px;font-weight:650;color:#243960;white-space:nowrap}
+@media(max-width:1200px){.sc-crumb-step>button{max-width:100px;overflow:hidden;text-overflow:ellipsis}}

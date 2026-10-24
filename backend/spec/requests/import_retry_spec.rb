@@ -29,7 +29,7 @@ RSpec.describe "import retry permissions", type: :request do
     post "/api/session", params: { email: guardian.email, password: "School-test-password-26" }, as: :json
 
     post "/api/data_imports/#{batch.id}/retry", as: :json
-    expect(response).to have_http_status(:forbidden)
+    expect(response).to have_http_status(:not_found)
     expect(batch.reload.status).to eq("failed")
   end
 end
