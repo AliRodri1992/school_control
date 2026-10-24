@@ -1,4 +1,5 @@
 import {LocaleProvider} from '../shared/i18n/LocaleContext';
+import {translateUiText} from '../shared/i18n/english';
 import {useEffect,useRef,useState,type ReactNode} from 'react';
 import {Bell,BookOpen,CalendarClock,ChevronDown,ChevronRight,HelpCircle,Languages,LogOut,Menu,PanelLeftClose,PanelLeftOpen,UserRound,X,LayoutDashboard,Users,GraduationCap,BookOpenCheck,CalendarDays,MessageSquare,BarChart3,Settings,School,FolderOpen,ClipboardList} from 'lucide-react';
 import {api} from '../api';
@@ -25,7 +26,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const [availableLocales,setAvailableLocales]=useState<{id:number;code:string;name:string;native_name:string;status:string;text_direction:string}[]>([]);
  const [translations,setTranslations]=useState<Record<string,string>>({});
  const fallbackEn:Record<string,string>={'shell.portal':'Portal','shell.locale':'Language','shell.profile':'My profile and security','shell.help':'Help and user guide','shell.signout':'Sign out','shell.notifications':'Notifications','shell.no_notifications':'No recent notifications.','shell.view_all':'View all notifications','nav.dashboard':'Overview','nav.students':'Students and records','nav.student_contacts':'Family contacts','nav.documents':'Documents','nav.admissions':'Admissions','nav.enrollments':'Enrollment and history','nav.academic_years':'School years','nav.groups':'Groups','nav.courses':'Classes','nav.subjects':'Subjects','nav.schedule':'Schedules','nav.attendances':'Attendance','nav.grades':'Grades','nav.classroom':'Virtual classroom','nav.messages':'Messages','nav.announcements':'Announcements','nav.calendar_events':'Calendar','nav.reports':'Reports','nav.imports':'Imports','nav.users':'Users','nav.access_roles':'Roles and permissions','nav.school':'My school','nav.email_templates':'Email templates','nav.languages':'Languages and translations','nav.api_docs':'API documentation','group.Inicio':'Home','group.Gestión escolar':'School management','group.Gestión académica':'Academic management','group.Comunicación':'Communication','group.Análisis y sistema':'Analytics and system','group.Mi actividad':'My activity','group.Mi escuela':'My school','group.Mi familia':'My family','group.Comunidad':'Community','group.Seguimiento':'Progress'};
- const translate=(key:string,fallback:string)=>translations[key]||(locale==='en'?fallbackEn[key]:undefined)||fallback;
+ const translate=(key:string,fallback:string)=>translations[key]||(locale==='en'?fallbackEn[key]:undefined)||translateUiText(locale,fallback);
  const sectionIcons:Record<string,ReactNode>={'Inicio':<LayoutDashboard size={21}/>, 'Gestión escolar':<Users size={21}/>, 'Gestión académica':<GraduationCap size={21}/>, 'Comunicación':<MessageSquare size={21}/>, 'Análisis y sistema':<BarChart3 size={21}/>, 'Mi actividad':<BookOpenCheck size={21}/>, 'Mi escuela':<School size={21}/>, 'Mi familia':<Users size={21}/>, 'Comunidad':<MessageSquare size={21}/>, 'Seguimiento':<ClipboardList size={21}/>};
  const moduleIcons:Record<string,ReactNode>={dashboard:<LayoutDashboard size={17}/>,students:<Users size={17}/>,academic_years:<CalendarDays size={17}/>,groups:<Users size={17}/>,courses:<BookOpenCheck size={17}/>,calendar_events:<CalendarDays size={17}/>,messages:<MessageSquare size={17}/>,reports:<BarChart3 size={17}/>,school:<School size={17}/>,documents:<FolderOpen size={17}/>,settings:<Settings size={17}/>};
  const [accountTarget,setAccountTarget]=useState<'sidebar'|'topbar'|null>(null);
@@ -56,7 +57,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    let mounted=true;
    void api('preferences').then(settings=>{
      if(!mounted)return;
-     if(settings.locale)setLocale(settings.locale);
+     if(settings.locale){setLocale(settings.locale);localStorage.setItem('school-locale',settings.locale);window.dispatchEvent(new Event('school-locale-changed'));}
      if(settings.theme)document.documentElement.dataset.schoolTheme=settings.theme;
    }).catch(()=>undefined);
    return()=>{mounted=false;};
@@ -116,14 +117,14 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
   document.documentElement.lang=locale;
   document.documentElement.dir=availableLocales.find(item=>item.code===locale)?.text_direction==='rtl'?'rtl':'ltr';
  },[locale,availableLocales]);
- function setLanguage(language:string){setLanguageOpen(false);if(language===locale||!availableLocales.some(item=>item.code===language))return;setLocale(language);localStorage.setItem('school-locale',language);
+ function setLanguage(language:string){setLanguageOpen(false);if(language===locale||!availableLocales.some(item=>item.code===language))return;setLocale(language);localStorage.setItem('school-locale',language);window.dispatchEvent(new Event('school-locale-changed'));
    void api('preferences','PATCH',{locale:language}).catch(e=>setNoticeError((e as Error).message));}
  function accountMenu(){
    return <section className="sc-flyout sc-account-menu" aria-label="Menú de cuenta">
      <div className="sc-account-details"><strong>{user.name}</strong><small>{user.email}</small><small>{portalLabels[portal]}</small></div>
      <button className="sc-flyout-link" onClick={()=>navigate('profile')}><UserRound size={17}/>{translate("shell.profile","Mi perfil y seguridad")}</button>
-     <button className="sc-flyout-link" onClick={()=>navigate('preferences')}><Languages size={17}/>Preferencias</button>
-     <button className="sc-flyout-link" onClick={()=>navigate('notifications')}><Bell size={17}/>Centro de notificaciones</button>
+     <button className="sc-flyout-link" onClick={()=>navigate('preferences')}><Languages size={17}/>{translate("shell.preferences","Preferencias")}</button>
+     <button className="sc-flyout-link" onClick={()=>navigate('notifications')}><Bell size={17}/>{translate("shell.notification_center","Centro de notificaciones")}</button>
      <button className="sc-flyout-link" onClick={()=>navigate('help')}><HelpCircle size={17}/>{translate("shell.help","Ayuda y guía de uso")}</button>
      <div className="sc-account-menu-divider"/>
      <button className="sc-flyout-link sc-logout" onClick={()=>{setAccountTarget(null);void onSignOut();}}>
@@ -199,7 +200,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
      </header>
      <div className="sc-breadcrumb-bar">
        <nav className="sc-crumbs" aria-label="Ruta de navegación">
-         <button type="button" onClick={()=>navigate('dashboard')}>{portalLabels[portal]}</button>
+         <button type="button" onClick={()=>navigate('dashboard')}>{translateUiText(locale,portalLabels[portal])}</button>
          {trail.length?trail.map((item,index)=><span className="sc-crumb-step" key={item.key}>
    <ChevronRight size={14}/>
    {index===trail.length-1?<span aria-current="page">{translate('nav.'+item.key,item.title)}</span>:
