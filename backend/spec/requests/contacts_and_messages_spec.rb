@@ -21,13 +21,17 @@ RSpec.describe "Family contacts and institutional messages", type: :request do
     post "/api/student_contacts", params: { student_id: student.id, name: "Abuela", relationship: "Abuela", phone: "+525512345678", emergency: true }, as: :json
     expect(response).to have_http_status(:created)
     contact = StudentContact.last
+    shared = Contact.find_by!(legacy_student_contact_id: contact.id)
+    expect(shared.contactable).to eq(student)
     patch "/api/student_contacts/#{contact.id}", params: { student_id: create(:student).id, pickup_authorized: true }, as: :json
     expect(response).to have_http_status(:ok)
     expect(contact.reload.student).to eq(student)
     expect(contact.pickup_authorized).to be(true)
+    expect(shared.reload.pickup_authorized).to be(true)
     delete "/api/student_contacts/#{contact.id}"
     expect(response).to have_http_status(:no_content)
     expect(StudentContact.exists?(contact.id)).to be(false)
+    expect(Contact.exists?(shared.id)).to be(false)
   end
 
   it "hides other families' contacts and refuses cross-family writes" do

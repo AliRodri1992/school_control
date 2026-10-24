@@ -90,7 +90,8 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes}:{
       <BookOpen size={20} color="#405cf5"/><div><strong>{title(row,kind)}</strong>
        <p>{kind==='addresses'?[row.locality,row.region,row.postal_code].filter(Boolean).join(' · '):kind==='phones'?row.purpose:kind==='contacts'?[row.relationship,row.email].filter(Boolean).join(' · '):row.category}</p>
       </div>
-      {writable&&<div className="actions"><button className="text-button" onClick={()=>{setEditing(row);setFieldErrors({});}}>Editar</button>
+      {row.legacy_student_contact_id&&<p className="sc-details-legacy">Contacto vinculado al módulo de Contactos familiares</p>}
+      {writable&&!row.legacy_student_contact_id&&<div className="actions"><button className="text-button" onClick={()=>{setEditing(row);setFieldErrors({});}}>Editar</button>
        <button className="text-button danger" disabled={busy} onClick={()=>void remove(row)}>Eliminar</button></div>}
      </article>):<p className="sc-details-blank">No existen registros en esta sección. Puedes agregar información autorizada.</p>}
   </div>}
