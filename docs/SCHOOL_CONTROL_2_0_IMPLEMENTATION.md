@@ -2,7 +2,7 @@
 
 This file tracks the implementation of the attached product specification in [SCHOOL_CONTROL_2_0_MASTER.md](SCHOOL_CONTROL_2_0_MASTER.md). The specification is a target, not evidence that features are finished.
 
-## Baseline (verified in \`feature/smart-dashboard\`)
+## Historical baseline (before the 2.0 implementation)
 
 - Rails JSON API, cookie sessions and CSRF protection.
 - Four user profile values; one shared React application with a state-driven sidebar.
@@ -50,3 +50,34 @@ Do not remove pre-existing modules or confuse newly documented features with imp
 - Automated tests added to the modified areas.
 
 Outstanding acceptance items from the master document include the full portal-specific page migration, accessible combobox library, comprehensive translation publishing system, complete UI and API schema coverage, full person/contact migration and cross-device visual regression suite.
+
+
+## Implemented through October 24, 2026
+
+- Pundit is now integrated into student, grade, attendance, admission, student-document, family-contact and enrollment actions. Authorization remains based on the custom RBAC and SchoolAccess scopes. Additional controllers still require Pundit integration.
+- React Router provides separate entry URLs for /admin, /teachers, /students and /tutors. Their landing experiences use role-specific copy, quick actions and saved draggable/resizable dashboards.
+- The shared shell includes the real-time school clock, role-aware navigation with three levels, breadcrumbs, account and notification flyouts, locale picker, and persisted guardian child selection.
+- Tables support basic client-side pagination, ordering, and status filters. Scalable server-side filtering/pagination is still pending.
+- Shared field-level validations, searchable keyboard-accessible dropdowns, modal forms, Midnight Indigo visual tokens and custom Auli SVG poses are in place.
+- A language catalog stores reviewed ES/EN translations and future languages. Localization across the entire app remains incomplete.
+- Email templates are versioned, stored in PostgreSQL, visually editable and previewable. Automated mail workflows still need expansion.
+- The CSV/XLSX wizard imports students, subjects, groups, teachers, guardians and draft grades. It supports validation, column mapping, user-owned reusable templates, per-row idempotency, error reports and protected retry.
+- The admin OpenAPI explorer shows documented endpoints, security and selected typed request schemas. Full contract parity remains incomplete.
+- Polymorphic addresses, phone numbers, contacts and notes are available in student records. A non-destructive backfill task and one-way legacy contact mirroring are integrated; full cutover remains outstanding.
+- The account Help menu links to a role-aware guide with task-specific instructions.
+
+## Remaining release criteria
+
+1. Finish separate portal workflows and apply Pundit consistently to all privileged controllers and records.
+2. Complete the component-library migration and responsive/accessibility regression tests.
+3. Translate all modules, forms, alerts, reports and mail templates using the reviewed locale catalog.
+4. Reconcile and migrate the remaining legacy contact, phone and address data before removal of any original columns.
+5. Expand server-side pagination, full API request/response schemas, and contract tests.
+6. Finish email event automations, notifications and contextual Auli guidance.
+7. Raise SimpleCov line and branch coverage to the targets set in the master specification.
+
+## Operational considerations
+
+- Run Rails migrations after a database backup. For historic student contacts, execute the backend task named school:backfill_polymorphic. It is non-destructive and repeatable.
+- Configure a working mail provider and background jobs before bulk inviting staff or guardians.
+- Treat passing GitHub Actions as validation only of the existing tests for that commit, not proof that every feature is complete.
