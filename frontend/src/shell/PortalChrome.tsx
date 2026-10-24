@@ -18,6 +18,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const languageRef=useRef<HTMLDivElement>(null);
  useEffect(()=>{localStorage.setItem('school-sidebar-collapsed',String(collapsed));},[collapsed]);
  useEffect(()=>{function close(event:PointerEvent){if(!languageRef.current?.contains(event.target as Node))setLanguageOpen(false);}document.addEventListener('pointerdown',close);return()=>document.removeEventListener('pointerdown',close);},[]);
+ const compact=collapsed&&!mobile;
  const [clock,setClock]=useState(()=>new Date());
  const [locale,setLocale]=useState<string>(()=>localStorage.getItem('school-locale')||'es');
  const [availableLocales,setAvailableLocales]=useState<{id:number;code:string;name:string;native_name:string;status:string;text_direction:string}[]>([]);
@@ -125,7 +126,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
      </button>
    </section>;
  }
- return <div className={'app sc-shell'+(collapsed?' sc-shell-collapsed':'')}>
+ return <div className={'app sc-shell'+(compact?' sc-shell-collapsed':'')}>
    <aside className={'sidebar sc-sidebar'+(mobile?' open':'')} onMouseLeave={()=>setCompactGroup(null)}>
      <div className="brand sc-shell-brand">
        {school.logo_url?<img src={school.logo_url} alt="Logotipo de la escuela"/>:<div className="brand-icon"><BookOpen/></div>}
@@ -135,10 +136,10 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
      <div className="workspace sc-workspace"><span className="status-dot"/>{portalLabels[portal]}<span className="tag">{translate('shell.portal','Portal')}</span></div>
      <nav className="sc-sidebar-nav" aria-label="Navegación principal">
        {groups.map(group=><section className="sc-nav-section" key={group.title}>
-         <button type="button" className="sc-nav-section-title" title={group.title} aria-label={group.title} aria-expanded={collapsed?compactGroup===group.title:expanded.includes(group.title)} onClick={()=>collapsed?setCompactGroup(v=>v===group.title?null:group.title):toggle(group.title)}>
+         <button type="button" className="sc-nav-section-title" title={group.title} aria-label={group.title} aria-expanded={compact?compactGroup===group.title:expanded.includes(group.title)} onClick={()=>compact?setCompactGroup(v=>v===group.title?null:group.title):toggle(group.title)}>
            <span>{group.title.toUpperCase()}</span>{expanded.includes(group.title)?<ChevronDown size={14}/>:<ChevronRight size={14}/>}
          </button>
-         {collapsed?<>{compactGroup===group.title&&<div className="sc-compact-flyout"><strong>{group.title}</strong>{group.items.map(item=>renderItem(item,0))}</div>}</>:expanded.includes(group.title)&&group.items.map(item=>renderItem(item,0))}
+         {compact?<>{compactGroup===group.title&&<div className="sc-compact-flyout"><strong>{group.title}</strong>{group.items.map(item=>renderItem(item,0))}</div>}</>:expanded.includes(group.title)&&group.items.map(item=>renderItem(item,0))}
        </section>)}
      </nav>
      <div className="sidebar-bottom sc-sidebar-foot sc-flyout-holder" ref={sidebarAccountRef}>
@@ -192,14 +193,14 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
        </div>
      </header>
      <div className="sc-breadcrumb-bar">
-       <div className="sc-crumbs" aria-label="Ruta de navegación">
+       <nav className="sc-crumbs" aria-label="Ruta de navegación">
          <button type="button" onClick={()=>navigate('dashboard')}>{portalLabels[portal]}</button>
          {trail.length?trail.map((item,index)=><span className="sc-crumb-step" key={item.key}>
    <ChevronRight size={14}/>
    {index===trail.length-1?<span aria-current="page">{translate('nav.'+item.key,item.title)}</span>:
      <button type="button" onClick={()=>navigate(item.key)}>{translate('nav.'+item.key,item.title)}</button>}
   </span>):<><ChevronRight size={14}/><span aria-current="page">{label}</span></>}
-       </div>
+       </nav>
      </div>
      <LocaleProvider locale={locale} translations={translations}>{children}</LocaleProvider>
    </main>
