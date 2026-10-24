@@ -11,8 +11,20 @@ class AccessRole < ApplicationRecord
       role = find_by(default_profile: user.role)
       unless role
         role = create!(name: { "admin" => "Dirección", "teacher" => "Docente", "guardian" => "Familia", "student" => "Alumno" }.fetch(user.role), default_profile: user.role)
+      end
+
+      # The built-in administrator role must receive permissions added after
+      # the role was originally created, without changing custom roles.
+      if user.admin?
+        PermissionCatalog.defaults("admin").each do |key, scope|
+          grant = role.role_permissions.find_or_initialize_by(key: key)
+          grant.data_scope = scope
+          grant.save! if grant.new_record? || grant.changed?
+        end
+      elsif role.role_permissions.empty?
         PermissionCatalog.defaults(user.role).each { |key, scope| role.role_permissions.create!(key: key, data_scope: scope) }
       end
+
       AccessRoleAssignment.find_or_create_by!(user: user, access_role: role)
     end
   end
