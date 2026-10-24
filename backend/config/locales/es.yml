@@ -16,6 +16,12 @@ es:
       confirmation: "no coincide con %{attribute}"
       in: "debe estar entre %{count}"
   activerecord:
+    errors:
+      messages:
+        record_invalid: "No fue posible guardar el registro: %{errors}"
+        restrict_dependent_destroy:
+          has_one: "No se puede eliminar porque tiene un %{record} asociado"
+          has_many: "No se puede eliminar porque tiene registros %{record} asociados"
     attributes:
       user:
         name: Nombre

@@ -18,7 +18,9 @@ RSpec.describe "shared school communication and schedules", type: :request do
 
   it "allows families to view school-wide events but not a different group's events" do
     guardian = create(:user, role: "guardian")
-    own = create(:enrollment, student: create(:student, guardian: guardian))
+    student = create(:student, guardian: guardian)
+    admission = create(:admission, student: student)
+    own = create(:enrollment, student: student, admission: admission)
     event_a = CalendarEvent.create!(academic_year: own.academic_year, title: "Todo el ciclo",
       kind: "activity", starts_at: 2.days.from_now, ends_at: 3.days.from_now)
     event_b = CalendarEvent.create!(academic_year: own.academic_year, group: create(:group, academic_year: own.academic_year),
