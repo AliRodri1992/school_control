@@ -118,3 +118,16 @@ body,.app{background:#f4f6fb;color:#17233f}
 .sc-child-picker{width:min(205px,19vw);flex-shrink:0}
 .sc-child-picker .sc-combobox-trigger{font-size:12px;min-height:39px}
 @media(max-width:760px){.content{padding:20px 15px}.sc-child-picker{width:145px}.sc-crumbs{display:none}.sc-pagination{flex-direction:column;align-items:stretch}.sc-pager-actions{justify-content:center}}
+
+.sc-auli-guide{display:flex;align-items:center;gap:17px;background:linear-gradient(120deg,#eef2ff,#fff);border:1px solid #dbe2fc;border-radius:16px;padding:16px;position:relative;max-width:550px;width:100%;text-align:left}
+.sc-auli-guide img{width:110px;height:125px;object-fit:contain;flex:none}
+.sc-auli-guide-copy{flex:1;display:grid;gap:9px}
+.sc-auli-guide-copy strong{font-weight:750;font-size:16px;color:#17233f}
+.sc-auli-guide-copy p{font-size:13px;color:#64748b}
+.sc-auli-guide>button{align-self:flex-start;padding:5px}
+.sc-auli-guide.compact img{height:100px;width:88px}
+.sc-auli-empty{padding:30px}
+.sc-import-assistant .sc-auli-guide{flex-direction:column;text-align:center;border:0;padding:0;background:transparent}
+.sc-import-assistant .sc-auli-guide img{height:180px;width:180px}
+.sc-import-assistant .sc-auli-guide-copy{text-align:center}
+@media(max-width:600px){.sc-auli-guide{flex-direction:column;text-align:center}.sc-auli-guide-copy{text-align:center}.sc-auli-empty{padding:16px}}

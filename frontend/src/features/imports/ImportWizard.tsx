@@ -1,3 +1,4 @@
+import AuliGuide from '../../shared/components/AuliGuide';
 import {useEffect,useState,type FormEvent} from 'react';
 import {ArrowLeft,ArrowRight,CheckCircle2,FileSpreadsheet,FileUp,LoaderCircle,ShieldCheck,UploadCloud} from 'lucide-react';
 import {api} from '../../api';
@@ -89,8 +90,7 @@ export default function ImportWizard(){
         <button className="secondary" onClick={restart}>Nueva importación</button></>}
     </div>}
    </div>
-   <aside className="panel sc-import-assistant"><img src="/illustrations/auli-welcome.svg" alt="Auli, el asistente escolar"/><h3>Auli te acompaña</h3>
-    <p>{step===0?'Prepara una hoja con los encabezados en la primera fila. Puedes importar CSV o Excel.':step===1?'Relaciona cada columna con el campo correcto. No necesitas que los encabezados tengan nombres idénticos.':step===2?'Revisa los problemas detectados antes de continuar. Ningún registro se importó todavía.':'Revisa el resumen antes de confirmar. Los cambios solo se realizan después de tu autorización.'}</p></aside>
+   <aside className="panel sc-import-assistant"><AuliGuide title="Auli te acompaña" mood={step===2?"warning":step===3?"success":"explain"} text={step===0?'Prepara una hoja con los encabezados en la primera fila. Puedes importar CSV o Excel.':step===1?'Relaciona cada columna con el campo correcto. No necesitas que los encabezados tengan nombres idénticos.':step===2?'Revisa los problemas detectados antes de continuar. Ningún registro se importó todavía.' :'Revisa el resumen antes de confirmar. Los cambios solo se realizan después de tu autorización.'}/></aside>
   </div>
   {history.length>0&&<section className="panel sc-import-history"><h2>Importaciones recientes</h2><div className="table-scroll"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Estado</th><th>Registros</th></tr></thead><tbody>
    {history.map(item=><tr key={item.id}><td>{new Date((item as Batch & {created_at:string}).created_at).toLocaleString('es-MX')}</td><td>{item.kind}</td><td>{item.status}</td><td>{item.imported_rows} / {item.total_rows}</td></tr>)}
