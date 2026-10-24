@@ -10,6 +10,9 @@ services:
       DATABASE_URL: ${DATABASE_URL:?Set the PostgreSQL URL}
       DEMO_SEEDS: "false"
   backend:
+    # Only the frontend Nginx proxy is published in production.
+    # Rails remains reachable as backend:3000 inside this Compose network.
+    ports: !override []
     environment:
       RAILS_ENV: production
       RAILS_LOG_TO_STDOUT: "true"

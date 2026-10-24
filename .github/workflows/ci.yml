@@ -127,6 +127,22 @@ jobs:
               assert not services["redis"].get("ports")
               print(f"{name}: isolated ports {exposed}")
           PY
+      - name: Verify production exposes only the Nginx entrypoint
+        env:
+          SECRET_KEY_BASE: ci-only-production-compose-validation
+          DATABASE_URL: postgresql://school:ci-check@db:5432/school_production
+        run: |
+          docker compose -f compose.yml -f compose.production.yml config --format json | python3 -c '
+          import json, sys
+          services = json.load(sys.stdin)["services"]
+          assert not services["backend"].get("ports"), "Rails must not be exposed in production"
+          assert not services["db"].get("ports")
+          assert not services["redis"].get("ports")
+          ports = services["frontend"]["ports"]
+          assert len(ports) == 1 and int(ports[0]["published"]) == 8080
+          assert ports[0]["host_ip"] == "127.0.0.1"
+          print("production: localhost:8080 only")
+          '
       - run: docker compose build
       - name: Start PostgreSQL (retry transient registry errors)
         run: |
