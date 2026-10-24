@@ -9,5 +9,9 @@ const apiProxy = {
 
 export default defineConfig({
   plugins: [react()],
-  server: { proxy: { '/api': apiProxy, '/rails': apiProxy, '/up': apiProxy } },
+  server: {
+    host: '0.0.0.0',
+    watch: { usePolling: true, interval: 500 },
+    proxy: { '/api': apiProxy, '/rails': apiProxy, '/up': apiProxy },
+  },
 });
