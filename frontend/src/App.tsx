@@ -1,3 +1,4 @@
+import EmailTemplateDesigner from './features/mail/EmailTemplateDesigner';
 import ApiDocs from './features/api/ApiDocs';
 import RecordForm from './shared/components/RecordForm';
 import LanguageManager from './features/languages/LanguageManager';
@@ -138,7 +139,8 @@ export default function App(){
  page==='imports'?<ImportWizard/>:
  page==='languages'?<LanguageManager/>:
  page==='api_docs'?<ApiDocs/>:
- page==='access_roles'?<AccessRoles can={can} onChanged={()=>refresh()}/>:
+ page==='email_templates'?<EmailTemplateDesigner schoolName={school.name}/>:
+  page==='access_roles'?<AccessRoles can={can} onChanged={()=>refresh()}/>:
  page==='profile'?<Profile onChange={setUser} onSignedOut={signedOut}/>:
  page==='notifications'?<Notifications navigate={target=>{if(target==='profile'||target==='notifications'||target==='messages'||modules[target]||['dashboard','reports','classroom','documents','schedule','school','access_roles'].includes(target))go(target);}}/>:
  page==='classroom'?<Classroom user={user} courses={data.courses||[]} enrollments={data.enrollments||[]}/>:

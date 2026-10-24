@@ -10,4 +10,5 @@ import './styles/imports.css';
 import './styles/languages.css';
 import './styles/forms.css';
 import './styles/api-docs.css';
+import './styles/mail-designer.css';
 createRoot(document.getElementById('root')!).render(<React.StrictMode><BrowserRouter><Routes><Route path="*" element={<App/>}/></Routes></BrowserRouter></React.StrictMode>);
