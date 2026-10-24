@@ -21,3 +21,13 @@ export const modules: Record<string,Module> = {
  users:{title:'Personas y accesos',subtitle:'Cuentas independientes para docentes, familias y alumnos.',singular:'usuario',roles:admin,fields:[f('name','Nombre completo'),f('email','Correo','email'),{key:'role',label:'Perfil',options:[['guardian','Padre / tutor'],['teacher','Docente'],['student','Alumno'],['admin','Administrador']]},f('password','Contraseña (mínimo 12 caracteres)','password'),f('password_confirmation','Confirmar contraseña','password'),select('student_id','Expediente del alumno (para perfil alumno)','students',true)],columns:[['name','Nombre'],['email','Correo'],['role','Perfil'],['active','Activo']]}
 };
 export const labels: Record<string,string> = {draft:'Borrador',reviewed:'Revisada',published:'Publicada',submitted:'En revisión',approved:'Aprobada',rejected:'Rechazada',active:'Activo',completed:'Concluido',promoted:'Promovido',repeat:'Repite grado',graduated:'Egresado',present:'Presente',absent:'Falta',late:'Retardo',justified:'Justificada',admin:'Administración',teacher:'Docente',guardian:'Familia',student:'Alumno',all:'Todos',exam:'Examen',holiday:'Suspensión',meeting:'Reunión',activity:'Actividad',new:'Nuevo ingreso',reenrollment:'Reinscripción'};
+
+/** Localize UI metadata, never record values returned by the backend. */
+export function localizedModules(ui:(text:string)=>string):Record<string,Module>{
+ return Object.fromEntries(Object.entries(modules).map(([key,mod])=>[key,{
+  ...mod,title:ui(mod.title),subtitle:ui(mod.subtitle),singular:ui(mod.singular),
+  fields:mod.fields.map(field=>({...field,label:ui(field.label),
+   options:field.options?.map(([value,label])=>[value,ui(label)] as [string,string])})),
+  columns:mod.columns.map(([name,title])=>[name,ui(title)] as [string,string])
+ }]));
+}
