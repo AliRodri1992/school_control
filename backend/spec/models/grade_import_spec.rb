@@ -15,6 +15,7 @@ RSpec.describe "grade spreadsheet imports", type: :model do
     expect(mapper.call(mapping)[:errors]).to eq([])
     import.update!(status: "queued", mapping: mapping)
     DataImportJob.perform_now(import.id)
+    expect(import.reload.row_errors).to be_empty
     grade = Grade.find_by!(enrollment: enrollment, course: course, term: 1)
     expect(grade.score).to eq(9.5)
     expect(grade.status).to eq("draft")

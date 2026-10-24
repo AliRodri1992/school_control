@@ -20,6 +20,7 @@ RSpec.describe "user imports", type: :model do
     expect do
       DataImportJob.perform_now(item.id)
     end.to change(User.where(role: "teacher"), :count).by(1)
+    expect(item.reload.row_errors).to be_empty
     account = User.find_by!(email: "alex-import@example.test")
     expect(account.authenticate("School-test-password-26")).to be_falsey
     expect(account.role).to eq("teacher")
