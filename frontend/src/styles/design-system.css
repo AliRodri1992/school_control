@@ -146,3 +146,12 @@ body,.app{background:#f4f6fb;color:#17233f}
 .primary svg,.secondary svg{flex-shrink:0}
 .sc-main .content .sc-home-action{display:grid;text-align:left}
 @media(max-width:760px){.sc-main .content{padding:18px 14px}}
+
+/* Align actions across old and new form implementations */
+.sc-main .primary,.sc-main .secondary,.sc-main .form-actions button,
+.login-form .primary,.sc-auth .primary,.sc-record-back{
+ display:inline-flex;align-items:center;justify-content:center;text-align:center;gap:8px;line-height:1.3;
+}
+.sc-main .form-actions button{min-height:42px}
+.sc-main .text-button{text-align:center;justify-content:center}
+.sc-main .sc-sort-button{justify-content:flex-start;text-align:left}
