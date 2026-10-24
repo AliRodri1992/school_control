@@ -1,6 +1,6 @@
 import {LocaleProvider} from '../shared/i18n/LocaleContext';
 import {useEffect,useRef,useState,type ReactNode} from 'react';
-import {Bell,BookOpen,CalendarClock,ChevronDown,ChevronRight,HelpCircle,Languages,LogOut,Menu,PanelLeftClose,PanelLeftOpen,UserRound,X} from 'lucide-react';
+import {Bell,BookOpen,CalendarClock,ChevronDown,ChevronRight,HelpCircle,Languages,LogOut,Menu,PanelLeftClose,PanelLeftOpen,UserRound,X,LayoutDashboard,Users,GraduationCap,BookOpenCheck,CalendarDays,MessageSquare,BarChart3,Settings,School,FolderOpen,ClipboardList} from 'lucide-react';
 import {api} from '../api';
 import Combobox from '../shared/components/Combobox';
 import type {Row} from '../modules';
@@ -15,6 +15,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const [collapsed,setCollapsed]=useState(()=>localStorage.getItem('school-sidebar-collapsed')==='true');
  const [compactGroup,setCompactGroup]=useState<string|null>(null);
  const [languageOpen,setLanguageOpen]=useState(false);
+ const [compactItem,setCompactItem]=useState<string|null>(null);
  const languageRef=useRef<HTMLDivElement>(null);
  useEffect(()=>{localStorage.setItem('school-sidebar-collapsed',String(collapsed));},[collapsed]);
  useEffect(()=>{function close(event:PointerEvent){if(!languageRef.current?.contains(event.target as Node))setLanguageOpen(false);}document.addEventListener('pointerdown',close);return()=>document.removeEventListener('pointerdown',close);},[]);
@@ -24,6 +25,8 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const [availableLocales,setAvailableLocales]=useState<{id:number;code:string;name:string;native_name:string;status:string;text_direction:string}[]>([]);
  const [translations,setTranslations]=useState<Record<string,string>>({});
  const translate=(key:string,fallback:string)=>translations[key]||fallback;
+ const sectionIcons:Record<string,ReactNode>={'Inicio':<LayoutDashboard size={21}/>, 'Gestión escolar':<Users size={21}/>, 'Gestión académica':<GraduationCap size={21}/>, 'Comunicación':<MessageSquare size={21}/>, 'Análisis y sistema':<BarChart3 size={21}/>, 'Mi actividad':<BookOpenCheck size={21}/>, 'Mi escuela':<School size={21}/>, 'Mi familia':<Users size={21}/>, 'Comunidad':<MessageSquare size={21}/>, 'Seguimiento':<ClipboardList size={21}/>};
+ const moduleIcons:Record<string,ReactNode>={dashboard:<LayoutDashboard size={17}/>,students:<Users size={17}/>,academic_years:<CalendarDays size={17}/>,groups:<Users size={17}/>,courses:<BookOpenCheck size={17}/>,calendar_events:<CalendarDays size={17}/>,messages:<MessageSquare size={17}/>,reports:<BarChart3 size={17}/>,school:<School size={17}/>,documents:<FolderOpen size={17}/>,settings:<Settings size={17}/>};
  const [accountTarget,setAccountTarget]=useState<'sidebar'|'topbar'|null>(null);
  const sidebarAccountRef=useRef<HTMLDivElement>(null);
  const topbarAccountRef=useRef<HTMLDivElement>(null);
@@ -88,10 +91,11 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    const children=item.children||[],exact=(item.key==='students'&&page==='student_details')||item.key===page;
    const isAncestor=!exact&&findNavPath([{title:'',items:[item]}],page).length>0;
    const isOpen=expanded.includes(item.key);
+   const showChildren=compact?compactItem===item.key:isOpen;
    return <div className="sc-nav-node" key={item.key+'-'+depth}>
      <div className={'sc-nav-item'+(exact?' is-active':'')+(isAncestor?' is-ancestor':'')} style={{paddingLeft:compact?0:4+Math.min(depth,3)*13}}>
-       <button className="sc-nav-main" type="button" title={translate('nav.'+item.key,item.title)} aria-label={translate('nav.'+item.key,item.title)} aria-current={exact?'page':undefined} onClick={()=>navigate(item.key)}>
-         <span className="sc-nav-mark">{depth?<span className="sc-nav-dot"/>:<ChevronRight size={15}/>}</span>{!compact&&<span>{translate('nav.'+item.key,item.title)}</span>}
+       <button className="sc-nav-main" type="button" title={translate('nav.'+item.key,item.title)} aria-label={translate('nav.'+item.key,item.title)} aria-current={exact?'page':undefined} onClick={()=>{if(compact&&children.length){setCompactItem(v=>v===item.key?null:item.key);}else navigate(item.key);}}>
+         <span className="sc-nav-mark">{moduleIcons[item.key]||(depth?<span className="sc-nav-dot"/>:<FolderOpen size={17}/>)}</span>{!compact&&<span>{translate('nav.'+item.key,item.title)}</span>}
          {item.key==='admissions'&&pendingAdmissions>0&&<span className="sc-nav-count">{pendingAdmissions}</span>}
        </button>
        {children.length>0&&!compact&&<button className="sc-nav-expand" type="button" aria-expanded={isOpen}
@@ -99,7 +103,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
          {isOpen?<ChevronDown size={16}/>:<ChevronRight size={16}/>}
        </button>}
      </div>
-     {children.length>0&&isOpen&&!compact&&<div className="sc-nav-children">{children.map(child=>renderItem(child,depth+1))}</div>}
+     {children.length>0&&showChildren&&<div className="sc-nav-children">{children.map(child=>renderItem(child,depth+1,compact))}</div>}
    </div>;
  }
  const trail=page==='student_details'?[{key:'students',title:portal==='tutors'?'Mis hijos':'Alumnos'},{key:'student_details',title:'Expediente'}]:findNavPath(groups,page);
@@ -127,7 +131,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    </section>;
  }
  return <div className={'app sc-shell'+(compact?' sc-shell-collapsed':'')}>
-   <aside className={'sidebar sc-sidebar'+(mobile?' open':'')} onMouseLeave={()=>setCompactGroup(null)}>
+   <aside className={'sidebar sc-sidebar'+(mobile?' open':'')}>
      <div className="brand sc-shell-brand">
        {school.logo_url?<img src={school.logo_url} alt="Logotipo de la escuela"/>:<div className="brand-icon"><BookOpen/></div>}
        <div className="sc-sidebar-brand-text"><strong>{school.name}</strong><small>SCHOOL CONTROL</small></div>
@@ -136,10 +140,10 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
      <div className="workspace sc-workspace"><span className="status-dot"/>{portalLabels[portal]}<span className="tag">{translate('shell.portal','Portal')}</span></div>
      <nav className="sc-sidebar-nav" aria-label="Navegación principal">
        {groups.map(group=><section className="sc-nav-section" key={group.title}>
-         <button type="button" className="sc-nav-section-title" title={group.title} aria-label={group.title} aria-expanded={compact?compactGroup===group.title:expanded.includes(group.title)} onClick={()=>compact?setCompactGroup(v=>v===group.title?null:group.title):toggle(group.title)}>
-           <span>{group.title.toUpperCase()}</span>{expanded.includes(group.title)?<ChevronDown size={14}/>:<ChevronRight size={14}/>}
+         <button type="button" className="sc-nav-section-title" title={group.title} aria-label={group.title} aria-expanded={compact?compactGroup===group.title:expanded.includes(group.title)} onClick={()=>compact?(setCompactItem(null),setCompactGroup(v=>v===group.title?null:group.title)):toggle(group.title)}>
+           <span className="sc-section-icon" aria-hidden="true">{sectionIcons[group.title]||<FolderOpen size={21}/>}</span><span className="sc-section-label">{group.title.toUpperCase()}</span>{expanded.includes(group.title)?<ChevronDown className="sc-section-chevron" size={14}/>:<ChevronRight className="sc-section-chevron" size={14}/>} 
          </button>
-         {compact?<>{compactGroup===group.title&&<div className="sc-compact-flyout"><strong>{group.title}</strong>{group.items.map(item=>renderItem(item,0))}</div>}</>:expanded.includes(group.title)&&group.items.map(item=>renderItem(item,0))}
+         {compact?<>{compactGroup===group.title&&<div className="sc-compact-flyout"><strong>{group.title}</strong>{group.items.map(item=>renderItem(item,0,true))}</div>}</>:expanded.includes(group.title)&&group.items.map(item=>renderItem(item,0))}
        </section>)}
      </nav>
      <div className="sidebar-bottom sc-sidebar-foot sc-flyout-holder" ref={sidebarAccountRef}>
