@@ -16,3 +16,6 @@
 .env.staging
 
 !.env.staging.example
+
+# JetBrains IDE project files
+.idea/
