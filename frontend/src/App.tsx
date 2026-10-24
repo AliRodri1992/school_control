@@ -1,31 +1,31 @@
 import Combobox from './shared/components/Combobox';
-import HelpCenter from './features/help/HelpCenter';
-import PortalHome from './features/portal/PortalHome';
-import Preferences from './features/preferences/Preferences';
-import StudentDetails from './features/students/StudentDetails';
+const HelpCenter=lazy(()=>import('./features/help/HelpCenter'));
+const PortalHome=lazy(()=>import('./features/portal/PortalHome'));
+const Preferences=lazy(()=>import('./features/preferences/Preferences'));
+const StudentDetails=lazy(()=>import('./features/students/StudentDetails'));
 import AuliGuide from './shared/components/AuliGuide';
-import EmailTemplateDesigner from './features/mail/EmailTemplateDesigner';
-import ApiDocs from './features/api/ApiDocs';
+const EmailTemplateDesigner=lazy(()=>import('./features/mail/EmailTemplateDesigner'));
+const ApiDocs=lazy(()=>import('./features/api/ApiDocs'));
 import RecordForm from './shared/components/RecordForm';
-import LanguageManager from './features/languages/LanguageManager';
+const LanguageManager=lazy(()=>import('./features/languages/LanguageManager'));
 import {useLocation,useNavigate} from 'react-router-dom';
-import ImportWizard from './features/imports/ImportWizard';
+const ImportWizard=lazy(()=>import('./features/imports/ImportWizard'));
 import {confirmDanger} from './notifications';
 import {PortalChrome} from './shell/PortalChrome';
 import {currentPortal,resolvePortalLocation,makePortalUrl,canImportFromPermissions,isStudentRecordUrl,studentRecordUrl} from './shell/portalNavigation';
 import Login from './auth/Login';
-import Reports from './Reports';
-import AccessRoles from './AccessRoles';
-import GradeActions from './GradeActions';
-import PasswordRecovery from './PasswordRecovery';
-import Notifications from './NotificationsCenter';
-import Profile from './Profile';
-import Classroom from './Classroom';
-import Documents from './Documents';
-import Messages from './Messages';
+const Reports=lazy(()=>import('./Reports'));
+const AccessRoles=lazy(()=>import('./AccessRoles'));
+const GradeActions=lazy(()=>import('./GradeActions'));
+const PasswordRecovery=lazy(()=>import('./PasswordRecovery'));
+const Notifications=lazy(()=>import('./NotificationsCenter'));
+const Profile=lazy(()=>import('./Profile'));
+const Classroom=lazy(()=>import('./Classroom'));
+const Documents=lazy(()=>import('./Documents'));
+const Messages=lazy(()=>import('./Messages'));
 import LogoUploader from './LogoUploader';
 import {notify} from './notifications';
-import {useEffect, useState} from 'react';
+import {lazy,Suspense,useEffect, useState} from 'react';
 import {BookOpen, Plus, Search, X, Check, Printer, GraduationCap} from 'lucide-react';
 import {api,timeLabel,mean} from './api';
 import {modules,labels,type Row,type Field} from './modules';
@@ -158,13 +158,13 @@ export default function App(){
  function sortBy(key:string){if(sorting===key)setAscending(value=>!value);else{setSorting(key);setAscending(true);}setPageNumber(0);}
 
  if(loading)return <div className="boot"><BookOpen size={38}/><p>Preparando tu escuela…</p></div>;
- if(resetToken)return <PasswordRecovery schoolName={school.name} token={resetToken} onClose={signedOut}/>;
+ if(resetToken)return <Suspense fallback={<div className="boot" role="status">Cargando recuperación de contraseña…</div>}><PasswordRecovery schoolName={school.name} token={resetToken} onClose={signedOut}/></Suspense>;
  if(!user)return <Login school={school} initialError={error} onLogin={async account=>{setUser(account);setError('');await refresh(account);}}/>;
  return <PortalChrome user={user} school={school} page={page} mobile={mobile} onMobile={setMobile}
  can={can} pendingAdmissions={Number(summary.pending_admissions||0)} onNavigate={go} 
   childrenList={user.role==='guardian'?data.students||[]:[]} selectedChildId={selectedChild} onSelectChild={selectChild}
  onSignOut={async()=>{try{await api('session','DELETE');signedOut();void notify('Sesión cerrada correctamente.');}catch(e){setError((e as Error).message);}}}>
- <div className="content">{error&&<div className="error" role="alert">{error}<button aria-label="Cerrar error" onClick={()=>setError('')}><X size={16}/></button></div>}{notice&&<div className="success" role="status"><Check size={16}/>{notice}</div>}
+ <Suspense fallback={<div className="content" role="status"><p>Cargando módulo…</p></div>}><div className="content">{error&&<div className="error" role="alert">{error}<button aria-label="Cerrar error" onClick={()=>setError('')}><X size={16}/></button></div>}{notice&&<div className="success" role="status"><Check size={16}/>{notice}</div>}
  {page==='student_details'?(detailStudent?<StudentDetails key={detailStudent.id} student={detailStudent} onClose={()=>go('students')}
     canEdit={can('students.update')} canWriteNotes={!!user.permissions?.['students.update']?.includes('institution')}
     canViewReport={can('students.report')}/>:
@@ -223,7 +223,7 @@ export default function App(){
 
   {dialog&&<div className="overlay"><section role="dialog" aria-modal="true" aria-labelledby="dialog-title" className="dialog"><header><div><span className="eyebrow">CONTROL ESCOLAR</span><h2 id="dialog-title">{dialog.title}</h2></div><button aria-label="Cerrar formulario" onClick={()=>setDialog(null)}><X/></button></header><RecordForm fields={dialog.fields} initial={dialog.values} busy={busy} options={options} optionName={optionName} error={error} fieldErrors={fieldErrors} onCancel={()=>setDialog(null)} onSubmit={values=>perform(()=>dialog.submit(values))}/></section></div>}
  {report&&<div className="overlay"><section role="dialog" aria-modal="true" aria-label="Boleta e historial" className="dialog report"><header><div><span className="eyebrow">{school.name}</span><h2>{report.student.full_name}</h2><p>Boleta de consulta · {report.student.curp}</p></div><div className="actions"><button onClick={()=>window.print()} aria-label="Imprimir boleta"><Printer/></button><button onClick={()=>setReport(null)} aria-label="Cerrar boleta"><X/></button></div></header>{report.years.map((year:Row)=><article key={year.enrollment.id}><h3>{year.enrollment.group_label}</h3><p>{display(year.enrollment.status)} · {display(year.enrollment.outcome)}</p><table><thead><tr><th>Materia</th><th>Trimestre</th><th>Calificación</th><th>Observación</th></tr></thead><tbody>{year.grades.map((g:Row)=><tr key={g.id}><td>{g.subject_name}</td><td>{g.term}</td><td>{g.score}</td><td>{g.feedback}</td></tr>)}</tbody></table><p>Promedio registrado: <strong>{mean(year.grades.map((g:Row)=>Number(g.score)))}</strong></p><div className="actions">{Object.entries(year.attendance).map(([status,total])=><span className="badge" key={status}>{display(status)}: {String(total)}</span>)}</div></article>)}{!report.years.length&&<Empty text="Todavía no tiene inscripciones aprobadas."/>}<p className="footnote">Documento de consulta interna. No sustituye una certificación oficial.</p></section></div>}
- </PortalChrome>;
+ </Suspense></PortalChrome>;
 }
 function Empty({text}:{text:string}){return <div className="empty sc-auli-empty"><AuliGuide mood="thinking" title="Todavía no hay registros" text={text} compact/></div>;}
 function SchoolSettings({school,onSave,busy}:{school:Row;onSave:(form:FormData)=>void;busy:boolean}){
