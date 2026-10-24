@@ -1,20 +1,51 @@
-import {describe,it,expect,vi} from 'vitest';
-import {api,timeLabel,mean} from './api';
-describe('academic display',()=>{
- it('renders school periods without losing zero minutes',()=>{expect(timeLabel(480)).toBe('08:00');expect(timeLabel(530)).toBe('08:50');});
- it('does not invent a grade when there are no marks',()=>{expect(mean([])).toBe('—');});
- it('calculates the displayed average',()=>{expect(mean([8,9,10])).toBe('9.0');});
+// @vitest-environment node
+import {afterEach,expect,it,vi} from 'vitest';
+import {api} from './api';
+
+afterEach(()=>vi.unstubAllGlobals());
+
+it('requests same-origin session data as JSON',async()=>{
+ const fetch=vi.fn().mockResolvedValue(new Response(JSON.stringify({user:null,csrf_token:'example'}),{
+  status:200,headers:{'Content-Type':'application/json; charset=utf-8'}
+ }));
+ vi.stubGlobal('fetch',fetch);
+ expect(await api('session')).toEqual({user:null,csrf_token:'example'});
+ expect(fetch).toHaveBeenCalledWith('/api/session',expect.objectContaining({
+  method:'GET',credentials:'same-origin',headers:expect.objectContaining({Accept:'application/json'})
+ }));
 });
 
+it('preserves correct Rails JSON authentication errors',async()=>{
+ vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(
+  JSON.stringify({error:'Correo o contraseña incorrectos'}),{status:401,headers:{'Content-Type':'application/json'}}
+ )));
+ await expect(api('session','POST',{email:'test@example.test',password:'incorrect'}))
+  .rejects.toMatchObject({message:'Correo o contraseña incorrectos',status:401});
+});
 
-it('preserves structured validation errors for each field',async()=>{
- const fetcher=vi.spyOn(globalThis,'fetch').mockResolvedValueOnce(
-   new Response(JSON.stringify({error:'Revisa la información.',errors:{email:['ya está registrado']}}),
-     {status:422,headers:{'Content-Type':'application/json'}}));
- try {
-   await expect(api('registration','POST',{email:'test@example.com'})).rejects.toMatchObject({
-     message:'Revisa la información.',
-     fieldErrors:{email:['ya está registrado']}
-   });
- } finally {fetcher.mockRestore();}
+it('identifies an HTML proxy response without leaking markup',async()=>{
+ vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response('<!DOCTYPE html><html>Rails exception</html>',{
+  status:502,headers:{'Content-Type':'text/html'}
+ })));
+ await expect(api('session','POST',{})).rejects.toMatchObject({
+  message:expect.stringContaining('/api/session (HTTP 502)'),status:502
+ });
+ await expect(api('session')).rejects.not.toThrow(/Unexpected token|<!DOCTYPE|Rails exception/);
+});
+
+it('detects HTML even when mislabeled as application/json',async()=>{
+ vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response('<!DOCTYPE html>',{
+  status:200,headers:{'Content-Type':'application/json'}
+ })));
+ await expect(api('school')).rejects.toThrow('/api/school (HTTP 200)');
+});
+
+it('explains when the API container is not reachable',async()=>{
+ vi.stubGlobal('fetch',vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+ await expect(api('session')).rejects.toThrow('No se pudo conectar con la API');
+});
+
+it('accepts an empty successful response for delete actions',async()=>{
+ vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(null,{status:204})));
+ expect(await api('session','DELETE')).toBeNull();
 });

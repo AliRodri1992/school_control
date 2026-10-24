@@ -37,19 +37,19 @@ nav button:hover:not(.selected){background:#f0f3ff}
 .sidebar{border-right-color:var(--sc-border)}
 .topbar{border-bottom-color:var(--sc-border)}
 .sc-auth{background:#f5f7fd;grid-template-columns:minmax(0,1.05fr) minmax(420px,.95fr)}
-.sc-login-story{position:relative;isolation:isolate;overflow:hidden;padding:42px clamp(30px,4vw,74px);background:radial-gradient(circle at 85% 72%,#344fb3 0%,transparent 43%),radial-gradient(circle at 8% 14%,#31427f 0%,transparent 38%),linear-gradient(142deg,#111d42,#182655 75%);min-height:100vh;display:flex;flex-direction:column;justify-content:space-between}
+.sc-login-story{position:relative;isolation:isolate;overflow:hidden;padding:42px clamp(30px,4vw,74px);background:radial-gradient(circle at 85% 72%,#344fb3 0%,transparent 43%),radial-gradient(circle at 8% 14%,#31427f 0%,transparent 38%),linear-gradient(142deg,#111d42,#182655 75%);min-height:100vh;display:flex;flex-direction:column;justify-content:flex-start}
 .sc-login-story:before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(rgba(255,255,255,.10) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(to bottom,transparent,#000 45%,transparent);opacity:.4;z-index:-1}
 .sc-login-brand{display:flex;gap:12px;align-items:center;max-width:100%;z-index:1}
 .sc-login-brand>img{width:47px;height:47px;object-fit:contain;border-radius:12px;background:white;padding:4px}
 .sc-brand-symbol{width:46px;height:46px;background:#405cf5;border-radius:13px;display:grid;place-items:center;color:white;flex:none}
 .sc-login-brand strong{display:block;font-size:17px;color:#fff}
 .sc-login-brand small{display:block;font-size:11px;letter-spacing:1.3px;color:#adbeef;margin-top:4px;text-transform:uppercase}
-.sc-login-copy{max-width:620px;position:relative;z-index:1;margin:40px 0 210px}
+.sc-login-copy{max-width:620px;position:relative;z-index:1;margin:clamp(34px,6vh,68px) 0 0}
 .sc-kicker{display:inline-block;color:#cad6ff;font-size:11px;letter-spacing:2px;font-weight:700;margin-bottom:26px}
 .sc-login-story .sc-login-copy h1{color:#fff;font-size:clamp(39px,4.3vw,68px);font-weight:720;letter-spacing:-2.6px;line-height:1.12}
 .sc-login-story .sc-login-copy p{font-size:15px;max-width:480px;line-height:1.7;margin-top:22px;color:#d1dcff}
 .sc-auli-hero{position:absolute;right:clamp(8px,4vw,80px);bottom:38px;width:min(43%,350px);max-height:48vh;object-fit:contain;filter:drop-shadow(0 22px 32px rgba(1,9,39,.32));pointer-events:none}
-.sc-login-foot{font-size:12px;color:#becced;z-index:1;display:flex;align-items:center;gap:9px}
+.sc-login-foot{font-size:12px;color:#becced;z-index:1;display:flex;align-items:center;gap:9px;margin-top:auto;padding-top:30px}
 .sc-status-light{height:8px;width:8px;display:inline-block;border-radius:50%;background:#f4a340;box-shadow:0 0 0 4px #f4a3401f}
 .sc-login-panel{width:100%;max-width:540px;margin:auto;padding:44px clamp(24px,4vw,66px);box-sizing:border-box}
 .sc-auth-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:40px}
@@ -81,7 +81,7 @@ nav button:hover:not(.selected){background:#f0f3ff}
 .sc-auth-switch{font-size:13px;text-align:center;margin-top:25px!important;color:#64748b}
 .sc-auth-hint{font-size:12px!important;line-height:1.6!important;text-align:center;margin-top:17px!important}
 .sc-auth-footer{margin-top:40px!important;padding:20px 0 0!important;border-top:1px solid #e3e8f1;font-size:11px!important;text-align:center;color:#8a96a9}
-@media(max-width:1040px){.sc-login-story{padding:32px}.sc-login-story .sc-login-copy h1{font-size:42px}.sc-login-copy{margin:25px 0 185px}.sc-auli-hero{width:48%;bottom:35px}}
+@media(max-width:1040px){.sc-login-story{padding:32px}.sc-login-story .sc-login-copy h1{font-size:42px}.sc-login-copy{margin:32px 0 0}.sc-auli-hero{width:48%;bottom:35px}}
 @media(max-width:760px){.sc-auth{display:block;background:#f4f6fb}.sc-login-story{min-height:auto;padding:22px 24px;display:flex}.sc-login-brand strong{font-size:15px}.sc-login-story .sc-login-copy,.sc-login-story .sc-auli-hero,.sc-login-story .sc-login-foot{display:none}.sc-login-panel{max-width:500px;padding:36px 24px 28px}.sc-auth-top{margin-bottom:28px}.sc-auth-footer{margin-top:30px!important}}
 @media(max-width:360px){.sc-login-panel{padding:28px 17px}.sc-auth-heading h2{font-size:25px}}
 @media(prefers-reduced-motion:reduce){.primary{transition:none}}
@@ -155,3 +155,11 @@ body,.app{background:#f4f6fb;color:#17233f}
 .sc-main .form-actions button{min-height:42px}
 .sc-main .text-button{text-align:center;justify-content:center}
 .sc-main .sc-sort-button{justify-content:flex-start;text-align:left}
+
+/* Keep the welcoming headline near the school logo on shorter laptops. */
+@media (min-width:761px) and (max-height:740px){
+ .sc-login-story{padding-top:26px;padding-bottom:24px}
+ .sc-login-copy{margin-top:25px}
+ .sc-login-story .sc-login-copy h1{font-size:clamp(34px,3.8vw,54px)}
+ .sc-auli-hero{max-height:38vh;width:min(38%,285px)}
+}
