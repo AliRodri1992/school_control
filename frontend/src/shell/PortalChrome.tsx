@@ -1,3 +1,4 @@
+import {LocaleProvider} from '../shared/i18n/LocaleContext';
 import {useEffect,useState,type ReactNode} from 'react';
 import {Bell,BookOpen,CalendarClock,ChevronDown,ChevronRight,HelpCircle,Languages,LogOut,Menu,Search,UserRound,X} from 'lucide-react';
 import {api} from '../api';
@@ -89,6 +90,10 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const tz=school.timezone||'America/Mexico_City';
  const formatted=new Intl.DateTimeFormat(locale==='es'?'es-MX':locale,{dateStyle:'medium',timeZone:tz}).format(clock);
  const time=new Intl.DateTimeFormat(locale==='es'?'es-MX':locale,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:tz}).format(clock);
+ useEffect(()=>{
+  document.documentElement.lang=locale;
+  document.documentElement.dir=availableLocales.find(item=>item.code===locale)?.text_direction==='rtl'?'rtl':'ltr';
+ },[locale,availableLocales]);
  function setLanguage(language:string){setLocale(language);localStorage.setItem('school-locale',language);
    void api('preferences','PATCH',{locale:language}).catch(e=>setNoticeError((e as Error).message));}
  return <div className="app sc-shell">
@@ -161,7 +166,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
          </div>
        </div>
      </header>
-     {children}
+     <LocaleProvider locale={locale} translations={translations}>{children}</LocaleProvider>
    </main>
  </div>;
 }

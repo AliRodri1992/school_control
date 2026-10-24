@@ -1,3 +1,4 @@
+import {useSchoolLocale} from '../../shared/i18n/LocaleContext';
 import {useState} from 'react';
 import {ArrowRight,BookOpen,HelpCircle,Search} from 'lucide-react';
 import type {Row} from '../../modules';
@@ -34,19 +35,22 @@ const sections:Record<string,Topic[]>={
  ]
 };
 export default function HelpCenter({role,can,onNavigate}:{role:string;can:(permission:string)=>boolean;onNavigate:(page:string)=>void}){
+ const {t}=useSchoolLocale();
  const [query,setQuery]=useState('');
  const allowed=(sections[role]||sections.guardian).filter(t=>!t.permission||can(t.permission));
- const filtered=allowed.filter(t=>(t.title+' '+t.steps.join(' ')).toLocaleLowerCase('es').includes(query.toLocaleLowerCase('es')));
+ const heading=(topic:Topic)=>t('help.'+role+'.'+topic.page+'.title',topic.title);
+ const steps=(topic:Topic)=>topic.steps.map((line,i)=>t('help.'+role+'.'+topic.page+'.step'+i,line));
+ const filtered=allowed.filter(topic=>(heading(topic)+' '+steps(topic).join(' ')).toLocaleLowerCase('es').includes(query.toLocaleLowerCase('es')));
  return <section className="sc-help-center">
-  <header className="page-heading"><div><span className="eyebrow">MI CUENTA / CENTRO DE AYUDA</span><h1>Guía de uso del sistema</h1>
-  <p>Aprende paso a paso a utilizar los módulos disponibles en tu portal. Las instrucciones se adaptan a tus permisos.</p></div></header>
+  <header className="page-heading"><div><span className="eyebrow">MI CUENTA / CENTRO DE AYUDA</span><h1>{t('help.title','Guía de uso del sistema')}</h1>
+  <p>{t('help.description','Aprende paso a paso a utilizar los módulos disponibles en tu portal. Las instrucciones se adaptan a tus permisos.')}</p></div></header>
   <div className="sc-help-search"><Search size={19}/><input value={query} onChange={e=>setQuery(e.target.value)}
-   aria-label="Buscar en la guía" placeholder="Buscar tarea o módulo…"/></div>
+   aria-label="Buscar en la guía" placeholder={t("help.search","Buscar tarea o módulo…")}/></div>
   <div className="sc-help-topics">
    {filtered.map((topic,index)=><details key={topic.title} className="sc-help-topic" open={!!query||index===0}>
-    <summary><span className="sc-help-number"><BookOpen size={19}/></span><strong>{topic.title}</strong><HelpCircle size={17}/></summary>
-    <div className="sc-help-body"><ol>{topic.steps.map(step=><li key={step}>{step}</li>)}</ol>
-     {topic.page&&<button className="secondary" onClick={()=>onNavigate(topic.page!)}>Ir al módulo<ArrowRight size={16}/></button>}
+    <summary><span className="sc-help-number"><BookOpen size={19}/></span><strong>{heading(topic)}</strong><HelpCircle size={17}/></summary>
+    <div className="sc-help-body"><ol>{steps(topic).map((step,index)=><li key={index}>{step}</li>)}</ol>
+     {topic.page&&<button className="secondary" onClick={()=>onNavigate(topic.page!)}>{t("help.open","Ir al módulo")}<ArrowRight size={16}/></button>}
     </div>
    </details>)}
   </div>

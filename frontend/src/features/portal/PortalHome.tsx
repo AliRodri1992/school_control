@@ -1,3 +1,4 @@
+import {useSchoolLocale} from '../../shared/i18n/LocaleContext';
 import type {ComponentType} from 'react';
 import {ArrowRight,BookOpen,CalendarDays,ClipboardCheck,FileCheck2,GraduationCap,HeartHandshake,MessageCircle,School2,Users} from 'lucide-react';
 import Dashboard from '../../Dashboard';
@@ -30,14 +31,15 @@ const cards:Record<Role,{eyebrow:string;headline:string;intro:string;icon:Compon
 export default function PortalHome({user,summary,data,can,onNavigate,selectedChildId='',onSelectChild}:{
  user:Row;summary:Row;data:Record<string,Row[]>;can:(permission:string)=>boolean;onNavigate:(page:string)=>void;selectedChildId?:string;onSelectChild?:(id:string)=>void;
 }){
+ const {t}=useSchoolLocale();
  const role=(Object.hasOwn(cards,user.role)?user.role:'guardian') as Role;
  const info=cards[role];const HeroIcon=info.icon;
  const allowed=info.actions.filter(action=>!action.permission||can(action.permission));
  const children=data.students||[];
  return <section className={'sc-home sc-home-'+role}>
   <div className="sc-home-hero"><div className="sc-home-copy">
-   <span className="sc-home-overline">{info.eyebrow}</span><h1>{info.headline}</h1><p>{info.intro}</p>
-   <div className="sc-home-hello">Hola, {String(user.name||'').split(' ')[0]}.</div>
+   <span className="sc-home-overline">{t('portal.'+role+'.eyebrow',info.eyebrow)}</span><h1>{t('portal.'+role+'.headline',info.headline)}</h1><p>{t('portal.'+role+'.intro',info.intro)}</p>
+   <div className="sc-home-hello">{t('portal.hello','Hola')}, {String(user.name||'').split(' ')[0]}.</div>
    </div><div className="sc-home-illustration" aria-hidden="true">
     <svg viewBox="0 0 210 175" width="210" height="175" role="presentation">
      <circle cx="105" cy="86" r="75" stroke="#95aaf0" strokeDasharray="5 9" fill="none" opacity=".7"/>
@@ -48,16 +50,16 @@ export default function PortalHome({user,summary,data,can,onNavigate,selectedChi
     </svg><span><HeroIcon size={29}/></span>
    </div></div>
   {role==='guardian'&&children.length>0&&<section className="sc-home-family" aria-label="Seleccionar alumno">
-   <div><strong>Seguimiento familiar</strong><p>Elige un hijo para filtrar su información.</p></div>
+   <div><strong>{t('portal.family.title','Seguimiento familiar')}</strong><p>{t('portal.family.select','Elige un hijo para filtrar su información.')}</p></div>
    <div className="sc-home-child-options">
    {children.map(child=><button key={child.id} aria-pressed={String(child.id)===selectedChildId}
     className={String(child.id)===selectedChildId?'active':''}
     onClick={()=>onSelectChild?.(String(child.id)===selectedChildId?'':String(child.id))}>
     <GraduationCap size={17}/>{child.full_name||child.first_name}</button>)}</div>
   </section>}
-  <div className="sc-home-intro"><h2>Accesos rápidos</h2><p>Herramientas disponibles de acuerdo con tus permisos.</p></div>
+  <div className="sc-home-intro"><h2>{t('portal.shortcuts','Accesos rápidos')}</h2><p>{t('portal.shortcuts_hint','Herramientas disponibles de acuerdo con tus permisos.')}</p></div>
   <div className="sc-home-actions">{allowed.map(action=>{const Icon=action.icon;return <button key={action.key} onClick={()=>onNavigate(action.key)} className="sc-home-action">
-   <span><Icon size={22}/></span><strong>{action.label}</strong><small>{action.detail}</small><ArrowRight size={16} className="sc-home-arrow"/>
+   <span><Icon size={22}/></span><strong>{t('portal.'+role+'.quick.'+action.key+'.title',action.label)}</strong><small>{t('portal.'+role+'.quick.'+action.key+'.detail',action.detail)}</small><ArrowRight size={16} className="sc-home-arrow"/>
   </button>;})}</div>
   <Dashboard summary={summary} data={data} role={role} userId={user.id}/>
  </section>;

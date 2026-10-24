@@ -120,3 +120,36 @@ end
     end
   end
 end
+
+
+# Published role-aware UI translations. Existing manually reviewed values are retained.
+[
+  [ "portal.hello", "Hola", "Hello" ],
+  [ "portal.shortcuts", "Accesos rápidos", "Quick access" ],
+  [ "portal.shortcuts_hint", "Herramientas disponibles de acuerdo con tus permisos.", "Available tools depend on your permissions." ],
+  [ "portal.family.title", "Seguimiento familiar", "Family progress" ],
+  [ "portal.family.select", "Elige un hijo para filtrar su información.", "Choose a child to view their information." ],
+  [ "portal.admin.eyebrow", "DIRECCIÓN · VISIÓN INSTITUCIONAL", "ADMINISTRATION · SCHOOL OVERVIEW" ],
+  [ "portal.admin.headline", "Cada decisión, una escuela mejor.", "Every decision makes a better school." ],
+  [ "portal.admin.intro", "Organiza trámites, alumnos y procesos con indicadores de tu institución.", "Manage school processes and student records in one place." ],
+  [ "portal.teacher.eyebrow", "DOCENTES · MI JORNADA", "TEACHERS · MY DAY" ],
+  [ "portal.teacher.headline", "Cada clase cuenta. Cada alumno también.", "Every class counts. Every student matters." ],
+  [ "portal.teacher.intro", "Prepara tus clases, registra asistencia y acompaña el aprendizaje.", "Plan classes, record attendance and support learning." ],
+  [ "portal.student.eyebrow", "ALUMNOS · MI APRENDIZAJE", "STUDENTS · MY LEARNING" ],
+  [ "portal.student.headline", "¡Hoy es un buen día para aprender!", "Today is a great day to learn!" ],
+  [ "portal.student.intro", "Encuentra tus tareas, horario y avances de manera sencilla.", "See your assignments, schedule and progress." ],
+  [ "portal.guardian.eyebrow", "FAMILIAS · SEGUIMIENTO", "FAMILIES · PROGRESS" ],
+  [ "portal.guardian.headline", "Más cerca de cada paso de tus hijos.", "Stay close to every step of your children's journey." ],
+  [ "portal.guardian.intro", "Acompaña su trayectoria escolar y realiza los trámites en un solo lugar.", "Follow progress and manage school applications in one place." ],
+  [ "help.title", "Guía de uso del sistema", "System user guide" ],
+  [ "help.description", "Aprende paso a paso a utilizar los módulos disponibles en tu portal. Las instrucciones se adaptan a tus permisos.", "Learn to use each portal module step by step. Topics adapt to your permissions." ],
+  [ "help.search", "Buscar tarea o módulo…", "Search task or module…" ],
+  [ "help.open", "Ir al módulo", "Open module" ]
+].each do |key, es, en|
+  { "es" => es, "en" => en }.each do |code, translated|
+    language = Language.find_by!(code: code)
+    TranslationEntry.find_or_create_by!(language: language, key: key) do |entry|
+      entry.assign_attributes(text: translated, status: "published", reviewer: admin, published_at: Time.current)
+    end
+  end
+end
