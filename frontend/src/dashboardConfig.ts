@@ -1,6 +1,6 @@
 export const widgetKinds = {
  students: 'Expedientes', enrollments: 'Inscripciones activas', pending_admissions: 'Solicitudes pendientes',
- groups: 'Grupos', attendance_chart: 'Asistencia · últimos 30 días', admission_chart: 'Estado de solicitudes',
+ groups: 'Grupos', today_classes: 'Clases de hoy', grade_drafts: 'Calificaciones por revisar', pending_documents: 'Documentos pendientes', attendance_chart: 'Asistencia · últimos 30 días', admission_chart: 'Estado de solicitudes',
  alerts: 'Acompañamiento', calendar: 'Próximos eventos', announcements: 'Comunicados'
 };
 export type Kind = keyof typeof widgetKinds;
@@ -20,9 +20,9 @@ export function removeWidget(config: Config, id: string): Config {
 }
 export type DashboardRole='admin'|'teacher'|'guardian'|'student';
 export const presets: Record<DashboardRole,Kind[]> = {
- admin:['students','enrollments','pending_admissions','attendance_chart','alerts','calendar'],
- teacher:['groups','attendance_chart','alerts','calendar','announcements'],
- guardian:['students','enrollments','attendance_chart','calendar','announcements'],
+ admin:['students','enrollments','pending_admissions','pending_documents','attendance_chart','alerts','calendar'],
+ teacher:['today_classes','grade_drafts','groups','attendance_chart','alerts','calendar','announcements'],
+ guardian:['students','pending_documents','attendance_chart','calendar','announcements'],
  student:['attendance_chart','calendar','announcements']
 };
 export function defaultConfig(role: DashboardRole='admin'): Config {

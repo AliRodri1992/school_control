@@ -1,6 +1,6 @@
 class DashboardPreference < ApplicationRecord
   belongs_to :user
-  KINDS = %w[students enrollments pending_admissions groups attendance_chart admission_chart alerts calendar announcements].freeze
+  KINDS = %w[students enrollments pending_admissions groups today_classes grade_drafts pending_documents attendance_chart admission_chart alerts calendar announcements].freeze
   COLUMNS = { "lg" => 12, "md" => 8, "sm" => 4, "xs" => 1 }.freeze
   validate :valid_configuration
 

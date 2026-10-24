@@ -9,24 +9,36 @@ import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 const Grid = WidthProvider(Responsive);
 const statusLabels: Record<string,string> = {present:'Presente',absent:'Ausente',late:'Retardo',excused:'Justificada',submitted:'Enviada',approved:'Aprobada',rejected:'Rechazada'};
-export default function Dashboard({summary,data,role='admin'}:{summary:Row;data:Record<string,Row[]>;role?:DashboardRole}) {
+export default function Dashboard({summary,data,role='admin',userId=0}:{summary:Row;data:Record<string,Row[]>;role?:DashboardRole;userId?:number}) {
+ const [filterGroup,setFilterGroup]=useState('');
+ const [visibleSummary,setVisibleSummary]=useState<Row>(summary);
  const [config,setConfig] = useState<Config>(()=>defaultConfig(role));
  const [version,setVersion] = useState<number|null>(null);
  const [ready,setReady] = useState(false),[editing,setEditing] = useState(false),[saving,setSaving] = useState(false);
  const [error,setError] = useState(''),[kind,setKind] = useState<Kind>('attendance_chart'),[title,setTitle] = useState('');
+ useEffect(()=>{let active=true;setVisibleSummary(summary);return()=>{active=false;};},[summary]);
+ useEffect(()=>{let active=true;if(!filterGroup){setVisibleSummary(summary);return;}
+   void api('dashboard?group_id='+encodeURIComponent(filterGroup)).then(result=>{if(active)setVisibleSummary(result);}).catch(e=>{if(active)setError(e.message);});
+   return()=>{active=false;};
+ },[filterGroup,summary,userId]);
  useEffect(()=>{let active=true;api('dashboard_preference').then(result=>{if(active){setConfig(result.configuration||defaultConfig(role));setVersion(result.lock_version);setReady(true);}}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[]);
  async function save(){setSaving(true);setError('');try{const result=await api('dashboard_preference','PUT',{configuration:config,lock_version:version});setVersion(result.lock_version);setEditing(false);void notify('Dashboard guardado correctamente.');}catch(e){setError((e as Error).message);}finally{setSaving(false);}}
  function content(widget: Config['widgets'][number]) {
   if(widget.kind.endsWith('_chart')) {
-   const entries=Object.entries(summary[widget.kind]||{}).map(([name,value])=>({name:statusLabels[name]||name,value:Number(value)}));
+   const entries=Object.entries(visibleSummary[widget.kind]||{}).map(([name,value])=>({name:statusLabels[name]||name,value:Number(value)}));
    return entries.length?<><div className="widget-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={entries}><XAxis dataKey="name"/><YAxis allowDecimals={false}/><Tooltip/><Bar dataKey="value" name="Registros" fill="#405CF5" radius={[6,6,0,0]}/></BarChart></ResponsiveContainer></div><p className="chart-description">{entries.map(e=>`${e.name}: ${e.value}`).join(' · ')}</p></>:<p>No hay registros para graficar.</p>;
   }
-  if(widget.kind==='alerts')return summary.alerts?.length?summary.alerts.map((a:Row,i:number)=><p key={i}><strong>{a.student_name}</strong><br/>{a.message}</p>):<p>Sin alertas de asistencia. Se señalan tres o más faltas en 30 días para revisión humana.</p>;
+  if(widget.kind==='alerts')return visibleSummary.alerts?.length?visibleSummary.alerts.map((a:Row,i:number)=><p key={i}><strong>{a.student_name}</strong><br/>{a.message}</p>):<p>Sin alertas de asistencia. Se señalan tres o más faltas en 30 días para revisión humana.</p>;
   if(widget.kind==='calendar') {const events=(data.calendar_events||[]).filter(e=>new Date(e.ends_at)>=new Date()).sort((a,b)=>a.starts_at.localeCompare(b.starts_at));return events.length?events.slice(0,6).map(e=><p key={e.id}><strong>{e.title}</strong><br/>{new Date(e.starts_at).toLocaleString('es-MX')}</p>):<p>No hay próximos eventos.</p>;}
   if(widget.kind==='announcements')return data.announcements?.length?[...data.announcements].reverse().slice(0,5).map(a=><p key={a.id}><strong>{a.title}</strong><br/>{a.body}</p>):<p>No hay comunicados.</p>;
-  return <strong className="widget-number">{summary[widget.kind]??0}</strong>;
+  return <strong className="widget-number">{visibleSummary[widget.kind]??0}</strong>;
  }
  return <section aria-label="Dashboard personalizable"><div className="dashboard-controls"><div><h2>Mi dashboard</h2><p>Indicadores y gráficas de los registros a los que tienes acceso.</p></div>{!editing?<button className="primary" disabled={!ready} onClick={()=>setEditing(true)}>Personalizar</button>:<button className="primary" disabled={saving} onClick={save}>{saving?'Guardando…':'Guardar dashboard'}</button>}{editing&&<button className="secondary" disabled={saving} onClick={()=>setConfig(defaultConfig(role))}>Restablecer plantilla</button>}</div>
+ {(['admin','teacher'].includes(role))&&(data.groups||[]).length>0&&<div className="dashboard-context-filter">
+   <label>Grupo para indicadores<select value={filterGroup} onChange={e=>setFilterGroup(e.target.value)}>
+   <option value="">Todos los grupos autorizados</option>{(data.groups||[]).map(group=><option key={group.id} value={group.id}>{group.label}</option>)}</select></label>
+   <p>El filtro se aplica a la información académica del dashboard.</p>
+ </div>}
  {error&&<p className="error" role="alert">{error}</p>}{!ready&&!error&&<p>Cargando configuración…</p>}
  {editing&&<form className="widget-builder" onSubmit={e=>{e.preventDefault();setConfig(c=>appendWidget(c,kind,title.trim()||widgetKinds[kind]));setTitle('');}}><label>Contenido<select value={kind} onChange={e=>setKind(e.target.value as Kind)}>{Object.entries(widgetKinds).map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></label><label>Título del widget<input value={title} maxLength={80} placeholder={widgetKinds[kind]} onChange={e=>setTitle(e.target.value)}/></label><button className="secondary" disabled={saving||config.widgets.length>=24}>Añadir widget</button><p>Arrastra desde el título o ajusta la esquina. En móvil puedes cambiar el orden con las flechas. Guarda para conservar los cambios.</p></form>}
  {ready&&<Grid layouts={Object.fromEntries(Object.entries(config.layouts).map(([bp,items])=>[bp,items.map(item=>({...item,minH:2,maxH:20}))]))} breakpoints={{lg:1200,md:800,sm:480,xs:0}} cols={columns} rowHeight={48} margin={[16,16]} isDraggable={editing&&!saving} isResizable={editing&&!saving} draggableHandle=".widget-handle" onLayoutChange={(_,layouts)=>{if(!saving)setConfig(c=>({...c,layouts:Object.fromEntries(Object.entries(layouts).map(([bp,items])=>[bp,(items||[]).map(({i,x,y,w,h})=>({i,x,y,w,h}))]))}));}}>

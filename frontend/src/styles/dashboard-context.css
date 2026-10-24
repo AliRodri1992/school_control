@@ -1,0 +1,4 @@
+.dashboard-context-filter{background:#f7f9fe;border:1px solid #e2e8f3;border-radius:12px;padding:14px 18px;display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.dashboard-context-filter label{min-width:180px;display:grid;gap:5px;font-weight:650}
+.dashboard-context-filter select{max-width:280px}
+.dashboard-context-filter p{font-size:12px}
