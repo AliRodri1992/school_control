@@ -45,7 +45,7 @@ export default function EmailTemplateDesigner({schoolName}:{schoolName:string}){
       <label>{ui("Asunto")}<input required maxLength={200} value={draft.subject} onChange={e=>change('subject',e.target.value)} placeholder={ui("Asunto del mensaje")}/></label>
       <label>{ui("Encabezado")}<input required maxLength={200} value={draft.heading} onChange={e=>change('heading',e.target.value)} placeholder={ui("Título del correo")}/></label>
       <label>{ui("Mensaje principal")}<textarea required rows={5} maxLength={5000} value={draft.body} onChange={e=>change('body',e.target.value)} placeholder={ui("Contenido legible, incluso sin HTML")}/></label>
-      <label>{ui("HTML opcional (estructura permitida, sin scripts)")}<textarea rows={4} maxLength={15000} value={draft.html_body||''} onChange={e=>change('html_body',e.target.value)} placeholder="<p>{ui("Mensaje con")} <strong>{ui("formato")}</strong></p>"/></label>
+      <label>{ui("HTML opcional (estructura permitida, sin scripts)")}<textarea rows={4} maxLength={15000} value={draft.html_body||''} onChange={e=>change('html_body',e.target.value)} placeholder={"<p>Mensaje con <strong>formato</strong></p>"}/></label>
       <label>{ui("Pie institucional")}<textarea required rows={2} maxLength={200} value={draft.footer} onChange={e=>change('footer',e.target.value)}/></label>
       <div className="sc-mail-double"><label>{ui("Color de acento")}<input type="color" value={draft.accent_color} onChange={e=>change('accent_color',e.target.value)}/></label>
        <div className="sc-mail-choice"><label>{ui("Estado")}</label>
