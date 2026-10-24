@@ -129,7 +129,9 @@ RSpec, FactoryBot y Shoulda Matchers cubren validaciones, permisos y flujos tran
 
 ## Desarrollo y cambios
 
-El compose predeterminado ejecuta imágenes construidas con el código actual. Tras editar, ejecuta `docker compose up -d --build`. No necesitas Ruby ni Node en tu computadora.
+En desarrollo el frontend usa un bind mount de `./frontend` y Vite HMR con detección de cambios por polling (compatible con Docker Desktop para macOS). Después de la configuración inicial mediante `docker compose up -d --build frontend`, los cambios en archivos React/TypeScript/CSS y recursos del frontend se actualizan automáticamente en `http://localhost:5173` sin reconstruir la imagen. Las dependencias Node se guardan en el volumen independiente `frontend_node_modules`, evitando que el `node_modules` local reemplace el del contenedor.
+
+Si modificas `package.json` o el lockfile, reconstruye el frontend e instala las dependencias en el volumen correspondiente (`docker compose exec frontend npm ci`). Si modificas Dockerfile o Compose, recrea el contenedor. Los cambios de Rails siguen requiriendo su proceso de desarrollo y las migraciones de base de datos nunca se aplican automáticamente. No necesitas Ruby ni Node en tu computadora.
 
 ## Producción
 
