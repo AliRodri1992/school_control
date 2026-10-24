@@ -164,6 +164,43 @@ jobs:
           docker compose up -d --wait
           curl --fail-with-body http://127.0.0.1:3200/up
           curl --fail-with-body http://127.0.0.1:5173/api/school
+      - name: Verify login JSON through browser proxy and separate Rails port
+        run: |
+          python3 - <<'PY'
+          import http.cookiejar
+          import json
+          import urllib.error
+          import urllib.request
+
+          for origin in ("http://127.0.0.1:5173", "http://127.0.0.1:3200"):
+              jar = http.cookiejar.CookieJar()
+              client = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+
+              def send(method, path, payload=None, token=""):
+                  data = json.dumps(payload).encode() if payload is not None else None
+                  headers = {"Accept": "application/json"}
+                  if data is not None:
+                      headers.update({"Content-Type": "application/json", "X-CSRF-Token": token})
+                  request = urllib.request.Request(origin + path, data=data, headers=headers, method=method)
+                  try:
+                      response = client.open(request)
+                  except urllib.error.HTTPError as error:
+                      response = error
+                  body = response.read()
+                  media_type = response.headers.get("Content-Type", "").lower()
+                  assert "application/json" in media_type, (origin, path, response.status, media_type)
+                  return response.status, json.loads(body)
+
+              status, session = send("GET", "/api/session")
+              assert status == 200 and session.get("csrf_token"), (origin, status)
+              status, error = send("POST", "/api/session",
+                  {"email": "missing@example.test", "password": "incorrect"},
+                  session["csrf_token"])
+              assert status == 401 and isinstance(error.get("error"), str), (origin, status, error)
+              status, school = send("GET", "/api/school")
+              assert status == 200 and school.get("name"), (origin, status)
+              print(origin, "JSON session, login error and school responses verified")
+          PY
       - run: docker compose run --rm backend bundle exec rails runner script/verify_worker.rb
       - run: docker compose --project-name school-staging --env-file .env.staging -f compose.yml -f compose.staging.yml build
       - run: docker compose --project-name school-staging --env-file .env.staging -f compose.yml -f compose.staging.yml run --rm backend bundle exec rails db:prepare db:seed

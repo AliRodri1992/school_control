@@ -61,6 +61,21 @@ Para ver correos de desarrollo, abre **http://localhost:3200/letter_opener** (o 
 
 El `compose.staging.yml` utiliza los puertos independientes `3100` y `8180`, y un nombre de proyecto propio (`school-staging`). No ejecutes `docker compose down -v`: ese comando elimina las bases de datos y archivos persistentes del proyecto correspondiente.
 
+### Error HTML en el inicio de sesión
+
+Si la aplicación indica que recibió HTML en lugar de JSON, ingresa mediante **http://localhost:5173**. El puerto 3000 del equipo corresponde a Delta POS; la API de School Control se publica en el **3200**.
+
+Verifica que ambos servicios respondan con `Content-Type: application/json` y un campo `csrf_token`:
+
+```bash
+docker compose ps
+docker compose logs --tail=80 backend frontend
+curl -i -H 'Accept: application/json' http://localhost:5173/api/session
+curl -i -H 'Accept: application/json' http://localhost:3200/api/session
+```
+
+Si una respuesta es HTML, revisa los logs de Rails y el proxy y reconstruye únicamente los servicios de School Control con `docker compose up -d --build`. No elimines los volúmenes ni cambies el proxy de Vite de `backend:3000` a `localhost:3200`: el primer nombre es el puerto **interno** correcto entre contenedores.
+
 ## Recorrido funcional
 
 1. **Administración** configura nombre, CCT, teléfono, domicilio y logotipo PNG/JPG/WebP; el logotipo se muestra en los portales. Crea ciclos y ventanas de inscripción/reinscripción.
