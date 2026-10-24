@@ -1,9 +1,11 @@
+import Combobox from '../../shared/components/Combobox';
 import AuliGuide from '../../shared/components/AuliGuide';
 import {useEffect,useState,type FormEvent} from 'react';
 import {ArrowLeft,ArrowRight,CheckCircle2,FileSpreadsheet,FileUp,LoaderCircle,ShieldCheck,UploadCloud} from 'lucide-react';
 import {api} from '../../api';
 
 type Batch={id:number;kind:string;status:string;mapping:Record<string,string>;total_rows:number;imported_rows:number;row_errors:{row:number;messages:string[]}[]};
+type MappingTemplate={id:number;kind:string;name:string;mapping:Record<string,string>};
 type Preview={headers:string[];sample:{row:number;values:Record<string,string>}[];suggested_mapping:Record<string,string>;total_rows:number};
 const fieldCatalog:Record<string,Record<string,string>>={students:{first_name:'Nombre del alumno',last_name:'Apellidos',curp:'CURP',birth_date:'Fecha de nacimiento',guardian_email:'Correo del tutor'},subjects:{name:'Nombre de la materia',code:'Clave de materia'},groups:{academic_year:'Ciclo escolar',grade_level:'Grado',section:'Sección',capacity:'Cupo máximo'},teachers:{name:'Nombre del docente',email:'Correo del docente'},tutors:{name:'Nombre del tutor',email:'Correo del tutor'},grades:{course_id:'ID de clase',enrollment_id:'ID de inscripción',term:'Trimestre',score:'Calificación (0-10)',feedback:'Observaciones'}};
 const stages=['Archivo','Asociación de columnas','Validación','Confirmación y resultado'] as const;
@@ -16,7 +18,32 @@ export default function ImportWizard(){
  const [mapping,setMapping]=useState<Record<string,string>>({});
  const [error,setError]=useState(''),[fieldError,setFieldError]=useState(''),[busy,setBusy]=useState(false);
  const [history,setHistory]=useState<Batch[]>([]);
- useEffect(()=>{void api('data_imports').then(setHistory).catch(()=>undefined);},[]);
+ const [templates,setTemplates]=useState<MappingTemplate[]>([]);
+ const [templateName,setTemplateName]=useState('');
+ useEffect(()=>{
+   void api('data_imports').then(setHistory).catch(()=>undefined);
+   void api('import_mapping_templates').then(setTemplates).catch(()=>undefined);
+ },[]);
+ const applicableTemplates=templates.filter(template=>template.kind===kind);
+ function applyTemplate(id:string){
+   const selected=applicableTemplates.find(template=>String(template.id)===id);
+   if(!selected||!preview)return;
+   const values={...preview.suggested_mapping};
+   for(const [header,column] of Object.entries(selected.mapping)){
+     if(preview.headers.includes(header)&&fields[column])values[header]=column;
+   }
+   setMapping(values);setFieldError('');
+ }
+ function saveTemplate(){if(!preview)return;
+   if(!templateName.trim()){setFieldError('Nombre de plantilla no puede estar vacío.');return;}
+   void perform(async()=>{
+     const values=Object.fromEntries(Object.entries(mapping).filter(([,value])=>value));
+     const stored:MappingTemplate=await api('import_mapping_templates','POST',{
+       kind,name:templateName.trim(),mapping:values
+     });
+     setTemplates(previous=>[...previous,stored]);setTemplateName('');
+   });
+ }
  useEffect(()=>{
    if(!batch||!['queued','processing'].includes(batch.status))return;
    let active=true;
@@ -61,7 +88,12 @@ export default function ImportWizard(){
     {error&&<div className="error" role="alert">{error}</div>}
     {step===0&&<form onSubmit={upload} className="sc-import-form" noValidate>
       <h2>1. Selecciona tipo y archivo</h2>
-       <label>Tipo de datos<select value={kind} onChange={e=>setKind(e.target.value)}><option value="students">Alumnos</option><option value="subjects">Materias</option><option value="groups">Grupos</option><option value="teachers">Docentes</option><option value="tutors">Padres y tutores</option><option value="grades">Calificaciones (borrador)</option></select></label><p>Admite archivos .xlsx y .csv de hasta 5 MB con un máximo de 5,000 filas. La primera fila debe contener encabezados únicos.</p>
+       <div className="sc-import-kind"><label htmlFor="sc-import-kind">Tipo de datos</label>
+       <Combobox id="sc-import-kind" label="Tipo de datos" value={kind} onChange={setKind} options={[
+        {value:'students',label:'Alumnos'}, {value:'subjects',label:'Materias'}, {value:'groups',label:'Grupos'},
+        {value:'teachers',label:'Docentes'}, {value:'tutors',label:'Padres y tutores'},
+        {value:'grades',label:'Calificaciones (borrador)'}
+       ]}/></div><p>Admite archivos .xlsx y .csv de hasta 5 MB con un máximo de 5,000 filas. La primera fila debe contener encabezados únicos.</p>
       {kind==='grades'&&<p className="info">Las calificaciones se importan como borradores; requieren revisión y publicación posterior. Utiliza los identificadores de clase e inscripción existentes.</p>}
       {['teachers','tutors'].includes(kind)&&<p className="info">Los usuarios importados recibirán un correo para establecer su contraseña. No se generan contraseñas compartidas ni se muestran credenciales en pantalla.</p>}
       <label className="sc-dropzone" htmlFor="school-import-file"><UploadCloud size={36}/><strong>{file?file.name:'Selecciona un archivo Excel o CSV'}</strong><span>Los datos se almacenan de forma privada.</span></label>
@@ -70,10 +102,21 @@ export default function ImportWizard(){
       <button className="primary" disabled={busy}>{busy?'Revisando archivo…':'Leer archivo'}<ArrowRight size={17}/></button>
     </form>}
     {step===1&&preview&&<form className="sc-import-form" onSubmit={verifyMapping}>
-      <h2>2. Asocia las columnas</h2><p>Selecciona para cada encabezado del archivo el campo equivalente en School Control.</p>
+      <h2>2. Asocia las columnas</h2>
+      <p>Selecciona para cada encabezado del archivo el campo equivalente en School Control.</p>
+      <div className="sc-import-templates">
+        <label>Plantilla guardada
+         <Combobox label="Plantilla guardada" value="" onChange={applyTemplate} placeholder="Selecciona un mapeo guardado"
+           options={applicableTemplates.map(item=>({value:String(item.id),label:item.name}))}/>
+        </label>
+        <label>Nombre de nueva plantilla<input value={templateName} placeholder="Ej. Formato SEP 2026"
+          maxLength={100} onChange={e=>setTemplateName(e.target.value)}/></label>
+        <button className="secondary" type="button" disabled={busy} onClick={saveTemplate}>Guardar mapeo</button>
+      </div>
       <div className="table-scroll"><table><thead><tr><th>Columna de archivo</th><th>Campo del sistema</th><th>Ejemplo</th></tr></thead><tbody>
-       {preview.headers.map(header=><tr key={header}><td><strong>{header}</strong></td><td><select aria-label={'Campo para '+header} value={mapping[header]||''} onChange={e=>{setMapping(v=>({...v,[header]:e.target.value}));setFieldError('');}}>
-        <option value="">Ignorar columna</option>{Object.entries(fields).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></td>
+       {preview.headers.map(header=><tr key={header}><td><strong>{header}</strong></td><td><Combobox label={'Campo para '+header} placeholder="Ignorar columna" value={mapping[header]||''}
+         options={Object.entries(fields).map(([value,label])=>({value,label}))}
+         onChange={value=>{setMapping(previous=>({...previous,[header]:value}));setFieldError('');}}/></td>
         <td>{String(preview.sample[0]?.values[header]||'—')}</td></tr>)}
       </tbody></table></div>
       {fieldError&&<p className="sc-field-error" role="alert">{fieldError}</p>}

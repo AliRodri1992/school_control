@@ -21,3 +21,13 @@
 .sc-import-history{margin-top:24px;padding:20px;border-radius:16px}
 @media(max-width:1000px){.sc-import-layout{grid-template-columns:1fr}.sc-import-assistant{position:static;display:flex;gap:18px;align-items:center}.sc-import-assistant img{width:85px;max-height:100px;margin:0}}
 @media(max-width:600px){.sc-import-panel{padding:15px}.sc-wizard-steps{display:grid;grid-template-columns:1fr 1fr}.sc-import-assistant{display:none}.sc-import-form .primary,.sc-import-form .secondary{width:100%}}
+
+.sc-import-kind{display:grid;gap:8px}
+.sc-import-kind>label{font-size:13px;font-weight:650;color:#334155}
+.sc-import-templates{display:grid;grid-template-columns:minmax(180px,1fr) minmax(180px,1fr) auto;gap:12px;padding:16px;border:1px solid #e3e8f1;border-radius:12px;background:#f8faff;align-items:end}
+.sc-import-templates>label{display:grid;gap:8px;font-size:12px;font-weight:650}
+.sc-import-templates input{margin:0}
+.sc-import-templates>.secondary{min-height:43px;align-self:end}
+.sc-import-templates .sc-combobox-trigger{min-height:44px}
+@media(max-width:1050px){.sc-import-templates{grid-template-columns:1fr 1fr}.sc-import-templates>.secondary{grid-column:1/-1}}
+@media(max-width:600px){.sc-import-templates{grid-template-columns:1fr}.sc-import-templates>.secondary{grid-column:auto}}
