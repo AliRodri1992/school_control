@@ -1,3 +1,4 @@
+import {useInterfaceLocale} from './shared/i18n/LocaleContext';
 import {useState,type FormEvent} from 'react';
 import {api} from './api';
 import {notify} from './notifications';
@@ -7,6 +8,7 @@ const empty={email:'',password:'',password_confirmation:''};
 const names:Record<Field,string>={email:'Correo electrónico',password:'Nueva contraseña',password_confirmation:'Confirmar nueva contraseña'};
 
 export default function PasswordRecovery({schoolName,token,onClose}:{schoolName:string;token?:string;onClose:()=>void}) {
+ const {ui}=useInterfaceLocale();
  const [values,setValues]=useState(empty),[errors,setErrors]=useState<Partial<Record<Field,string>>>({});
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState('');
  function update(name:Field,value:string){setValues(v=>({...v,[name]:value}));setErrors(v=>({...v,[name]:undefined}));setError('');}
@@ -42,7 +44,7 @@ export default function PasswordRecovery({schoolName,token,onClose}:{schoolName:
  }
  function field(name:Field,type:string,placeholder:string){
   return <div className="sc-field" key={name}>
-    <label htmlFor={'recovery-'+name}>{names[name]}</label>
+    <label htmlFor={'recovery-'+name}>{ui(names[name])}</label>
     <div className={'sc-input-wrap'+(errors[name]?' is-invalid':'')}>
      <input id={'recovery-'+name} name={name} type={type} autoComplete={name==='email'?'email':'new-password'}
       required placeholder={placeholder} value={values[name]} aria-invalid={!!errors[name]}
@@ -52,13 +54,13 @@ export default function PasswordRecovery({schoolName,token,onClose}:{schoolName:
    </div>;
  }
  return <div className="boot sc-recovery"><section className="panel settings sc-recovery-card" style={{width:'min(100%,480px)',textAlign:'left'}}>
-  <span className="eyebrow">{schoolName}</span><h1>{token?'Nueva contraseña':'Recupera tu acceso'}</h1>
-  <p>{token?'El enlace vence en 15 minutos. Al guardar, se cerrarán todas tus sesiones.':'Te enviaremos un enlace al correo de tu cuenta.'}</p>
+  <span className="eyebrow">{schoolName}</span><h1>{ui(token?'Nueva contraseña':'Recupera tu acceso')}</h1>
+  <p>{ui(token?'El enlace vence en 15 minutos. Al guardar, se cerrarán todas tus sesiones.':'Te enviaremos un enlace al correo de tu cuenta.')}</p>
   {message?<p role="status">{message}</p>:<form noValidate onSubmit={submit}>
-   {token?<>{field('password','password','Al menos 12 caracteres')}{field('password_confirmation','password','Repite tu nueva contraseña')}</>:field('email','email','nombre@correo.com')}
+   {token?<>{field('password','password',ui('Al menos 12 caracteres'))}{field('password_confirmation','password',ui('Repite tu nueva contraseña'))}</>:field('email','email','nombre@correo.com')}
    {error&&<p className="error" role="alert">{error}</p>}
-   <button className="primary" disabled={busy}>{busy?'Procesando…':token?'Guardar nueva contraseña':'Enviar enlace'}</button>
+   <button className="primary" disabled={busy}>{ui(busy?'Procesando…':token?'Guardar nueva contraseña':'Enviar enlace')}</button>
   </form>}
-  <button type="button" className="text-button" disabled={busy} onClick={onClose}>Volver al inicio de sesión</button>
+  <button type="button" className="text-button" disabled={busy} onClick={onClose}>{ui("Volver al inicio de sesión")}</button>
  </section></div>;
 }

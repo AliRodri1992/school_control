@@ -35,17 +35,17 @@ const sections:Record<string,Topic[]>={
  ]
 };
 export default function HelpCenter({role,can,onNavigate}:{role:string;can:(permission:string)=>boolean;onNavigate:(page:string)=>void}){
- const {t}=useSchoolLocale();
+ const {t,ui}=useSchoolLocale();
  const [query,setQuery]=useState('');
  const allowed=(sections[role]||sections.guardian).filter(t=>!t.permission||can(t.permission));
  const heading=(topic:Topic)=>t('help.'+role+'.'+topic.page+'.title',topic.title);
  const steps=(topic:Topic)=>topic.steps.map((line,i)=>t('help.'+role+'.'+topic.page+'.step'+i,line));
  const filtered=allowed.filter(topic=>(heading(topic)+' '+steps(topic).join(' ')).toLocaleLowerCase('es').includes(query.toLocaleLowerCase('es')));
  return <section className="sc-help-center">
-  <header className="page-heading"><div><span className="eyebrow">MI CUENTA / CENTRO DE AYUDA</span><h1>{t('help.title','Guía de uso del sistema')}</h1>
+  <header className="page-heading"><div><span className="eyebrow">{ui("MI CUENTA / CENTRO DE AYUDA")}</span><h1>{t('help.title','Guía de uso del sistema')}</h1>
   <p>{t('help.description','Aprende paso a paso a utilizar los módulos disponibles en tu portal. Las instrucciones se adaptan a tus permisos.')}</p></div></header>
   <div className="sc-help-search"><Search size={19}/><input value={query} onChange={e=>setQuery(e.target.value)}
-   aria-label="Buscar en la guía" placeholder={t("help.search","Buscar tarea o módulo…")}/></div>
+   aria-label={ui("Buscar en la guía")} placeholder={t("help.search","Buscar tarea o módulo…")}/></div>
   <div className="sc-help-topics">
    {filtered.map((topic,index)=><details key={topic.title} className="sc-help-topic" open={!!query||index===0}>
     <summary><span className="sc-help-number"><BookOpen size={19}/></span><strong>{heading(topic)}</strong><HelpCircle size={17}/></summary>
@@ -54,7 +54,7 @@ export default function HelpCenter({role,can,onNavigate}:{role:string;can:(permi
     </div>
    </details>)}
   </div>
-  {!filtered.length&&<div className="panel sc-help-no-results">No hay temas disponibles para esta búsqueda. Prueba con el nombre de un módulo.</div>}
-  <p className="sc-help-footer">Las acciones disponibles dependen de los permisos institucionales y del estado de cada expediente.</p>
+  {!filtered.length&&<div className="panel sc-help-no-results">{ui("No hay temas disponibles para esta búsqueda. Prueba con el nombre de un módulo.")}</div>}
+  <p className="sc-help-footer">{ui("Las acciones disponibles dependen de los permisos institucionales y del estado de cada expediente.")}</p>
  </section>;
 }

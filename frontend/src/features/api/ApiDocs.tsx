@@ -1,3 +1,4 @@
+import {useSchoolLocale} from '../../shared/i18n/LocaleContext';
 import Combobox from '../../shared/components/Combobox';
 import {useEffect,useMemo,useState} from 'react';
 import {BookOpen,ChevronDown,Code2,Filter,Search,ShieldCheck} from 'lucide-react';
@@ -9,6 +10,7 @@ type Contract={openapi:string;info:{title:string;version:string;description?:str
 const verbs=['get','post','put','patch','delete'];
 const colors:Record<string,string>={get:'#23775e',post:'#405cf5',put:'#9657d6',patch:'#b27017',delete:'#c03652'};
 export default function ApiDocs(){
+ const {ui}=useSchoolLocale();
  const [contract,setContract]=useState<Contract|null>(null),[error,setError]=useState('');
  const [query,setQuery]=useState(''),[tag,setTag]=useState(''),[selected,setSelected]=useState('');
  useEffect(()=>{let mounted=true;void api('docs').then(v=>{if(mounted)setContract(v);}).catch(e=>{if(mounted)setError((e as Error).message);});return()=>{mounted=false;};},[]);
@@ -18,17 +20,17 @@ export default function ApiDocs(){
  const visible=entries.filter(item=>(!tag||item.operation.tags?.includes(tag))&&
   (item.path+' '+(item.operation.summary||'')+' '+(item.operation.operationId||'')+' '+(item.operation['x-rbac-permission']||'')).toLowerCase().includes(query.toLowerCase()));
  return <section className="sc-api-docs">
-  <div className="page-heading"><div><span className="eyebrow">ADMINISTRACIÓN / DESARROLLADORES</span><h1>Documentación de la API</h1>
-   <p>Contrato OpenAPI local con autenticación y requisitos de permisos por operación.</p></div></div>
+  <div className="page-heading"><div><span className="eyebrow">{ui("ADMINISTRACIÓN / DESARROLLADORES")}</span><h1>{ui("Documentación de la API")}</h1>
+   <p>{ui("Contrato OpenAPI local con autenticación y requisitos de permisos por operación.")}</p></div></div>
   {error&&<div role="alert" className="error">{error}</div>}
-  {!contract&&!error&&<p>Cargando contrato OpenAPI…</p>}
+  {!contract&&!error&&<p>{ui("Cargando contrato OpenAPI…")}</p>}
   {contract&&<><div className="panel sc-api-summary"><div><Code2 size={22}/><strong>{contract.info.title}</strong><span>OpenAPI {contract.openapi} · Versión {contract.info.version}</span></div>
    <p>{entries.length} operaciones en {Object.keys(contract.paths).length} rutas. Algunos cuerpos de solicitud y respuesta todavía requieren esquemas detallados.</p>
   </div>
   <div className="sc-api-search">
-   <label><Search size={17}/><input aria-label="Buscar rutas de la API" value={query} placeholder="Buscar endpoint o permiso…" onChange={e=>setQuery(e.target.value)}/></label>
+   <label><Search size={17}/><input aria-label={ui("Buscar rutas de la API")} value={query} placeholder={ui("Buscar endpoint o permiso…")} onChange={e=>setQuery(e.target.value)}/></label>
    <div className="sc-api-dropdown"><Filter size={17}/><Combobox label="Filtrar área" value={tag}
-     onChange={setTag} placeholder="Todas las áreas" options={tags.map(value=>({value,label:value}))}/></div>
+     onChange={setTag} placeholder={ui("Todas las áreas")} options={tags.map(value=>({value,label:value}))}/></div>
   </div>
   <div className="sc-api-operations">{visible.map(({path,verb,operation})=>{
    const key=verb+':'+path,expanded=selected===key;
@@ -40,13 +42,13 @@ export default function ApiDocs(){
      <p>{operation.description||'Operación documentada en el contrato Rails.'}</p>
      {operation['x-rbac-permission']&&<p><ShieldCheck size={15}/> Permiso: <code>{String(operation['x-rbac-permission'])}</code></p>}
      <p>{operation.security?.length?'Requiere sesión autenticada.':'Operación pública o autenticación de sesión.'}</p>
-     {operation.parameters&&<details><summary>Parámetros</summary><pre>{JSON.stringify(operation.parameters,null,2)}</pre></details>}
-     {!!operation.requestBody&&<details><summary>Cuerpo de solicitud</summary><pre>{JSON.stringify(operation.requestBody,null,2)}</pre></details>}
-     <details open><summary>Respuestas HTTP</summary><pre>{JSON.stringify(operation.responses||{},null,2)}</pre></details>
+     {operation.parameters&&<details><summary>{ui("Parámetros")}</summary><pre>{JSON.stringify(operation.parameters,null,2)}</pre></details>}
+     {!!operation.requestBody&&<details><summary>{ui("Cuerpo de solicitud")}</summary><pre>{JSON.stringify(operation.requestBody,null,2)}</pre></details>}
+     <details open><summary>{ui("Respuestas HTTP")}</summary><pre>{JSON.stringify(operation.responses||{},null,2)}</pre></details>
     </div>}
    </article>;
   })}</div>
-  {!visible.length&&<div className="panel sc-api-empty"><BookOpen size={24}/>No hay endpoints coincidentes.</div>}
+  {!visible.length&&<div className="panel sc-api-empty"><BookOpen size={24}/>{ui("No hay endpoints coincidentes.")}</div>}
   </>}
  </section>;
 }

@@ -1,3 +1,4 @@
+import {useInterfaceLocale} from '../shared/i18n/LocaleContext';
 import {lazy,Suspense,useState, type FormEvent} from 'react';
 import {ArrowRight, BookOpen, Eye, EyeOff, LockKeyhole, Mail, UserRound} from 'lucide-react';
 const PasswordRecovery=lazy(()=>import('../PasswordRecovery'));
@@ -13,6 +14,7 @@ const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const emptyValues:Values = {name:'',email:'',password:'',password_confirmation:''};
 
 export default function Login({school,initialError,onLogin}:{school:Row;initialError:string;onLogin:(user:Row)=>Promise<void>}) {
+ const {ui,locale}=useInterfaceLocale();
   const [recovering,setRecovering] = useState(false);
   const [register,setRegister] = useState(false);
   const [values,setValues] = useState<Values>(emptyValues);
@@ -30,8 +32,8 @@ export default function Login({school,initialError,onLogin}:{school:Row;initialE
 
   function validate():Errors {
     const next:Errors = {};
-    if(register&&!values.name.trim()) next.name='Nombre completo no puede estar vacío.';
-    if(!values.email.trim()) next.email='Correo electrónico no puede estar vacío.';
+    if(register&&!values.name.trim()) next.name=ui('Nombre completo no puede estar vacío.');
+    if(!values.email.trim()) next.email=ui('Correo electrónico no puede estar vacío.');
     else if(!emailPattern.test(values.email.trim())) next.email='Correo electrónico no tiene un formato válido.';
     if(!values.password) next.password='Contraseña no puede estar vacía.';
     else if(register&&values.password.length<12) next.password='Contraseña debe contener al menos 12 caracteres.';
@@ -71,7 +73,7 @@ export default function Login({school,initialError,onLogin}:{school:Row;initialE
     } finally {setBusy(false);}
   }
 
-  if(recovering)return <Suspense fallback={<div className="boot" role="status">Cargando recuperación de contraseña…</div>}><PasswordRecovery schoolName={school.name} onClose={()=>setRecovering(false)}/></Suspense>;
+  if(recovering)return <Suspense fallback={<div className="boot" role="status">{ui("Cargando recuperación de contraseña…")}</div>}><PasswordRecovery schoolName={school.name} onClose={()=>setRecovering(false)}/></Suspense>;
 
   function field(name:FieldName,label:string,type:string,placeholder:string,required=true) {
     const visible=(name==='password'&&showPassword)||(name==='password_confirmation'&&showConfirmation);
@@ -84,7 +86,7 @@ export default function Login({school,initialError,onLogin}:{school:Row;initialE
           autoComplete={name==='name'?'name':name==='email'?'email':register?'new-password':'current-password'}
           aria-invalid={!!errors[name]} aria-describedby={errors[name]?'auth-'+name+'-error':undefined}
           placeholder={placeholder} onChange={e=>setField(name,e.target.value)} required={required}/>
-        {type==='password'&&<button type="button" className="sc-visibility" aria-label={visible?'Ocultar '+label.toLowerCase():'Mostrar '+label.toLowerCase()}
+        {type==='password'&&<button type="button" className="sc-visibility" aria-label={visible?ui('Ocultar ')+label.toLowerCase():ui('Mostrar ')+label.toLowerCase()}
           onClick={()=>name==='password'?setShowPassword(x=>!x):setShowConfirmation(x=>!x)}>
           {visible?<EyeOff size={18}/>:<Eye size={18}/>}
         </button>}
@@ -94,43 +96,43 @@ export default function Login({school,initialError,onLogin}:{school:Row;initialE
   }
 
   return <div className="login sc-auth">
-    <section className="login-story sc-login-story" aria-label="Bienvenida">
+    <section className="login-story sc-login-story" aria-label={ui("Bienvenida")}>
       <div className="brand sc-login-brand">
         {school.logo_url?<img src={school.logo_url} alt="Logotipo de la escuela"/>:<span className="sc-brand-symbol"><BookOpen size={24}/></span>}
         <div><strong>{school.name}</strong><small>School Control</small></div>
       </div>
       <div className="sc-login-copy">
-        <span className="sc-kicker">UNA COMUNIDAD QUE APRENDE JUNTA</span>
-        <h1>Una gran historia<br/>comienza en el aula.</h1>
-        <p>Conecta familias, docentes y estudiantes en una experiencia escolar más simple, humana e inteligente.</p>
+        <span className="sc-kicker">{ui("UNA COMUNIDAD QUE APRENDE JUNTA")}</span>
+        <h1>{ui("Una gran historia")}<br/>{ui("comienza en el aula.")}</h1>
+        <p>{ui("Conecta familias, docentes y estudiantes en una experiencia escolar más simple, humana e inteligente.")}</p>
       </div>
       <img className="sc-auli-hero" src="/illustrations/auli-welcome.svg" alt="Auli, el loro asistente escolar, da la bienvenida"/>
-      <div className="sc-login-foot"><span className="sc-status-light"/> Diseño pensado para cada etapa del aprendizaje.</div>
+      <div className="sc-login-foot"><span className="sc-status-light"/> {ui("Diseño pensado para cada etapa del aprendizaje.")}</div>
     </section>
     <section className="login-form sc-login-panel">
-      <div className="sc-auth-top"><span className="sc-auth-eyebrow">TU PORTAL ESCOLAR</span><span className="sc-auth-locale">Español (México)</span></div>
+      <div className="sc-auth-top"><span className="sc-auth-eyebrow">{ui("TU PORTAL ESCOLAR")}</span><span className="sc-auth-locale">{ui("Español (México)")}</span></div>
       <div className="sc-auth-heading"><span className="sc-auth-mark"><BookOpen size={22}/></span>
-        <h2>{register?'Crea tu cuenta familiar':'Bienvenido de nuevo'}</h2>
-        <p>{register?'Regístrate para dar seguimiento a las solicitudes escolares de tus hijos.':'Ingresa tus credenciales para continuar.'}</p>
+        <h2>{ui(register?'Crea tu cuenta familiar':'Bienvenido de nuevo')}</h2>
+        <p>{ui(register?'Regístrate para dar seguimiento a las solicitudes escolares de tus hijos.':'Ingresa tus credenciales para continuar.')}</p>
       </div>
       <form noValidate onSubmit={submit} className="sc-auth-form">
-        {register&&field('name','Nombre completo','text','Tu nombre y apellidos')}
-        {field('email','Correo electrónico','email','nombre@correo.com')}
-        {field('password','Contraseña','password',register?'Al menos 12 caracteres':'Ingresa tu contraseña')}
-        {register&&field('password_confirmation','Confirmación de contraseña','password','Repite tu contraseña')}
+        {register&&field('name',ui('Nombre completo'),'text',ui('Tu nombre y apellidos'))}
+        {field('email',ui('Correo electrónico'),'email','nombre@correo.com')}
+        {field('password',ui('Contraseña'),'password',ui(register?'Al menos 12 caracteres':'Ingresa tu contraseña'))}
+        {register&&field('password_confirmation',ui('Confirmación de contraseña'),'password',ui('Repite tu contraseña'))}
         {error&&<p className="sc-auth-error" role="alert">{error}</p>}
-        {!register&&<div className="sc-forgot"><button type="button" className="text-button" onClick={()=>setRecovering(true)}>¿Olvidaste tu contraseña?</button></div>}
+        {!register&&<div className="sc-forgot"><button type="button" className="text-button" onClick={()=>setRecovering(true)}>{ui("¿Olvidaste tu contraseña?")}</button></div>}
         <button className="primary sc-auth-submit" type="submit" disabled={busy} aria-busy={busy}>
-          {busy?'Procesando…':register?'Crear cuenta familiar':'Iniciar sesión'}<ArrowRight size={19}/>
+          {ui(busy?'Procesando…':register?'Crear cuenta familiar':'Iniciar sesión')}<ArrowRight size={19}/>
         </button>
       </form>
-      <p className="sc-auth-switch">{register?'¿Ya tienes una cuenta?':'¿Eres padre, madre o tutor?'}{' '}
+      <p className="sc-auth-switch">{ui(register?'¿Ya tienes una cuenta?':'¿Eres padre, madre o tutor?')}{' '}
         <button className="text-button" type="button" onClick={()=>{setRegister(x=>!x);setErrors({});setError('');setShowPassword(false);setShowConfirmation(false);}}>
-          {register?'Inicia sesión':'Regístrate aquí'}
+          {ui(register?'Inicia sesión':'Regístrate aquí')}
         </button>
       </p>
-      <p className="sc-auth-hint">Los accesos de docentes y estudiantes los proporciona la administración de la escuela.</p>
-      <footer className="sc-auth-footer">School Control · Experiencia escolar conectada</footer>
+      <p className="sc-auth-hint">{ui("Los accesos de docentes y estudiantes los proporciona la administración de la escuela.")}</p>
+      <footer className="sc-auth-footer">{ui("School Control · Experiencia escolar conectada")}</footer>
     </section>
   </div>;
 }
