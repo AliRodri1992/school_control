@@ -19,3 +19,15 @@
 .sc-combobox-option:disabled{opacity:.45;cursor:not-allowed}
 .sc-combobox-empty{padding:12px;color:#64748b;font-size:13px}
 @media(max-width:760px){.sc-combobox-panel{max-width:calc(100vw - 42px)}}
+
+.sc-dashboard-select,.sc-report-choice,.sc-role-select,.sc-mail-choice{display:grid;gap:7px;min-width:0}
+.sc-dashboard-select>label,.sc-report-choice>label,.sc-role-select>label,.sc-mail-choice>label{font-size:12px;font-weight:650;color:#334155}
+.sc-role-select{max-width:560px;margin-top:15px}
+.sc-role-scope{width:min(255px,46%);min-width:130px}
+.sc-role-scope .sc-combobox-panel{min-width:220px}
+.sc-dashboard-select{min-width:170px;flex:1 1 200px}
+.sc-report-choice{min-width:0}
+.sc-mail-choice{min-width:0}
+.sc-mail-choice .sc-combobox-trigger{font-size:13px}
+.sc-pref-row .sc-combobox{min-width:0}
+@media(max-width:600px){.sc-role-scope{width:100%}}

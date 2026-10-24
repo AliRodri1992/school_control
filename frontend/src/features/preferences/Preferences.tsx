@@ -1,3 +1,4 @@
+import Combobox from '../../shared/components/Combobox';
 import {useEffect,useState,type FormEvent} from 'react';
 import {Languages,Save,Settings2,SunMoon} from 'lucide-react';
 import {api} from '../../api';
@@ -27,17 +28,16 @@ export default function Preferences({onSaved}:{onSaved?:(settings:Settings)=>voi
    {error&&<p className="error" role="alert">{error}</p>}
    {success&&<p className="success" role="status">{success}</p>}
    <div className="sc-pref-row"><Languages size={23}/><div><strong>Idioma</strong><p>Elige el idioma activo para la interfaz.</p></div>
-    <select aria-label="Idioma preferido" value={settings.locale} onChange={e=>setSettings(v=>({...v,locale:e.target.value}))}>
-     {(available.length?available:[{code:'es',native_name:'Español'},{code:'en',native_name:'English'}]).map(l=><option value={l.code} key={l.code}>{l.native_name}</option>)}
-    </select></div>
+    <Combobox label="Idioma preferido" value={settings.locale} onChange={value=>setSettings(previous=>({...previous,locale:value}))}
+      options={(available.length?available:[{code:'es',native_name:'Español'},{code:'en',native_name:'English'}])
+        .map(language=>({value:language.code,label:language.native_name}))}/></div>
    <div className="sc-pref-row"><SunMoon size={23}/><div><strong>Tema visual</strong><p>Modo claro, oscuro o preferencia del dispositivo.</p></div>
-    <select aria-label="Tema preferido" value={settings.theme} onChange={e=>setSettings(v=>({...v,theme:e.target.value as Settings['theme']}))}>
-      <option value="system">Automático</option><option value="light">Claro</option><option value="dark">Oscuro</option>
-    </select></div>
+    <Combobox label="Tema preferido" value={settings.theme} onChange={value=>setSettings(previous=>({...previous,theme:value as Settings['theme']}))}
+      options={[{value:'system',label:'Automático'},{value:'light',label:'Claro'},{value:'dark',label:'Oscuro'}]}/></div>
    <div className="sc-pref-row"><Settings2 size={23}/><div><strong>Densidad de tablas</strong><p>Registros visibles por página en listados extensos.</p></div>
-    <select aria-label="Registros por página" value={settings.rows_per_page} onChange={e=>setSettings(v=>({...v,rows_per_page:Number(e.target.value)}))}>
-      {[10,15,25,50].map(size=><option key={size} value={size}>{size} registros</option>)}
-    </select></div>
+    <Combobox label="Registros por página" value={String(settings.rows_per_page)}
+      onChange={value=>setSettings(previous=>({...previous,rows_per_page:Number(value)}))}
+      options={[10,15,25,50].map(size=>({value:String(size),label:size+' registros'}))}/></div>
    <button className="primary" disabled={busy}><Save size={17}/>{busy?'Guardando…':'Guardar preferencias'}</button>
   </form>}
  </section>;

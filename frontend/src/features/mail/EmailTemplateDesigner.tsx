@@ -1,3 +1,4 @@
+import Combobox from '../../shared/components/Combobox';
 import {useEffect,useState,type FormEvent} from 'react';
 import {CheckCircle2,FilePlus2,Mail,PanelRight,Save,Send} from 'lucide-react';
 import {api} from '../../api';
@@ -34,9 +35,9 @@ export default function EmailTemplateDesigner({schoolName}:{schoolName:string}){
     <button className="text-button" type="button" onClick={()=>setPreview(v=>!v)}><PanelRight size={16}/>{preview?'Ocultar vista previa':'Mostrar vista previa'}</button></div>
     <form onSubmit={submit} noValidate className="sc-mail-form">
       <div className="sc-mail-double">
-       <label>Tipo de notificación<select value={draft.key} disabled={!!draft.id} onChange={e=>change('key',e.target.value)}>
-        {Object.entries(kinds).map(([key,name])=><option value={key} key={key}>{name}</option>)}
-       </select></label>
+       <div className="sc-mail-choice"><label>Tipo de notificación</label>
+        <Combobox label="Tipo de notificación" value={draft.key} disabled={!!draft.id} onChange={value=>change('key',value)}
+           options={Object.entries(kinds).map(([value,label])=>({value,label}))}/></div>
        <label>Idioma<input value={draft.locale} required maxLength={5} placeholder="es" disabled={!!draft.id} onChange={e=>change('locale',e.target.value)}/></label>
       </div>
       <label>Asunto<input required maxLength={200} value={draft.subject} onChange={e=>change('subject',e.target.value)} placeholder="Asunto del mensaje"/></label>
@@ -45,9 +46,9 @@ export default function EmailTemplateDesigner({schoolName}:{schoolName:string}){
       <label>HTML opcional (estructura permitida, sin scripts)<textarea rows={4} maxLength={15000} value={draft.html_body||''} onChange={e=>change('html_body',e.target.value)} placeholder="<p>Mensaje con <strong>formato</strong></p>"/></label>
       <label>Pie institucional<textarea required rows={2} maxLength={200} value={draft.footer} onChange={e=>change('footer',e.target.value)}/></label>
       <div className="sc-mail-double"><label>Color de acento<input type="color" value={draft.accent_color} onChange={e=>change('accent_color',e.target.value)}/></label>
-       <label>Estado<select value={draft.status} onChange={e=>change('status',e.target.value)}>
-        <option value="draft">Borrador</option><option value="published">Publicada</option><option value="archived">Archivada</option>
-       </select></label></div>
+       <div className="sc-mail-choice"><label>Estado</label>
+        <Combobox label="Estado de plantilla" value={draft.status} onChange={value=>change('status',value)}
+          options={[{value:'draft',label:'Borrador'},{value:'published',label:'Publicada'},{value:'archived',label:'Archivada'}]}/></div></div>
       <button className="primary" disabled={busy}><Save size={17}/>{busy?'Guardando…':'Guardar plantilla'}</button>
     </form>
    </div>
