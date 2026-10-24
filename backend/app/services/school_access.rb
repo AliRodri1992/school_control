@@ -5,6 +5,7 @@ class SchoolAccess
 
   def scopes
     return [] unless @user&.active?
+    return PermissionCatalog.scopes(@permission).include?("institution") ? ["institution"] : PermissionCatalog.scopes(@permission) if @user.admin?
     RolePermission.joins(access_role: :access_role_assignments)
       .where(access_roles: { active: true }, access_role_assignments: { user_id: @user.id }, key: @permission).distinct.pluck(:data_scope)
   end
