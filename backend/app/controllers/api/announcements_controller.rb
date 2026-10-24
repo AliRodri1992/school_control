@@ -1,7 +1,10 @@
 module Api
   class AnnouncementsController < CatalogController
+    after_action :verify_authorized, only: :destroy
     def destroy
       record = Announcement.find(params[:id])
+      authorize record, :destroy?
+      audit(record, "announcement.deleted")
       record.destroy!
       head :no_content
     end

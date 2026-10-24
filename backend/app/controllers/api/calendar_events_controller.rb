@@ -1,7 +1,9 @@
 module Api
   class CalendarEventsController < CatalogController
+    after_action :verify_authorized, only: :destroy
     def destroy
       record = CalendarEvent.find(params[:id])
+      authorize record, :destroy?
       audit(record, "calendar.deleted")
       record.destroy!
       head :no_content
