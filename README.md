@@ -14,7 +14,7 @@ cd school_control
 ./bin/setup
 ```
 
-Abre **http://localhost:5173**. El script genera `.env` con contraseñas aleatorias; consulta `ADMIN_EMAIL` y `ADMIN_PASSWORD` en ese archivo. No se suben al repositorio.
+Abre **http://localhost:3002**. El script genera `.env` con contraseñas aleatorias; consulta `ADMIN_EMAIL` y `ADMIN_PASSWORD` en ese archivo. No se suben al repositorio.
 
 Con `DEMO_SEEDS=true`, se crean datos ficticios y estos accesos, cuya contraseña es `DEMO_PASSWORD` de `.env`:
 
@@ -35,7 +35,7 @@ Puertos externos predeterminados de School Control:
 
 | Entorno | Interfaz web | Rails/API |
 | --- | --- | --- |
-| Desarrollo | http://localhost:5173 | http://localhost:3200 |
+| Desarrollo | http://localhost:3002 | http://localhost:3200 |
 | Staging | http://localhost:8180 | http://localhost:3100 |
 | Producción local (sin TLS) | http://localhost:8080 | Solo red Docker |
 
@@ -45,7 +45,7 @@ Si ya existe el archivo `.env`, no necesitas regenerarlo. Los valores predetermi
 
 ```dotenv
 SCHOOL_BACKEND_PORT=3200
-SCHOOL_FRONTEND_PORT=5173
+SCHOOL_FRONTEND_PORT=3002
 ```
 
 Después reinicia **solo School Control**, sin detener Delta POS y sin eliminar los volúmenes:
@@ -61,20 +61,20 @@ Para ver correos de desarrollo, abre **http://localhost:3200/letter_opener** (o 
 
 El `compose.staging.yml` utiliza los puertos independientes `3100` y `8180`, y un nombre de proyecto propio (`school-staging`). No ejecutes `docker compose down -v`: ese comando elimina las bases de datos y archivos persistentes del proyecto correspondiente.
 
-### Error HTML en el inicio de sesión
+Si tu archivo `.env` ya contiene `SCHOOL_FRONTEND_PORT=5173`, cámbialo manualmente a `SCHOOL_FRONTEND_PORT=3002`; `bin/setup` nunca sobrescribe un `.env` existente.\n\n### Error HTML en el inicio de sesión
 
-Si la aplicación indica que recibió HTML en lugar de JSON, ingresa mediante **http://localhost:5173**. El puerto 3000 del equipo corresponde a Delta POS; la API de School Control se publica en el **3200**.
+Si la aplicación indica que recibió HTML en lugar de JSON, ingresa mediante **http://localhost:3002**. El puerto 3000 del equipo corresponde a Delta POS; la API de School Control se publica en el **3200**.
 
 Verifica que ambos servicios respondan con `Content-Type: application/json` y un campo `csrf_token`:
 
 ```bash
 docker compose ps
 docker compose logs --tail=80 backend frontend
-curl -i -H 'Accept: application/json' http://localhost:5173/api/session
+curl -i -H 'Accept: application/json' http://localhost:3002/api/session
 curl -i -H 'Accept: application/json' http://localhost:3200/api/session
 ```
 
-Si una respuesta es HTML, revisa los logs de Rails y el proxy y reconstruye únicamente los servicios de School Control con `docker compose up -d --build`. No elimines los volúmenes ni cambies el proxy de Vite de `backend:3000` a `localhost:3200`: el primer nombre es el puerto **interno** correcto entre contenedores.
+Un HTTP 500 en `/api/school` se origina en el backend, no en el puerto de React. Revisa `docker compose logs --tail=100 backend` y comprueba `docker compose exec backend bundle exec rails runner 'puts School.count'`. Si la base aún no se preparó, ejecuta `docker compose exec backend bundle exec rails db:prepare db:seed`.\n\nSi una respuesta es HTML, revisa los logs de Rails y el proxy y reconstruye únicamente los servicios de School Control con `docker compose up -d --build`. No elimines los volúmenes ni cambies el proxy de Vite de `backend:3000` a `localhost:3200`: el primer nombre es el puerto **interno** correcto entre contenedores.
 
 ## Recorrido funcional
 
