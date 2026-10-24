@@ -12,7 +12,7 @@ vi.mock('../api',()=>({api:vi.fn(async(path:string)=>{
  if(path==='notifications')return {unread_count:0,items:[]};
  return {};
 })}));
-afterEach(cleanup);
+afterEach(()=>{cleanup();localStorage.removeItem('school-locale');});
 const user={id:15,name:'María González',email:'maria@example.test',role:'admin'};
 const props={user,school:{name:'Primaria Hidalgo',logo_url:'/logo.svg',timezone:'America/Mexico_City'},
  page:'dashboard',mobile:false,onMobile:vi.fn(),can:()=>true,pendingAdmissions:0,
@@ -41,4 +41,13 @@ it('makes logout and preferences accessible from the sidebar avatar and topbar a
  expect(screen.getByRole('button',{name:'Cerrar sesión'})).toBeTruthy();
  await userEvent.click(screen.getByRole('button',{name:'Cerrar sesión'}));
  expect(signingOut).toHaveBeenCalledOnce();
+});
+
+it('changes the navigation language immediately when English is selected',async()=>{
+ render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ await userEvent.click(screen.getByRole('button',{name:'Idioma'}));
+ await userEvent.click(screen.getByRole('button',{name:'English · EN'}));
+ expect(screen.getByRole('button',{name:'Language'})).toBeTruthy();
+ expect(screen.getByRole('button',{name:'Overview'})).toBeTruthy();
+ expect(localStorage.getItem('school-locale')).toBe('en');
 });
