@@ -220,7 +220,8 @@ export default function App(){
    (moduleLoadErrors[page].status===403 ? <ForbiddenEmpty/> :
     <ModuleLoadFailure message={moduleLoadErrors[page].message} onRetry={()=>void refresh().catch(e=>setError((e as Error).message))}/>) :
    user.permissions?.[pagePermission(page)]?.length ?
-     <Empty text={query||statusFilter?'No hay resultados para estos filtros.':'Aún no hay registros en esta sección.'}/> : <ForbiddenEmpty/>)}
+     (data[page]===undefined ? <PendingRecords/> :
+       <Empty text={query||statusFilter?'No hay resultados para estos filtros.':'Aún no hay registros en esta sección.'}/>) : <ForbiddenEmpty/>)}
   {records.length>0&&<div className="sc-pagination">
     <div className="sc-page-size"><label>Por página</label><Combobox label="Registros por página" value={String(pageSize)}
       onChange={value=>{setPageSize(Number(value));setPageNumber(0);}}
@@ -236,6 +237,7 @@ export default function App(){
  {report&&<div className="overlay"><section role="dialog" aria-modal="true" aria-label="Boleta e historial" className="dialog report"><header><div><span className="eyebrow">{school.name}</span><h2>{report.student.full_name}</h2><p>Boleta de consulta · {report.student.curp}</p></div><div className="actions"><button onClick={()=>window.print()} aria-label="Imprimir boleta"><Printer/></button><button onClick={()=>setReport(null)} aria-label="Cerrar boleta"><X/></button></div></header>{report.years.map((year:Row)=><article key={year.enrollment.id}><h3>{year.enrollment.group_label}</h3><p>{display(year.enrollment.status)} · {display(year.enrollment.outcome)}</p><table><thead><tr><th>Materia</th><th>Trimestre</th><th>Calificación</th><th>Observación</th></tr></thead><tbody>{year.grades.map((g:Row)=><tr key={g.id}><td>{g.subject_name}</td><td>{g.term}</td><td>{g.score}</td><td>{g.feedback}</td></tr>)}</tbody></table><p>Promedio registrado: <strong>{mean(year.grades.map((g:Row)=>Number(g.score)))}</strong></p><div className="actions">{Object.entries(year.attendance).map(([status,total])=><span className="badge" key={status}>{display(status)}: {String(total)}</span>)}</div></article>)}{!report.years.length&&<Empty text="Todavía no tiene inscripciones aprobadas."/>}<p className="footnote">Documento de consulta interna. No sustituye una certificación oficial.</p></section></div>}
  </Suspense></PortalChrome>;
 }
+function PendingRecords(){return <div role="status" className="empty sc-auli-empty"><AuliGuide mood="thinking" title="Consultando registros" text="Estamos cargando la información de esta sección…" compact/></div>;}
 function ModuleLoadFailure({message,onRetry}:{message:string;onRetry:()=>void}){
  return <div className="empty sc-auli-empty"><AuliGuide mood="warning" title="No fue posible cargar los registros" text={message} compact/>
   <button type="button" className="secondary" onClick={onRetry}>Reintentar consulta</button></div>;
