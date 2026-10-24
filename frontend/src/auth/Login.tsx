@@ -1,6 +1,6 @@
-import {useState, type FormEvent} from 'react';
+import {lazy,Suspense,useState, type FormEvent} from 'react';
 import {ArrowRight, BookOpen, Eye, EyeOff, LockKeyhole, Mail, UserRound} from 'lucide-react';
-import PasswordRecovery from '../PasswordRecovery';
+const PasswordRecovery=lazy(()=>import('../PasswordRecovery'));
 import {api} from '../api';
 import {notify} from '../notifications';
 import type {Row} from '../modules';
@@ -71,7 +71,7 @@ export default function Login({school,initialError,onLogin}:{school:Row;initialE
     } finally {setBusy(false);}
   }
 
-  if(recovering)return <PasswordRecovery schoolName={school.name} onClose={()=>setRecovering(false)}/>;
+  if(recovering)return <Suspense fallback={<div className="boot" role="status">Cargando recuperación de contraseña…</div>}><PasswordRecovery schoolName={school.name} onClose={()=>setRecovering(false)}/></Suspense>;
 
   function field(name:FieldName,label:string,type:string,placeholder:string,required=true) {
     const visible=(name==='password'&&showPassword)||(name==='password_confirmation'&&showConfirmation);
