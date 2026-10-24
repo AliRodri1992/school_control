@@ -1,5 +1,4 @@
-import {useEffect,useId,useState,type FocusEvent,type MouseEvent} from 'react';
-import {createPortal} from 'react-dom';
+import {useEffect,useId,useRef} from 'react';
 import {
   BadgeCheck,CheckCircle2,ClipboardCheck,ClipboardList,Download,Eye,FilePenLine,
   History,MessageSquareText,Pencil,RotateCcw,Send,Trash2,UserCheck,UserX,XCircle
@@ -29,7 +28,6 @@ const actionConfig={
   open:{label:'Abrir',Icon:Eye}
 } as const;
 
-type Position={left:number;top:number;below:boolean};
 type Props={
   kind:TableActionKind;
   onClick?:()=>void;
@@ -40,46 +38,75 @@ type Props={
   className?:string;
 };
 
+/**
+ * Use native pointer/focus listeners for the floating hint. The tooltip lives
+ * under document.body so overflow:auto table containers cannot clip it.
+ * Keep the native title as a fallback if scripting or styling is interrupted.
+ */
 export default function TableAction({kind,onClick,href,ariaLabel,tooltip,disabled=false,className=''}:Props){
  const {Icon,label}=actionConfig[kind];
  const text=tooltip||label;
  const id=useId();
- const [position,setPosition]=useState<Position|null>(null);
- const place=(event:MouseEvent<HTMLElement>|FocusEvent<HTMLElement>)=>{
-   const rect=event.currentTarget.getBoundingClientRect();
-   const below=rect.top<55;
-   setPosition({
-     left:Math.min(Math.max(rect.left+rect.width/2,70),window.innerWidth-70),
-     top:below?rect.bottom+9:rect.top-9,
-     below
-   });
- };
+ const anchor=useRef<HTMLButtonElement|HTMLAnchorElement>(null);
+
  useEffect(()=>{
-   if(!position)return;
-   const dismiss=()=>setPosition(null);
-   window.addEventListener('scroll',dismiss,true);
-   window.addEventListener('resize',dismiss);
-   return()=>{
-     window.removeEventListener('scroll',dismiss,true);
-     window.removeEventListener('resize',dismiss);
+   const element=anchor.current;
+   if(!element||disabled)return;
+   const hint=document.createElement('span');
+   hint.id=id;
+   hint.setAttribute('role','tooltip');
+   hint.className='sc-table-action-tooltip';
+   hint.textContent=text;
+   hint.style.display='none';
+   document.body.appendChild(hint);
+   const place=()=>{
+     const rect=element.getBoundingClientRect();
+     const below=rect.top<54;
+     hint.style.left=Math.min(Math.max(rect.left+rect.width/2,64),window.innerWidth-64)+'px';
+     hint.style.top=(below?rect.bottom+9:rect.top-9)+'px';
+     hint.classList.toggle('is-below',below);
    };
- },[position]);
+   const show=()=>{
+     if(hint.style.display!=='none')return;
+     place();
+     hint.style.display='block';
+     element.setAttribute('aria-describedby',id);
+   };
+   const hide=()=>{
+     hint.style.display='none';
+     element.removeAttribute('aria-describedby');
+   };
+   const reposition=()=>{if(hint.style.display!=='none')place();};
+   element.addEventListener('pointerenter',show);
+   element.addEventListener('mouseenter',show);
+   element.addEventListener('mousemove',show);
+   element.addEventListener('focus',show);
+   element.addEventListener('pointerleave',hide);
+   element.addEventListener('mouseleave',hide);
+   element.addEventListener('blur',hide);
+   window.addEventListener('scroll',reposition,true);
+   window.addEventListener('resize',reposition);
+   return()=>{
+     element.removeEventListener('pointerenter',show);
+     element.removeEventListener('mouseenter',show);
+     element.removeEventListener('mousemove',show);
+     element.removeEventListener('focus',show);
+     element.removeEventListener('pointerleave',hide);
+     element.removeEventListener('mouseleave',hide);
+     element.removeEventListener('blur',hide);
+     window.removeEventListener('scroll',reposition,true);
+     window.removeEventListener('resize',reposition);
+     element.removeAttribute('aria-describedby');
+     hint.remove();
+   };
+ },[disabled,id,text]);
 
  const props={
+   ref:anchor,
    className:'sc-table-action is-'+kind+(className?' '+className:''),
    'aria-label':ariaLabel||text,
-   'aria-describedby':position?id:undefined,
-   title:position?undefined:text,
-   onMouseEnter:place,
-   onMouseLeave:()=>setPosition(null),
-   onFocus:place,
-   onBlur:()=>setPosition(null)
+   title:text
  };
- return <>
-  {href?<a {...props} href={href} onClick={onClick}><Icon size={18} strokeWidth={1.9} aria-hidden="true"/></a>:
-    <button {...props} type="button" disabled={disabled} onClick={onClick}><Icon size={18} strokeWidth={1.9} aria-hidden="true"/></button>}
-  {position&&createPortal(
-   <span id={id} role="tooltip" className={'sc-table-action-tooltip'+(position.below?' is-below':'')}
-     style={{left:position.left,top:position.top}}>{text}</span>,document.body)}
- </>;
+ return href?<a {...props} href={href} onClick={onClick}><Icon size={18} strokeWidth={1.9} aria-hidden="true"/></a>:
+  <button {...props} type="button" disabled={disabled} onClick={onClick}><Icon size={18} strokeWidth={1.9} aria-hidden="true"/></button>;
 }
