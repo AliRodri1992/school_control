@@ -1,9 +1,11 @@
+import Combobox from './shared/components/Combobox';
 import {useState, type FormEvent} from 'react';
 import {api} from './api';
 import {notify} from './notifications';
 import type {Row} from './modules';
 
 export default function GradeRequests({grade,onChanged,canCreate=true}:{grade:Row;canCreate?:boolean;onChanged:()=>Promise<void>}) {
+  const [decisions,setDecisions]=useState<Record<number,string>>({});
   const [requests,setRequests]=useState<Row[]|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
   const endpoint=`grades/${grade.id}/change_requests`;
   async function open(){
@@ -11,12 +13,14 @@ export default function GradeRequests({grade,onChanged,canCreate=true}:{grade:Ro
     try{setRequests(await api(endpoint));}catch(e){setError((e as Error).message);}finally{setBusy(false);}
   }
   async function submit(event:FormEvent<HTMLFormElement>,request?:Row){
-    event.preventDefault();const form=event.currentTarget;
+    event.preventDefault();
+    if(request&&!decisions[request.id]){setError('Resolución no puede estar vacía.');return;}
+    const form=event.currentTarget;
     const fields=Object.fromEntries(new FormData(form));
     setBusy(true);setError('');
     try{
       await api(request?`${endpoint}/${request.id}/resolve`:endpoint,'POST',request?fields:{...fields,lock_version:String(grade.lock_version)});
-      setRequests(await api(endpoint));await onChanged();form.reset();
+      setRequests(await api(endpoint));await onChanged();form.reset();if(request)setDecisions(previous=>({...previous,[request.id]:''}));
       void notify(request?'Solicitud resuelta correctamente.':'Solicitud enviada correctamente.');
     }catch(e){setError((e as Error).message);}finally{setBusy(false);}
   }
@@ -36,7 +40,10 @@ export default function GradeRequests({grade,onChanged,canCreate=true}:{grade:Ro
         <p>Retroalimentación propuesta: {request.feedback||'Sin retroalimentación'}</p>
         {request.resolver_name&&<p>{request.resolver_name}: {request.resolution_reason}</p>}
         {request.can_resolve&&<form onSubmit={event=>submit(event,request)}>
-          <label>Resolución<select name="decision" required><option value="">Selecciona una resolución</option><option value="approved">Aprobar</option><option value="rejected">Rechazar</option></select></label>
+          <div className="sc-form-dropdown"><label>Resolución</label><Combobox label={'Resolución de solicitud '+request.id}
+  value={decisions[request.id]||''} onChange={value=>setDecisions(previous=>({...previous,[request.id]:value}))}
+  placeholder="Selecciona una resolución" options={[{value:'approved',label:'Aprobar'},{value:'rejected',label:'Rechazar'}]}/>
+  <input type="hidden" name="decision" value={decisions[request.id]||''}/></div>
           <label>Motivo de resolución<textarea name="resolution_reason" required maxLength={2000}/></label>
           <button className="primary" disabled={busy}>Guardar resolución</button>
         </form>}
