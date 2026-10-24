@@ -25,6 +25,8 @@ RSpec.describe "user imports", type: :model do
     expect(account.authenticate("School-test-password-26")).to be_falsey
     expect(account.role).to eq("teacher")
     expect(item.reload.imported_rows).to eq(1)
+    DataImportJob.perform_now(item.id)
+    expect(User.where(email: "alex-import@example.test").count).to eq(1)
   end
 
   it "requires distinct emails and never imports duplicate accounts" do

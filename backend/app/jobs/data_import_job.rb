@@ -30,12 +30,13 @@ class DataImportJob < ApplicationJob
           end
           ManageAccess.verify_grants!(batch.user, grants)
         end
+        imported_record = nil
         ActiveRecord::Base.transaction do
-          record = model.create!(attributes)
-          batch.data_import_items.create!(row_number: line, record_type: model.name, record_id: record.id)
+          imported_record = model.create!(attributes)
+          batch.data_import_items.create!(row_number: line, record_type: model.name, record_id: imported_record.id)
           AuditEvent.create!(user: batch.user, action: "#{batch.kind.singularize}.imported", record_type: model.name, record_id: record.id)
         end
-        PasswordRecoveryJob.perform_later(record.id, record.session_version) if model == User
+        PasswordRecoveryJob.perform_later(imported_record.id, imported_record.session_version) if model == User
         imported += 1
       rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique, ArgumentError => error
         errors << { row: line, messages: [ error.message ] }
