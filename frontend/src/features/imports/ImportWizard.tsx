@@ -1,4 +1,5 @@
 import Combobox from '../../shared/components/Combobox';
+import TableAction from '../../shared/components/TableAction';
 import AuliGuide from '../../shared/components/AuliGuide';
 import {useEffect,useState,type FormEvent} from 'react';
 import {ArrowLeft,ArrowRight,CheckCircle2,FileSpreadsheet,FileUp,LoaderCircle,ShieldCheck,UploadCloud} from 'lucide-react';
@@ -141,9 +142,9 @@ export default function ImportWizard(){
    </div>
    <aside className="panel sc-import-assistant"><AuliGuide title="Auli te acompaña" mood={step===2?"warning":step===3?"success":"explain"} text={step===0?'Prepara una hoja con los encabezados en la primera fila. Puedes importar CSV o Excel.':step===1?'Relaciona cada columna con el campo correcto. No necesitas que los encabezados tengan nombres idénticos.':step===2?'Revisa los problemas detectados antes de continuar. Ningún registro se importó todavía.' :'Revisa el resumen antes de confirmar. Los cambios solo se realizan después de tu autorización.'}/></aside>
   </div>
-  {history.length>0&&<section className="panel sc-import-history"><h2>Importaciones recientes</h2><div className="table-scroll"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Estado</th><th>Registros</th><th>Acciones</th></tr></thead><tbody>
-   {history.map(item=><tr key={item.id}><td>{new Date((item as Batch & {created_at:string}).created_at).toLocaleString('es-MX')}</td><td>{item.kind}</td><td>{item.status}</td><td>{item.imported_rows} / {item.total_rows}</td><td>{(item.status==='failed'||(item.status==='completed'&&item.row_errors?.length>0))&&
-   <button className="secondary" disabled={busy} onClick={()=>retry(item)}>Reintentar pendientes</button>}</td></tr>)}
+  {history.length>0&&<section className="panel sc-import-history"><h2>Importaciones recientes</h2><div className="table-scroll"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Estado</th><th>Registros</th><th className="sc-table-action-col">Acciones</th></tr></thead><tbody>
+   {history.map(item=><tr key={item.id}><td>{new Date((item as Batch & {created_at:string}).created_at).toLocaleString('es-MX')}</td><td>{item.kind}</td><td>{item.status}</td><td>{item.imported_rows} / {item.total_rows}</td><td className="sc-table-action-cell">{(item.status==='failed'||(item.status==='completed'&&item.row_errors?.length>0))&&
+   <div className="sc-table-action-group"><TableAction kind="retry" disabled={busy} ariaLabel={`Reintentar pendientes de importación ${item.id}`} onClick={()=>retry(item)}/></div>}</td></tr>)}
   </tbody></table></div></section>}
  </section>;
 }

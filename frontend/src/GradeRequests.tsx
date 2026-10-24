@@ -1,4 +1,5 @@
 import Combobox from './shared/components/Combobox';
+import TableAction from './shared/components/TableAction';
 import {useState, type FormEvent} from 'react';
 import {api} from './api';
 import {notify} from './notifications';
@@ -25,7 +26,7 @@ export default function GradeRequests({grade,onChanged,canCreate=true}:{grade:Ro
     }catch(e){setError((e as Error).message);}finally{setBusy(false);}
   }
   return <>
-    <button className="text-button" disabled={busy} onClick={open}>Solicitudes de corrección</button>
+    <TableAction kind="requests" ariaLabel="Solicitudes de corrección" tooltip="Solicitudes" disabled={busy} onClick={open}/>
     {requests===null&&error&&<p role="alert" className="error">{error}</p>}
     {requests!==null&&<div className="overlay"><section className="dialog" role="dialog" aria-modal="true" aria-label="Solicitudes de corrección">
       <header><h2>Solicitudes de corrección</h2><button disabled={busy} aria-label="Cerrar solicitudes" onClick={()=>setRequests(null)}>×</button></header>

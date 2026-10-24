@@ -11,9 +11,9 @@ it('renders distinct SVG icon actions with accessible labels and tooltips',async
  render(<StudentRowActions student={{id:1,full_name:'Alex Ejemplo'}} canView canReport canEdit
   onView={onView} onReport={onReport} onEdit={onEdit}/>);
  const actions=[
-  {name:'Ver expediente de Alex Ejemplo',title:'Ver expediente',click:onView},
-  {name:'Ver boleta e historial de Alex Ejemplo',title:'Boleta e historial',click:onReport},
-  {name:'Editar alumno Alex Ejemplo',title:'Editar alumno',click:onEdit}
+  {name:'Ver expediente de Alex Ejemplo',title:'Ver',click:onView},
+  {name:'Ver boleta e historial de Alex Ejemplo',title:'Boleta',click:onReport},
+  {name:'Editar alumno Alex Ejemplo',title:'Editar',click:onEdit}
  ];
  for(const action of actions){
   const button=screen.getByRole('button',{name:action.name});

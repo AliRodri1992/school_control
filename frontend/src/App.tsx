@@ -1,4 +1,5 @@
 import Combobox from './shared/components/Combobox';
+import TableAction from './shared/components/TableAction';
 const HelpCenter=lazy(()=>import('./features/help/HelpCenter'));
 const PortalHome=lazy(()=>import('./features/portal/PortalHome'));
 const Preferences=lazy(()=>import('./features/preferences/Preferences'));
@@ -208,16 +209,16 @@ export default function App(){
      options={statuses.map(status=>({value:status,label:display(status)}))}/></div>
   <button className="text-button" onClick={()=>{setStatusFilter('');setQuery('');setSorting('');setPageNumber(0);}}>Limpiar filtros</button>
   </div>}
-  <div className="table-scroll"><table><thead><tr>{modules[page].columns.map(([key,title])=><th key={key} aria-sort={sorting===key?(ascending?"ascending":"descending"):"none"}><button className="sc-sort-button" aria-label={"Ordenar por "+title} onClick={()=>sortBy(key)}>{title}{sorting===key?(ascending?" ↑":" ↓"):" ↕"}</button></th>)}<th className={page==='students'?'sc-student-action-heading':undefined}>Acciones</th></tr></thead><tbody>{shownRows.map(row=><tr key={row.id}>{modules[page].columns.map(([key])=><td key={key}>{['status','outcome','role','kind'].includes(key)?<span className={`badge ${row[key]||''}`}>{display(row[key])}</span>:key.endsWith('_at')?readableDate(row[key]):display(row[key])}</td>)}<td className={page==='students'?'sc-student-action-cell':undefined}><div className="actions">
+  <div className="table-scroll"><table><thead><tr>{modules[page].columns.map(([key,title])=><th key={key} aria-sort={sorting===key?(ascending?"ascending":"descending"):"none"}><button className="sc-sort-button" aria-label={"Ordenar por "+title} onClick={()=>sortBy(key)}>{title}{sorting===key?(ascending?" ↑":" ↓"):" ↕"}</button></th>)}<th className="sc-table-action-col">Acciones</th></tr></thead><tbody>{shownRows.map(row=><tr key={row.id}>{modules[page].columns.map(([key])=><td key={key}>{['status','outcome','role','kind'].includes(key)?<span className={`badge ${row[key]||''}`}>{display(row[key])}</span>:key.endsWith('_at')?readableDate(row[key]):display(row[key])}</td>)}<td className="sc-table-action-cell"><div className="sc-table-action-group">
  {page==='grades'&&<GradeActions grade={row} admin={user.role==='admin'} permissions={user.permissions} onChanged={()=>refresh()}/>}
- {page==='student_contacts'&&can('student_contacts.destroy')&&<button className="text-button danger" disabled={busy} onClick={()=>{void confirmDanger('Eliminar contacto','Este contacto dejará de estar disponible para el alumno.').then(ok=>{if(ok)void perform(async()=>{await api('student_contacts/'+row.id,'DELETE');});});}}>Eliminar</button>}
+ {page==='student_contacts'&&can('student_contacts.destroy')&&<TableAction kind="delete" ariaLabel={`Eliminar contacto de ${row.student_name||row.name}`} disabled={busy} onClick={()=>{void confirmDanger('Eliminar contacto','Este contacto dejará de estar disponible para el alumno.').then(ok=>{if(ok)void perform(async()=>{await api('student_contacts/'+row.id,'DELETE');});});}}/>}
  {page==='students'&&<StudentRowActions student={row} canView={can('students.show')} canReport={can('students.report')}
   canEdit={can('students.update')} onView={()=>openStudentRecord(row)}
   onReport={()=>perform(async()=>setReport(await api(`students/${row.id}/report`)))} onEdit={()=>createOrEdit(row)}/>}
- {page!=='students'&&can(`${page}.${['grades','attendances'].includes(page)?'create':'update'}`)&&!['admissions','announcements'].includes(page)&&(page!=='grades'||row.status!=='published')&&<button className="text-button" onClick={()=>createOrEdit(row)}>Editar</button>}
- {page==='admissions'&&(can('admissions.approve')||can('admissions.reject'))&&row.status==='submitted'&&<><button className="text-button" onClick={()=>approve(row)}>Aprobar</button><button className="text-button danger" onClick={()=>reject(row)}>Rechazar</button></>}
- {page==='enrollments'&&can('enrollments.complete')&&row.status==='active'&&<button className="text-button" onClick={()=>complete(row)}>Cerrar ciclo</button>}
- {page==='users'&&can('users.update')&&row.id!==user.id&&<button className="text-button" onClick={()=>perform(async()=>{await api(`users/${row.id}`,'PATCH',{active:!row.active});})}>{row.active?'Desactivar':'Activar'}</button>}
+ {page!=='students'&&can(`${page}.${['grades','attendances'].includes(page)?'create':'update'}`)&&!['admissions','announcements'].includes(page)&&(page!=='grades'||row.status!=='published')&&<TableAction kind="edit" ariaLabel={`Editar ${modules[page]?.singular||"registro"} ${row.full_name||row.name||row.id}`} onClick={()=>createOrEdit(row)}/>}
+ {page==='admissions'&&(can('admissions.approve')||can('admissions.reject'))&&row.status==='submitted'&&<><TableAction kind="approve" ariaLabel={`Aprobar solicitud ${row.folio||row.id}`} onClick={()=>approve(row)}/><TableAction kind="reject" ariaLabel={`Rechazar solicitud ${row.folio||row.id}`} onClick={()=>reject(row)}/></>}
+ {page==='enrollments'&&can('enrollments.complete')&&row.status==='active'&&<TableAction kind="complete" ariaLabel={`Cerrar ciclo de ${row.student_name||row.id}`} onClick={()=>complete(row)}/>}
+ {page==='users'&&can('users.update')&&row.id!==user.id&&<TableAction kind={row.active?"deactivate":"activate"} ariaLabel={`${row.active?"Desactivar":"Activar"} usuario ${row.name||row.id}`} onClick={()=>perform(async()=>{await api(`users/${row.id}`,'PATCH',{active:!row.active});})}/>}
  </div></td></tr>)}</tbody></table></div>{!records.length&&(moduleLoadErrors[page] ?
    (moduleLoadErrors[page].status===403 ? <ForbiddenEmpty/> :
     <ModuleLoadFailure message={moduleLoadErrors[page].message} onRetry={()=>void refresh().catch(e=>setError((e as Error).message))}/>) :
