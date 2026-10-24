@@ -684,6 +684,19 @@ Object.assign(englishByText,{
   "Si tienes dudas, utiliza los canales de comunicación de la escuela.": "If you have questions, use the school messaging channels."
 });
 
+
+Object.assign(englishByText,{
+  "CURP": "CURP",
+  "Nombre del ciclo": "School year name",
+  "Sesiones por semana": "Lessons per week",
+  "Evento": "Event",
+  "Padre / tutor": "Parent / guardian",
+  "Administrador": "Administrator",
+  "Familia": "Family",
+  "Sesión": "Session",
+  "No tenemos información disponible.": "No information available."
+});
+
 export function translateUiText(locale:string,text:string):string{
  if(!locale.toLowerCase().startsWith('en'))return text;
  return englishByText[text]||text;
