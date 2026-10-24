@@ -1,3 +1,4 @@
+import Preferences from './features/preferences/Preferences';
 import StudentDetails from './features/students/StudentDetails';
 import AuliGuide from './shared/components/AuliGuide';
 import EmailTemplateDesigner from './features/mail/EmailTemplateDesigner';
@@ -48,7 +49,7 @@ export default function App(){
  const [fieldErrors,setFieldErrors]=useState<Record<string,string[]>>({});
  const portal=currentPortal(user?.role||'admin');
  function go(next:string) {
-   if(next!=='profile'&&next!=='notifications'&&next!=='messages'&&!user?.permissions?.[pagePermission(next)]?.length)return;
+   if(next!=='profile'&&next!=='notifications'&&next!=='messages'&&next!=='preferences'&&!user?.permissions?.[pagePermission(next)]?.length)return;
    setPage(next);setQuery('');setNotice('');setMobile(false);setPageNumber(0);setStatusFilter('');setSorting('');
    const url=makePortalUrl(portal,next);
    if(location.pathname!==url)navigate(url);
@@ -67,7 +68,8 @@ export default function App(){
    const saved=localStorage.getItem('school-child-'+user.id)||'';
    setSelectedChild((data.students||[]).some(s=>String(s.id)===saved)?saved:'');
  },[user?.id,user?.role,data.students]);
- function selectChild(id:string){setSelectedChild(id);setPageNumber(0);if(user)localStorage.setItem('school-child-'+user.id,id);}
+ function selectChild(id:string){setSelectedChild(id);setPageNumber(0);if(user)localStorage.setItem('school-child-'+user.id,id);
+  void api('preferences','PATCH',{selected_child_id:id?Number(id):null}).catch(e=>setError((e as Error).message));}
  async function refresh(who = user){
    if(!who) return;
    const session=await api('session');who=session.user;setUser(who);if(!who)return;
@@ -144,7 +146,8 @@ export default function App(){
  page==='api_docs'?<ApiDocs/>:
  page==='email_templates'?<EmailTemplateDesigner schoolName={school.name}/>:
   page==='access_roles'?<AccessRoles can={can} onChanged={()=>refresh()}/>:
- page==='profile'?<Profile onChange={setUser} onSignedOut={signedOut}/>:
+ page==='preferences'?<Preferences onSaved={prefs=>setPageSize(prefs.rows_per_page)}/>:
+  page==='profile'?<Profile onChange={setUser} onSignedOut={signedOut}/>:
  page==='notifications'?<Notifications navigate={target=>{if(target==='profile'||target==='notifications'||target==='messages'||modules[target]||['dashboard','reports','classroom','documents','schedule','school','access_roles'].includes(target))go(target);}}/>:
  page==='classroom'?<Classroom user={user} courses={data.courses||[]} enrollments={data.enrollments||[]}/>:
  page==='documents'?<Documents students={(data.students||[]).filter(s=>user.role!=='guardian'||!selectedChild||String(s.id)===selectedChild)} admin={can('student_documents.review')}/>:

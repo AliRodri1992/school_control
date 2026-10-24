@@ -13,4 +13,5 @@ import './styles/api-docs.css';
 import './styles/mail-designer.css';
 import './styles/student-details.css';
 import './styles/dashboard-context.css';
+import './styles/preferences.css';
 createRoot(document.getElementById('root')!).render(<React.StrictMode><BrowserRouter><Routes><Route path="*" element={<App/>}/></Routes></BrowserRouter></React.StrictMode>);

@@ -29,6 +29,15 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
      if(!result.some((row:{code:string;status:string})=>row.code===locale&&row.status==='active'))setLocale('es');
    }).catch(()=>undefined);return()=>{mounted=false;};
  },[]);
+ useEffect(()=>{
+   let mounted=true;
+   void api('preferences').then(settings=>{
+     if(!mounted)return;
+     if(settings.locale)setLocale(settings.locale);
+     if(settings.theme)document.documentElement.dataset.schoolTheme=settings.theme;
+   }).catch(()=>undefined);
+   return()=>{mounted=false;};
+ },[user.id]);
  useEffect(()=>{let mounted=true;const selected=availableLocales.find(item=>item.code===locale);
    if(!selected){setTranslations({});return;}
    void api('languages/'+selected.id+'/bundle').then(bundle=>{if(mounted)setTranslations(bundle.translations||{});}).catch(()=>{if(mounted)setTranslations({});});
@@ -75,7 +84,8 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const tz=school.timezone||'America/Mexico_City';
  const formatted=new Intl.DateTimeFormat(locale==='es'?'es-MX':locale,{dateStyle:'medium',timeZone:tz}).format(clock);
  const time=new Intl.DateTimeFormat(locale==='es'?'es-MX':locale,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:tz}).format(clock);
- function setLanguage(language:string){setLocale(language);localStorage.setItem('school-locale',language);}
+ function setLanguage(language:string){setLocale(language);localStorage.setItem('school-locale',language);
+   void api('preferences','PATCH',{locale:language}).catch(e=>setNoticeError((e as Error).message));}
  return <div className="app sc-shell">
    <aside className={'sidebar sc-sidebar'+(mobile?' open':'')}>
      <div className="brand sc-shell-brand">
@@ -133,6 +143,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
            {accountOpen&&<section className="sc-flyout" aria-label="Menú de cuenta">
              <div className="sc-account-details"><strong>{user.name}</strong><small>{user.email}</small></div>
              <button className="sc-flyout-link" onClick={()=>navigate('profile')}><UserRound size={16}/>{translate("shell.profile","Mi perfil y seguridad")}</button>
+             <button className="sc-flyout-link" onClick={()=>navigate('preferences')}><Languages size={16}/>Preferencias</button>
              <button className="sc-flyout-link" onClick={()=>navigate('notifications')}><Bell size={16}/>Centro de notificaciones</button>
              <button className="sc-flyout-link" onClick={()=>setLanguage(availableLocales.find(l=>l.code!==locale)?.code||'es')}><Languages size={16}/>Idioma: {locale.toUpperCase()}</button>
              <button className="sc-flyout-link" onClick={()=>navigate('dashboard')}><HelpCircle size={16}/>{translate("shell.help","Inicio y ayuda")}</button>

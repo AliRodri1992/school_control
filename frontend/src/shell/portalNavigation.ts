@@ -42,6 +42,6 @@ export function resolvePortalLocation(path:string,role:string,permissions:Row={}
  if(path===base||path===base+'/')return 'dashboard';
  if(!path.startsWith(base+'/'))return 'dashboard';
  const page=decodeURIComponent(path.slice(base.length+1)).replaceAll('-','_');
- if(['profile','notifications','messages'].includes(page))return page;
+ if(['profile','preferences','notifications','messages'].includes(page))return page;
  return permissions?.[permissionFor(page)]?.length?page:'dashboard';
 }
