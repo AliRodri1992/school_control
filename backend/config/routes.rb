@@ -23,6 +23,7 @@ Rails.application.routes.draw do
       get :preview, on: :member
       post :validate, on: :member
       post :execute, on: :member
+      post :retry, on: :member
     end
     resources :notifications, only: :index do
       post :read, on: :member

@@ -7485,7 +7485,8 @@
                       "subjects",
                       "groups",
                       "teachers",
-                      "tutors"
+                      "tutors",
+                      "grades"
                     ],
                     "description": "Tipo de datos a importar"
                   }
@@ -8862,6 +8863,49 @@
             }
           }
         ]
+      }
+    },
+    "/api/data_imports/{id}/retry": {
+      "post": {
+        "tags": [
+          "data_imports"
+        ],
+        "summary": "Reintentar filas sin procesar de un lote fallido o parcial",
+        "operationId": "post_data_import_retry",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Reintento aceptado"
+          },
+          "403": {
+            "description": "Sin permisos"
+          },
+          "422": {
+            "description": "No hay registros pendientes"
+          }
+        }
       }
     }
   }

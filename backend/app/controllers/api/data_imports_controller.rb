@@ -32,6 +32,16 @@ module Api
       render json: present_import(batch)
     end
 
+    def retry
+      batch.with_lock do
+        retryable = batch.status == "failed" || (batch.status == "completed" && batch.row_errors.present?)
+        raise ArgumentError, "Este lote no tiene errores pendientes" unless retryable
+        batch.update!(status: "queued")
+      end
+      DataImportJob.perform_later(batch.id)
+      render json: present_import(batch), status: :accepted
+    end
+
     def execute
       batch.with_lock do
         raise ArgumentError, "La importación debe validarse antes de ejecutar" unless batch.status == "validated"
@@ -53,7 +63,8 @@ module Api
       end
       permission = {
         "students" => "students.create", "subjects" => "subjects.create",
-        "groups" => "groups.create", "teachers" => "users.create", "tutors" => "users.create"
+        "groups" => "groups.create", "teachers" => "users.create", "tutors" => "users.create",
+        "grades" => "grades.create"
       }[requested_kind]
       if %w[teachers tutors].include?(requested_kind) && !current_user.can?("access_roles.assign")
         return render json: { error: "Sin permiso para asignar roles" }, status: :forbidden
@@ -63,13 +74,14 @@ module Api
     end
 
     def import_permissions
-      %w[students.create subjects.create groups.create users.create]
+      %w[students.create subjects.create groups.create users.create grades.create]
     end
 
     def validator
       case batch.kind
       when "students" then ValidateStudentImport.new(batch)
       when "teachers", "tutors" then ValidateUserImport.new(batch)
+      when "grades" then ValidateGradeImport.new(batch)
       else ValidateCatalogImport.new(batch)
       end
     end

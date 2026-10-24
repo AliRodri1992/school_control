@@ -11,6 +11,7 @@ class DataImportJob < ApplicationJob
     validator = case batch.kind
     when "students" then ValidateStudentImport.new(batch)
     when "teachers", "tutors" then ValidateUserImport.new(batch)
+    when "grades" then ValidateGradeImport.new(batch)
     else ValidateCatalogImport.new(batch)
     end
     validator.validate_mapping!(dataset.fetch(:headers), batch.mapping)

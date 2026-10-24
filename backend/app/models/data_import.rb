@@ -2,7 +2,7 @@ class DataImport < ApplicationRecord
   belongs_to :user
   has_many :data_import_items, dependent: :restrict_with_error
   has_one_attached :file
-  validates :kind, inclusion: { in: %w[students subjects groups teachers tutors] }
+  validates :kind, inclusion: { in: %w[students subjects groups teachers tutors grades] }
   validates :status, inclusion: { in: %w[uploaded validated queued processing completed failed] }
   validate :valid_file
 

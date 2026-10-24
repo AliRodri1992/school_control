@@ -5,7 +5,7 @@ import {api} from '../../api';
 
 type Batch={id:number;kind:string;status:string;mapping:Record<string,string>;total_rows:number;imported_rows:number;row_errors:{row:number;messages:string[]}[]};
 type Preview={headers:string[];sample:{row:number;values:Record<string,string>}[];suggested_mapping:Record<string,string>;total_rows:number};
-const fieldCatalog:Record<string,Record<string,string>>={students:{first_name:'Nombre del alumno',last_name:'Apellidos',curp:'CURP',birth_date:'Fecha de nacimiento',guardian_email:'Correo del tutor'},subjects:{name:'Nombre de la materia',code:'Clave de materia'},groups:{academic_year:'Ciclo escolar',grade_level:'Grado',section:'Sección',capacity:'Cupo máximo'},teachers:{name:'Nombre del docente',email:'Correo del docente'},tutors:{name:'Nombre del tutor',email:'Correo del tutor'}};
+const fieldCatalog:Record<string,Record<string,string>>={students:{first_name:'Nombre del alumno',last_name:'Apellidos',curp:'CURP',birth_date:'Fecha de nacimiento',guardian_email:'Correo del tutor'},subjects:{name:'Nombre de la materia',code:'Clave de materia'},groups:{academic_year:'Ciclo escolar',grade_level:'Grado',section:'Sección',capacity:'Cupo máximo'},teachers:{name:'Nombre del docente',email:'Correo del docente'},tutors:{name:'Nombre del tutor',email:'Correo del tutor'},grades:{course_id:'ID de clase',enrollment_id:'ID de inscripción',term:'Trimestre',score:'Calificación (0-10)',feedback:'Observaciones'}};
 const stages=['Archivo','Asociación de columnas','Validación','Confirmación y resultado'] as const;
 
 export default function ImportWizard(){
@@ -38,13 +38,17 @@ export default function ImportWizard(){
  function verifyMapping(event:FormEvent){event.preventDefault();if(!batch||!preview)return;
   const target=Object.values(mapping).filter(Boolean);
   if(new Set(target).size!==target.length){setFieldError('Asociación de columnas no permite campos repetidos.');return;}
-  for(const required of Object.keys(fields)){if(!target.includes(required)){setFieldError(fields[required]+' necesita una columna del archivo.');return;}}
+  for(const required of Object.keys(fields).filter(key=>!(kind==='grades'&&key==='feedback'))){if(!target.includes(required)){setFieldError(fields[required]+' necesita una columna del archivo.');return;}}
   void perform(async()=>{
     const result:Batch=await api('data_imports/'+batch.id+'/validate','POST',{mapping:Object.fromEntries(Object.entries(mapping).filter(([,value])=>value))});
     setBatch(result);setStep(result.row_errors.length?2:3);
   });
  }
  function execute(){if(!batch)return;void perform(async()=>setBatch(await api('data_imports/'+batch.id+'/execute','POST')));}
+ function retry(item:Batch){void perform(async()=>{
+   const result:Batch=await api('data_imports/'+item.id+'/retry','POST');
+   setBatch(result);setStep(3);setHistory(list=>list.map(current=>current.id===item.id?result:current));
+ });}
  function restart(){setStep(0);setFile(null);setBatch(null);setPreview(null);setMapping({});setError('');setFieldError('');}
  const errors=batch?.row_errors||[];
  return <section className="sc-import">
@@ -57,7 +61,8 @@ export default function ImportWizard(){
     {error&&<div className="error" role="alert">{error}</div>}
     {step===0&&<form onSubmit={upload} className="sc-import-form" noValidate>
       <h2>1. Selecciona tipo y archivo</h2>
-       <label>Tipo de datos<select value={kind} onChange={e=>setKind(e.target.value)}><option value="students">Alumnos</option><option value="subjects">Materias</option><option value="groups">Grupos</option><option value="teachers">Docentes</option><option value="tutors">Padres y tutores</option></select></label><p>Admite archivos .xlsx y .csv de hasta 5 MB con un máximo de 5,000 filas. La primera fila debe contener encabezados únicos.</p>
+       <label>Tipo de datos<select value={kind} onChange={e=>setKind(e.target.value)}><option value="students">Alumnos</option><option value="subjects">Materias</option><option value="groups">Grupos</option><option value="teachers">Docentes</option><option value="tutors">Padres y tutores</option><option value="grades">Calificaciones (borrador)</option></select></label><p>Admite archivos .xlsx y .csv de hasta 5 MB con un máximo de 5,000 filas. La primera fila debe contener encabezados únicos.</p>
+      {kind==='grades'&&<p className="info">Las calificaciones se importan como borradores; requieren revisión y publicación posterior. Utiliza los identificadores de clase e inscripción existentes.</p>}
       {['teachers','tutors'].includes(kind)&&<p className="info">Los usuarios importados recibirán un correo para establecer su contraseña. No se generan contraseñas compartidas ni se muestran credenciales en pantalla.</p>}
       <label className="sc-dropzone" htmlFor="school-import-file"><UploadCloud size={36}/><strong>{file?file.name:'Selecciona un archivo Excel o CSV'}</strong><span>Los datos se almacenan de forma privada.</span></label>
       <input id="school-import-file" aria-describedby={fieldError?'school-import-file-error':undefined} aria-invalid={!!fieldError} type="file" accept=".csv,.xlsx" onChange={e=>{setFile(e.target.files?.[0]||null);setFieldError('');}}/>
@@ -93,8 +98,9 @@ export default function ImportWizard(){
    </div>
    <aside className="panel sc-import-assistant"><AuliGuide title="Auli te acompaña" mood={step===2?"warning":step===3?"success":"explain"} text={step===0?'Prepara una hoja con los encabezados en la primera fila. Puedes importar CSV o Excel.':step===1?'Relaciona cada columna con el campo correcto. No necesitas que los encabezados tengan nombres idénticos.':step===2?'Revisa los problemas detectados antes de continuar. Ningún registro se importó todavía.' :'Revisa el resumen antes de confirmar. Los cambios solo se realizan después de tu autorización.'}/></aside>
   </div>
-  {history.length>0&&<section className="panel sc-import-history"><h2>Importaciones recientes</h2><div className="table-scroll"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Estado</th><th>Registros</th></tr></thead><tbody>
-   {history.map(item=><tr key={item.id}><td>{new Date((item as Batch & {created_at:string}).created_at).toLocaleString('es-MX')}</td><td>{item.kind}</td><td>{item.status}</td><td>{item.imported_rows} / {item.total_rows}</td></tr>)}
+  {history.length>0&&<section className="panel sc-import-history"><h2>Importaciones recientes</h2><div className="table-scroll"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Estado</th><th>Registros</th><th>Acciones</th></tr></thead><tbody>
+   {history.map(item=><tr key={item.id}><td>{new Date((item as Batch & {created_at:string}).created_at).toLocaleString('es-MX')}</td><td>{item.kind}</td><td>{item.status}</td><td>{item.imported_rows} / {item.total_rows}</td><td>{(item.status==='failed'||(item.status==='completed'&&item.row_errors?.length>0))&&
+   <button className="secondary" disabled={busy} onClick={()=>retry(item)}>Reintentar pendientes</button>}</td></tr>)}
   </tbody></table></div></section>}
  </section>;
 }
