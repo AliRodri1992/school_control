@@ -15,7 +15,7 @@ function unexpectedResponse(path:string,status:number):ApiError {
   );
 }
 
-export async function api(path:string,method='GET',data?:unknown) {
+export async function api(path:string,method='GET',data?:unknown):Promise<any> {
   const multipart=data instanceof FormData;
   let response:Response;
   try {
