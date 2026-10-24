@@ -49,3 +49,18 @@ it('accepts an empty successful response for delete actions',async()=>{
  vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(null,{status:204})));
  expect(await api('session','DELETE')).toBeNull();
 });
+
+
+it('accepts a valid JSON array returned by list endpoints',async()=>{
+ vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(JSON.stringify([{id:1,name:'Contacto familiar'}]),{
+  status:200,headers:{'Content-Type':'application/json; charset=utf-8'}
+ })));
+ await expect(api('student_contacts')).resolves.toEqual([{id:1,name:'Contacto familiar'}]);
+});
+
+it('accepts empty JSON arrays returned by list endpoints',async()=>{
+ vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response('[]',{
+  status:200,headers:{'Content-Type':'application/json'}
+ })));
+ await expect(api('student_contacts')).resolves.toEqual([]);
+});
