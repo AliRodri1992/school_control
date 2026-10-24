@@ -23,7 +23,7 @@ RSpec.describe "shared school communication and schedules", type: :request do
     own = create(:enrollment, student: student, admission: admission)
     event_a = CalendarEvent.create!(academic_year: own.academic_year, title: "Todo el ciclo",
       kind: "activity", starts_at: 2.days.from_now, ends_at: 3.days.from_now)
-    event_b = CalendarEvent.create!(academic_year: own.academic_year, group: create(:group, academic_year: own.academic_year),
+    event_b = CalendarEvent.create!(academic_year: own.academic_year, group: create(:group, academic_year: own.academic_year, section: "B"),
       title: "Otro grupo", kind: "exam", starts_at: 5.days.from_now, ends_at: 6.days.from_now)
     login(guardian)
     get "/api/calendar_events"
