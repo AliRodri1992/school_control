@@ -35,7 +35,8 @@ const fields:Record<Kind,Field[]>={
   {key:'pickup_authorized',label:'Autorización de recogida',options:[['true','Sí'],['false','No']],optional:true},
   {key:'primary',label:'Principal',options:[['true','Sí'],['false','No']],optional:true}
  ],
- notes:[{key:'body',label:'Contenido de la nota',type:'textarea'}, {key:'category',label:'Categoría',optional:true}]
+ notes:[{key:'body',label:'Contenido de la nota',type:'textarea'}, {key:'category',label:'Categoría',optional:true},
+  {key:'visibility',label:'Visibilidad',options:[['internal','Solo personal autorizado'],['shared','Compartida con la familia']],optional:true}]
 };
 const icon:Record<Kind,typeof MapPin>={addresses:MapPin,phones:Phone,contacts:Users,notes:FileText};
 function title(row:Row,kind:Kind):string{

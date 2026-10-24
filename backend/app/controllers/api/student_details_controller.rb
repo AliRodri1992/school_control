@@ -23,8 +23,8 @@ module Api
     def create
       record = collection.new(record_attributes)
       record.author = current_user if resource == "notes"
-      record.visibility = "internal" if resource == "notes"
-      record.transaction do
+      @student.with_lock do
+        relinquish_primary!(record) if record.respond_to?(:primary?) && record.primary?
         record.save!
         audit(record, "#{record.class.name.underscore}.created")
       end
@@ -33,8 +33,13 @@ module Api
 
     def update
       record = collection.find(params[:id])
-      record.with_lock do
-        record.update!(record_attributes)
+      @student.with_lock do
+        record.reload
+        ensure_not_legacy_mirror!(record)
+        changes = record_attributes
+        relinquish_primary!(record, changes) if changes[:primary] == true ||
+          (changes[:primary].to_s == "true")
+        record.update!(changes)
         audit(record, "#{record.class.name.underscore}.updated")
       end
       render json: serialize(record)
@@ -42,7 +47,9 @@ module Api
 
     def destroy
       record = collection.find(params[:id])
-      record.transaction do
+      @student.with_lock do
+        record.reload
+        ensure_not_legacy_mirror!(record)
         audit(record, "#{record.class.name.underscore}.deleted")
         record.destroy!
       end
@@ -68,10 +75,21 @@ module Api
 
     def record_attributes
       attributes = params.permit(*ATTRIBUTES.fetch(resource))
-      if resource == "notes"
-        attributes.delete(:visibility)
-      end
       attributes
+    end
+
+    def ensure_not_legacy_mirror!(record)
+      return unless resource == "contacts" && record.legacy_student_contact_id.present?
+
+      raise ArgumentError, "Edita este contacto desde Contactos familiares para conservar la sincronización"
+    end
+
+    def relinquish_primary!(record, changes = {})
+      purpose = changes[:purpose].presence || record.purpose if record.respond_to?(:purpose)
+      previous = collection.where(primary: true)
+      previous = previous.where(purpose: purpose) if purpose
+      previous = previous.where.not(id: record.id) if record.persisted?
+      previous.update_all(primary: false, updated_at: Time.current)
     end
 
     def institutional_student_access?
