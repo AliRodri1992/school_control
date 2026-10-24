@@ -17,7 +17,7 @@ class StudentContact < ApplicationRecord
       email: email, emergency: emergency, pickup_authorized: pickup_authorized,
       legacy_phone: phone)
     contact.save!
-    normalized = LegacySchoolDataBackfill.new.send(:normalized_phone, phone)
+    normalized = SchoolPhoneNormalizer.call(phone)
     return unless normalized
 
     record = contact.phone_numbers.find_or_initialize_by(purpose: "mobile")
@@ -32,5 +32,4 @@ class StudentContact < ApplicationRecord
     contact.phone_numbers.destroy_all
     contact.destroy!
   end
-
 end
