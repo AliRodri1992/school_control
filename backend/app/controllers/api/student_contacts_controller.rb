@@ -1,14 +1,17 @@
 module Api
   class StudentContactsController < ApplicationController
+    after_action :verify_policy_scoped, only: :index
+    after_action :verify_authorized, except: :index
     before_action :require_family_or_admin
 
     def index
-      render json: collection.includes(:student).order(:name).map { |record| serialize(record) }
+      render json: policy_scope(StudentContact).includes(:student).order(:name).map { |record| serialize(record) }
     end
 
     def create
       student = students_scope.find(params.require(:student_id))
       record = student.student_contacts.new(attributes)
+      authorize record, :create?
       record.transaction do
         record.save!
         audit(record, "contact.created")
@@ -18,6 +21,7 @@ module Api
 
     def update
       record = collection.find(params[:id])
+      authorize record, :update?
       record.with_lock do
         record.update!(attributes)
         audit(record, "contact.updated")
@@ -27,6 +31,7 @@ module Api
 
     def destroy
       record = collection.find(params[:id])
+      authorize record, :destroy?
       record.transaction do
         audit(record, "contact.deleted")
         record.destroy!
