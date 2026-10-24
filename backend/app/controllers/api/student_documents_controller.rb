@@ -1,20 +1,23 @@
 module Api
   class StudentDocumentsController < ApplicationController
+    after_action :verify_policy_scoped, only: :index
+    after_action :verify_authorized, except: :index
     before_action :require_family_or_admin
     before_action :require_admin, only: :review
     rescue_from ActiveRecord::StaleObjectError, with: -> { render json: { error: "El documento cambió. Actualiza la lista." }, status: :conflict }
 
     def index
-      render json: collection.includes(:student, file_attachment: :blob).order(created_at: :desc).map { |record| serialize(record) }
+      render json: policy_scope(StudentDocument).includes(:student, file_attachment: :blob).order(created_at: :desc).map { |record| serialize(record) }
     end
 
     def create
       student = students_scope.find(params.require(:student_id))
       upload = params.require(:file)
+      record = StudentDocument.new(student: student, uploader: current_user, title: params[:title])
+      authorize record, :create?
       unless valid_upload?(upload)
         return render json: { error: "Adjunta un PDF, PNG o JPG válido de hasta 10 MB." }, status: :unprocessable_content
       end
-      record = StudentDocument.new(student: student, uploader: current_user, title: params[:title])
       record.file.attach(io: upload.tempfile, filename: upload.original_filename, content_type: Marcel::MimeType.for(upload.tempfile))
       record.transaction do
         record.save!
@@ -25,6 +28,7 @@ module Api
 
     def download
       record = collection.find(params[:id])
+      authorize record, :download?
       audit(record, "document.downloaded")
       response.headers["Cache-Control"] = "private, no-store"
       response.headers["X-Content-Type-Options"] = "nosniff"
@@ -33,6 +37,7 @@ module Api
 
     def review
       record = collection.find(params[:id])
+      authorize record, :review?
       unless %w[approved correction_requested].include?(params[:status])
         return render json: { error: "Selecciona un resultado de revisión" }, status: :unprocessable_content
       end

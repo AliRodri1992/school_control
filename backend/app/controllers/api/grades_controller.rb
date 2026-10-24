@@ -1,11 +1,13 @@
 module Api
   class GradesController < ApplicationController
+    after_action :verify_policy_scoped, only: :index
+    after_action :verify_authorized, except: :index
     before_action :require_educator, only: %i[create history]
 
     before_action :require_admin, only: %i[review publish correct]
 
     def index
-      scope = access.grades
+      scope = policy_scope(Grade)
       render json: scope.includes(:course, enrollment: :student).order(:term, :id).map { |record| present(record) }
     end
 
@@ -14,6 +16,7 @@ module Api
       enrollment = enrollments_scope.where(group_id: course.group_id).find(params.require(:enrollment_id))
       enrollment.with_lock do
         grade = enrollment.grades.find_or_initialize_by(course: course, term: params.require(:term))
+        authorize grade, :create?
         raise ArgumentError, "Esta calificación está publicada. Solicita una corrección administrativa." if grade.status == "published"
         grade.update!(params.permit(:score, :feedback).merge(status: "draft", reviewer: nil, reviewed_at: nil))
         audit(grade, "grade.saved")
@@ -45,7 +48,9 @@ module Api
 
     def find_grade
       scope = access.grades
-      scope.find(params[:id])
+      record = scope.find(params[:id])
+      authorize record, "#{action_name}?"
+      record
     end
   end
 end
