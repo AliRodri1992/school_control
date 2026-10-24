@@ -17,9 +17,6 @@ it('renders an SVG icon and shows a short tooltip on hover and focus',async()=>{
  expect(screen.getByRole('tooltip')).toHaveProperty('textContent','Editar');
  await userEvent.unhover(button);
  expect(screen.queryByRole('tooltip')).toBeNull();
- button.blur();
- button.focus();
- expect(screen.getByRole('tooltip')).toHaveProperty('textContent','Editar');
  await userEvent.click(button);
  expect(onClick).toHaveBeenCalledOnce();
 });
@@ -29,4 +26,11 @@ it('keeps a download link and destructive controls distinct',()=>{
   <TableAction kind="delete" ariaLabel="Eliminar contacto" disabled/></>);
  expect(screen.getByRole('link',{name:'Descargar'}).getAttribute('href')).toBe('/api/documents/3/download');
  expect(screen.getByRole('button',{name:'Eliminar contacto'})).toHaveProperty('disabled',true);
+});
+
+it('shows the same tooltip when reached by keyboard',async()=>{
+ render(<TableAction kind="edit"/>);
+ await userEvent.tab();
+ expect(screen.getByRole('button',{name:'Editar'})).toHaveProperty('type','button');
+ expect(await screen.findByRole('tooltip')).toHaveProperty('textContent','Editar');
 });
