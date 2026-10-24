@@ -30,6 +30,8 @@ class User < ApplicationRecord
   end
 
   def effective_permissions
+    return PermissionCatalog.keys.index_with { |key| PermissionCatalog.scopes(key).include?("institution") ? ["institution"] : PermissionCatalog.scopes(key) } if admin? && active?
+
     RolePermission.joins(access_role: :access_role_assignments)
       .where(access_roles: { active: true }, access_role_assignments: { user_id: id })
       .pluck(:key, :data_scope).group_by(&:first).transform_values { |values| values.map(&:last).uniq }
