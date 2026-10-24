@@ -34,7 +34,7 @@ class DataImportJob < ApplicationJob
         ActiveRecord::Base.transaction do
           imported_record = model.create!(attributes)
           batch.data_import_items.create!(row_number: line, record_type: model.name, record_id: imported_record.id)
-          AuditEvent.create!(user: batch.user, action: "#{batch.kind.singularize}.imported", record_type: model.name, record_id: record.id)
+          AuditEvent.create!(user: batch.user, action: "#{batch.kind.singularize}.imported", record_type: model.name, record_id: imported_record.id)
         end
         PasswordRecoveryJob.perform_later(imported_record.id, imported_record.session_version) if model == User
         imported += 1

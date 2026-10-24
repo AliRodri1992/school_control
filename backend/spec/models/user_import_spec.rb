@@ -24,6 +24,7 @@ RSpec.describe "user imports", type: :model do
     account = User.find_by!(email: "alex-import@example.test")
     expect(account.authenticate("School-test-password-26")).to be_falsey
     expect(account.role).to eq("teacher")
+    expect(AuditEvent.where(record_type: "User", record_id: account.id, action: "teacher.imported").count).to eq(1)
     expect(item.reload.imported_rows).to eq(1)
     DataImportJob.perform_now(item.id)
     expect(User.where(email: "alex-import@example.test").count).to eq(1)
