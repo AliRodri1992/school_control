@@ -38,17 +38,17 @@ export async function api(path:string,method='GET',data?:unknown):Promise<any> {
     throw unexpectedResponse(path,response.status);
   }
 
-  let result:Record<string,any>;
+  let result:any;
   try {
     result=await response.json();
-    if(!result||typeof result!=='object'||Array.isArray(result))throw new Error('Invalid JSON response object');
+    if(result===null||typeof result!=='object')throw new Error('Invalid JSON response');
   } catch {
     throw unexpectedResponse(path,response.status);
   }
 
-  if(typeof result.csrf_token==='string')csrf=result.csrf_token;
+  if(!Array.isArray(result)&&typeof result.csrf_token==='string')csrf=result.csrf_token;
   if(!response.ok){
-    const fields=result.errors && typeof result.errors==='object' && !Array.isArray(result.errors)
+    const fields=!Array.isArray(result) && result.errors && typeof result.errors==='object' && !Array.isArray(result.errors)
       ? result.errors as Record<string,string[]> : undefined;
     throw apiError(typeof result.error==='string'?result.error:'No se pudo completar la operación.',response.status,fields);
   }
