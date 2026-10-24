@@ -4,6 +4,7 @@ const PortalHome=lazy(()=>import('./features/portal/PortalHome'));
 const Preferences=lazy(()=>import('./features/preferences/Preferences'));
 const StudentDetails=lazy(()=>import('./features/students/StudentDetails'));
 import AuliGuide from './shared/components/AuliGuide';
+import StudentRowActions from './features/students/StudentRowActions';
 const EmailTemplateDesigner=lazy(()=>import('./features/mail/EmailTemplateDesigner'));
 const ApiDocs=lazy(()=>import('./features/api/ApiDocs'));
 import RecordForm from './shared/components/RecordForm';
@@ -207,12 +208,13 @@ export default function App(){
      options={statuses.map(status=>({value:status,label:display(status)}))}/></div>
   <button className="text-button" onClick={()=>{setStatusFilter('');setQuery('');setSorting('');setPageNumber(0);}}>Limpiar filtros</button>
   </div>}
-  <div className="table-scroll"><table><thead><tr>{modules[page].columns.map(([key,title])=><th key={key} aria-sort={sorting===key?(ascending?"ascending":"descending"):"none"}><button className="sc-sort-button" aria-label={"Ordenar por "+title} onClick={()=>sortBy(key)}>{title}{sorting===key?(ascending?" ↑":" ↓"):" ↕"}</button></th>)}<th>Acciones</th></tr></thead><tbody>{shownRows.map(row=><tr key={row.id}>{modules[page].columns.map(([key])=><td key={key}>{['status','outcome','role','kind'].includes(key)?<span className={`badge ${row[key]||''}`}>{display(row[key])}</span>:key.endsWith('_at')?readableDate(row[key]):display(row[key])}</td>)}<td><div className="actions">
+  <div className="table-scroll"><table><thead><tr>{modules[page].columns.map(([key,title])=><th key={key} aria-sort={sorting===key?(ascending?"ascending":"descending"):"none"}><button className="sc-sort-button" aria-label={"Ordenar por "+title} onClick={()=>sortBy(key)}>{title}{sorting===key?(ascending?" ↑":" ↓"):" ↕"}</button></th>)}<th className={page==='students'?'sc-student-action-heading':undefined}>Acciones</th></tr></thead><tbody>{shownRows.map(row=><tr key={row.id}>{modules[page].columns.map(([key])=><td key={key}>{['status','outcome','role','kind'].includes(key)?<span className={`badge ${row[key]||''}`}>{display(row[key])}</span>:key.endsWith('_at')?readableDate(row[key]):display(row[key])}</td>)}<td className={page==='students'?'sc-student-action-cell':undefined}><div className="actions">
  {page==='grades'&&<GradeActions grade={row} admin={user.role==='admin'} permissions={user.permissions} onChanged={()=>refresh()}/>}
  {page==='student_contacts'&&can('student_contacts.destroy')&&<button className="text-button danger" disabled={busy} onClick={()=>{void confirmDanger('Eliminar contacto','Este contacto dejará de estar disponible para el alumno.').then(ok=>{if(ok)void perform(async()=>{await api('student_contacts/'+row.id,'DELETE');});});}}>Eliminar</button>}
- {page==='students'&&can('students.show')&&<button className="text-button" onClick={()=>openStudentRecord(row)}>Ver expediente</button>}
-  {page==='students'&&can('students.report')&&<button className="text-button" onClick={()=>perform(async()=>setReport(await api(`students/${row.id}/report`)))}>Boleta e historial</button>}
- {can(`${page}.${['grades','attendances'].includes(page)?'create':'update'}`)&&!['admissions','announcements'].includes(page)&&(page!=='grades'||row.status!=='published')&&<button className="text-button" onClick={()=>createOrEdit(row)}>Editar</button>}
+ {page==='students'&&<StudentRowActions student={row} canView={can('students.show')} canReport={can('students.report')}
+  canEdit={can('students.update')} onView={()=>openStudentRecord(row)}
+  onReport={()=>perform(async()=>setReport(await api(`students/${row.id}/report`)))} onEdit={()=>createOrEdit(row)}/>}
+ {page!=='students'&&can(`${page}.${['grades','attendances'].includes(page)?'create':'update'}`)&&!['admissions','announcements'].includes(page)&&(page!=='grades'||row.status!=='published')&&<button className="text-button" onClick={()=>createOrEdit(row)}>Editar</button>}
  {page==='admissions'&&(can('admissions.approve')||can('admissions.reject'))&&row.status==='submitted'&&<><button className="text-button" onClick={()=>approve(row)}>Aprobar</button><button className="text-button danger" onClick={()=>reject(row)}>Rechazar</button></>}
  {page==='enrollments'&&can('enrollments.complete')&&row.status==='active'&&<button className="text-button" onClick={()=>complete(row)}>Cerrar ciclo</button>}
  {page==='users'&&can('users.update')&&row.id!==user.id&&<button className="text-button" onClick={()=>perform(async()=>{await api(`users/${row.id}`,'PATCH',{active:!row.active});})}>{row.active?'Desactivar':'Activar'}</button>}
@@ -221,7 +223,14 @@ export default function App(){
     <ModuleLoadFailure message={moduleLoadErrors[page].message} onRetry={()=>void refresh().catch(e=>setError((e as Error).message))}/>) :
    user.permissions?.[pagePermission(page)]?.length ?
      (data[page]===undefined ? <PendingRecords/> :
-       <Empty text={query||statusFilter?'No hay resultados para estos filtros.':'Aún no hay registros en esta sección.'}/>) : <ForbiddenEmpty/>)}
+       <Empty
+         title={query||statusFilter?'No encontramos coincidencias':page==='students'?'Aún no hay alumnos registrados':'Aún no hay registros'}
+         text={query||statusFilter?'Intenta con otro término o limpia los filtros para volver a consultar la lista.':
+           page==='students'?(can('students.create')?'Cuando registres al primer alumno, su expediente aparecerá aquí. Usa «Registrar alumno» para comenzar.':
+             'Los expedientes de alumnos aparecerán aquí cuando se registren en el sistema.'):
+           can(`${page}.create`)?'Todavía no hay información en esta sección. Puedes registrar el primer elemento con el botón superior.':
+             'Todavía no hay información disponible en esta sección. Cuando se registre, aparecerá aquí.'}
+        />) : <ForbiddenEmpty/>)}
   {records.length>0&&<div className="sc-pagination">
     <div className="sc-page-size"><label>Por página</label><Combobox label="Registros por página" value={String(pageSize)}
       onChange={value=>{setPageSize(Number(value));setPageNumber(0);}}
@@ -243,7 +252,7 @@ function ModuleLoadFailure({message,onRetry}:{message:string;onRetry:()=>void}){
   <button type="button" className="secondary" onClick={onRetry}>Reintentar consulta</button></div>;
 }
 function ForbiddenEmpty(){return <div className="empty sc-auli-empty"><AuliGuide mood="warning" title="No tienes permisos para ver esta sección" text="Tu rol no tiene autorización para consultar los registros de este módulo." compact/></div>;}
-function Empty({text}:{text:string}){return <div className="empty sc-auli-empty"><AuliGuide mood="thinking" title="Todavía no hay registros" text={text} compact/></div>;}
+function Empty({title='Todavía no hay registros',text}:{title?:string;text:string}){return <div className="empty sc-auli-empty"><AuliGuide mood="thinking" title={title} text={text} compact/></div>;}
 function SchoolSettings({school,onSave,busy}:{school:Row;onSave:(form:FormData)=>void;busy:boolean}){
  const [preview,setPreview]=useState<string>();
  const [logoFile,setLogoFile]=useState<File|null>(null);
