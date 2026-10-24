@@ -1,3 +1,4 @@
+import Combobox from '../../shared/components/Combobox';
 import {useEffect,useMemo,useState} from 'react';
 import {BookOpen,ChevronDown,Code2,Filter,Search,ShieldCheck} from 'lucide-react';
 import {api} from '../../api';
@@ -26,7 +27,8 @@ export default function ApiDocs(){
   </div>
   <div className="sc-api-search">
    <label><Search size={17}/><input aria-label="Buscar rutas de la API" value={query} placeholder="Buscar endpoint o permiso…" onChange={e=>setQuery(e.target.value)}/></label>
-   <label><Filter size={17}/><select aria-label="Filtrar área" value={tag} onChange={e=>setTag(e.target.value)}><option value="">Todas las áreas</option>{tags.map(v=><option key={v}>{v}</option>)}</select></label>
+   <div className="sc-api-dropdown"><Filter size={17}/><Combobox label="Filtrar área" value={tag}
+     onChange={setTag} placeholder="Todas las áreas" options={tags.map(value=>({value,label:value}))}/></div>
   </div>
   <div className="sc-api-operations">{visible.map(({path,verb,operation})=>{
    const key=verb+':'+path,expanded=selected===key;

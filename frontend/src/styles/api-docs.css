@@ -19,3 +19,10 @@
 .sc-api-details pre{background:#111d42;color:#e7eaff;overflow:auto;padding:15px;border-radius:9px;font-size:11px;max-height:300px;white-space:pre-wrap;overflow-wrap:anywhere}
 .sc-api-empty{display:flex;gap:12px;align-items:center}
 @media(max-width:760px){.sc-api-operation-button{gap:8px;flex-wrap:wrap}.sc-api-operation-button span{max-width:none;width:100%;order:3}.sc-api-summary span{margin-left:0}}
+
+.sc-api-search .sc-api-dropdown{display:flex;align-items:center;gap:8px;border:1px solid #dbe2ef;background:#fff;border-radius:10px;padding:4px 10px;min-height:46px;min-width:220px}
+.sc-api-dropdown>svg{color:#405cf5;flex:none}
+.sc-api-dropdown .sc-combobox{flex:1;min-width:0}
+.sc-api-dropdown .sc-combobox-trigger{border:0;background:transparent;margin:0;min-height:38px}
+.sc-api-dropdown .sc-combobox-panel{min-width:210px}
+@media(max-width:580px){.sc-api-search .sc-api-dropdown{width:100%}}
