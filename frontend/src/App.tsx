@@ -18,7 +18,7 @@ import Reports from './Reports';
 import AccessRoles from './AccessRoles';
 import GradeActions from './GradeActions';
 import PasswordRecovery from './PasswordRecovery';
-import Notifications from './Notifications';
+import Notifications from './NotificationsCenter';
 import Profile from './Profile';
 import Classroom from './Classroom';
 import Documents from './Documents';
