@@ -14,4 +14,10 @@ RSpec.describe "API documentation" do
     expect(operation.fetch("x-rbac-permission")).to eq("students.create")
     expect(operation.fetch("responses")).to have_key("422")
   end
+
+  it "documents the interactive import mappings and retry route" do
+    paths = contract.fetch("paths")
+    expect(paths).to include("/api/import_mapping_templates", "/api/data_imports/{id}/retry")
+    expect(paths.fetch("/api/data_imports/{id}/retry").fetch("post").fetch("responses")).to have_key("202")
+  end
 end
