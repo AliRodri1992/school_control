@@ -3,7 +3,7 @@ import {Bell,BookOpen,CalendarClock,ChevronDown,ChevronRight,HelpCircle,Language
 import {api} from '../api';
 import Combobox from '../shared/components/Combobox';
 import type {Row} from '../modules';
-import {currentPortal,makePortalUrl,portalLabels,visibleGroups,type NavItem} from './portalNavigation';
+import {currentPortal,makePortalUrl,portalLabels,visibleGroups,findNavPath,type NavItem} from './portalNavigation';
 
 export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmissions,onNavigate,onSignOut,children,childrenList=[],selectedChildId='',onSelectChild=()=>undefined}:{
  user:Row;school:Row;page:string;mobile:boolean;onMobile:(open:boolean)=>void;
@@ -52,6 +52,9 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    void update();const interval=window.setInterval(()=>void update(),60000);
    return()=>{active=false;window.clearInterval(interval);}
  },[user.id]);
+ useEffect(()=>{const path=findNavPath(groups,page).slice(0,-1).map(item=>item.key);setExpanded(current=>{
+   const next=[...new Set([...current,...path])];return next.length===current.length?current:next;
+ });},[page]);
  function toggle(key:string){setExpanded(v=>v.includes(key)?v.filter(x=>x!==key):[...v,key]);}
  function navigate(next:string){onNavigate(next);setAccountOpen(false);setNotificationsOpen(false);}
  async function read(item:Row){
@@ -63,8 +66,8 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    }catch(e){setNoticeError((e as Error).message);}
  }
  function renderItem(item:NavItem,depth:number):ReactNode{
-   const children=item.children||[],isActive=page===item.key||children.some(child=>child.key===page);
-   const isOpen=expanded.includes(item.key);
+   const children=item.children||[],isActive=item.key===page||findNavPath([{title:'',items:[item]}],page).length>0;
+   const isOpen=expanded.includes(item.key)||!!query;
    return <div className="sc-nav-node" key={item.key+'-'+depth}>
      <div className={'sc-nav-item'+(isActive?' is-active':'')} style={{paddingLeft:depth?19:4}}>
        <button className="sc-nav-main" type="button" aria-current={page===item.key?'page':undefined} onClick={()=>navigate(item.key)}>
@@ -79,8 +82,10 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
      {children.length>0&&isOpen&&<div className="sc-nav-children">{children.map(child=>renderItem(child,depth+1))}</div>}
    </div>;
  }
- const matches=groups.map(g=>({...g,items:g.items.filter(item=>!query||(item.title+' '+(item.children||[]).map(c=>c.title).join(' ')).toLowerCase().includes(query.toLowerCase()))})).filter(g=>g.items.length);
- const label=translate('nav.'+page,page==='dashboard'?'Inicio':page==='profile'?'Mi perfil':page==='notifications'?'Notificaciones':groups.flatMap(g=>g.items.flatMap(i=>[i,...(i.children||[])])).find(i=>i.key===page)?.title||page);
+ const matchText=(item:NavItem):string=>[item.title,...(item.children||[]).map(matchText)].join(' ');
+ const matches=groups.map(g=>({...g,items:g.items.filter(item=>!query||matchText(item).toLowerCase().includes(query.toLowerCase()))})).filter(g=>g.items.length);
+ const trail=findNavPath(groups,page);
+ const label=translate('nav.'+page,page==='dashboard'?'Inicio':page==='profile'?'Mi perfil':page==='notifications'?'Notificaciones':trail.at(-1)?.title||page);
  const tz=school.timezone||'America/Mexico_City';
  const formatted=new Intl.DateTimeFormat(locale==='es'?'es-MX':locale,{dateStyle:'medium',timeZone:tz}).format(clock);
  const time=new Intl.DateTimeFormat(locale==='es'?'es-MX':locale,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:tz}).format(clock);
@@ -116,7 +121,11 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
        </div>}
        <div className="sc-crumbs" aria-label="Ruta de navegación">
          <button type="button" onClick={()=>navigate('dashboard')}>{portalLabels[portal]}</button>
-         <ChevronRight size={14}/><span aria-current="page">{label}</span>
+         {trail.length?trail.map((item,index)=><span className="sc-crumb-step" key={item.key}>
+   <ChevronRight size={14}/>
+   {index===trail.length-1?<span aria-current="page">{translate('nav.'+item.key,item.title)}</span>:
+     <button type="button" onClick={()=>navigate(item.key)}>{translate('nav.'+item.key,item.title)}</button>}
+  </span>):<><ChevronRight size={14}/><span aria-current="page">{label}</span></>}
        </div>
        <div className="sc-top-actions">
          <div className="sc-clock" title={'Zona horaria: '+tz}><CalendarClock size={17}/><time>{formatted} · {time}</time></div>
