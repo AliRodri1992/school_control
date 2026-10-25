@@ -6,7 +6,7 @@ import {Responsive, WidthProvider} from 'react-grid-layout/legacy';
 import {BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer} from 'recharts';
 import {api} from './api';
 import {notify} from './notifications';
-import {appendWidget, removeWidget, defaultConfig, widgetKinds, isMetricKind, isAnalyticChartKind, allowedChartKinds, mergeGridLayouts, upgradeLegacyDashboardConfig, upgradeRoleCharts, columns, type Config, type Kind, type DashboardRole} from './dashboardConfig';
+import {appendWidget, removeWidget, defaultConfig, widgetKinds, isMetricKind, isAnalyticChartKind, allowedChartKinds, mergeGridLayouts, upgradeSavedDashboardConfig, columns, type Config, type Kind, type DashboardRole} from './dashboardConfig';
 import DashboardChart from './DashboardChart';
 import DashboardMetricCard from './DashboardMetricCard';
 import DashboardEmptyState from './DashboardEmptyState';
@@ -57,7 +57,7 @@ export default function Dashboard({summary,data,role='admin',userId=0,selectedCh
   void api('dashboard_preference').then(result=>{
    if(!active)return;
    const saved=result.configuration;
-   setConfig(saved?upgradeRoleCharts(upgradeLegacyDashboardConfig(saved,role),role):defaultConfig(role));
+   setConfig(saved?upgradeSavedDashboardConfig(saved,role):defaultConfig(role));
    setVersion(result.lock_version);
    setReady(true);
   }).catch(e=>{if(active)setError((e as Error).message);});

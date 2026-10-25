@@ -37,6 +37,33 @@ RSpec.describe "Personal dashboard", type: :request do
     expect(DashboardPreference.last.configuration.keys).to contain_exactly("widgets", "layouts")
   end
 
+  it "persists the dashboard schema version for an upgraded personalized grid" do
+    login(user)
+    configuration[:schema_version] = 2
+    put "/api/dashboard_preference", params: { configuration: configuration }, as: :json
+    expect(response).to have_http_status(:ok)
+    get "/api/dashboard_preference", as: :json
+    expect(response.parsed_body.dig("configuration", "schema_version")).to eq(2)
+    expect(response.parsed_body.dig("configuration", "widgets")).to eq(configuration[:widgets].map(&:stringify_keys))
+  end
+
+  it "preserves legacy saved dashboards that do not yet have a schema version" do
+    login(user)
+    put "/api/dashboard_preference", params: { configuration: configuration }, as: :json
+    expect(response).to have_http_status(:ok)
+    expect(response.parsed_body.fetch("configuration").key?("schema_version")).to be(false)
+  end
+
+  it "rejects unsupported or invalid dashboard schema versions" do
+    login(user)
+    configuration[:schema_version] = 999
+    put "/api/dashboard_preference", params: { configuration: configuration }, as: :json
+    expect(response).to have_http_status(:unprocessable_content)
+    configuration[:schema_version] = "2"
+    put "/api/dashboard_preference", params: { configuration: configuration }, as: :json
+    expect(response).to have_http_status(:unprocessable_content)
+  end
+
   it "rejects malformed layouts and unsupported data sources" do
     login(user)
     configuration[:widgets][0][:kind] = "psychological_records"

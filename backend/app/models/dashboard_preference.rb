@@ -8,7 +8,13 @@ class DashboardPreference < ApplicationRecord
 
   def valid_configuration
     config = configuration
-    return errors.add(:configuration, "inválida") unless config.is_a?(Hash) && config.keys.sort == %w[layouts widgets]
+    return errors.add(:configuration, "inválida") unless config.is_a?(Hash)
+    return errors.add(:configuration, "inválida") unless (config.keys - %w[layouts schema_version widgets]).empty?
+    return errors.add(:configuration, "inválida") unless %w[layouts widgets].all? { |key| config.key?(key) }
+    if config.key?("schema_version") && (!config["schema_version"].is_a?(Integer) || config["schema_version"] != 2)
+      return errors.add(:configuration, "versión inválida")
+    end
+
     widgets = config["widgets"]
     layouts = config["layouts"]
     return errors.add(:configuration, "inválida") unless widgets.is_a?(Array) && widgets.size <= 24 && layouts.is_a?(Hash)

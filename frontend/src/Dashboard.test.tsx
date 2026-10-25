@@ -6,7 +6,7 @@ import type {ReactNode} from 'react';
 import Dashboard from './Dashboard';
 import {api} from './api';
 import {notify} from './notifications';
-import {appendWidget,defaultConfig} from './dashboardConfig';
+import {appendWidget,defaultConfig,generateDashboardConfig} from './dashboardConfig';
 
 vi.mock('./api',()=>({api:vi.fn()}));
 vi.mock('./notifications',()=>({notify:vi.fn()}));
@@ -270,4 +270,30 @@ it('reloads the correct portal template when a different user signs in without u
  await waitFor(()=>expect(screen.getAllByText('Entregas de tareas').length).toBeGreaterThan(0));
  expect(screen.queryByText('Matrícula por ciclo')).toBeNull();
  expect(vi.mocked(api).mock.calls.filter(call=>call[0]==='dashboard_preference')).toHaveLength(2);
+});
+
+it('restores the four missing analytics in a previously customized administrator dashboard',async()=>{
+ const old=appendWidget(generateDashboardConfig([
+  'students','enrollments','pending_admissions','pending_documents',
+  'attendance_chart','alerts','calendar'
+ ]),'announcements','Panel que organicé','user-announcements');
+ const saved={...old,layouts:{...old.layouts,lg:old.layouts.lg.map((item,index)=>index===0?
+  {...item,x:4,y:15}:item)}};
+ vi.mocked(api).mockImplementation(async resource=>resource==='dashboard_preference'?
+  {configuration:saved,lock_version:3}:{});
+ const {container}=render(<Dashboard role="admin" userId={77} summary={{}} data={{}}/>);
+ await waitFor(()=>expect(container.querySelectorAll('[data-testid="analytics-chart"]')).toHaveLength(4));
+ for(const title of [
+  'Estado de admisiones','Distribución de asistencia','Alumnos por grado','Matrícula por ciclo'
+ ]){
+  expect(screen.getByRole('heading',{name:title})).toBeTruthy();
+ }
+ expect(screen.getByText('Panel que organicé')).toBeTruthy();
+ expect(container.querySelectorAll('.sc-kpi-grid-item')).toHaveLength(4);
+ await personalize();
+ await userEvent.click(screen.getByRole('button',{name:'Guardar dashboard'}));
+ const savedCall=vi.mocked(api).mock.calls.find(call=>call[0]==='dashboard_preference'&&call[1]==='PUT');
+ expect(savedCall?.[2].configuration.schema_version).toBe(2);
+ expect(savedCall?.[2].configuration.widgets).toHaveLength(saved.widgets.length+4);
+ expect(savedCall?.[2].configuration.layouts.lg.find((item:{i:string})=>item.i==='students').x).toBe(4);
 });

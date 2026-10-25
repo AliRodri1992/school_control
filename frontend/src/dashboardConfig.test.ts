@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {defaultConfig,appendWidget,removeWidget,columns,isMetricKind,widgetHeight,metricKinds,mergeGridLayouts,upgradeLegacyDashboardConfig,upgradeRoleCharts,generateDashboardConfig,allowedChartKinds,type DashboardRole} from './dashboardConfig';
+import {defaultConfig,appendWidget,removeWidget,columns,isMetricKind,widgetHeight,metricKinds,mergeGridLayouts,upgradeLegacyDashboardConfig,upgradeRoleCharts,generateDashboardConfig,allowedChartKinds,upgradeSavedDashboardConfig,DASHBOARD_CONFIG_VERSION,type DashboardRole} from './dashboardConfig';
 describe('dashboard configuration',()=>{
  it('provides layouts bounded to each screen including a single mobile column',()=>{
   const config=defaultConfig();
@@ -187,4 +187,52 @@ it.each([
  expect(upgradeRoleCharts(legacy,role)).toEqual(defaultConfig(role));
  const custom={...legacy,layouts:{...legacy.layouts,lg:legacy.layouts.lg.map((item,index)=>index===0?{...item,h:item.h+1}:item)}};
  expect(upgradeRoleCharts(custom,role)).toBe(custom);
+});
+
+describe('restoring analytics hidden by older saved dashboards',()=>{
+ const required=['enrollment_trend','students_by_grade','attendance_rate','admission_status'];
+ const olderKinds=['students','enrollments','pending_admissions','pending_documents','attendance_chart','alerts','calendar'] as const;
+ it('recovers all four graphs in a customized administrator dashboard without resetting other widgets',()=>{
+  const old=appendWidget(generateDashboardConfig(olderKinds),'announcements','Mi bloque personal','custom-announcements');
+  const moved={...old,layouts:{...old.layouts,lg:old.layouts.lg.map((item,index)=>index===0?
+   {...item,x:4,y:99,h:4}:item)}};
+  const restored=upgradeSavedDashboardConfig(moved,'admin');
+  expect(restored.schema_version).toBe(DASHBOARD_CONFIG_VERSION);
+  for(const kind of required)expect(restored.widgets.filter(widget=>widget.kind===kind)).toHaveLength(1);
+  expect(restored.widgets.slice(0,moved.widgets.length)).toEqual(moved.widgets);
+  for(const bp of Object.keys(columns)){
+   expect(restored.layouts[bp].slice(0,moved.layouts[bp].length)).toEqual(moved.layouts[bp]);
+   expect(restored.layouts[bp].map(item=>item.i).sort()).toEqual(restored.widgets.map(widget=>widget.id).sort());
+   expect(restored.layouts[bp].every(item=>item.x+item.w<=columns[bp])).toBe(true);
+  }
+  expect(restored.layouts.lg[0]).toEqual({i:'students',x:4,y:99,w:3,h:4});
+ });
+ it('does not duplicate already present charts, including user-renamed instances',()=>{
+  const old=appendWidget(generateDashboardConfig(olderKinds),'attendance_rate','Mi asistencia','my-attendance');
+  const restored=upgradeSavedDashboardConfig(old,'admin');
+  expect(restored.widgets.filter(widget=>widget.kind==='attendance_rate')).toHaveLength(1);
+  expect(restored.widgets.find(widget=>widget.id==='my-attendance')?.title).toBe('Mi asistencia');
+  for(const kind of required)expect(restored.widgets.filter(widget=>widget.kind===kind)).toHaveLength(1);
+ });
+ it('keeps deliberate removals and manual arrangements on already-updated dashboards',()=>{
+  const removed=removeWidget(defaultConfig('admin'),'admission_status');
+  const edited={...removed,layouts:{...removed.layouts,lg:removed.layouts.lg.map((item,index)=>index===0?
+   {...item,x:5}:item)}};
+  expect(upgradeSavedDashboardConfig(edited,'admin')).toBe(edited);
+  expect(edited.widgets.some(widget=>widget.kind==='admission_status')).toBe(false);
+ });
+ it('never inserts analytics outside the authorized role or exceeds the widget limit',()=>{
+  const family=generateDashboardConfig(['students','calendar']);
+  const recovered=upgradeSavedDashboardConfig(family,'guardian');
+  expect(recovered.widgets.some(widget=>widget.kind==='admission_status')).toBe(false);
+  expect(recovered.widgets.some(widget=>widget.kind==='enrollment_trend')).toBe(false);
+  expect(recovered.widgets.some(widget=>widget.kind==='attendance_rate')).toBe(true);
+  const full=generateDashboardConfig(olderKinds);
+  for(let index=0;index<17;index++){
+   const next=appendWidget(full,'announcements','Extra '+index,'extra-'+index);
+   full.widgets=next.widgets;full.layouts=next.layouts;
+  }
+  expect(full.widgets).toHaveLength(24);
+  expect(upgradeSavedDashboardConfig(full,'admin').widgets).toHaveLength(24);
+ });
 });

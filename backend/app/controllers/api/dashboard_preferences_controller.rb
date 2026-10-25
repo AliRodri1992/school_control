@@ -21,7 +21,7 @@ module Api
 
     def configuration_params
       layout_fields = DashboardPreference::COLUMNS.keys.index_with { %i[i x y w h] }
-      params.require(:configuration).permit(widgets: %i[id kind title], layouts: layout_fields)
+      params.require(:configuration).permit(:schema_version, widgets: %i[id kind title], layouts: layout_fields)
     end
   end
 end

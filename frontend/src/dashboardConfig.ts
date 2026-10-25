@@ -1,4 +1,6 @@
 export type DashboardRole='admin'|'teacher'|'guardian'|'student';
+/** Version distinguishes pre-analytics saved layouts from intentional user customizations. */
+export const DASHBOARD_CONFIG_VERSION=2;
 export const widgetKinds = {
  students: 'Expedientes', enrollments: 'Inscripciones activas', pending_admissions: 'Solicitudes pendientes',
  groups: 'Grupos', today_classes: 'Clases de hoy', grade_drafts: 'Calificaciones por revisar', pending_documents: 'Documentos pendientes', attendance_chart: 'Asistencia · últimos 30 días', admission_chart: 'Estado de solicitudes',
@@ -27,7 +29,7 @@ export function widgetWidth(kind:Kind,breakpoint:string):number{
 }
 export type Widget = {id: string; kind: Kind; title: string};
 export type Item = {i: string; x: number; y: number; w: number; h: number};
-export type Config = {widgets: Widget[]; layouts: Record<string, Item[]>};
+export type Config = {widgets: Widget[]; layouts: Record<string, Item[]>; schema_version?:number};
 export const columns: Record<string, number> = {lg:12, md:8, sm:4, xs:1};
 export function appendWidget(config: Config, kind: Kind, title: string, id: string = crypto.randomUUID()): Config {
  const layouts = Object.fromEntries(Object.entries(columns).map(([bp, cols]) => {
@@ -64,7 +66,7 @@ export function generateDashboardConfig(kinds:readonly Kind[]):Config{
  return config;
 }
 export function defaultConfig(role: DashboardRole='admin'):Config{
- return generateDashboardConfig(presets[role]);
+ return {...generateDashboardConfig(presets[role]),schema_version:DASHBOARD_CONFIG_VERSION};
 }
 
 /** Do not discard layouts for untouched breakpoints or widgets when the grid reflows. */
@@ -128,4 +130,25 @@ export function upgradeRoleCharts(config:Config,role:DashboardRole):Config{
   });
  });
  return untouchedLayout?defaultConfig(role):config;
+}
+
+/**
+ * Recover analytics introduced after users saved their layout.
+ * Keep every existing widget, position, size and title. Only append missing
+ * role-authorized analytics, and stamp the version on the next explicit save.
+ * A versioned dashboard may intentionally omit charts and is never modified.
+ */
+export function upgradeSavedDashboardConfig(saved:Config,role:DashboardRole):Config{
+ if(saved.schema_version!==undefined&&saved.schema_version>=DASHBOARD_CONFIG_VERSION)return saved;
+ const legacy=upgradeRoleCharts(upgradeLegacyDashboardConfig(saved,role),role);
+ const required=presets[role].filter(isAnalyticChartKind);
+ let next=legacy;
+ for(const kind of required){
+  if(next.widgets.some(widget=>widget.kind===kind)||next.widgets.length>=24)continue;
+  let id=kind;
+  let suffix=1;
+  while(next.widgets.some(widget=>widget.id===id))id=kind+'-restored-'+suffix++;
+  next=appendWidget(next,kind,widgetKinds[kind],id);
+ }
+ return {...next,schema_version:DASHBOARD_CONFIG_VERSION};
 }
