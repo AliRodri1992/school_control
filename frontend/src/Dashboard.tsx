@@ -21,6 +21,7 @@ export default function Dashboard({summary,data,role='admin',userId=0,selectedCh
  const [period,setPeriod]=useState('180'),[academicYear,setAcademicYear]=useState('');
  const [chartLoading,setChartLoading]=useState(false);
  const [visibleSummary,setVisibleSummary]=useState<Row>(summary);
+ const yearOptions:Array<{id:number;name:string}>=Array.isArray(visibleSummary?.available_years)?visibleSummary.available_years:[];
  const [config,setConfig] = useState<Config>(()=>defaultConfig(role));
  const [version,setVersion] = useState<number|null>(null);
  const [ready,setReady] = useState(false),[editing,setEditing] = useState(false),[saving,setSaving] = useState(false);
@@ -29,6 +30,7 @@ export default function Dashboard({summary,data,role='admin',userId=0,selectedCh
  const preventProgrammaticLayoutChange=useRef(false);
  const initialSummaryLoaded=useRef(false);
  useEffect(()=>{let active=true;setVisibleSummary(summary);return()=>{active=false;};},[summary]);
+ useEffect(()=>{setAcademicYear('');},[selectedChildId,role,userId]);
  useEffect(()=>{
   // The portal snapshot already contains the unfiltered summary; refetch only after a filter change.
   if(!initialSummaryLoaded.current){initialSummaryLoaded.current=true;if(!selectedChildId)return;}
@@ -148,11 +150,11 @@ export default function Dashboard({summary,data,role='admin',userId=0,selectedCh
      <option value="365">{ui('Últimos 365 días')}</option>
     </select>
    </label>
-   {(data.academic_years||[]).length>0&&
+   {yearOptions.length>0&&
     <label>{ui('Ciclo escolar')}
      <select value={academicYear} onChange={e=>setAcademicYear(e.target.value)}>
       <option value="">{ui('Todos los ciclos autorizados')}</option>
-      {(data.academic_years||[]).map(year=><option value={String(year.id)} key={year.id}>{year.name}</option>)}
+      {yearOptions.map(year=><option value={String(year.id)} key={year.id}>{year.name}</option>)}
      </select>
     </label>}
    <span className="sc-analytics-filter-note">

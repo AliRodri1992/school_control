@@ -245,3 +245,15 @@ it('keeps the initial portal summary without an unnecessary dashboard refetch',a
  expect(container.querySelector('.sc-kpi-number')?.textContent).toBe('42');
  expect(vi.mocked(api).mock.calls.filter(call=>String(call[0]).startsWith('dashboard?'))).toHaveLength(0);
 });
+
+it('only offers school years returned by the authorized analytics scope',async()=>{
+ vi.mocked(api).mockImplementation(async resource=>resource==='dashboard_preference'?
+  {configuration:null,lock_version:null}:{});
+ render(<Dashboard role="guardian" userId={12} summary={{available_years:[{id:7,name:'Ciclo autorizado'}]}}
+  data={{academic_years:[{id:1,name:'Ciclo ajeno'},{id:7,name:'Ciclo autorizado'}]}}/>);
+ await waitFor(()=>expect(screen.getByRole('combobox',{name:'Ciclo escolar'})).toBeTruthy());
+ const year=screen.getByRole('combobox',{name:'Ciclo escolar'}) as HTMLSelectElement;
+ expect(Array.from(year.options).map(x=>x.textContent)).toEqual(['Todos los ciclos autorizados','Ciclo autorizado']);
+ await userEvent.selectOptions(year,'7');
+ await waitFor(()=>expect(vi.mocked(api).mock.calls.some(call=>String(call[0]).includes('academic_year_id=7'))).toBe(true));
+});

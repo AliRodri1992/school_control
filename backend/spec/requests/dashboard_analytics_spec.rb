@@ -61,6 +61,7 @@ RSpec.describe "Authorized dashboard analytics", type: :request do
     expect(response).to have_http_status(:ok)
     data = response.parsed_body
     expect(data.fetch("chart_filters").fetch("student_id")).to eq(enrollment.student.id)
+    expect(data.fetch("available_years")).to include("id" => enrollment.academic_year_id, "name" => enrollment.academic_year.name)
     expect(data.fetch("grades_by_term")).to eq([ { "label" => "Periodo 1", "value" => 8.0 } ])
     expect(data.fetch("students")).to eq(1)
     get "/api/dashboard", params: { student_id: second.id }, as: :json

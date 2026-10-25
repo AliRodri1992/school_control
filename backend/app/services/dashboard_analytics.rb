@@ -11,6 +11,7 @@ class DashboardAnalytics
   def call
     parse_filters!
     {
+      available_years: available_years,
       chart_filters: { from: @from.iso8601, to: @to.iso8601,
                        academic_year_id: @year&.id, student_id: @student&.id, group_id: @group&.id },
       enrollment_trend: enrollment_trend,
@@ -82,6 +83,17 @@ class DashboardAnalytics
     scope = scope.where(student_id: @student.id) if @student
     scope = scope.where(student_id: enrollments.select(:student_id)) if @group
     scope
+  end
+
+  def available_years
+    scope = if @access.institution? && !@student
+      AcademicYear.all
+    else
+      groups = @access.groups
+      groups = groups.where(id: Enrollment.where(student_id: @student.id).select(:group_id)) if @student
+      AcademicYear.where(id: groups.select(:academic_year_id))
+    end
+    scope.order(starts_on: :desc, id: :desc).map { |year| { id: year.id, name: year.name } }
   end
 
   def enrollment_trend
