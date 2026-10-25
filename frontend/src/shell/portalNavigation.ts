@@ -60,6 +60,18 @@ export function findNavPath(groups:NavGroup[],page:string):NavItem[]{
  }
  return [];
 }
+/** Build a breadcrumb even for portal pages outside the sidebar. */
+export function breadcrumbPath(groups:NavGroup[],page:string,portal:PortalId):NavItem[]{
+ if(page==='student_details'){
+  return [{key:'students',title:portal==='tutors'?'Mis hijos':'Alumnos'},{key:'student_details',title:'Expediente'}];
+ }
+ const visible=findNavPath(groups,page);
+ if(visible.length)return visible;
+ const fallback=portalGroups[portal].flatMap(group=>group.items).find(item=>item.key===page);
+ if(fallback)return [{key:fallback.key,title:fallback.title}];
+ const standalone:Record<string,string>={profile:'Mi perfil',preferences:'Preferencias',help:'Ayuda',notifications:'Notificaciones'};
+ return [{key:page,title:standalone[page]||page.replaceAll('_',' ')}];
+}
 export function studentRecordUrl(portal:PortalId,studentId:number|string):string{
  return makePortalUrl(portal,'students')+'/'+encodeURIComponent(String(studentId));
 }

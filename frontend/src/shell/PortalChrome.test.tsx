@@ -203,3 +203,34 @@ it('localizes account, home and child-picker accessibility labels when switching
    childrenList={[{id:3,full_name:'Alex Ejemplo'}]}><div>Página</div></PortalChrome>);
  expect(screen.getByRole('combobox',{name:'Select child'})).toBeTruthy();
 });
+
+it('shows the complete hierarchy with a compact home shortcut',async()=>{
+ const navigate=vi.fn();
+ render(<PortalChrome {...props} page="courses" onNavigate={navigate}><div>Página</div></PortalChrome>);
+ const crumbs=screen.getByRole('navigation',{name:'Ruta de navegación'});
+ expect(crumbs.textContent).toContain('Administración');
+ expect(crumbs.textContent).toContain('Ciclos escolares');
+ expect(crumbs.textContent).toContain('Grupos');
+ expect(crumbs.querySelector('[aria-current="page"]')?.textContent).toBe('Clases');
+ await userEvent.click(screen.getByRole('button',{name:'Ir al inicio'}));
+ expect(navigate).toHaveBeenCalledWith('dashboard');
+});
+it('provides mobile access to hidden breadcrumb ancestors',async()=>{
+ const navigate=vi.fn();
+ render(<PortalChrome {...props} page="courses" onNavigate={navigate}><div>Página</div></PortalChrome>);
+ const more=screen.getByRole('button',{name:'Mostrar páginas anteriores'});
+ expect(more.getAttribute('aria-expanded')).toBe('false');
+ await userEvent.click(more);
+ expect(more.getAttribute('aria-expanded')).toBe('true');
+ const menu=screen.getByRole('group',{name:'Páginas anteriores'});
+ const groups=Array.from(menu.querySelectorAll('button'));
+ expect(groups.map(item=>item.textContent)).toEqual(['Ciclos escolares','Grupos']);
+ await userEvent.click(groups[1]);
+ expect(navigate).toHaveBeenCalledWith('groups');
+ expect(screen.queryByRole('group',{name:'Páginas anteriores'})).toBeNull();
+});
+it('identifies standalone account pages in the breadcrumb',()=>{
+ render(<PortalChrome {...props} page="preferences"><div>Página</div></PortalChrome>);
+ const crumbs=screen.getByRole('navigation',{name:'Ruta de navegación'});
+ expect(crumbs.querySelector('[aria-current="page"]')?.textContent).toBe('Preferencias');
+});

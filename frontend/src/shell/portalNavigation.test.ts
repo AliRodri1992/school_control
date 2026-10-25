@@ -1,5 +1,5 @@
 import {expect,it} from 'vitest';
-import {currentPortal,findNavPath,visibleGroups,portalGroups} from './portalNavigation';
+import {currentPortal,findNavPath,visibleGroups,portalGroups,breadcrumbPath} from './portalNavigation';
 
 it('provides distinct navigation group structures for each school portal',()=>{
  const portals=['admin','teachers','students','tutors'] as const;
@@ -21,4 +21,12 @@ it('hides inaccessible modules rather than rendering disabled navigation entries
  const groups=visibleGroups('admin',key=>key==='students.index');
  expect(findNavPath(groups,'students')).toHaveLength(1);
  expect(findNavPath(groups,'reports')).toHaveLength(0);
+});
+
+it('builds a complete breadcrumb for nested modules and standalone screens',()=>{
+ const groups=visibleGroups('admin',()=>true);
+ expect(breadcrumbPath(groups,'courses','admin').map(item=>item.key)).toEqual(['academic_years','groups','courses']);
+ expect(breadcrumbPath(groups,'student_details','admin').map(item=>item.key)).toEqual(['students','student_details']);
+ expect(breadcrumbPath(groups,'preferences','admin').map(item=>item.title)).toEqual(['Preferencias']);
+ expect(breadcrumbPath(groups,'dashboard','admin').map(item=>item.title)).toEqual(['Resumen']);
 });

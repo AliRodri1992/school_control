@@ -4,11 +4,11 @@ import {useTopbarMenuPosition} from './useTopbarMenuPosition';
 import {translateUiText} from '../shared/i18n/english';
 import {useEffect,useRef,useState,type ReactNode} from 'react';
 import {createPortal} from 'react-dom';
-import {Bell,BookOpen,CalendarClock,Check,ChevronDown,ChevronRight,HelpCircle,Languages,LogOut,Menu,PanelLeftClose,PanelLeftOpen,UserRound,X,LayoutDashboard,Users,GraduationCap,BookOpenCheck,CalendarDays,MessageSquare,BarChart3,Settings,School,FolderOpen,ClipboardList,UserRoundCheck,ClipboardCheck,ClipboardPenLine,BookMarked,FileSpreadsheet,ShieldCheck,Mail,Globe2,Code2,FileText,ContactRound,ChartNoAxesCombined,NotebookTabs,IdCard} from 'lucide-react';
+import {Bell,BookOpen,House,MoreHorizontal,CalendarClock,Check,ChevronDown,ChevronRight,HelpCircle,Languages,LogOut,Menu,PanelLeftClose,PanelLeftOpen,UserRound,X,LayoutDashboard,Users,GraduationCap,BookOpenCheck,CalendarDays,MessageSquare,BarChart3,Settings,School,FolderOpen,ClipboardList,UserRoundCheck,ClipboardCheck,ClipboardPenLine,BookMarked,FileSpreadsheet,ShieldCheck,Mail,Globe2,Code2,FileText,ContactRound,ChartNoAxesCombined,NotebookTabs,IdCard} from 'lucide-react';
 import {api} from '../api';
 import Combobox from '../shared/components/Combobox';
 import type {Row} from '../modules';
-import {currentPortal,makePortalUrl,portalLabels,visibleGroups,findNavPath,type NavItem} from './portalNavigation';
+import {currentPortal,makePortalUrl,portalLabels,visibleGroups,findNavPath,breadcrumbPath,type NavItem} from './portalNavigation';
 
 export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmissions,onNavigate,onSignOut,children,childrenList=[],selectedChildId='',onSelectChild=()=>undefined}:{
  user:Row;school:Row;page:string;mobile:boolean;onMobile:(open:boolean)=>void;
@@ -27,7 +27,9 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const [compactPosition,setCompactPosition]=useState<{left:number;top:number}|null>(null);
  const languageRef=useRef<HTMLDivElement>(null);
  const notificationRef=useRef<HTMLDivElement>(null);
- const breadcrumbRef=useRef<HTMLElement>(null);
+ const [crumbMenuOpen,setCrumbMenuOpen]=useState(false);
+ const crumbMenuTrigger=useRef<HTMLButtonElement>(null);
+ const crumbMenuRef=useRef<HTMLDivElement>(null);
  useEffect(()=>{localStorage.setItem('school-sidebar-collapsed',String(collapsed));},[collapsed]);
  useEffect(()=>{const changed=()=>setLocale(localStorage.getItem('school-locale')||'es');window.addEventListener('school-locale-changed',changed);return()=>window.removeEventListener('school-locale-changed',changed);},[]);
  useEffect(()=>{function close(event:PointerEvent){const node=event.target as Node;if(!languageRef.current?.contains(node))setLanguageOpen(false);if(!notificationRef.current?.contains(node))setNotificationsOpen(false);}document.addEventListener('pointerdown',close);return()=>document.removeEventListener('pointerdown',close);},[]);
@@ -118,6 +120,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    setAccountTarget(null);
    setNotificationsOpen(false);
    setLanguageOpen(false);
+   setCrumbMenuOpen(false);
  }
  function positionCompactMenu(){
    const trigger=compactGroupTrigger.current;
@@ -173,6 +176,8 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
        return;
      }
      if(event.key!=='Escape')return;
+     if(crumbMenuOpen)crumbMenuTrigger.current?.focus();
+     setCrumbMenuOpen(false);
      if(languageOpen)languageRef.current?.querySelector('button')?.focus();
      else if(notificationsOpen)notificationRef.current?.querySelector('button')?.focus();
      else if(accountTarget==='topbar')topbarAccountRef.current?.querySelector('button')?.focus();
@@ -184,7 +189,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    }
    document.addEventListener('keydown',onKeydown);
    return()=>document.removeEventListener('keydown',onKeydown);
- },[mobile,onMobile,compactGroup,languageOpen,notificationsOpen,accountTarget]);
+ },[mobile,onMobile,compactGroup,languageOpen,notificationsOpen,accountTarget,crumbMenuOpen]);
  async function read(item:Row){
    try{
      await api('notifications/'+item.id+'/read','POST');
@@ -217,10 +222,18 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
      {children.length>0&&isOpen&&<div className="sc-nav-children">{children.map(child=>renderItem(child,depth+1))}</div>}
    </div>;
  }
- const trail=page==='student_details'?[{key:'students',title:portal==='tutors'?'Mis hijos':'Alumnos'},{key:'student_details',title:'Expediente'}]:findNavPath(groups,page);
- const label=translate('nav.'+page,page==='dashboard'?'Inicio':page==='profile'?'Mi perfil':page==='help'?'Ayuda':page==='notifications'?'Notificaciones':trail.at(-1)?.title||page);
+ const trail=breadcrumbPath(groups,page,portal);
+ const crumbLabel=(key:string,title:string)=>translate(key==='profile'?'shell.profile':key==='preferences'?'shell.preferences':key==='help'?'shell.help':key==='notifications'?'shell.notification_center':'nav.'+key,title);
  const tz=school.timezone||'America/Mexico_City';
- useEffect(()=>{if(breadcrumbRef.current)breadcrumbRef.current.scrollLeft=breadcrumbRef.current.scrollWidth;},[page,locale]);
+ useEffect(()=>{setCrumbMenuOpen(false);},[page,locale]);
+ useEffect(()=>{
+  if(!crumbMenuOpen)return;
+  function outside(event:PointerEvent){
+   if(!crumbMenuRef.current?.contains(event.target as Node))setCrumbMenuOpen(false);
+  }
+  document.addEventListener('pointerdown',outside);
+  return()=>document.removeEventListener('pointerdown',outside);
+ },[crumbMenuOpen]);
  useEffect(()=>{
   document.documentElement.lang=locale;
   document.documentElement.dir=availableLocales.find(item=>item.code===locale)?.text_direction==='rtl'?'rtl':'ltr';
@@ -317,13 +330,24 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
        </div>
      </header>
      <div className="sc-breadcrumb-bar">
-       <nav ref={breadcrumbRef} className="sc-crumbs" aria-label={translateUiText(locale,"Ruta de navegación")}>
-         <button type="button" onClick={()=>navigate('dashboard')}>{translateUiText(locale,portalLabels[portal])}</button>
-         {trail.length?trail.map((item,index)=><span className="sc-crumb-step" key={item.key}>
-   <ChevronRight size={14}/>
-   {index===trail.length-1?<span aria-current="page">{translate('nav.'+item.key,item.title)}</span>:
-     <button type="button" onClick={()=>navigate(item.key)}>{translate('nav.'+item.key,item.title)}</button>}
-  </span>):<><ChevronRight size={14}/><span aria-current="page">{label}</span></>}
+       <nav className="sc-crumbs" aria-label={translateUiText(locale,"Ruta de navegación")}>
+         <button className="sc-crumb-home" type="button" aria-label={translateUiText(locale,"Ir al inicio")} title={translateUiText(locale,"Ir al inicio")} onClick={()=>navigate('dashboard')}>
+           <House size={15} aria-hidden="true"/><span className="sc-crumb-home-label">{translateUiText(locale,portalLabels[portal])}</span>
+         </button>
+         {trail.map((item,index)=><span className={'sc-crumb-step'+(index===trail.length-1?' sc-crumb-current':' sc-crumb-ancestor')} key={item.key}>
+           <ChevronRight className="sc-crumb-divider" size={14} aria-hidden="true"/>
+           {index===trail.length-1?<span aria-current="page" title={crumbLabel(item.key,item.title)}>{crumbLabel(item.key,item.title)}</span>:
+             <button type="button" title={crumbLabel(item.key,item.title)} onClick={()=>navigate(item.key)}>{crumbLabel(item.key,item.title)}</button>}
+         </span>)}
+         {trail.length>1&&<div className="sc-crumb-more" ref={crumbMenuRef}>
+           <ChevronRight className="sc-crumb-divider" size={14} aria-hidden="true"/>
+           <button type="button" className="sc-crumb-more-trigger" ref={crumbMenuTrigger}
+             aria-expanded={crumbMenuOpen} aria-label={translateUiText(locale,"Mostrar páginas anteriores")}
+             onClick={()=>setCrumbMenuOpen(open=>!open)}><MoreHorizontal size={17} aria-hidden="true"/></button>
+           {crumbMenuOpen&&<div className="sc-crumb-more-menu" role="group" aria-label={translateUiText(locale,"Páginas anteriores")}>
+             {trail.slice(0,-1).map(item=><button key={item.key} type="button" onClick={()=>navigate(item.key)}>{crumbLabel(item.key,item.title)}</button>)}
+           </div>}
+         </div>}
        </nav>
      </div>
      <LocaleProvider locale={locale} translations={translations}>{children}</LocaleProvider>
