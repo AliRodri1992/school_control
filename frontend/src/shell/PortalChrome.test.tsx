@@ -357,3 +357,21 @@ it('retains the accessible mobile ancestor menu for the design-one student recor
  const menu=screen.getByRole('group',{name:'Páginas anteriores'});
  expect(Array.from(menu.querySelectorAll('button')).map(x=>x.textContent)).toEqual(['Alumnos','Expedientes']);
 });
+
+it('retains normal active route links alongside the illustrated breadcrumb icons',async()=>{
+ const navigate=vi.fn();
+ const {container}=render(<PortalChrome {...props} page="courses" onNavigate={navigate}><div>Página</div></PortalChrome>);
+ const links=container.querySelectorAll('.sc-breadcrumb-design-one .sc-crumb-link');
+ expect(links).toHaveLength(2);
+ expect(links[0].querySelector('.sc-crumb-icon svg')).toBeTruthy();
+ expect(links[1].querySelector('.sc-crumb-icon svg')).toBeTruthy();
+ await userEvent.click(screen.getByRole('button',{name:'Grupos'}));
+ expect(navigate).toHaveBeenCalledWith('groups');
+});
+it('shows the original virtual student-record label in the guardian breadcrumb',()=>{
+ render(<PortalChrome {...props} user={{...user,role:'guardian'}} page="student_details"><div>Página</div></PortalChrome>);
+ const nav=screen.getByRole('navigation',{name:'Ruta de navegación'});
+ expect(nav.textContent).toContain('Mis hijos');
+ expect(nav.textContent).toContain('Expedientes');
+ expect(nav.querySelector('[aria-current=page]')?.textContent).toBe('Ficha del alumno');
+});

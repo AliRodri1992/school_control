@@ -723,7 +723,7 @@ Object.assign(englishByText,{
  "Ficha del alumno":"Student profile",
  "Mis hijos":"My children"
 });
-\nexport function translateUiText(locale:string,text:string):string{
+export function translateUiText(locale:string,text:string):string{
  if(!locale.toLowerCase().startsWith('en'))return text;
  return englishByText[text]||text;
 }

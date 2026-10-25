@@ -9,7 +9,7 @@ import {Bell,BookOpen,House,MoreHorizontal,CalendarClock,Check,ChevronDown,Chevr
 import {api} from '../api';
 import Combobox from '../shared/components/Combobox';
 import type {Row} from '../modules';
-import {currentPortal,makePortalUrl,portalLabels,visibleGroups,findNavPath,breadcrumbPath,type NavItem} from './portalNavigation';
+import {currentPortal,makePortalUrl,portalLabels,visibleGroups,findNavPath,breadcrumbPath,breadcrumbDestination,type NavItem} from './portalNavigation';
 
 export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmissions,onNavigate,onSearchNavigate,onSearchStudent,searchCollections={},onSignOut,children,childrenList=[],selectedChildId='',onSelectChild=()=>undefined}:{
  user:Row;school:Row;page:string;mobile:boolean;onMobile:(open:boolean)=>void;
@@ -228,7 +228,6 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  }
  const trail=breadcrumbPath(groups,page,portal);
  const crumbLabel=(key:string,title:string)=>translate(key==='profile'?'shell.profile':key==='preferences'?'shell.preferences':key==='help'?'shell.help':key==='notifications'?'shell.notification_center':'nav.'+key,title);
- const crumbDestination=(key:string)=>key==='student_records'?'students':key;
  const crumbIcon=(key:string):ReactNode=>{
   const special:Record<string,ReactNode>={
    students:<Users size={17}/>,student_records:<BookOpen size={17}/>,
@@ -366,7 +365,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
            {index===trail.length-1?
              <span className="sc-crumb-current-label" aria-current="page" title={crumbLabel(item.key,item.title)}>{crumbLabel(item.key,item.title)}</span>:
              <button className="sc-crumb-link" type="button" title={crumbLabel(item.key,item.title)}
-               onClick={()=>navigate(crumbDestination(item.key))}>
+               onClick={()=>navigate(breadcrumbDestination(item.key))}>
                <span className="sc-crumb-icon" aria-hidden="true">{crumbIcon(item.key)}</span>
                <span className="sc-crumb-label">{crumbLabel(item.key,item.title)}</span>
              </button>}
@@ -377,7 +376,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
              aria-expanded={crumbMenuOpen} aria-label={translateUiText(locale,"Mostrar páginas anteriores")}
              onClick={()=>setCrumbMenuOpen(open=>!open)}><MoreHorizontal size={17} aria-hidden="true"/></button>
            {crumbMenuOpen&&<div className="sc-crumb-more-menu" role="group" aria-label={translateUiText(locale,"Páginas anteriores")}>
-             {trail.slice(0,-1).map(item=><button key={item.key} type="button" onClick={()=>navigate(crumbDestination(item.key))}>
+             {trail.slice(0,-1).map(item=><button key={item.key} type="button" onClick={()=>navigate(breadcrumbDestination(item.key))}>
                <span className="sc-crumb-icon" aria-hidden="true">{crumbIcon(item.key)}</span>
                <span>{crumbLabel(item.key,item.title)}</span>
              </button>)}

@@ -557,3 +557,12 @@
 @media(prefers-reduced-motion:reduce){
  .sc-main .sc-breadcrumb-design-one .sc-crumbs{scroll-behavior:auto}
 }
+
+/* Design 1: preserve the compact full hierarchy on mid-size desktop/tablet widths. */
+@media(min-width:761px) and (max-width:1000px){
+ .sc-main .sc-breadcrumb-design-one{padding-inline:14px}
+ .sc-main .sc-breadcrumb-design-one .sc-crumbs{gap:4px}
+ .sc-breadcrumb-design-one .sc-crumb-step{gap:4px}
+ .sc-breadcrumb-design-one .sc-crumb-step .sc-crumb-link{max-width:168px;gap:5px;padding-inline:4px}
+ .sc-breadcrumb-design-one .sc-crumb-current-label[aria-current=page]{max-width:230px}
+}

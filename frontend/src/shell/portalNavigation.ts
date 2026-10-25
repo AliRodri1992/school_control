@@ -76,6 +76,10 @@ export function breadcrumbPath(groups:NavGroup[],page:string,portal:PortalId):Na
  const standalone:Record<string,string>={profile:'Mi perfil',preferences:'Preferencias',help:'Ayuda',notifications:'Notificaciones'};
  return [{key:page,title:standalone[page]||page.replaceAll('_',' ')}];
 }
+/** Maps a non-route breadcrumb group to its existing, authorized destination. */
+export function breadcrumbDestination(key:string):string{
+ return key==='student_records'?'students':key;
+}
 export function studentRecordUrl(portal:PortalId,studentId:number|string):string{
  return makePortalUrl(portal,'students')+'/'+encodeURIComponent(String(studentId));
 }
