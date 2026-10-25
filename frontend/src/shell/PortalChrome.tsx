@@ -327,9 +327,9 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
          </div>
          <div className="sc-flyout-holder" ref={topbarAccountRef}>
            <button className="sc-account-button" type="button" aria-label={translateUiText(locale,'Opciones de cuenta de ')+user.name}
-             aria-expanded={accountTarget==='topbar'} onClick={()=>{setAccountTarget(v=>v==='topbar'?null:'topbar');setNotificationsOpen(false);setLanguageOpen(false);}}>
+             aria-haspopup="true" aria-expanded={accountTarget==='topbar'} onClick={()=>{setAccountTarget(v=>v==='topbar'?null:'topbar');setNotificationsOpen(false);setLanguageOpen(false);}}>
              <span className="sc-account-identity"><strong>{user.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span>
-             <span className="sc-topbar-avatar">{user.name.slice(0,2).toUpperCase()}</span><ChevronDown size={16}/>
+             <span className="sc-topbar-avatar">{user.avatar_url?<img src={user.avatar_url} alt="" loading="lazy"/>:user.name.slice(0,2).toUpperCase()}</span><ChevronDown size={16}/>
            </button>
            {accountTarget==='topbar'&&accountMenu()}
          </div>

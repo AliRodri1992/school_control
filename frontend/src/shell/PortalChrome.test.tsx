@@ -289,3 +289,19 @@ it('closes the quick action dropdown using Escape',async()=>{
  expect(trigger.getAttribute('aria-expanded')).toBe('false');
  expect(document.activeElement).toBe(trigger);
 });
+
+it('renders the authorized school profile image instead of fallback initials when supplied',()=>{
+ const {container}=render(<PortalChrome {...props} user={{...user,avatar_url:'/school-avatar.png'}}><div>Página</div></PortalChrome>);
+ const img=container.querySelector<HTMLImageElement>('.sc-topbar-avatar img');
+ expect(img?.getAttribute('src')).toBe('/school-avatar.png');
+ expect(img?.getAttribute('alt')).toBe('');
+});
+
+it('closes the search panel when clicking outside and retains a visible trigger',async()=>{
+ render(<PortalChrome {...props}><button type="button">Outside search</button></PortalChrome>);
+ const search=screen.getByRole('button',{name:'Buscar en School Control'});
+ await userEvent.click(search);
+ expect(search.getAttribute('aria-expanded')).toBe('true');
+ await userEvent.click(screen.getByRole('button',{name:'Outside search'}));
+ expect(search.getAttribute('aria-expanded')).toBe('false');
+});

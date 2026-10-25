@@ -27,7 +27,7 @@ export default function TopbarCommands({groups,records,can,locale,translate,onNa
  const searchHost=useRef<HTMLDivElement>(null),quickHost=useRef<HTMLDivElement>(null),field=useRef<HTMLInputElement>(null),searchButton=useRef<HTMLButtonElement>(null),quickButton=useRef<HTMLButtonElement>(null);
  const en=locale.toLowerCase().startsWith('en'),searchLabel=translate('topbar.search','Buscar en School Control');
  const shortcuts=visibleQuickActions(can);
- const modules=useMemo(()=>{
+ const modules=useMemo<Hit[]>(()=>{
   const seen=new Set<string>();
   return flatten(groups.flatMap(x=>x.items)).filter(item=>!seen.has(item.key)&&Boolean(seen.add(item.key)))
    .map(item=>({id:'module:'+item.key,label:translate('nav.'+item.key,item.title),detail:en?'Module':'Módulo',page:item.key}));
@@ -62,8 +62,8 @@ export default function TopbarCommands({groups,records,can,locale,translate,onNa
  return <>
   <div className="sc-global-search sc-flyout-holder" ref={searchHost} role="search">
    <button type="button" ref={searchButton} className="sc-global-search-trigger" aria-label={searchLabel} aria-haspopup="true" aria-expanded={searchOpen}
-    onClick={()=>{setQuickOpen(false);setSearchOpen(true);onOpen();}}><Search size={19}/><span className="sc-global-search-placeholder">{en?'Search students, groups, documents…':'Buscar alumnos, grupos, documentos…'}</span><kbd>⌘K</kbd></button>
-   {searchOpen&&<div className="sc-flyout sc-global-search-menu" aria-label={en?'Quick search':'Búsqueda rápida'}>
+    onClick={()=>{setQuickOpen(false);setSearchOpen(true);onOpen();}}><Search size={19} aria-hidden="true"/><span className="sc-global-search-placeholder">{en?'Search students, groups, documents…':'Buscar alumnos, grupos, documentos…'}</span><kbd>⌘K</kbd></button>
+   {searchOpen&&<div className="sc-flyout sc-global-search-menu" role="region" aria-label={en?'Quick search':'Búsqueda rápida'}>
     <div className="sc-global-search-input"><Search size={18}/><input ref={field} type="search" aria-label={searchLabel} autoComplete="off" value={query}
      placeholder={en?'What are you looking for?':'¿Qué necesitas encontrar?'} onChange={e=>setQuery(e.target.value)}
      onKeyDown={e=>{if(e.key==='ArrowDown'){e.preventDefault();setSelected(v=>Math.min(v+1,results.length-1));}
@@ -83,7 +83,7 @@ export default function TopbarCommands({groups,records,can,locale,translate,onNa
   {shortcuts.length>0&&<div className="sc-quick-actions sc-flyout-holder" ref={quickHost}>
    <button className="sc-quick-trigger" type="button" ref={quickButton} aria-label={en?'New record':'Nuevo registro'} aria-haspopup="true" aria-expanded={quickOpen}
     onClick={()=>{setSearchOpen(false);setQuickOpen(v=>!v);onOpen();}}><Plus size={19}/><span>{en?'New':'Nuevo'}</span><ChevronDown size={15}/></button>
-   {quickOpen&&<div className="sc-flyout sc-quick-menu" aria-label={en?'Quick actions':'Acciones rápidas'}><strong>{en?'Quick actions':'Acciones rápidas'}</strong>
+   {quickOpen&&<div className="sc-flyout sc-quick-menu" role="region" aria-label={en?'Quick actions':'Acciones rápidas'}><strong>{en?'Quick actions':'Acciones rápidas'}</strong>
     {shortcuts.map(item=>{const Icon=item.page==='students'?GraduationCap:item.page==='groups'?Users:item.page==='admissions'?ClipboardCheck:item.page==='attendances'?ClipboardList:item.page==='documents'?Upload:item.page==='classroom'?BookOpenCheck:FileText;
      return <button type="button" key={item.page} onClick={()=>{setQuickOpen(false);onCreate(item);}}><span className="sc-quick-item-icon"><Icon size={18}/></span>{en?item.en:item.es}</button>;})}
    </div>}

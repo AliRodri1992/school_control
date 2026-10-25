@@ -423,3 +423,10 @@
 .sc-global-search-menu[aria-label],.sc-quick-menu[aria-label]{color:#233b60}
 .sc-shell .sc-topbar .sc-global-search-menu footer{line-height:1.4}
 @media(max-width:760px){.sc-shell .sc-topbar .sc-quick-menu,.sc-shell .sc-topbar .sc-global-search-menu{max-width:calc(100vw - 24px)}}
+
+/* Use the real school-account image when available while keeping initials fallback. */
+.sc-shell .sc-topbar-avatar{overflow:hidden;flex:none}
+.sc-shell .sc-topbar-avatar img{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%}
+.sc-global-search-menu:focus-within{border-color:#9ac8fa}
+.sc-shell .sc-global-search-menu .sc-global-search-result[aria-selected=true]{background:#eaf3ff;color:#2158a8}
+@media(max-width:760px){.sc-shell .sc-topbar .sc-topbar-avatar{width:35px;height:35px}}

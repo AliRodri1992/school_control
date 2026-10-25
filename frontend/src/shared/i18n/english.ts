@@ -716,6 +716,8 @@ Object.assign(englishByText,{"Buscar en School Control":"Search School Control",
 
 Object.assign(englishByText,{"Búsqueda rápida":"Quick search","Resultados de búsqueda":"Search results"});
 
+Object.assign(englishByText,{"Sin coincidencias.":"No matches found.","¿Qué necesitas encontrar?":"What are you looking for?","Buscar alumnos, grupos, documentos…":"Search students, groups, documents…"});
+
 export function translateUiText(locale:string,text:string):string{
  if(!locale.toLowerCase().startsWith('en'))return text;
  return englishByText[text]||text;
