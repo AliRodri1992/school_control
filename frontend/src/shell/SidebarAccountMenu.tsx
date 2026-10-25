@@ -25,7 +25,7 @@ export const SidebarAccountMenu=forwardRef<HTMLElement,Props>(function SidebarAc
   ?{position:'fixed',left:position.left,top:position.top,width:position.width}
   :{position:'fixed',visibility:'hidden'};
  const actionButton=({key,label,description,icon:Icon}:typeof actions[number])=>
-  <button type="button" key={key} className="sc-sam-action" onClick={()=>onNavigate(key)}>
+  <button type="button" key={key} className="sc-sam-action" aria-label={label} onClick={()=>onNavigate(key)}>
    <span className="sc-sam-action-icon" aria-hidden="true"><Icon size={18} strokeWidth={1.85}/></span>
    <span className="sc-sam-action-copy"><strong>{label}</strong><small>{description}</small></span>
    <ChevronRight size={15} className="sc-sam-chevron" aria-hidden="true"/>

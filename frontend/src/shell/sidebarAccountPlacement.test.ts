@@ -32,3 +32,18 @@ it('flips compact popovers left when there is insufficient space on the right',(
  expect(result.left).toBe(40);
  expect(result.left+result.width).toBeLessThanOrEqual(458);
 });
+
+it('uses a safe panel width before the browser has measured a hidden trigger',()=>{
+ const result=placeSidebarAccountMenu(
+  {left:0,right:0,top:0,bottom:0,width:0},0,{width:1024,height:768},false
+ );
+ expect(result.width).toBe(280);
+ expect(result.left).toBeGreaterThanOrEqual(12);
+});
+it('avoids horizontal overflow on very narrow mobile screens',()=>{
+ const result=placeSidebarAccountMenu(
+  {left:8,right:190,top:250,bottom:300,width:182},260,{width:200,height:400},false
+ );
+ expect(result.width).toBeLessThanOrEqual(176);
+ expect(result.left+result.width).toBeLessThanOrEqual(188);
+});

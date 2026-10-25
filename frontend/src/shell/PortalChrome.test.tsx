@@ -668,3 +668,24 @@ it('returns keyboard focus to the language selector after an edge-to-edge option
  expect(screen.queryByRole('group',{name:'Idiomas disponibles'})).toBeNull();
  expect(localStorage.getItem('school-locale')).toBe('en');
 });
+
+it('uses the option title as the accessible name while keeping descriptive help text',async()=>{
+ render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ await userEvent.click(screen.getAllByRole('button',{name:'Opciones de cuenta de María González'})[0]);
+ const profile=screen.getByRole('button',{name:'Mi perfil y seguridad'});
+ const preferences=screen.getByRole('button',{name:'Preferencias'});
+ expect(profile.textContent).toContain('Datos personales y acceso');
+ expect(preferences.textContent).toContain('Idioma y apariencia');
+ expect(screen.getByRole('button',{name:'Centro de notificaciones'})).toBeTruthy();
+ expect(screen.getByRole('button',{name:'Ayuda y guía de uso'})).toBeTruthy();
+});
+
+it('closes the detached account panel when the mobile drawer is dismissed',async()=>{
+ const onMobile=vi.fn();
+ render(<PortalChrome {...props} mobile onMobile={onMobile}><div>Página</div></PortalChrome>);
+ await userEvent.click(screen.getAllByRole('button',{name:'Opciones de cuenta de María González'})[0]);
+ expect(screen.getByRole('group',{name:'Menú de cuenta'})).toBeTruthy();
+ await userEvent.click(screen.getByRole('button',{name:'Cerrar menú lateral'}));
+ expect(onMobile).toHaveBeenCalledWith(false);
+ expect(screen.queryByRole('group',{name:'Menú de cuenta'})).toBeNull();
+});

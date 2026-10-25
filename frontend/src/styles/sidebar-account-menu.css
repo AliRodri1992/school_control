@@ -62,3 +62,9 @@
 @media(prefers-reduced-motion:reduce){
  .sc-sidebar-account-panel .sc-sam-action,.sc-shell .sc-sidebar .sc-sidebar-user-chevron{transition:none}
 }
+
+/* Consistent pressed and truncated states even with long translated labels. */
+.sc-sidebar-account-panel .sc-sam-action:active{background:#dfeeff}
+.sc-sidebar-account-panel .sc-sam-action-copy{overflow-wrap:anywhere}
+.sc-sidebar-account-panel .sc-sam-action-copy strong{max-width:100%}
+.sc-sidebar-account-panel .sc-sam-identity-copy{overflow:hidden}
