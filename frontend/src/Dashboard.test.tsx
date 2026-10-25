@@ -48,7 +48,7 @@ beforeEach(()=>{
 afterEach(cleanup);
 
 async function personalize(){
- const button=await screen.findByRole('button',{name:'Personalizar'});
+ const button=await screen.findByRole('button',{name:'Personalizar'}) as HTMLButtonElement;
  await waitFor(()=>expect(button.disabled).toBe(false));
  await userEvent.click(button);
 }
@@ -119,4 +119,19 @@ it.each(['admin','teacher','guardian','student'] as const)('integrates real KPI 
  }
  expect(container.querySelector('.sc-kpi-corner')).toBeNull();
  expect(screen.getByRole('heading',{name:'Asistencia · últimos 30 días'})).toBeTruthy();
+});
+
+it('restores widget builder fields alongside the default layout',async()=>{
+ render(<Dashboard summary={{}} data={{}}/>);
+ await personalize();
+ const kind=screen.getByRole('combobox',{name:'Tipo de widget'}) as HTMLSelectElement;
+ const title=screen.getByRole('textbox',{name:'Título del widget'}) as HTMLInputElement;
+ await userEvent.selectOptions(kind,'calendar');
+ await userEvent.type(title,'Evento temporal');
+ expect(kind.value).toBe('calendar');
+ expect(title.value).toBe('Evento temporal');
+ await userEvent.click(screen.getByRole('button',{name:'Restablecer plantilla'}));
+ expect(kind.value).toBe('attendance_chart');
+ expect(title.value).toBe('');
+ expect(screen.getByRole('status').textContent).toContain('Plantilla original restaurada');
 });

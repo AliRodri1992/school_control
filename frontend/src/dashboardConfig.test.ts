@@ -83,3 +83,10 @@ describe('restored grid layouts',()=>{
   expect(mergeGridLayouts(initial,initial.layouts)).toBe(initial);
  });
 });
+
+it('accepts missing layout breakpoints without losing saved mobile dimensions',()=>{
+ const config=defaultConfig('guardian');
+ const updated=mergeGridLayouts(config,{lg:config.layouts.lg});
+ expect(updated).toEqual(config);
+ expect(updated.layouts.xs).toHaveLength(config.widgets.length);
+});

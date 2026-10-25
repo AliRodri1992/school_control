@@ -24,3 +24,10 @@
 }
 @media(max-width:380px){.dashboard-control-actions{gap:7px}.dashboard-control-actions button{padding:9px 7px;font-size:11px}}
 @media(prefers-reduced-motion:reduce){.dashboard-control-actions button{transition:none}}
+
+.dashboard-control-actions button:disabled{box-shadow:none;opacity:.58;cursor:not-allowed}
+.dashboard-reset-notice:focus-visible{outline:2px solid #6a9edb;outline-offset:2px}
+@media(max-width:760px){
+ .dashboard-control-actions button svg{flex:none}
+ .dashboard-controls-heading p{max-width:60ch}
+}

@@ -46,6 +46,8 @@ export default function Dashboard({summary,data,role='admin',userId=0}:{summary:
   setConfig(defaultConfig(role));
   setGridRevision(n=>n+1);
   setRestored(true);
+  setTitle('');
+  setKind('attendance_chart');
   setError('');
  }
  function updateWidgets(next:(current:Config)=>Config){
