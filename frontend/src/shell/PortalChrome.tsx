@@ -283,7 +283,6 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
          {school.logo_url?<img src={school.logo_url} alt=""/>:<span className="sc-topbar-mark"><BookOpen size={22}/></span>}
          <span className="sc-topbar-brand-text"><strong>{school.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span>
        </button>
-       <div className="sc-topbar-context" aria-label={translateUiText(locale,'Página actual')}><span>{translateUiText(locale,portalLabels[portal])}</span><strong>{label}</strong></div>
        {portal==='tutors'&&childrenList.length>0&&<div className="sc-child-picker">
          <Combobox value={selectedChildId} label="Seleccionar hijo" placeholder="Todos mis hijos" onChange={onSelectChild}
            options={childrenList.map(child=>({value:String(child.id),label:child.full_name||child.first_name}))}/>

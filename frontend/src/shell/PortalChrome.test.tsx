@@ -159,3 +159,32 @@ it('switches between account, language and notifications without stacking menus'
  await userEvent.click(screen.getByRole('button',{name:'Notificaciones: 0 sin leer'}));
  expect(screen.queryByRole('group',{name:'Idiomas disponibles'})).toBeNull();
 });
+
+it('removes the redundant portal/page heading while preserving breadcrumbs',()=>{
+ const {container}=render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ const header=container.querySelector('.sc-topbar');
+ expect(header?.querySelector('.sc-topbar-context')).toBeNull();
+ expect(header?.querySelector('.sc-collapse-toggle')).toBeTruthy();
+ const trail=screen.getByRole('navigation',{name:'Ruta de navegación'});
+ expect(trail.textContent).toContain('Administración');
+ expect(trail.textContent).toContain('Resumen');
+});
+
+it('keeps the sidebar collapse button as the first desktop control',async()=>{
+ const {container}=render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ const header=container.querySelector('.sc-topbar');
+ const collapse=screen.getByRole('button',{name:'Colapsar barra lateral'});
+ expect(header?.querySelector('.sc-collapse-toggle')).toBe(collapse);
+ expect(collapse.previousElementSibling?.getAttribute('aria-label')).toBe('Abrir menú');
+ await userEvent.click(collapse);
+ expect(screen.getByRole('button',{name:'Expandir barra lateral'})).toBeTruthy();
+ expect(header?.querySelector('.sc-topbar-context')).toBeNull();
+});
+
+it('avoids repeating the current page on the guardian mobile header',()=>{
+ const {container}=render(<PortalChrome {...props} user={{...user,role:'guardian'}} mobile
+   childrenList={[{id:3,full_name:'Alex Ejemplo'}]}><div>Página</div></PortalChrome>);
+ expect(container.querySelector('.sc-topbar-context')).toBeNull();
+ expect(screen.getByRole('combobox',{name:'Seleccionar hijo'})).toBeTruthy();
+ expect(screen.getByRole('navigation',{name:'Ruta de navegación'})).toBeTruthy();
+});
