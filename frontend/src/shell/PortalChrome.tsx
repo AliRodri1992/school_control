@@ -6,6 +6,8 @@ import {revealActiveSidebarItem,useSidebarScroll} from './useSidebarScroll';
 import {SidebarBrand} from './SidebarBrand';
 import LanguageMenu from './LanguageMenu';
 import {userInitials} from './userInitials';
+import {SidebarAccountMenu} from './SidebarAccountMenu';
+import {placeSidebarAccountMenu,type SidebarAccountPosition} from './sidebarAccountPlacement';
 import {PortalFooter} from './PortalFooter';
 import {translateUiText} from '../shared/i18n/english';
 import {useEffect,useLayoutEffect,useRef,useState,type ReactNode} from 'react';
@@ -74,12 +76,30 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  };
  const [accountTarget,setAccountTarget]=useState<'sidebar'|'topbar'|null>(null);
  const sidebarAccountRef=useRef<HTMLDivElement>(null);
+ const sidebarMenuRef=useRef<HTMLElement>(null);
+ const [sidebarMenuPosition,setSidebarMenuPosition]=useState<SidebarAccountPosition|null>(null);
  const topbarAccountRef=useRef<HTMLDivElement>(null);
+ useLayoutEffect(()=>{
+  if(accountTarget!=='sidebar'){setSidebarMenuPosition(null);return;}
+  const update=()=>{
+   const trigger=sidebarAccountRef.current?.querySelector<HTMLButtonElement>('.sc-sidebar-account');
+   const panel=sidebarMenuRef.current;
+   if(!trigger||!panel)return;
+   setSidebarMenuPosition(placeSidebarAccountMenu(
+    trigger.getBoundingClientRect(),panel.getBoundingClientRect().height,
+    {width:window.innerWidth,height:window.innerHeight},collapsed&&!mobile
+   ));
+  };
+  update();
+  window.addEventListener('resize',update);
+  window.addEventListener('scroll',update,true);
+  return()=>{window.removeEventListener('resize',update);window.removeEventListener('scroll',update,true);};
+ },[accountTarget,collapsed,mobile,locale,translations]);
  useEffect(()=>{
    function closeOnEscape(event:KeyboardEvent){if(event.key==='Escape')setAccountTarget(null);}
    function closeOutside(event:PointerEvent){
      const element=event.target as Node;
-     if(!sidebarAccountRef.current?.contains(element)&&!topbarAccountRef.current?.contains(element))setAccountTarget(null);
+     if(!sidebarAccountRef.current?.contains(element)&&!sidebarMenuRef.current?.contains(element)&&!topbarAccountRef.current?.contains(element))setAccountTarget(null);
    }
    document.addEventListener('keydown',closeOnEscape);
    document.addEventListener('pointerdown',closeOutside);
@@ -182,12 +202,16 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  useEffect(()=>{
    function onKeydown(event:KeyboardEvent){
      if(event.key==='Tab'&&mobile){
-       const controls=[...sidebarRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')||[]];
+       const controls=[
+        ...sidebarRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')||[],
+        ...(accountTarget==='sidebar'?[...sidebarMenuRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')||[]]:[])
+       ];
        if(!controls.length)return;
        const first=controls[0],last=controls[controls.length-1];
-       if(event.shiftKey&&(document.activeElement===first||!sidebarRef.current?.contains(document.activeElement))){
+       const inside=sidebarRef.current?.contains(document.activeElement)||sidebarMenuRef.current?.contains(document.activeElement);
+       if(event.shiftKey&&(document.activeElement===first||!inside)){
          event.preventDefault();last.focus();
-       }else if(!event.shiftKey&&(document.activeElement===last||!sidebarRef.current?.contains(document.activeElement))){
+       }else if(!event.shiftKey&&(document.activeElement===last||!inside)){
          event.preventDefault();first.focus();
        }
        return;
@@ -198,6 +222,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
      if(languageOpen)languageRef.current?.querySelector('button')?.focus();
      else if(notificationsOpen)notificationRef.current?.querySelector('button')?.focus();
      else if(accountTarget==='topbar')topbarAccountRef.current?.querySelector('button')?.focus();
+     else if(accountTarget==='sidebar')sidebarAccountRef.current?.querySelector('button')?.focus();
      if(mobile){onMobile(false);mobileTrigger.current?.focus();}
      if(compactGroup){setCompactGroup(null);compactGroupTrigger.current?.focus();}
      setAccountTarget(null);
@@ -332,13 +357,28 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
      </nav>
      <div className="sidebar-bottom sc-sidebar-foot sc-flyout-holder" ref={sidebarAccountRef}>
        <button className="sc-sidebar-account" type="button" aria-label={translateUiText(locale,'Opciones de cuenta de ')+user.name}
-         aria-expanded={accountTarget==='sidebar'} onClick={()=>{setAccountTarget(v=>v==='sidebar'?null:'sidebar');setNotificationsOpen(false);}}>
+         aria-haspopup="true" aria-controls="sc-sidebar-account-panel" aria-expanded={accountTarget==='sidebar'} onClick={()=>{setAccountTarget(v=>v==='sidebar'?null:'sidebar');setNotificationsOpen(false);}}>
          <span className="sc-sidebar-avatar" aria-hidden="true">{userInitials(user.name)}</span>
          <span className="sc-sidebar-user"><strong>{user.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span><ChevronDown className="sc-sidebar-user-chevron" size={16}/>
        </button>
-       {accountTarget==='sidebar'&&accountMenu()}
+       
      </div>
    </aside>
+   {accountTarget==='sidebar'&&createPortal(
+     <SidebarAccountMenu ref={sidebarMenuRef} locale={locale} user={user}
+      role={translateUiText(locale,portalLabels[portal])}
+      labels={{
+       menu:translateUiText(locale,'Menú de cuenta'),
+       profile:translate('shell.profile','Mi perfil y seguridad'),
+       preferences:translate('shell.preferences','Preferencias'),
+       notifications:translate('shell.notification_center','Centro de notificaciones'),
+       help:translate('shell.help','Ayuda y guía de uso'),
+       signout:translate('shell.signout','Cerrar sesión')
+      }}
+      position={sidebarMenuPosition} onNavigate={navigate}
+      onSignOut={()=>{setAccountTarget(null);void onSignOut();}}/>,
+     document.body
+   )}
    {compact&&compactGroup&&createPortal(
      <div className="sc-compact-flyout" ref={compactFlyoutRef} role="region"
        aria-label={(portal==='admin'?(locale==='en'?sections.find(section=>section.id===compactGroup)?.en:compactGroup):translate('group.'+compactGroup,compactGroup))}

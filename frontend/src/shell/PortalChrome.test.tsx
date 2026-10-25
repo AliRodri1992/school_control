@@ -614,3 +614,45 @@ it('renders full-row language options and updates the selected state through the
  await userEvent.click(screen.getByRole('button',{name:'Language'}));
  expect(screen.getByRole('button',{name:'English · EN'}).getAttribute('aria-pressed')).toBe('true');
 });
+
+it('shows a legible account panel outside the dark sidebar clipping context',async()=>{
+ const {container}=render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ const avatar=container.querySelector<HTMLButtonElement>('.sc-sidebar-account')!;
+ await userEvent.click(avatar);
+ const panel=screen.getByRole('group',{name:'Menú de cuenta'});
+ expect(panel.id).toBe('sc-sidebar-account-panel');
+ expect(panel.classList.contains('sc-sidebar-account-panel')).toBe(true);
+ expect(container.querySelector('#school-sidebar .sc-sidebar-account-panel')).toBeNull();
+ expect(panel.parentElement).toBe(document.body);
+ expect(panel.querySelector('.sc-sam-identity strong')?.textContent).toBe('María González');
+ expect(panel.querySelector('.sc-sam-identity small')?.textContent).toBe('maria@example.test');
+ expect(panel.querySelector('.sc-sam-role')?.textContent).toBe('Administración');
+ expect(panel.querySelector('.sc-sam-avatar')?.textContent).toBe('MG');
+ expect(panel.querySelectorAll('.sc-sam-action')).toHaveLength(5);
+ expect(avatar.getAttribute('aria-controls')).toBe(panel.id);
+});
+it('supports sidebar popover navigation, outside dismissal and Escape focus',async()=>{
+ const onNavigate=vi.fn();
+ const {container}=render(<PortalChrome {...props} onNavigate={onNavigate}><div>Página</div></PortalChrome>);
+ const trigger=container.querySelector<HTMLButtonElement>('.sc-sidebar-account')!;
+ await userEvent.click(trigger);
+ await userEvent.click(screen.getByRole('button',{name:'Mi perfil y seguridad'}));
+ expect(onNavigate).toHaveBeenCalledWith('profile');
+ expect(screen.queryByRole('group',{name:'Menú de cuenta'})).toBeNull();
+ await userEvent.click(trigger);
+ await userEvent.keyboard('{Escape}');
+ expect(document.activeElement).toBe(trigger);
+ expect(screen.queryByRole('group',{name:'Menú de cuenta'})).toBeNull();
+ await userEvent.click(trigger);
+ await userEvent.click(document.body);
+ expect(screen.queryByRole('group',{name:'Menú de cuenta'})).toBeNull();
+});
+it('opens compact sidebar avatar options in a fixed viewport overlay',async()=>{
+ localStorage.setItem('school-sidebar-collapsed','true');
+ const {container}=render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ await userEvent.click(container.querySelector<HTMLButtonElement>('.sc-sidebar-account')!);
+ const panel=screen.getByRole('group',{name:'Menú de cuenta'}) as HTMLElement;
+ expect(panel.style.position).toBe('fixed');
+ expect(panel.style.visibility).not.toBe('hidden');
+ expect(container.querySelector('.sc-sidebar .sc-sidebar-account-panel')).toBeNull();
+});

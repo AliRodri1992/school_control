@@ -7,6 +7,7 @@ import {BrowserRouter,Route,Routes} from 'react-router-dom';
 import './styles.css';
 import './styles/design-system.css';
 import './styles/portal-shell.css';
+import './styles/sidebar-account-menu.css';
 import './styles/portal-footer.css';
 import './styles/school-boot.css';
 import './styles/session-restore.css';
