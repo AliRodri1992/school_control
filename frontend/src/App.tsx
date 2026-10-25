@@ -1,11 +1,13 @@
 import SchoolBootScreen,{type BootStage} from './features/boot/SchoolBootScreen';
 import SessionRestoreScreen from './features/boot/SessionRestoreScreen';
+import {waitForMinimumBootVisibility} from './features/boot/bootVisibility';
 import TableEmptyState from './shared/components/TableEmptyState';
 import Combobox from './shared/components/Combobox';
 import TableAction from './shared/components/TableAction';
 const HelpCenter=lazy(()=>import('./features/help/HelpCenter'));
 const LegalInformation=lazy(()=>import('./features/legal/LegalInformation'));
-const PortalHome=lazy(()=>import('./features/portal/PortalHome'));
+const loadPortalHome=()=>import('./features/portal/PortalHome');
+const PortalHome=lazy(loadPortalHome);
 const Preferences=lazy(()=>import('./features/preferences/Preferences'));
 const StudentDetails=lazy(()=>import('./features/students/StudentDetails'));
 import StudentRowActions from './features/students/StudentRowActions';
@@ -31,7 +33,7 @@ const Documents=lazy(()=>import('./Documents'));
 const Messages=lazy(()=>import('./Messages'));
 import LogoUploader from './LogoUploader';
 import {notify} from './notifications';
-import {lazy,Suspense,useEffect, useState} from 'react';
+import {lazy,Suspense,useEffect,useRef,useState} from 'react';
 import {BookOpen, Plus, Search, X, Check, Printer, GraduationCap} from 'lucide-react';
 import {api,timeLabel,mean} from './api';
 import type {ModuleLoadError} from './shared/data/loadPortalCollections';
@@ -54,6 +56,7 @@ export default function App(){
  const [loadingStage,setLoadingStage]=useState<BootStage>('connecting');
  const [restoringSession,setRestoringSession]=useState(true);
  const [preparingLogin,setPreparingLogin]=useState(false);
+ const bootReadyRef=useRef<(()=>void)|null>(null);
  const [page,setPage] = useState('dashboard'),[data,setData] = useState<Record<string,Row[]>>({}),[summary,setSummary] = useState<Row>({});
  const [error,setError] = useState(''),[notice,setNotice] = useState(''),[query,setQuery] = useState(''),[mobile,setMobile] = useState(false),[busy,setBusy] = useState(false);
  const [detailStudent,setDetailStudent]=useState<Row|null>(null);
@@ -200,23 +203,32 @@ export default function App(){
  function sortBy(key:string){if(sorting===key)setAscending(value=>!value);else{setSorting(key);setAscending(true);}setPageNumber(0);}
 
  if(restoringSession)return <SessionRestoreScreen locale={locale}/>;
- if(preparingLogin)return <SchoolBootScreen locale={locale} stage={loadingStage}/>;
+ if(preparingLogin)return <SchoolBootScreen locale={locale} stage={loadingStage} onReady={bootReadyRef.current??undefined}/>;
  if(resetToken)return <Suspense fallback={<div className="boot" role="status">{ui('Cargando recuperación de contraseña…')}</div>}><PasswordRecovery schoolName={school.name} token={resetToken} onClose={signedOut}/></Suspense>;
  if(!user)return <Login school={school} initialError={error} onLogin={async account=>{
+   const startedAt=performance.now();
+   const screenReady=new Promise<void>(resolve=>{bootReadyRef.current=resolve;});
    setError('');
    setLoadingStage('connecting');
    setPreparingLogin(true);
    try{
+     // Wait until Auli's preparation screen has been rendered and painted.
+     await screenReady;
      const session=await api('session');
      if(!session.user)throw new Error('No se pudo recuperar la sesión iniciada.');
-     setUser(session.user);
      setLoadingStage('modules');
-     await hydratePortal(session.user);
+     // Keep the original preparation scene until data and the dashboard code are ready.
+     await Promise.all([hydratePortal(session.user),loadPortalHome()]);
+     await waitForMinimumBootVisibility(startedAt);
+     setUser(session.user);
    }catch(cause){
      setUser(null);
      setError((cause as Error).message);
      throw cause;
-   }finally{setPreparingLogin(false);}
+   }finally{
+     bootReadyRef.current=null;
+     setPreparingLogin(false);
+   }
  }}/>;
  return <PortalChrome user={user} school={school} page={page} mobile={mobile} onMobile={setMobile}
  can={can} pendingAdmissions={Number(summary.pending_admissions||0)} onNavigate={go}

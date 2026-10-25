@@ -1,3 +1,4 @@
+import {useEffect} from 'react';
 import {CheckCircle2,ClipboardCheck,LoaderCircle,School,Wrench} from 'lucide-react';
 import AuliBuilderIllustration from './AuliBuilderIllustration';
 
@@ -34,7 +35,16 @@ const copy={
 } as const;
 
 /** An independent full-screen loading view. The authenticated navbar and sidebar are never rendered here. */
-export default function SchoolBootScreen({locale,stage}:{locale:string;stage:BootStage}){
+export default function SchoolBootScreen({locale,stage,onReady}:{locale:string;stage:BootStage;onReady?:()=>void}){
+ useEffect(()=>{
+  if(!onReady)return;
+  // Two frames guarantee the existing Auli scene is visibly mounted before bootstrapping.
+  let secondFrame=0;
+  const firstFrame=requestAnimationFrame(()=>{
+   secondFrame=requestAnimationFrame(onReady);
+  });
+  return ()=>{cancelAnimationFrame(firstFrame);if(secondFrame)cancelAnimationFrame(secondFrame);};
+ },[onReady]);
  const lang=locale==='en'?'en':'es',t=copy[lang],stages=steps[lang];
  const active=stage==='connecting'?0:1;
  return <main className="sc-school-boot" data-boot-screen="standalone" role="status" aria-live="polite" aria-busy="true" aria-label={t.busy}>

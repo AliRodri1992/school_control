@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
-import {afterEach,expect,it} from 'vitest';
+import {afterEach,expect,it,vi} from 'vitest';
 import {cleanup,render,screen} from '@testing-library/react';
 import SchoolBootScreen from './SchoolBootScreen';
 
-afterEach(cleanup);
+afterEach(()=>{cleanup();vi.unstubAllGlobals();});
 it('renders original Auli as a builder with hard hat, plans and tools',()=>{
  const {container}=render(<SchoolBootScreen locale="es" stage="connecting"/>);
  expect(screen.getByRole('heading',{name:'Preparando tu escuela…'})).toBeTruthy();
@@ -66,4 +66,39 @@ it('identifies the standalone loading screen and never renders authenticated chr
  expect(main.querySelector('svg[role="img"] #builder-auli')).toBeTruthy();
  expect(container.querySelector('.app,.sc-shell,.sc-sidebar,.sc-topbar,.sc-breadcrumb-bar')).toBeNull();
  expect(container.querySelector('aside,header,nav')).toBeNull();
+});
+
+it('shows original Auli scene before acknowledging post-login preparation',()=>{
+ const frames=new Map<number,FrameRequestCallback>();
+ let nextFrame=0;
+ vi.stubGlobal('requestAnimationFrame',(callback:FrameRequestCallback)=>{
+  const id=++nextFrame;
+  frames.set(id,callback);
+  return id;
+ });
+ vi.stubGlobal('cancelAnimationFrame',(id:number)=>{frames.delete(id);});
+ const onReady=vi.fn();
+ render(<SchoolBootScreen locale="es" stage="connecting" onReady={onReady}/>);
+ expect(screen.getByRole('heading',{name:'Preparando tu escuela…'})).toBeTruthy();
+ expect(screen.getByRole('img',{name:/Auli, el loro.*casco de trabajador/})).toBeTruthy();
+ expect(onReady).not.toHaveBeenCalled();
+ frames.get(1)?.(16);
+ expect(onReady).not.toHaveBeenCalled();
+ frames.get(2)?.(32);
+ expect(onReady).toHaveBeenCalledTimes(1);
+});
+
+it('cancels boot readiness when the preparation screen is unmounted',()=>{
+ const frames=new Map<number,FrameRequestCallback>();
+ let nextFrame=0;
+ vi.stubGlobal('requestAnimationFrame',(callback:FrameRequestCallback)=>{
+  const id=++nextFrame;frames.set(id,callback);return id;
+ });
+ vi.stubGlobal('cancelAnimationFrame',(id:number)=>{frames.delete(id);});
+ const onReady=vi.fn();
+ const view=render(<SchoolBootScreen locale="es" stage="modules" onReady={onReady}/>);
+ frames.get(1)?.(16);
+ view.unmount();
+ expect(frames.has(2)).toBe(false);
+ expect(onReady).not.toHaveBeenCalled();
 });
