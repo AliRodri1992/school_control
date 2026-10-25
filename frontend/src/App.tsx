@@ -14,7 +14,6 @@ import {useLocation,useNavigate} from 'react-router-dom';
 const ImportWizard=lazy(()=>import('./features/imports/ImportWizard'));
 import {confirmDanger} from './notifications';
 import {PortalChrome} from './shell/PortalChrome';
-import type {QuickAction} from './shell/TopbarCommands';
 import {currentPortal,resolvePortalLocation,makePortalUrl,canImportFromPermissions,isStudentRecordUrl,studentRecordUrl} from './shell/portalNavigation';
 import Login from './auth/Login';
 const Reports=lazy(()=>import('./Reports'));
@@ -154,12 +153,6 @@ export default function App(){
    await api('schedule_slots','POST',{...values,starts_minute:minute(values.start),ends_minute:minute(values.end)});setDialog(null);
  }});}
  const can=(key:string)=>!!user?.permissions?.[key]?.length;
- function quickAction(action:QuickAction){
-  if(!can(action.permission)||!can(action.index))return;
-  if(action.mode==='open'){go(action.page);return;}
-  if(!modules[action.page])return;
-  go(action.page);createOrEdit(undefined,action.page);
- }
  function searchGo(page:string,search?:string){
   if(!user?.permissions?.[pagePermission(page)]?.length)return;
   go(page);if(search)setQuery(search);
@@ -186,7 +179,7 @@ export default function App(){
  if(!user)return <Login school={school} initialError={error} onLogin={async account=>{setUser(account);setError('');await refresh(account);}}/>;
  return <PortalChrome user={user} school={school} page={page} mobile={mobile} onMobile={setMobile}
  can={can} pendingAdmissions={Number(summary.pending_admissions||0)} onNavigate={go}
- onQuickAction={quickAction} onSearchNavigate={searchGo} onSearchStudent={openStudentRecord} searchCollections={data} 
+ onSearchNavigate={searchGo} onSearchStudent={openStudentRecord} searchCollections={data} 
   childrenList={user.role==='guardian'?data.students||[]:[]} selectedChildId={selectedChild} onSelectChild={selectChild}
  onSignOut={async()=>{try{await api('session','DELETE');signedOut();void notify('Sesión cerrada correctamente.');}catch(e){setError((e as Error).message);}}}>
  <Suspense fallback={<div className="content" role="status"><p>{ui('Cargando módulo…')}</p></div>}><div className="content">{error&&<div className="error" role="alert">{error}<button aria-label={ui('Cerrar error')} onClick={()=>setError('')}><X size={16}/></button></div>}{notice&&<div className="success" role="status"><Check size={16}/>{notice}</div>}

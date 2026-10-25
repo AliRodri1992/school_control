@@ -1,32 +1,20 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
-import {ArrowRight,BookOpenCheck,ChevronDown,ClipboardCheck,ClipboardList,FileText,GraduationCap,Plus,Search,Upload,Users,X} from 'lucide-react';
+import {ArrowRight,FileText,GraduationCap,Search,X} from 'lucide-react';
 import type {Row} from '../modules';
 import type {NavGroup,NavItem} from './portalNavigation';
 import {useTopbarMenuPosition} from './useTopbarMenuPosition';
 
-export type QuickAction={page:string;permission:string;index:string;es:string;en:string;mode:'create'|'open'};
-const quick:QuickAction[]=[
- {page:'students',permission:'students.create',index:'students.index',es:'Agregar alumno',en:'Add student',mode:'create'},
- {page:'groups',permission:'groups.create',index:'groups.index',es:'Crear grupo',en:'Create group',mode:'create'},
- {page:'admissions',permission:'admissions.create',index:'admissions.index',es:'Nueva inscripción',en:'New admission',mode:'create'},
- {page:'attendances',permission:'attendances.create',index:'attendances.index',es:'Registrar asistencia',en:'Record attendance',mode:'create'},
- {page:'announcements',permission:'announcements.create',index:'announcements.index',es:'Nuevo comunicado',en:'New announcement',mode:'create'},
- {page:'documents',permission:'student_documents.create',index:'student_documents.index',es:'Subir documento',en:'Upload document',mode:'open'},
- {page:'classroom',permission:'assignments.create',index:'assignments.index',es:'Publicar tarea',en:'Publish assignment',mode:'open'}
-];
-export const visibleQuickActions=(can:(key:string)=>boolean)=>quick.filter(item=>can(item.permission)&&can(item.index));
 type Hit={id:string;label:string;detail:string;page:string;student?:Row};
 const flatten=(items:NavItem[]):NavItem[]=>items.flatMap(item=>[item,...flatten(item.children||[])]);
 const norm=(value:unknown)=>String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-export default function TopbarCommands({groups,records,can,locale,translate,onNavigate,onStudent,onCreate,onOpen}:{
+export default function TopbarCommands({groups,records,can,locale,translate,onNavigate,onStudent,onOpen}:{
  groups:NavGroup[];records:Record<string,Row[]>;can:(key:string)=>boolean;locale:string;
  translate:(key:string,fallback:string)=>string;onNavigate:(page:string,search?:string)=>void;
- onStudent:(student:Row)=>void;onCreate:(item:QuickAction)=>void;onOpen:()=>void;
+ onStudent:(student:Row)=>void;onOpen:()=>void;
 }){
- const [searchOpen,setSearchOpen]=useState(false),[quickOpen,setQuickOpen]=useState(false),[query,setQuery]=useState(''),[selected,setSelected]=useState(0);
- const searchHost=useRef<HTMLDivElement>(null),quickHost=useRef<HTMLDivElement>(null),field=useRef<HTMLInputElement>(null),searchButton=useRef<HTMLButtonElement>(null),quickButton=useRef<HTMLButtonElement>(null);
+ const [searchOpen,setSearchOpen]=useState(false),[query,setQuery]=useState(''),[selected,setSelected]=useState(0);
+ const searchHost=useRef<HTMLDivElement>(null),field=useRef<HTMLInputElement>(null),searchButton=useRef<HTMLButtonElement>(null);
  const en=locale.toLowerCase().startsWith('en'),searchLabel=translate('topbar.search','Buscar en School Control');
- const shortcuts=visibleQuickActions(can);
  const modules=useMemo<Hit[]>(()=>{
   const seen=new Set<string>();
   return flatten(groups.flatMap(x=>x.items)).filter(item=>!seen.has(item.key)&&Boolean(seen.add(item.key)))
@@ -44,25 +32,24 @@ export default function TopbarCommands({groups,records,can,locale,translate,onNa
  },[modules,records,can,en]);
  const results=useMemo(()=>query.trim()?matches.filter(x=>norm(x.label+' '+x.detail).includes(norm(query.trim()))).slice(0,9):modules.slice(0,6),[matches,modules,query]);
  useTopbarMenuPosition(searchOpen,searchHost,510);
- useTopbarMenuPosition(quickOpen,quickHost,270);
  useEffect(()=>{
-  const shortcut=(e:KeyboardEvent)=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();setQuickOpen(false);setSearchOpen(true);onOpen();}};
+  const shortcut=(e:KeyboardEvent)=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();setSearchOpen(true);onOpen();}};
   document.addEventListener('keydown',shortcut);return()=>document.removeEventListener('keydown',shortcut);
  },[onOpen]);
  useEffect(()=>{if(searchOpen)field.current?.focus();else{setQuery('');setSelected(0);}},[searchOpen]);
  useEffect(()=>setSelected(0),[query]);
  useEffect(()=>{
-  if(!searchOpen&&!quickOpen)return;
-  const outside=(e:PointerEvent)=>{const node=e.target as Node;if(!searchHost.current?.contains(node))setSearchOpen(false);if(!quickHost.current?.contains(node))setQuickOpen(false);};
-  const esc=(e:KeyboardEvent)=>{if(e.key==='Escape'){setSearchOpen(false);setQuickOpen(false);(searchOpen?searchButton:quickButton).current?.focus();}};
+  if(!searchOpen)return;
+  const outside=(e:PointerEvent)=>{const node=e.target as Node;if(!searchHost.current?.contains(node))setSearchOpen(false);};
+  const esc=(e:KeyboardEvent)=>{if(e.key==='Escape'){setSearchOpen(false);searchButton.current?.focus();}};
   document.addEventListener('pointerdown',outside);document.addEventListener('keydown',esc);
   return()=>{document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',esc);};
- },[searchOpen,quickOpen]);
+ },[searchOpen]);
  const choose=(item:Hit)=>{setSearchOpen(false);if(item.student)onStudent(item.student);else onNavigate(item.page,item.id.startsWith('module:')?undefined:query.trim());};
  return <>
   <div className="sc-global-search sc-flyout-holder" ref={searchHost} role="search">
    <button type="button" ref={searchButton} className="sc-global-search-trigger" aria-label={searchLabel} aria-haspopup="true" aria-expanded={searchOpen}
-    onClick={()=>{setQuickOpen(false);setSearchOpen(true);onOpen();}}><Search size={19} aria-hidden="true"/><span className="sc-global-search-placeholder">{en?'Search students, groups, documents…':'Buscar alumnos, grupos, documentos…'}</span><kbd>⌘K</kbd></button>
+    onClick={()=>{setSearchOpen(true);onOpen();}}><Search size={19} aria-hidden="true"/><span className="sc-global-search-placeholder">{en?'Search students, groups, documents…':'Buscar alumnos, grupos, documentos…'}</span><kbd>⌘K</kbd></button>
    {searchOpen&&<div className="sc-flyout sc-global-search-menu" role="region" aria-label={en?'Quick search':'Búsqueda rápida'}>
     <div className="sc-global-search-input"><Search size={18}/><input ref={field} type="search" aria-label={searchLabel} autoComplete="off" value={query}
      placeholder={en?'What are you looking for?':'¿Qué necesitas encontrar?'} onChange={e=>setQuery(e.target.value)}
@@ -80,13 +67,6 @@ export default function TopbarCommands({groups,records,can,locale,translate,onNa
     </div><footer>{en?'↑↓ Navigate · Enter Open · Esc Close':'↑↓ Navegar · Enter Abrir · Esc Cerrar'}</footer>
    </div>}
   </div>
-  {shortcuts.length>0&&<div className="sc-quick-actions sc-flyout-holder" ref={quickHost}>
-   <button className="sc-quick-trigger" type="button" ref={quickButton} aria-label={en?'New record':'Nuevo registro'} aria-haspopup="true" aria-expanded={quickOpen}
-    onClick={()=>{setSearchOpen(false);setQuickOpen(v=>!v);onOpen();}}><Plus size={19}/><span>{en?'New':'Nuevo'}</span><ChevronDown size={15}/></button>
-   {quickOpen&&<div className="sc-flyout sc-quick-menu" role="region" aria-label={en?'Quick actions':'Acciones rápidas'}><strong>{en?'Quick actions':'Acciones rápidas'}</strong>
-    {shortcuts.map(item=>{const Icon=item.page==='students'?GraduationCap:item.page==='groups'?Users:item.page==='admissions'?ClipboardCheck:item.page==='attendances'?ClipboardList:item.page==='documents'?Upload:item.page==='classroom'?BookOpenCheck:FileText;
-     return <button type="button" key={item.page} onClick={()=>{setQuickOpen(false);onCreate(item);}}><span className="sc-quick-item-icon"><Icon size={18}/></span>{en?item.en:item.es}</button>;})}
-   </div>}
-  </div>}
+
  </>;
 }

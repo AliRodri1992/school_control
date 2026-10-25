@@ -1,7 +1,7 @@
 import {LocaleProvider} from '../shared/i18n/LocaleContext';
 import TopbarCommands from './TopbarCommands';
-import type {QuickAction} from './TopbarCommands';
 import {useTopbarMenuPosition} from './useTopbarMenuPosition';
+import {sidebarSections} from './sidebarPresentation';
 import {translateUiText} from '../shared/i18n/english';
 import {useEffect,useRef,useState,type ReactNode} from 'react';
 import {createPortal} from 'react-dom';
@@ -11,14 +11,15 @@ import Combobox from '../shared/components/Combobox';
 import type {Row} from '../modules';
 import {currentPortal,makePortalUrl,portalLabels,visibleGroups,findNavPath,breadcrumbPath,type NavItem} from './portalNavigation';
 
-export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmissions,onNavigate,onQuickAction,onSearchNavigate,onSearchStudent,searchCollections={},onSignOut,children,childrenList=[],selectedChildId='',onSelectChild=()=>undefined}:{
+export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmissions,onNavigate,onSearchNavigate,onSearchStudent,searchCollections={},onSignOut,children,childrenList=[],selectedChildId='',onSelectChild=()=>undefined}:{
  user:Row;school:Row;page:string;mobile:boolean;onMobile:(open:boolean)=>void;
  can:(permission:string)=>boolean;pendingAdmissions:number;onNavigate:(page:string)=>void;onSignOut:()=>Promise<void>;
- onQuickAction?:(action:QuickAction)=>void;onSearchNavigate?:(page:string,query?:string)=>void;onSearchStudent?:(student:Row)=>void;searchCollections?:Record<string,Row[]>;
+ onSearchNavigate?:(page:string,query?:string)=>void;onSearchStudent?:(student:Row)=>void;searchCollections?:Record<string,Row[]>;
  children:ReactNode;childrenList?:Row[];selectedChildId?:string;onSelectChild?:(id:string)=>void;
 }) {
  const portal=currentPortal(user.role),groups=visibleGroups(portal,can);
- const [expanded,setExpanded]=useState<string[]>(['Inicio','Mi actividad','Mi escuela','Mi familia','Gestión escolar']);
+ const sections=sidebarSections(portal,groups);
+ const [expanded,setExpanded]=useState<string[]>(['Alumnos','Mi actividad','Mi escuela','Mi familia']);
  const [collapsed,setCollapsed]=useState(()=>localStorage.getItem('school-sidebar-collapsed')==='true');
  const [compactGroup,setCompactGroup]=useState<string|null>(null);
  const [languageOpen,setLanguageOpen]=useState(false);
@@ -42,7 +43,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const [translations,setTranslations]=useState<Record<string,string>>({});
  const fallbackEn:Record<string,string>={'shell.portal':'Portal','shell.locale':'Language','shell.profile':'My profile and security','shell.help':'Help and user guide','shell.signout':'Sign out','shell.notifications':'Notifications','shell.no_notifications':'No recent notifications.','shell.view_all':'View all notifications','nav.dashboard':'Overview','nav.students':'Students and records','nav.student_contacts':'Family contacts','nav.documents':'Documents','nav.admissions':'Admissions','nav.enrollments':'Enrollment and history','nav.academic_years':'School years','nav.groups':'Groups','nav.courses':'Classes','nav.subjects':'Subjects','nav.schedule':'Schedules','nav.attendances':'Attendance','nav.grades':'Grades','nav.classroom':'Virtual classroom','nav.messages':'Messages','nav.announcements':'Announcements','nav.calendar_events':'Calendar','nav.reports':'Reports','nav.imports':'Imports','nav.users':'Users','nav.access_roles':'Roles and permissions','nav.school':'My school','nav.email_templates':'Email templates','nav.languages':'Languages and translations','nav.api_docs':'API documentation','group.Inicio':'Home','group.Gestión escolar':'School management','group.Gestión académica':'Academic management','group.Comunicación':'Communication','group.Análisis y sistema':'Analytics and system','group.Mi actividad':'My activity','group.Mi escuela':'My school','group.Mi familia':'My family','group.Comunidad':'Community','group.Seguimiento':'Progress'};
  const translate=(key:string,fallback:string)=>translations[key]||(locale==='en'?fallbackEn[key]:undefined)||translateUiText(locale,fallback);
- const sectionIcons:Record<string,ReactNode>={'Inicio':<LayoutDashboard size={21}/>, 'Gestión escolar':<Users size={21}/>, 'Gestión académica':<GraduationCap size={21}/>, 'Comunicación':<MessageSquare size={21}/>, 'Análisis y sistema':<BarChart3 size={21}/>, 'Mi actividad':<BookOpenCheck size={21}/>, 'Mi escuela':<School size={21}/>, 'Mi familia':<Users size={21}/>, 'Comunidad':<MessageSquare size={21}/>, 'Seguimiento':<ClipboardList size={21}/>};
+ const sectionIcons:Record<string,ReactNode>={'Inicio':<House size={21}/>,'Alumnos':<Users size={21}/>,'Matrícula':<GraduationCap size={21}/>,'Académico':<BookOpen size={21}/>,'Asistencia':<ClipboardCheck size={21}/>,'Documentos':<FolderOpen size={21}/>,'Reportes':<BarChart3 size={21}/>,'Configuración':<Settings size={21}/>, 'Gestión escolar':<Users size={21}/>, 'Gestión académica':<GraduationCap size={21}/>, 'Comunicación':<MessageSquare size={21}/>, 'Análisis y sistema':<BarChart3 size={21}/>, 'Mi actividad':<BookOpenCheck size={21}/>, 'Mi escuela':<School size={21}/>, 'Mi familia':<Users size={21}/>, 'Comunidad':<MessageSquare size={21}/>, 'Seguimiento':<ClipboardList size={21}/>};
  const moduleIcons:Record<string,ReactNode>={
   dashboard:<LayoutDashboard size={18}/>,students:<GraduationCap size={18}/>,
   student_contacts:<ContactRound size={18}/>,documents:<FolderOpen size={18}/>,
@@ -109,10 +110,10 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  },[user.id]);
  useEffect(()=>{
    const selectedPage=page==='student_details'?'students':page;
-   const group=groups.find(item=>findNavPath([item],selectedPage).length>0);
+   const group=sections.find(section=>section.items.some(item=>item.key===selectedPage||findNavPath([{title:'',items:[item]}],selectedPage).length>0));
    const path=findNavPath(groups,selectedPage).slice(0,-1).map(item=>item.key);
    setExpanded(current=>{
-     const next=[...new Set([...current,...(group?[group.title]:[]),...path])];
+     const next=[...new Set([...current,...(group?[group.id]:[]),...path])];
      return next.length===current.length?current:next;
    });
  },[page,portal]);
@@ -260,24 +261,33 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
 
    <aside id="school-sidebar" ref={sidebarRef} className={'sidebar sc-sidebar'+(mobile?' open':'')} aria-label={translateUiText(locale,'Barra lateral principal')}>
      <div className="brand sc-shell-brand">
-       {school.logo_url?<img src={school.logo_url} alt="Logotipo de la escuela"/>:<div className="brand-icon"><BookOpen/></div>}
-       <div className="sc-sidebar-brand-text"><strong>{school.name}</strong><small>SCHOOL CONTROL</small></div>
+       <span className="sc-sidebar-system-mark" aria-hidden="true"><BookOpen size={32} strokeWidth={2.25}/></span>
+       <div className="sc-sidebar-brand-text"><strong>School Control</strong><small>{locale==='en'?'Smart school management':'Gestión escolar inteligente'}</small></div>
        <button ref={mobileCloseTrigger} className="mobile close" type="button" aria-label={translateUiText(locale,'Cerrar menú')} onClick={()=>{onMobile(false);mobileTrigger.current?.focus();}}><X/></button>
      </div>
-     <div className="workspace sc-workspace"><span className="status-dot"/>{translateUiText(locale,portalLabels[portal])}<span className="tag">{translate('shell.portal','Portal')}</span></div>
-     <nav className="sc-sidebar-nav" aria-label={translateUiText(locale,'Navegación principal')}>
-       {groups.map(group=><section className={'sc-nav-section'+(findNavPath([group],page==='student_details'?'students':page).length?' has-active-item':'')} key={group.title}>
-         <button type="button" className="sc-nav-section-title" title={translate("group."+group.title,group.title)} aria-label={translate("group."+group.title,group.title)} aria-expanded={compact?compactGroup===group.title:expanded.includes(group.title)}
-           onClick={event=>compact?toggleCompactGroup(group.title,event.currentTarget):toggle(group.title)}>
-           <span className="sc-section-icon" aria-hidden="true">{sectionIcons[group.title]||<FolderOpen size={21}/>}</span><span className="sc-section-label">{translate("group."+group.title,group.title).toUpperCase()}</span>{(compact?compactGroup===group.title:expanded.includes(group.title))?<ChevronDown className="sc-section-chevron" size={14}/>:<ChevronRight className="sc-section-chevron" size={14}/>} 
-         </button>
-         {!compact&&expanded.includes(group.title)&&group.items.map(item=>renderItem(item,0))}
-       </section>)}
+          <nav className="sc-sidebar-nav" aria-label={translateUiText(locale,'Navegación principal')}>
+       {sections.map(section=>{
+         const current=page==='student_details'?'students':page;
+         const active=section.items.some(item=>item.key===current||findNavPath([{title:'',items:[item]}],current).length>0);
+         const label=portal==='admin'?(locale==='en'?section.en:section.es):translate('group.'+section.es,section.es);
+         const isOpen=!section.directPage&&(compact?compactGroup===section.id:expanded.includes(section.id));
+         return <section className={'sc-nav-section'+(active?' has-active-item':'')+(section.directPage&&active?' is-primary-active':'')} key={section.id}>
+          <button className="sc-nav-section-title" type="button" title={label} aria-label={label}
+           aria-current={section.directPage&&active?'page':undefined}
+           aria-expanded={section.directPage?undefined:isOpen}
+           onClick={event=>section.directPage?navigate(section.directPage):compact?toggleCompactGroup(section.id,event.currentTarget):toggle(section.id)}>
+           <span className="sc-section-icon" aria-hidden="true">{sectionIcons[section.id]||<FolderOpen size={21}/>}</span>
+           <span className="sc-section-label">{label}</span>
+           {!section.directPage&&(isOpen?<ChevronDown className="sc-section-chevron" size={17}/>:<ChevronRight className="sc-section-chevron" size={17}/>)}
+          </button>
+          {!compact&&!section.directPage&&isOpen&&<div className="sc-section-children">{section.items.map(item=>renderItem(item,0))}</div>}
+         </section>;
+        })}
      </nav>
      <div className="sidebar-bottom sc-sidebar-foot sc-flyout-holder" ref={sidebarAccountRef}>
        <button className="sc-sidebar-account" type="button" aria-label={translateUiText(locale,'Opciones de cuenta de ')+user.name}
          aria-expanded={accountTarget==='sidebar'} onClick={()=>{setAccountTarget(v=>v==='sidebar'?null:'sidebar');setNotificationsOpen(false);}}>
-         <span className="sc-sidebar-avatar">{user.name.slice(0,2).toUpperCase()}</span>
+         <span className="sc-sidebar-avatar"><img src={user.avatar_url||'/images/default-account-avatar.svg'} alt="" loading="lazy"/></span>
          <span className="sc-sidebar-user"><strong>{user.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span><ChevronDown className="sc-sidebar-user-chevron" size={16}/>
        </button>
        {accountTarget==='sidebar'&&accountMenu()}
@@ -285,10 +295,10 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    </aside>
    {compact&&compactGroup&&createPortal(
      <div className="sc-compact-flyout" ref={compactFlyoutRef} role="region"
-       aria-label={translate('group.'+compactGroup,compactGroup)}
+       aria-label={(portal==='admin'?(locale==='en'?sections.find(section=>section.id===compactGroup)?.en:compactGroup):translate('group.'+compactGroup,compactGroup))}
        style={compactPosition?{top:compactPosition.top,left:compactPosition.left}:undefined}>
-       <strong>{translate('group.'+compactGroup,compactGroup)}</strong>
-       {groups.find(group=>group.title===compactGroup)?.items.map(item=>renderItem(item,0))}
+       <strong>{(portal==='admin'?(locale==='en'?sections.find(section=>section.id===compactGroup)?.en:compactGroup):translate('group.'+compactGroup,compactGroup))}</strong>
+       {sections.find(section=>section.id===compactGroup)?.items.map(item=>renderItem(item,0))}
      </div>,document.body)}
    <main className="sc-main">
      <header className="topbar sc-topbar">
@@ -305,8 +315,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
        <TopbarCommands groups={groups} records={searchCollections} can={can} locale={locale} translate={translate}
         onNavigate={(target,search)=>onSearchNavigate?onSearchNavigate(target,search):navigate(target)}
         onStudent={student=>onSearchStudent?onSearchStudent(student):navigate('students')}
-        onCreate={action=>onQuickAction?onQuickAction(action):navigate(action.page)}
-        onOpen={()=>{setAccountTarget(null);setNotificationsOpen(false);setLanguageOpen(false);}}/>
+                onOpen={()=>{setAccountTarget(null);setNotificationsOpen(false);setLanguageOpen(false);}}/>
        <div className="sc-top-actions">
          <div className="sc-language sc-flyout-holder" ref={languageRef}>
            <button type="button" className="sc-icon-button sc-language-button" aria-label={translate('shell.locale','Idioma')} title={translate('shell.locale','Idioma')} aria-haspopup="true" aria-expanded={languageOpen} onClick={()=>{setLanguageOpen(v=>!v);setNotificationsOpen(false);setAccountTarget(null);}}><Languages size={18}/><span className="sc-language-code">{locale.toUpperCase()}</span><ChevronDown className="sc-language-chevron" size={13}/></button>
@@ -328,8 +337,8 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
          <div className="sc-flyout-holder" ref={topbarAccountRef}>
            <button className="sc-account-button" type="button" aria-label={translateUiText(locale,'Opciones de cuenta de ')+user.name}
              aria-haspopup="true" aria-expanded={accountTarget==='topbar'} onClick={()=>{setAccountTarget(v=>v==='topbar'?null:'topbar');setNotificationsOpen(false);setLanguageOpen(false);}}>
-             <span className="sc-account-identity"><strong>{user.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span>
-             <span className="sc-topbar-avatar">{user.avatar_url?<img src={user.avatar_url} alt="" loading="lazy"/>:user.name.slice(0,2).toUpperCase()}</span><ChevronDown size={16}/>
+             <span className="sc-topbar-avatar"><img src={user.avatar_url||'/images/default-account-avatar.svg'} alt="" loading="lazy"/></span>
+             <span className="sc-account-identity"><strong>{user.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span><ChevronDown className="sc-account-chevron" size={16}/>
            </button>
            {accountTarget==='topbar'&&accountMenu()}
          </div>

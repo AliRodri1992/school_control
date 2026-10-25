@@ -48,22 +48,22 @@ it('changes the navigation language immediately when English is selected',async(
  await userEvent.click(screen.getByRole('button',{name:'Idioma'}));
  await userEvent.click(screen.getByRole('button',{name:'English · EN'}));
  expect(screen.getByRole('button',{name:'Language'})).toBeTruthy();
- expect(screen.getByRole('button',{name:'Overview'})).toBeTruthy();
+ expect(screen.getByRole('button',{name:'Home'})).toBeTruthy();
  expect(localStorage.getItem('school-locale')).toBe('en');
 });
 
 it('opens the compact menu beside the selected group with readable module labels',async()=>{
  localStorage.setItem('school-sidebar-collapsed','true');
  render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
- const group=screen.getByRole('button',{name:'Gestión escolar'});
+ const group=screen.getByRole('button',{name:'Alumnos'});
  expect(group.getAttribute('aria-expanded')).toBe('false');
  await userEvent.click(group);
  expect(group.getAttribute('aria-expanded')).toBe('true');
- const flyout=screen.getByRole('region',{name:'Gestión escolar'});
+ const flyout=screen.getByRole('region',{name:'Alumnos'});
  expect(flyout.querySelector('.sc-nav-label')?.textContent).toBe('Alumnos y expedientes');
  expect(flyout.querySelector('.sc-nav-mark svg')).toBeTruthy();
  await userEvent.keyboard('{Escape}');
- expect(screen.queryByRole('region',{name:'Gestión escolar'})).toBeNull();
+ expect(screen.queryByRole('region',{name:'Alumnos'})).toBeNull();
 });
 
 it('always shows complete navigation when opening mobile after a collapsed desktop session',async()=>{
@@ -71,7 +71,7 @@ it('always shows complete navigation when opening mobile after a collapsed deskt
  const onMobile=vi.fn();
  const {rerender}=render(<PortalChrome {...props} mobile onMobile={onMobile}><div>Página</div></PortalChrome>);
  const nav=screen.getByRole('navigation',{name:'Navegación principal'});
- expect(nav.querySelector('.sc-nav-label')?.textContent).toBe('Resumen');
+ expect(nav.querySelector('.sc-nav-label')?.textContent).toBe('Alumnos y expedientes');
  expect(screen.getByRole('button',{name:'Alumnos y expedientes'})).toBeTruthy();
  expect(document.querySelector('.sc-shell')?.classList.contains('sc-shell-collapsed')).toBe(false);
  expect(document.body.style.overflow).toBe('hidden');
@@ -91,7 +91,7 @@ it('closes the mobile drawer using Escape and returns keyboard focus to the menu
 
 it('highlights the parent section and expands ancestors for deeply nested routes',async()=>{
  render(<PortalChrome {...props} page="courses"><div>Página</div></PortalChrome>);
- const academic=screen.getByRole('button',{name:'Gestión académica'});
+ const academic=screen.getByRole('button',{name:'Académico'});
  expect(academic.closest('.sc-nav-section')?.classList.contains('has-active-item')).toBe(true);
  expect(academic.getAttribute('aria-expanded')).toBe('true');
  const classes=await screen.findByRole('button',{name:'Clases'});
@@ -243,15 +243,7 @@ it('searches authorized school modules',async()=>{
  await userEvent.click(screen.getByRole('option',{name:/Calificaciones/}));
  expect(searchNavigate).toHaveBeenCalledWith('grades',undefined);
 });
-it('shows only authorized quick actions and dispatches the requested module',async()=>{
- const quick=vi.fn();
- render(<PortalChrome {...props} onQuickAction={quick} can={p=>['dashboard.show','students.index','students.create'].includes(p)}><div>Página</div></PortalChrome>);
- await userEvent.click(screen.getByRole('button',{name:'Nuevo registro'}));
- expect(screen.getByRole('button',{name:'Agregar alumno'})).toBeTruthy();
- expect(screen.queryByRole('button',{name:'Crear grupo'})).toBeNull();
- await userEvent.click(screen.getByRole('button',{name:'Agregar alumno'}));
- expect(quick).toHaveBeenCalledWith(expect.objectContaining({page:'students',mode:'create'}));
-});
+it('does not display the removed New button',()=>{render(<PortalChrome {...props}><div>Página</div></PortalChrome>);expect(screen.queryByRole('button',{name:'Nuevo registro'})).toBeNull();});
 it('offers Ctrl+K keyboard navigation for search',async()=>{
  const navigate=vi.fn();
  render(<PortalChrome {...props} onSearchNavigate={navigate}><div>Página</div></PortalChrome>);
@@ -280,15 +272,7 @@ it('opens an authorized student from global search',async()=>{
  expect(selected).toHaveBeenCalledWith(student);
 });
 
-it('closes the quick action dropdown using Escape',async()=>{
- render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
- const trigger=screen.getByRole('button',{name:'Nuevo registro'});
- await userEvent.click(trigger);
- expect(trigger.getAttribute('aria-expanded')).toBe('true');
- await userEvent.keyboard('{Escape}');
- expect(trigger.getAttribute('aria-expanded')).toBe('false');
- expect(document.activeElement).toBe(trigger);
-});
+it('preserves search while New is removed',async()=>{render(<PortalChrome {...props}><div>Página</div></PortalChrome>);await userEvent.click(screen.getByRole('button',{name:'Buscar en School Control'}));expect(screen.getByRole('searchbox',{name:'Buscar en School Control'})).toBeTruthy();expect(screen.queryByRole('button',{name:'Nuevo registro'})).toBeNull();});
 
 it('renders the authorized school profile image instead of fallback initials when supplied',()=>{
  const {container}=render(<PortalChrome {...props} user={{...user,avatar_url:'/school-avatar.png'}}><div>Página</div></PortalChrome>);
@@ -304,4 +288,22 @@ it('closes the search panel when clicking outside and retains a visible trigger'
  expect(search.getAttribute('aria-expanded')).toBe('true');
  await userEvent.click(screen.getByRole('button',{name:'Outside search'}));
  expect(search.getAttribute('aria-expanded')).toBe('false');
+});
+
+it('shows category navigation like the design and omits the old workspace chip',()=>{
+ const {container}=render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ const nav=container.querySelector('.sc-sidebar-nav')!;
+ expect(screen.getByRole('button',{name:'Inicio'}).getAttribute('aria-current')).toBe('page');
+ expect(Array.from(nav.querySelectorAll('.sc-nav-section-title')).map(x=>x.getAttribute('aria-label'))).toEqual(['Inicio','Alumnos','Matrícula','Académico','Asistencia','Comunicación','Documentos','Reportes','Configuración']);
+ expect(container.querySelector('.sc-workspace')).toBeNull();
+ expect(container.querySelector('.sc-sidebar-brand-text strong')?.textContent).toBe('School Control');
+});
+it('places the portrait before the user name and role at the far right of the navbar',()=>{
+ const {container}=render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ const account=container.querySelector('.sc-topbar .sc-account-button')!;
+ expect(account.children[0].classList.contains('sc-topbar-avatar')).toBe(true);
+ expect(account.children[1].classList.contains('sc-account-identity')).toBe(true);
+ expect(account.children[1].querySelector('strong')?.textContent).toBe('María González');
+ expect(account.children[1].querySelector('small')?.textContent).toBe('Administración');
+ expect(account.querySelector('img')?.getAttribute('src')).toBe('/images/default-account-avatar.svg');
 });
