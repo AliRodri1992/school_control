@@ -45,5 +45,4 @@ RSpec.describe "Acceso de administración" do
     expect(unpersisted_admin.effective_permissions).to eq({})
     expect(SchoolAccess.new(unpersisted_admin, "students.index").allows?).to be(false)
   end
-
 end

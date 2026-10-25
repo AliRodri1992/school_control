@@ -59,6 +59,17 @@ RSpec.describe "Configurable roles and permissions", type: :request do
     expect(Subject.where(code: "REVOKED")).not_to exist
   end
 
+  it "refreshes session permissions after an administrator grant is revoked" do
+    login(admin)
+    expect(response.parsed_body.dig("user", "permissions")).to have_key("subjects.create")
+
+    admin.access_roles.first.role_permissions.find_by!(key: "subjects.create").destroy!
+
+    get "/api/session", as: :json
+    expect(response).to have_http_status(:ok)
+    expect(response.parsed_body.dig("user", "permissions")).not_to have_key("subjects.create")
+  end
+
   it "allows a delegated non-admin to perform an explicitly granted action" do
     admin
     coordinator = create(:user, role: "teacher")

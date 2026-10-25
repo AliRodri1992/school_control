@@ -42,6 +42,16 @@ RSpec.describe SchoolAccess do
     expect(admin.can?("subjects.create")).to be(false)
   end
 
+  it "returns deterministic deduplicated scopes from several active roles" do
+    admin = create(:user, role: "admin")
+    supplementary = AccessRole.create!(name: "Seguimiento escolar")
+    supplementary.role_permissions.create!(key: "students.index", data_scope: "family")
+    admin.access_roles << supplementary
+
+    expect(described_class.new(admin, "students.index").scopes).to eq(%w[family institution])
+    expect(admin.effective_permissions.fetch("students.index")).to eq(%w[family institution])
+  end
+
   it "ignores grants from inactive roles and inactive accounts" do
     admin = create(:user, role: "admin")
     role = admin.access_roles.first
