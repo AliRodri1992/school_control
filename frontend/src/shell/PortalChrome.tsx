@@ -439,7 +439,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
              onKeyDown={event=>{if(event.key==='ArrowDown'){event.preventDefault();focusTopbarAccountMenu.current=true;setAccountTarget('topbar');if(accountTarget==='topbar')topbarAccountMenuRef.current?.querySelector<HTMLButtonElement>('button')?.focus();}
               else if(event.key==='Enter'||event.key===' ')focusTopbarAccountMenu.current=true;}}
              onClick={()=>{setAccountTarget(v=>v==='topbar'?null:'topbar');setNotificationsOpen(false);setLanguageOpen(false);}}>
-             <span className="sc-topbar-avatar"><TopbarAccountAvatar name={user.name} avatarUrl={user.avatar_url}/></span>
+             <span className="sc-topbar-avatar"><TopbarAccountAvatar name={user.name}/></span>
              <span className="sc-account-identity"><strong>{user.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span><ChevronDown className="sc-account-chevron" size={16}/>
            </button>
            

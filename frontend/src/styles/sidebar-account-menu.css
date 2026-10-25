@@ -88,12 +88,10 @@
  box-shadow:0 2px 8px rgba(0,21,52,.2);
  background:#e0efff;color:#1b4c7d;overflow:hidden;
 }
-.sc-shell .sc-topbar .sc-topbar-avatar .sc-topbar-avatar-img{
- display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;
-}
-.sc-shell .sc-topbar .sc-topbar-avatar .sc-topbar-avatar-fallback{
- width:100%;height:100%;display:grid;place-items:center;
- color:#194f82;font-size:13px;font-weight:800;letter-spacing:.35px;
+.sc-shell .sc-topbar .sc-topbar-avatar .sc-topbar-avatar-initials{
+ display:grid;place-items:center;width:100%;height:100%;
+ color:#194f82;font-size:14px;font-weight:800;line-height:1;letter-spacing:.4px;
+ text-align:center;white-space:nowrap;
 }
 .sc-shell .sc-topbar .sc-account-button .sc-account-identity{
  flex:1 1 auto;overflow:hidden;min-width:0;text-align:left;max-width:145px;

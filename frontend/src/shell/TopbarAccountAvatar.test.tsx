@@ -1,23 +1,29 @@
 // @vitest-environment jsdom
 import {afterEach,expect,it} from 'vitest';
-import {cleanup,fireEvent,render} from '@testing-library/react';
+import {cleanup,render} from '@testing-library/react';
 import {TopbarAccountAvatar} from './TopbarAccountAvatar';
 
 afterEach(cleanup);
-it('uses the default school avatar without a custom photo',()=>{
+
+it('shows the same first and last significant initials as the sidebar',()=>{
+ const {container,rerender}=render(<TopbarAccountAvatar name="María González"/>);
+ expect(container.querySelector('.sc-topbar-avatar-initials')?.textContent).toBe('MG');
+ rerender(<TopbarAccountAvatar name="Ana María López"/>);
+ expect(container.querySelector('.sc-topbar-avatar-initials')?.textContent).toBe('AL');
+ rerender(<TopbarAccountAvatar name="José de la Cruz"/>);
+ expect(container.querySelector('.sc-topbar-avatar-initials')?.textContent).toBe('JC');
+});
+
+it('renders no image and keeps initials decorative because the parent button identifies the user',()=>{
  const {container}=render(<TopbarAccountAvatar name="María González"/>);
- expect(container.querySelector('img')?.getAttribute('src')).toBe('/images/default-account-avatar.svg');
+ const initials=container.querySelector('.sc-topbar-avatar-initials');
+ expect(initials?.getAttribute('aria-hidden')).toBe('true');
+ expect(container.querySelector('img')).toBeNull();
 });
-it('shows the account photo as a decorative avatar',()=>{
- const {container}=render(<TopbarAccountAvatar name="María González" avatarUrl="/photo.png"/>);
- const photo=container.querySelector('img')!;
- expect(photo.getAttribute('src')).toBe('/photo.png');
- expect(photo.alt).toBe('');
-});
-it('recovers from broken portraits and responds to an updated photo',()=>{
- const {container,rerender}=render(<TopbarAccountAvatar name="José de la Cruz" avatarUrl="/missing.png"/>);
- fireEvent.error(container.querySelector('img')!);
- expect(container.querySelector('.sc-topbar-avatar-fallback')?.textContent).toBe('JC');
- rerender(<TopbarAccountAvatar name="Ana María López" avatarUrl="/available.jpg"/>);
- expect(container.querySelector('img')?.getAttribute('src')).toBe('/available.jpg');
+
+it('handles a single name or missing name consistently with the sidebar',()=>{
+ const {container,rerender}=render(<TopbarAccountAvatar name="Élodie"/>);
+ expect(container.querySelector('.sc-topbar-avatar-initials')?.textContent).toBe('ÉL');
+ rerender(<TopbarAccountAvatar name=""/>);
+ expect(container.querySelector('.sc-topbar-avatar-initials')?.textContent).toBe('US');
 });

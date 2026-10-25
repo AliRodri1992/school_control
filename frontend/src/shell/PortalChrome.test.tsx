@@ -275,11 +275,13 @@ it('opens an authorized student from global search',async()=>{
 
 it('preserves search while New is removed',async()=>{render(<PortalChrome {...props}><div>Página</div></PortalChrome>);await userEvent.click(screen.getByRole('button',{name:'Buscar en School Control'}));expect(screen.getByRole('searchbox',{name:'Buscar en School Control'})).toBeTruthy();expect(screen.queryByRole('button',{name:'Nuevo registro'})).toBeNull();});
 
-it('renders the authorized school profile image instead of fallback initials when supplied',()=>{
- const {container}=render(<PortalChrome {...props} user={{...user,avatar_url:'/school-avatar.png'}}><div>Página</div></PortalChrome>);
- const img=container.querySelector<HTMLImageElement>('.sc-topbar-avatar img');
- expect(img?.getAttribute('src')).toBe('/school-avatar.png');
- expect(img?.getAttribute('alt')).toBe('');
+it('uses the exact same initials in navbar and sidebar even if a profile picture exists',()=>{
+ const {container}=render(<PortalChrome {...props} user={{...user,name:'Ana María López',avatar_url:'/school-avatar.png'}}><div>Página</div></PortalChrome>);
+ const topbar=container.querySelector('.sc-topbar-avatar');
+ const sidebar=container.querySelector('.sc-sidebar-avatar');
+ expect(topbar?.textContent).toBe('AL');
+ expect(topbar?.textContent).toBe(sidebar?.textContent);
+ expect(topbar?.querySelector('img')).toBeNull();
 });
 
 it('closes the search panel when clicking outside and retains a visible trigger',async()=>{
@@ -299,14 +301,15 @@ it('shows category navigation like the design and omits the old workspace chip',
  expect(container.querySelector('.sc-workspace')).toBeNull();
  expect(container.querySelector('.sc-sidebar-brand-text strong')?.textContent).toBe('School Control');
 });
-it('places the portrait before the user name and role at the far right of the navbar',()=>{
+it('places the initial-based avatar before the user name and role at the far right of the navbar',()=>{
  const {container}=render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
  const account=container.querySelector('.sc-topbar .sc-account-button')!;
  expect(account.children[0].classList.contains('sc-topbar-avatar')).toBe(true);
  expect(account.children[1].classList.contains('sc-account-identity')).toBe(true);
  expect(account.children[1].querySelector('strong')?.textContent).toBe('María González');
  expect(account.children[1].querySelector('small')?.textContent).toBe('Administración');
- expect(account.querySelector('img')?.getAttribute('src')).toBe('/images/default-account-avatar.svg');
+ expect(account.querySelector('.sc-topbar-avatar-initials')?.textContent).toBe('MG');
+ expect(account.querySelector('.sc-topbar-avatar img')).toBeNull();
 });
 
 it('keeps institution identity available without repeating it in the new brand heading',()=>{
@@ -317,10 +320,11 @@ it('keeps institution identity available without repeating it in the new brand h
  expect(brand?.querySelector('small')?.textContent).toBe('Gestión escolar inteligente');
 });
 
-it('keeps the portrait first and profile details readable when an actual photo is available',()=>{
+it('keeps the initials first and profile details readable when a photo is configured',()=>{
  const {container}=render(<PortalChrome {...props} user={{...user,avatar_url:'/real-avatar.jpg'}}><div>Página</div></PortalChrome>);
  const button=container.querySelector('.sc-topbar .sc-account-button')!;
- expect(button.children[0].querySelector('img')?.getAttribute('src')).toBe('/real-avatar.jpg');
+ expect(button.children[0].querySelector('.sc-topbar-avatar-initials')?.textContent).toBe('MG');
+ expect(button.children[0].querySelector('img')).toBeNull();
  expect(button.children[1].querySelector('strong')?.textContent).toBe('María González');
  expect(button.children[1].querySelector('small')?.textContent).toBe('Administración');
  expect(screen.queryByRole('button',{name:'Nuevo registro'})).toBeNull();
@@ -575,7 +579,8 @@ it('shows the signed-in user initials rather than an image in the sidebar accoun
  expect(avatar.getAttribute('aria-hidden')).toBe('true');
  expect(avatar.querySelector('img')).toBeNull();
  expect(sidebarButton.querySelector('.sc-sidebar-user strong')?.textContent).toBe('Ana María López');
- expect(container.querySelector('.sc-topbar-avatar img')?.getAttribute('src')).toBe('/real-avatar.jpg');
+ expect(container.querySelector('.sc-topbar-avatar-initials')?.textContent).toBe('AL');
+ expect(container.querySelector('.sc-topbar-avatar img')).toBeNull();
  await userEvent.click(sidebarButton);
  expect(screen.getByRole('button',{name:'Mi perfil y seguridad'})).toBeTruthy();
  expect(screen.getByRole('button',{name:'Cerrar sesión'})).toBeTruthy();
@@ -760,10 +765,11 @@ it('keeps only the active topbar flyout when another menu opens',async()=>{
  await userEvent.click(screen.getByRole('button',{name:'Notificaciones: 0 sin leer'}));
  expect(screen.queryByRole('group',{name:'Menú de cuenta'})).toBeNull();
 });
-it('shows a compact photo-only avatar when the navbar has limited width',async()=>{
+it('shows compact initials in the navbar without rendering a photo',async()=>{
  const {container}=render(<PortalChrome {...props} user={{...user,avatar_url:'/account-photo.jpg'}}><div>Página</div></PortalChrome>);
  const trigger=container.querySelector<HTMLButtonElement>('.sc-topbar .sc-account-button')!;
- expect(trigger.querySelector('.sc-topbar-avatar img')?.getAttribute('src')).toBe('/account-photo.jpg');
+ expect(trigger.querySelector('.sc-topbar-avatar-initials')?.textContent).toBe('MG');
+ expect(trigger.querySelector('img')).toBeNull();
  expect(trigger.getAttribute('aria-haspopup')).toBe('true');
  await userEvent.click(trigger);
  expect(screen.getByRole('button',{name:'Cerrar sesión'})).toBeTruthy();
