@@ -125,12 +125,14 @@ it('dismisses notification popover on outside click and Escape, restoring focus'
  expect(screen.queryByRole('region',{name:'Notificaciones'})).toBeNull();
  expect(document.activeElement).toBe(bell);
 });
-it('translates current page context and notification labels',async()=>{
- render(<PortalChrome {...props} page="grades"><div>Página</div></PortalChrome>);
- expect(screen.getByLabelText('Página actual').querySelector('strong')?.textContent).toBe('Calificaciones');
+it('translates breadcrumbs and notification labels without restoring the duplicate heading',async()=>{
+ const {container}=render(<PortalChrome {...props} page="grades"><div>Página</div></PortalChrome>);
+ expect(container.querySelector('.sc-topbar-context')).toBeNull();
+ expect(screen.getByRole('navigation',{name:'Ruta de navegación'}).textContent).toContain('Calificaciones');
  await userEvent.click(screen.getByRole('button',{name:'Idioma'}));
  await userEvent.click(screen.getByRole('button',{name:'English · EN'}));
- expect(screen.getByLabelText('Current page').querySelector('strong')?.textContent).toBe('Grades');
+ expect(container.querySelector('.sc-topbar-context')).toBeNull();
+ expect(screen.getByRole('navigation',{name:'Breadcrumbs'}).textContent).toContain('Grades');
  expect(screen.getByRole('button',{name:'Notifications: 0 unread'})).toBeTruthy();
 });
 it('keeps the guardian child selector in the header',()=>{
@@ -187,4 +189,17 @@ it('avoids repeating the current page on the guardian mobile header',()=>{
  expect(container.querySelector('.sc-topbar-context')).toBeNull();
  expect(screen.getByRole('combobox',{name:'Seleccionar hijo'})).toBeTruthy();
  expect(screen.getByRole('navigation',{name:'Ruta de navegación'})).toBeTruthy();
+});
+
+it('localizes account, home and child-picker accessibility labels when switching languages',async()=>{
+ const {rerender}=render(<PortalChrome {...props} user={{...user,role:'guardian'}}
+   childrenList={[{id:3,full_name:'Alex Ejemplo'}]}><div>Página</div></PortalChrome>);
+ await userEvent.click(screen.getByRole('button',{name:'Idioma'}));
+ await userEvent.click(screen.getByRole('button',{name:'English · EN'}));
+ expect(screen.getByRole('button',{name:'Go to home of Primaria Hidalgo'})).toBeTruthy();
+ expect(screen.getAllByRole('button',{name:'Account options for María González'})).toHaveLength(2);
+ expect(screen.getByRole('combobox',{name:'Select child'})).toBeTruthy();
+ rerender(<PortalChrome {...props} user={{...user,role:'guardian'}} mobile
+   childrenList={[{id:3,full_name:'Alex Ejemplo'}]}><div>Página</div></PortalChrome>);
+ expect(screen.getByRole('combobox',{name:'Select child'})).toBeTruthy();
 });

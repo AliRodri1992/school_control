@@ -279,12 +279,12 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
      <header className="topbar sc-topbar">
        <button ref={mobileTrigger} type="button" className="mobile" aria-label={locale==='en'?'Open menu':'Abrir menú'} aria-controls="school-sidebar" aria-expanded={mobile} onClick={()=>onMobile(true)}><Menu/></button>
        <button type="button" className="sc-collapse-toggle" aria-label={translateUiText(locale,collapsed?'Expandir barra lateral':'Colapsar barra lateral')} aria-expanded={!collapsed} onClick={()=>{setCollapsed(v=>!v);setCompactGroup(null);}}>{collapsed?<PanelLeftOpen size={21}/>:<PanelLeftClose size={21}/>}</button>
-       <button type="button" className="sc-topbar-brand" onClick={()=>navigate('dashboard')} aria-label={'Ir al inicio de '+school.name}>
+       <button type="button" className="sc-topbar-brand" onClick={()=>navigate('dashboard')} aria-label={translateUiText(locale,'Ir al inicio de ')+school.name}>
          {school.logo_url?<img src={school.logo_url} alt=""/>:<span className="sc-topbar-mark"><BookOpen size={22}/></span>}
          <span className="sc-topbar-brand-text"><strong>{school.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span>
        </button>
        {portal==='tutors'&&childrenList.length>0&&<div className="sc-child-picker">
-         <Combobox value={selectedChildId} label="Seleccionar hijo" placeholder="Todos mis hijos" onChange={onSelectChild}
+         <Combobox value={selectedChildId} label={translateUiText(locale,'Seleccionar hijo')} placeholder={translateUiText(locale,'Todos mis hijos')} onChange={onSelectChild}
            options={childrenList.map(child=>({value:String(child.id),label:child.full_name||child.first_name}))}/>
        </div>}
        <div className="sc-top-actions">
@@ -307,7 +307,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
            </section>}
          </div>
          <div className="sc-flyout-holder" ref={topbarAccountRef}>
-           <button className="sc-account-button" type="button" aria-label={'Opciones de cuenta de '+user.name}
+           <button className="sc-account-button" type="button" aria-label={translateUiText(locale,'Opciones de cuenta de ')+user.name}
              aria-expanded={accountTarget==='topbar'} onClick={()=>{setAccountTarget(v=>v==='topbar'?null:'topbar');setNotificationsOpen(false);setLanguageOpen(false);}}>
              <span className="sc-account-identity"><strong>{user.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span>
              <span className="sc-topbar-avatar">{user.name.slice(0,2).toUpperCase()}</span><ChevronDown size={16}/>

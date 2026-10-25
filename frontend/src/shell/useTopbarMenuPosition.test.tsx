@@ -13,7 +13,7 @@ function Fixture({open=true}:{open?:boolean}){
   {open&&<section className="sc-flyout">Menu content</section>}
  </div>;
 }
-it.each([320,375,768,1280])('keeps a dropdown within a %ipx viewport',width=>{
+it.each([280,320,375,768,1280])('keeps a dropdown within a %ipx viewport',width=>{
  vi.spyOn(window,'innerWidth','get').mockReturnValue(width);
  const {container}=render(<Fixture/>);
  const menu=container.querySelector<HTMLElement>('.sc-flyout')!;
@@ -30,4 +30,15 @@ it('does not leave a popup when closed',()=>{
  expect(menu.style.width).toBe('345px');
  rerender(<Fixture open={false}/>);
  expect(container.querySelector('.sc-flyout')).toBeNull();
+});
+
+it('repositions vertically above the trigger when there is not enough room below',()=>{
+ vi.spyOn(window,'innerHeight','get').mockReturnValue(500);
+ vi.spyOn(HTMLElement.prototype,'getBoundingClientRect').mockReturnValue({
+  top:450,bottom:490,left:300,right:345,width:45,height:40,x:300,y:450,toJSON:()=>({})
+ } as DOMRect);
+ const {container}=render(<Fixture/>);
+ const popup=container.querySelector<HTMLElement>('.sc-flyout')!;
+ expect(Number.parseFloat(popup.style.top)).toBeLessThan(450);
+ expect(Number.parseFloat(popup.style.maxHeight)).toBeLessThanOrEqual(430);
 });

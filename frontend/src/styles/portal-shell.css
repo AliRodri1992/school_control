@@ -89,7 +89,7 @@
 @media(max-width:1350px){.sc-topbar-brand{max-width:175px}.sc-topbar-brand-text{display:none}.sc-account-identity{max-width:110px}}
 @media(max-width:940px){.sc-topbar .sc-language{width:126px}.sc-topbar-brand{max-width:52px}}
 @media(max-width:760px){.sc-topbar-brand{display:none}.sc-account-identity{display:none}.sc-topbar .sc-language{width:115px}.sc-account-button{padding:3px 5px}.sc-topbar .sc-account-button .sc-topbar-avatar{width:34px;height:34px}}
-@media(max-width:390px){.sc-topbar .sc-language{width:84px}.sc-topbar .sc-language>svg{display:none}.sc-topbar .sc-language .sc-combobox-trigger{font-size:11px}}
+/* The icon-only language control remains visible at all viewport widths. */
 
 /* Resolve legacy button selectors that affected account labels and centering */
 .sc-sidebar .sc-sidebar-foot .sc-sidebar-account{width:100%;padding:8px 10px;margin:0;text-align:left;justify-content:flex-start}
@@ -165,7 +165,7 @@
 .sc-main .sc-breadcrumb-bar .sc-crumbs{display:flex;align-items:center;min-width:0;gap:8px;overflow-x:auto;white-space:nowrap;scrollbar-width:thin}
 .sc-topbar .sc-language{width:auto;min-width:0;display:block;padding:0;background:transparent;border:0}
 .sc-topbar .sc-language .sc-language-button{width:40px;height:40px;display:grid;place-items:center;color:#405cf5}
-.sc-topbar .sc-language .sc-language-menu{width:190px;min-width:190px}
+.sc-topbar .sc-language .sc-language-menu{width:min(190px,calc(100vw - 24px));min-width:0}
 .sc-language-menu .sc-flyout-link[aria-pressed=true]{background:#eef2ff;color:#304dcf;font-weight:700}
 
 /* Compact mode is restricted to desktop, never to the mobile drawer. */
