@@ -31,3 +31,20 @@
  .dashboard-control-actions button svg{flex:none}
  .dashboard-controls-heading p{max-width:60ch}
 }
+
+/* Legacy custom dashboards: recovered analytics can be saved without resetting the layout. */
+.dashboard-analytics-recovery{
+ display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+ margin:0 0 15px;padding:12px 15px;border:1px solid #bcd9f6;border-radius:12px;
+ background:linear-gradient(120deg,#eaf4ff,#f9fcff);color:#1d4d7e;
+}
+.dashboard-analytics-recovery p{flex:1 1 240px;margin:0;font-size:12px;font-weight:600;line-height:1.5}
+.dashboard-analytics-recovery button{
+ display:inline-flex;align-items:center;justify-content:center;gap:7px;
+ padding:9px 13px;min-height:36px;border:1px solid #1d63a8;border-radius:9px;
+ background:#195ea5;color:#fff;font-weight:700;font-size:11px;cursor:pointer;
+}
+.dashboard-analytics-recovery button:hover:not(:disabled){background:#134c8c}
+.dashboard-analytics-recovery button:focus-visible{outline:2px solid #73a7e7;outline-offset:2px}
+.dashboard-analytics-recovery button:disabled{opacity:.6;cursor:wait}
+@media(max-width:500px){.dashboard-analytics-recovery button{width:100%}}

@@ -39,7 +39,7 @@ export function appendWidget(config: Config, kind: Kind, title: string, id: stri
  return {widgets:[...config.widgets,{id,kind,title}],layouts};
 }
 export function removeWidget(config: Config, id: string): Config {
- return {widgets:config.widgets.filter(w=>w.id!==id), layouts:Object.fromEntries(Object.entries(config.layouts).map(([bp,items])=>[bp,items.filter(i=>i.i!==id)]))};
+ return {...config,widgets:config.widgets.filter(w=>w.id!==id), layouts:Object.fromEntries(Object.entries(config.layouts).map(([bp,items])=>[bp,items.filter(i=>i.i!==id)]))};
 }
 
 export const presets: Record<DashboardRole,Kind[]> = {

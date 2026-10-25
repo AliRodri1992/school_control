@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {defaultConfig,appendWidget,removeWidget,columns,isMetricKind,widgetHeight,metricKinds,mergeGridLayouts,upgradeLegacyDashboardConfig,upgradeRoleCharts,generateDashboardConfig,allowedChartKinds,upgradeSavedDashboardConfig,DASHBOARD_CONFIG_VERSION,type DashboardRole} from './dashboardConfig';
+import {defaultConfig,appendWidget,removeWidget,columns,isMetricKind,widgetHeight,metricKinds,mergeGridLayouts,upgradeLegacyDashboardConfig,upgradeRoleCharts,generateDashboardConfig,allowedChartKinds,upgradeSavedDashboardConfig,DASHBOARD_CONFIG_VERSION,type DashboardRole,type Config} from './dashboardConfig';
 describe('dashboard configuration',()=>{
  it('provides layouts bounded to each screen including a single mobile column',()=>{
   const config=defaultConfig();
@@ -194,7 +194,7 @@ describe('restoring analytics hidden by older saved dashboards',()=>{
  const olderKinds=['students','enrollments','pending_admissions','pending_documents','attendance_chart','alerts','calendar'] as const;
  it('recovers all four graphs in a customized administrator dashboard without resetting other widgets',()=>{
   const old=appendWidget(generateDashboardConfig(olderKinds),'announcements','Mi bloque personal','custom-announcements');
-  const moved={...old,layouts:{...old.layouts,lg:old.layouts.lg.map((item,index)=>index===0?
+  const moved:Config={...old,layouts:{...old.layouts,lg:old.layouts.lg.map((item,index)=>index===0?
    {...item,x:4,y:99,h:4}:item)}};
   const restored=upgradeSavedDashboardConfig(moved,'admin');
   expect(restored.schema_version).toBe(DASHBOARD_CONFIG_VERSION);
@@ -220,6 +220,11 @@ describe('restoring analytics hidden by older saved dashboards',()=>{
    {...item,x:5}:item)}};
   expect(upgradeSavedDashboardConfig(edited,'admin')).toBe(edited);
   expect(edited.widgets.some(widget=>widget.kind==='admission_status')).toBe(false);
+  expect(edited.schema_version).toBe(DASHBOARD_CONFIG_VERSION);
+  const removedAgain=removeWidget(edited,'attendance_rate');
+  expect(removedAgain.schema_version).toBe(DASHBOARD_CONFIG_VERSION);
+  expect(upgradeSavedDashboardConfig(removedAgain,'admin')).toBe(removedAgain);
+  expect(removedAgain.widgets.some(widget=>widget.kind==='attendance_rate')).toBe(false);
  });
  it('never inserts analytics outside the authorized role or exceeds the widget limit',()=>{
   const family=generateDashboardConfig(['students','calendar']);

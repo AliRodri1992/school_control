@@ -6,7 +6,7 @@ import type {ReactNode} from 'react';
 import Dashboard from './Dashboard';
 import {api} from './api';
 import {notify} from './notifications';
-import {appendWidget,defaultConfig,generateDashboardConfig} from './dashboardConfig';
+import {appendWidget,defaultConfig,generateDashboardConfig,type Config} from './dashboardConfig';
 
 vi.mock('./api',()=>({api:vi.fn()}));
 vi.mock('./notifications',()=>({notify:vi.fn()}));
@@ -289,11 +289,40 @@ it('restores the four missing analytics in a previously customized administrator
   expect(screen.getByRole('heading',{name:title})).toBeTruthy();
  }
  expect(screen.getByText('Panel que organicé')).toBeTruthy();
+ expect(screen.getByText('Recuperamos las gráficas que faltaban sin modificar tus tarjetas personalizadas.')).toBeTruthy();
+ expect(screen.getByRole('button',{name:'Guardar gráficas recuperadas'})).toBeTruthy();
  expect(container.querySelectorAll('.sc-kpi-grid-item')).toHaveLength(4);
  await personalize();
  await userEvent.click(screen.getByRole('button',{name:'Guardar dashboard'}));
  const savedCall=vi.mocked(api).mock.calls.find(call=>call[0]==='dashboard_preference'&&call[1]==='PUT');
- expect(savedCall?.[2].configuration.schema_version).toBe(2);
- expect(savedCall?.[2].configuration.widgets).toHaveLength(saved.widgets.length+4);
- expect(savedCall?.[2].configuration.layouts.lg.find((item:{i:string})=>item.i==='students').x).toBe(4);
+ const payload=savedCall?.[2] as {configuration:Config;lock_version:number}|undefined;
+ expect(payload?.configuration.schema_version).toBe(2);
+ expect(payload?.configuration.widgets).toHaveLength(saved.widgets.length+4);
+ expect(payload?.configuration.layouts.lg.find(item=>item.i==='students')?.x).toBe(4);
+});
+
+it('saves the recovered analytics without resetting previously arranged cards',async()=>{
+ const before=generateDashboardConfig([
+  'students','enrollments','pending_admissions','pending_documents',
+  'attendance_chart','alerts','calendar'
+ ]);
+ vi.mocked(api).mockImplementation(async (resource:string,method?:string)=>{
+  if(resource==='dashboard_preference'&&method==='PUT')return {configuration:defaultConfig('admin'),lock_version:5};
+  if(resource==='dashboard_preference')return {configuration:before,lock_version:4};
+  return {};
+ });
+ const {container}=render(<Dashboard role="admin" userId={10} summary={{}} data={{}}/>);
+ await waitFor(()=>expect(container.querySelectorAll('[data-testid="analytics-chart"]')).toHaveLength(4));
+ await userEvent.click(screen.getByRole('button',{name:'Guardar gráficas recuperadas'}));
+ await waitFor(()=>expect(vi.mocked(api).mock.calls.some(call=>
+  call[0]==='dashboard_preference'&&call[1]==='PUT')).toBe(true));
+ const sent=vi.mocked(api).mock.calls.find(call=>call[0]==='dashboard_preference'&&call[1]==='PUT')?.[2] as
+  {configuration:Config;lock_version:number};
+ expect(sent.configuration.schema_version).toBe(2);
+ expect(sent.lock_version).toBe(4);
+ expect(sent.configuration.widgets.filter(widget=>[
+  'enrollment_trend','students_by_grade','attendance_rate','admission_status'
+ ].includes(widget.kind))).toHaveLength(4);
+ await waitFor(()=>expect(screen.queryByRole('button',{name:'Guardar gráficas recuperadas'})).toBeNull());
+ expect(notify).toHaveBeenCalledWith('Dashboard guardado correctamente.');
 });

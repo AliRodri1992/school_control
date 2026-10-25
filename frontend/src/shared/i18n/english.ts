@@ -839,6 +839,10 @@ Object.assign(englishByText,{
  'La evolución de inscripciones aparecerá cuando existan registros en los ciclos escolares disponibles.':'Enrollment history will appear when records exist in the available school years.',
  'Comparativo de ciclos escolares':'School year comparison'
 });
+Object.assign(englishByText,{
+ 'Recuperamos las gráficas que faltaban sin modificar tus tarjetas personalizadas.':'We restored the missing charts without changing your personalized cards.',
+ 'Guardar gráficas recuperadas':'Save restored charts'
+});
 export function translateUiText(locale:string,text:string):string{
  if(!locale.toLowerCase().startsWith('en'))return text;
  return englishByText[text]||text;

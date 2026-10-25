@@ -115,3 +115,13 @@ it('translates all four redesigned analytics empty states, including role-aware 
   expect(translateUiText('es',phrase)).toBe(phrase);
  }
 });
+
+it('translates the restoration notice and its save action for customized dashboards',()=>{
+ for(const phrase of [
+  'Recuperamos las gráficas que faltaban sin modificar tus tarjetas personalizadas.',
+  'Guardar gráficas recuperadas'
+ ]){
+  expect(translateUiText('en',phrase)).not.toBe(phrase);
+  expect(translateUiText('es',phrase)).toBe(phrase);
+ }
+});
