@@ -236,3 +236,12 @@ it('requests guardian statistics only for the selected child and chosen period',
  await userEvent.selectOptions(screen.getByRole('combobox',{name:'Periodo de análisis'}),'30');
  await waitFor(()=>expect(vi.mocked(api).mock.calls.some(call=>String(call[0]).includes('student_id=10')&&String(call[0]).includes('from='))).toBe(true));
 });
+
+it('keeps the initial portal summary without an unnecessary dashboard refetch',async()=>{
+ vi.mocked(api).mockImplementation(async resource=>resource==='dashboard_preference'?
+  {configuration:defaultConfig('admin'),lock_version:1}:{});
+ const {container}=render(<Dashboard role="admin" userId={1} summary={{students:42}} data={{}}/>);
+ await waitFor(()=>expect(container.querySelector('.sc-kpi-number')).toBeTruthy());
+ expect(container.querySelector('.sc-kpi-number')?.textContent).toBe('42');
+ expect(vi.mocked(api).mock.calls.filter(call=>String(call[0]).startsWith('dashboard?'))).toHaveLength(0);
+});

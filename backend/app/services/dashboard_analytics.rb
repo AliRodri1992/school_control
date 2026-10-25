@@ -186,10 +186,10 @@ class DashboardAnalytics
       .joins(:course).pluck("assignments.id", "courses.group_id")
     return [] if classroom.empty?
     enrolled = memberships.group_by(&:last)
-    expected = classroom.flat_map { |assignment_id, group_id| enrolled.fetch(group_id, []).map { |enrollment_id, _| [assignment_id, enrollment_id] } }
+    expected = classroom.flat_map { |assignment_id, group_id| enrolled.fetch(group_id, []).map { |enrollment_id, _| [ assignment_id, enrollment_id ] } }
     completed = AssignmentSubmission.where(assignment_id: classroom.map(&:first), enrollment_id: memberships.map(&:first))
       .pluck(:assignment_id, :enrollment_id).to_set
     submitted = expected.count { |pair| completed.include?(pair) }
-    [{ label: "Entregadas", value: submitted }, { label: "Pendientes", value: expected.size - submitted }]
+    [ { label: "Entregadas", value: submitted }, { label: "Pendientes", value: expected.size - submitted } ]
   end
 end

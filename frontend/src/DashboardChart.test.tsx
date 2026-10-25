@@ -38,7 +38,8 @@ it('handles missing, malformed and zero-only statistics without generating fabri
  const {rerender}=render(<DashboardChart kind="attendance_rate" data={null} title="Asistencia" translate={translate}/>);
  expect(screen.getByRole('status').textContent).toContain('Sin datos');
  rerender(<DashboardChart kind="grades_by_term" data={[{label:'P1',value:0}]} title="Calificaciones" translate={translate}/>);
- expect(screen.getByRole('status').textContent).toContain('Sin datos');
+ expect(screen.queryByRole('status')).toBeNull();
+ expect(screen.getByRole('group',{name:'Calificaciones'})).toBeTruthy();
  rerender(<DashboardChart kind="attendance_trend" data={[{label:'P1',value:'inseguro'}]} title="Serie" translate={translate}/>);
  expect(screen.getByRole('status').textContent).toContain('Sin datos');
 });

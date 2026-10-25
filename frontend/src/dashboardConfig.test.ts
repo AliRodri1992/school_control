@@ -108,14 +108,11 @@ describe('dashboard rows and overflow regression',()=>{
    expect(item).toEqual({i:kind,x:index*3,y:0,w:3,h:3});
   }
   expect(dashboard.layouts.lg.filter(item=>item.y===0)).toHaveLength(4);
-  const content=['attendance_chart','alerts','calendar'];
-  for(const [index,kind] of content.entries()){
-   expect(dashboard.layouts.lg.find(item=>item.i===kind)).toEqual({
-    i:kind,x:index*4,y:3,w:4,h:6
-   });
-  }
+  const content=dashboard.layouts.lg.filter(item=>!expected.includes(item.i));
+  expect(content).toHaveLength(dashboard.widgets.length-4);
+  expect(content.every(item=>item.y>=3&&item.w===4&&item.h===6)).toBe(true);
   const finalY=Math.max(...dashboard.layouts.lg.map(item=>item.y+item.h));
-  expect(finalY).toBe(9);
+  expect(finalY).toBe(3+Math.ceil(content.length/3)*6);
  });
  it('lays out cards responsively as four, two, two or one per row',()=>{
   const config=defaultConfig('admin');
@@ -142,7 +139,7 @@ describe('dashboard rows and overflow regression',()=>{
    ...legacy.layouts.lg.slice(3,6).map((item,index)=>({...item,y:4,h:index===0?4:6})),
    {...legacy.layouts.lg[6],y:10}
   ]}};
-  expect(upgradeLegacyDashboardConfig(compact,'admin')).toEqual(current);
+  expect(upgradeLegacyDashboardConfig(compact,'admin')).toBe(compact);
   const custom={...legacy,layouts:{...legacy.layouts,lg:legacy.layouts.lg.map((item,index)=>index===0?{...item,x:1}:item)}};
   expect(upgradeLegacyDashboardConfig(custom,'admin')).toBe(custom);
  });

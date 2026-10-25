@@ -27,8 +27,11 @@ export default function Dashboard({summary,data,role='admin',userId=0,selectedCh
  const [error,setError] = useState(''),[kind,setKind] = useState<Kind>('attendance_chart'),[title,setTitle] = useState('');
  const [restored,setRestored]=useState(false),[gridRevision,setGridRevision]=useState(0);
  const preventProgrammaticLayoutChange=useRef(false);
+ const initialSummaryLoaded=useRef(false);
  useEffect(()=>{let active=true;setVisibleSummary(summary);return()=>{active=false;};},[summary]);
  useEffect(()=>{
+  // The portal snapshot already contains the unfiltered summary; refetch only after a filter change.
+  if(!initialSummaryLoaded.current){initialSummaryLoaded.current=true;if(!selectedChildId)return;}
   let active=true;
   const end=new Date(),start=new Date(end);
   start.setDate(end.getDate()-Number(period)+1);
