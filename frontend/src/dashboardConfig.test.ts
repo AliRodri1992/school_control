@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {defaultConfig,appendWidget,removeWidget,columns} from './dashboardConfig';
+import {defaultConfig,appendWidget,removeWidget,columns,isMetricKind,widgetHeight,metricKinds,type DashboardRole} from './dashboardConfig';
 describe('dashboard configuration',()=>{
  it('provides layouts bounded to each screen including a single mobile column',()=>{
   const config=defaultConfig();
@@ -27,4 +27,38 @@ it('offers role-specific widget presets',()=>{
  expect(defaultConfig('student').widgets.map(w=>w.kind)).not.toContain('pending_admissions');
  expect(defaultConfig('teacher').widgets.map(w=>w.kind)).toContain('groups');
  expect(defaultConfig('admin').widgets.map(w=>w.kind)).toContain('pending_admissions');
+});
+
+describe('redesigned KPI layouts',()=>{
+ it.each(['admin','teacher','guardian','student'] as DashboardRole[])('packs the %s KPI cards tightly without overlap on all breakpoints',role=>{
+  const config=defaultConfig(role);
+  expect(config.widgets.some(widget=>isMetricKind(widget.kind))).toBe(true);
+  for(const [bp,layout] of Object.entries(config.layouts)){
+   for(const item of layout){
+    const widget=config.widgets.find(widget=>widget.id===item.i)!;
+    expect(item.h).toBe(widgetHeight(widget.kind));
+    expect(item.x+item.w).toBeLessThanOrEqual(columns[bp]);
+   }
+   for(let a=0;a<layout.length;a++)for(let b=a+1;b<layout.length;b++){
+    const first=layout[a],second=layout[b];
+    const overlaps=first.x<second.x+second.w&&first.x+first.w>second.x&&
+     first.y<second.y+second.h&&first.y+first.h>second.y;
+    expect(overlaps).toBe(false);
+   }
+  }
+ });
+ it('uses compact dimensions for real counts, leaving room for charts and announcements',()=>{
+  expect(widgetHeight('students')).toBe(4);
+  expect(widgetHeight('pending_documents')).toBe(4);
+  expect(widgetHeight('attendance_chart')).toBe(6);
+  expect(widgetHeight('calendar')).toBe(6);
+  expect(metricKinds).toHaveLength(7);
+ });
+ it('adds a useful scheduled-class KPI to the learner portal without administrative statistics',()=>{
+  const learner=defaultConfig('student').widgets.map(widget=>widget.kind);
+  expect(learner).toContain('today_classes');
+  expect(learner).not.toContain('pending_admissions');
+  expect(learner).not.toContain('grade_drafts');
+  expect(defaultConfig('guardian').widgets.map(widget=>widget.kind)).toContain('today_classes');
+ });
 });

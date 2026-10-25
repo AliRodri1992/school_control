@@ -1,0 +1,121 @@
+/* Shared KPI design for administration, educators, families and students.
+   The cards use real server totals: no inferred trends or fabricated targets. */
+.sc-home .react-grid-layout{min-width:0}
+.sc-home .react-grid-item>.sc-kpi-card{
+ --sc-kpi-accent:#315fbe;
+ --sc-kpi-strong:#193e83;
+ --sc-kpi-pale:#eaf1ff;
+ --sc-kpi-tint:#f9fbff;
+ position:relative;
+ display:flex;flex-direction:column;min-width:0;height:100%;
+ overflow:hidden;
+ border:1px solid #dce5f2;
+ border-radius:18px;
+ background:linear-gradient(146deg,#ffffff 57%,var(--sc-kpi-tint) 100%);
+ box-shadow:0 3px 6px rgba(17,42,89,.025),0 10px 24px rgba(17,42,89,.045);
+ isolation:isolate;
+ transition:border-color .16s ease,box-shadow .16s ease;
+}
+.sc-home .sc-kpi-card::before{
+ content:'';position:absolute;inset:0 0 auto;height:3px;
+ background:linear-gradient(90deg,var(--sc-kpi-accent),color-mix(in srgb,var(--sc-kpi-accent),white 65%));
+ pointer-events:none;
+}
+.sc-home .sc-kpi-card::after{
+ content:'';position:absolute;width:132px;height:132px;right:-70px;bottom:-78px;
+ border:19px solid var(--sc-kpi-pale);border-radius:50%;opacity:.42;z-index:-1;pointer-events:none;
+}
+.sc-home .sc-kpi-card:hover{border-color:#bbcde6;box-shadow:0 5px 10px rgba(17,42,89,.04),0 15px 30px rgba(17,42,89,.07)}
+.sc-home .sc-kpi-card.sc-kpi-indigo{--sc-kpi-accent:#5961bd;--sc-kpi-strong:#464b99;--sc-kpi-pale:#ededfc;--sc-kpi-tint:#fafaff}
+.sc-home .sc-kpi-card.sc-kpi-amber{--sc-kpi-accent:#b88034;--sc-kpi-strong:#8b591d;--sc-kpi-pale:#fff1d8;--sc-kpi-tint:#fffdf8}
+.sc-home .sc-kpi-card.sc-kpi-teal{--sc-kpi-accent:#177d89;--sc-kpi-strong:#155f6b;--sc-kpi-pale:#e3f5f5;--sc-kpi-tint:#f7fdfd}
+.sc-home .sc-kpi-card.sc-kpi-sky{--sc-kpi-accent:#277eaf;--sc-kpi-strong:#1a6086;--sc-kpi-pale:#e4f3ff;--sc-kpi-tint:#f8fcff}
+.sc-home .sc-kpi-card.sc-kpi-violet{--sc-kpi-accent:#7763bd;--sc-kpi-strong:#5f489b;--sc-kpi-pale:#f0eaff;--sc-kpi-tint:#fcfaff}
+.sc-home .sc-kpi-card.sc-kpi-coral{--sc-kpi-accent:#b66668;--sc-kpi-strong:#974e56;--sc-kpi-pale:#ffeced;--sc-kpi-tint:#fff9fa}
+.sc-home .sc-kpi-card[data-portal=student]{--sc-kpi-tint:#faf9ff}
+.sc-home .sc-kpi-card[data-portal=guardian]{--sc-kpi-tint:#fafcff}
+
+.sc-kpi-header{
+ display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
+ flex:0 0 auto;padding:19px 20px 0;border:0;min-width:0;
+}
+.sc-kpi-header-copy{display:flex;flex:1;flex-direction:column;min-width:0;gap:5px}
+.sc-kpi-header-copy.widget-handle{cursor:grab;touch-action:none}
+.sc-kpi-category{
+ color:#8291a8;font-size:9px;font-weight:800;letter-spacing:1.2px;
+ line-height:1.35;text-transform:uppercase;
+}
+.sc-home .sc-kpi-card .sc-kpi-header h3{
+ font-family:'Plus Jakarta Sans',Inter,ui-sans-serif,sans-serif;
+ color:#354865;font-size:13px;font-weight:750;line-height:1.5;letter-spacing:-.15px;
+ overflow-wrap:anywhere;
+}
+.sc-kpi-icon{
+ display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;
+ border:1px solid color-mix(in srgb,var(--sc-kpi-accent),white 78%);
+ border-radius:13px;background:var(--sc-kpi-pale);color:var(--sc-kpi-accent);
+}
+.sc-kpi-actions{position:absolute;right:17px;bottom:14px;z-index:2;gap:3px}
+.sc-kpi-actions button{min-width:30px;min-height:30px;border:1px solid #d8e3f0;border-radius:8px;background:#fff;color:#415675}
+
+.sc-kpi-main{
+ display:flex;flex:1;flex-direction:column;justify-content:center;
+ min-height:0;gap:7px;padding:9px 20px 12px;
+}
+.sc-kpi-value-line{display:flex;align-items:baseline;gap:9px;min-width:0;flex-wrap:wrap}
+.sc-kpi-number{
+ color:#142f54;font-family:'Plus Jakarta Sans',Inter,ui-sans-serif,sans-serif;
+ font-size:clamp(33px,2.8vw,46px);font-weight:800;line-height:1.05;
+ letter-spacing:-2px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;
+}
+.sc-kpi-unit{font-size:11px;font-weight:700;line-height:1.3;color:var(--sc-kpi-strong)}
+.sc-kpi-description{font-size:11px;line-height:1.5;color:#71829a;overflow-wrap:anywhere}
+.sc-kpi-footer{
+ position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;
+ flex:0 0 auto;min-height:38px;margin:0 20px;padding:9px 0 13px;
+ border-top:1px solid #e8eef6;font-size:10px;color:#7587a0;
+}
+.sc-kpi-indicator{display:inline-flex;align-items:center;gap:7px;font-size:10px;font-weight:650;color:#6d8097}
+.sc-kpi-dot{width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:#9cafc6}
+.sc-kpi-indicator.needs-attention{color:var(--sc-kpi-strong)}
+.sc-kpi-indicator.needs-attention .sc-kpi-dot{background:var(--sc-kpi-accent)}
+.sc-kpi-corner{display:flex;gap:3px;align-items:end;opacity:.55}
+.sc-kpi-corner span{display:block;width:4px;border-radius:2px 2px 0 0;background:var(--sc-kpi-accent)}
+.sc-kpi-corner span:nth-child(1){height:5px;opacity:.55}
+.sc-kpi-corner span:nth-child(2){height:10px;opacity:.8}
+.sc-kpi-corner span:nth-child(3){height:7px;opacity:.6}
+.sc-kpi-card:has(.sc-kpi-actions) .sc-kpi-corner{visibility:hidden}
+
+/* Matching editorial treatment for charts, notices, schedules and alerts. */
+.sc-home .react-grid-item>.dashboard-widget:not(.sc-kpi-card){
+ border-radius:18px;border:1px solid #dee7f4;background:#fff;
+ box-shadow:0 5px 22px rgba(19,41,78,.045);
+}
+.sc-home .dashboard-widget:not(.sc-kpi-card)>.widget-header{
+ min-height:55px;border-bottom:1px solid #edf1f7;padding:15px 19px;
+}
+.sc-home .dashboard-widget:not(.sc-kpi-card)>.widget-header h3{
+ font-family:'Plus Jakarta Sans',Inter,ui-sans-serif,sans-serif;font-weight:750;font-size:13px;color:#243f67;
+}
+.sc-home .dashboard-widget:not(.sc-kpi-card)>.widget-body{padding:18px 19px}
+.sc-home .widget-chart{height:190px}
+@media(max-width:1000px){
+ .sc-kpi-header{padding:16px 16px 0}
+ .sc-kpi-main{padding-inline:16px}
+ .sc-kpi-footer{margin-inline:16px}
+ .sc-kpi-icon{width:39px;height:39px;flex-basis:39px}
+ .sc-kpi-number{font-size:37px}
+}
+@media(max-width:650px){
+ .sc-home .react-grid-item>.sc-kpi-card{border-radius:15px}
+ .sc-kpi-header{padding:13px 15px 0}
+ .sc-kpi-main{padding:7px 15px 9px}
+ .sc-kpi-number{font-size:clamp(29px,9vw,40px)}
+ .sc-kpi-footer{margin-inline:15px;padding-bottom:10px;min-height:31px}
+ .sc-kpi-icon{width:36px;height:36px;flex-basis:36px;border-radius:11px}
+ .sc-home .sc-kpi-card .sc-kpi-header h3{font-size:12px}
+ .sc-kpi-category{font-size:8px;letter-spacing:1px}
+ .sc-kpi-description{font-size:10px}
+ .sc-kpi-unit{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){.sc-home .sc-kpi-card{transition:none}}

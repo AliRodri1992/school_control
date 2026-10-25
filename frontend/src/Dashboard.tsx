@@ -5,7 +5,8 @@ import {Responsive, WidthProvider} from 'react-grid-layout/legacy';
 import {BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer} from 'recharts';
 import {api} from './api';
 import {notify} from './notifications';
-import {appendWidget, removeWidget, defaultConfig, widgetKinds, columns, type Config, type Kind, type DashboardRole} from './dashboardConfig';
+import {appendWidget, removeWidget, defaultConfig, widgetKinds, isMetricKind, columns, type Config, type Kind, type DashboardRole} from './dashboardConfig';
+import DashboardMetricCard from './DashboardMetricCard';
 import type {Row} from './modules';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -36,6 +37,9 @@ export default function Dashboard({summary,data,role='admin',userId=0}:{summary:
   if(widget.kind==='announcements')return data.announcements?.length?[...data.announcements].reverse().slice(0,5).map(a=><p key={a.id}><strong>{a.title}</strong><br/>{a.body}</p>):<p>{ui("No hay comunicados.")}</p>;
   return <strong className="widget-number">{visibleSummary[widget.kind]??0}</strong>;
  }
+ function widgetActions(widget:Config['widgets'][number],index:number){
+  return <div className="widget-actions"><button type="button" disabled={index===0||saving} aria-label={locale==='en'?`Move ${widget.title} earlier`:`Mover ${widget.title} antes`} onClick={()=>setConfig(c=>{const widgets=[...c.widgets];[widgets[index-1],widgets[index]]=[widgets[index],widgets[index-1]];const layouts=Object.fromEntries(Object.entries(c.layouts).map(([bp,items])=>{let y=0;return[bp,widgets.map(w=>{const item=items.find(i=>i.i===w.id)!;const next={...item,x:0,y};y+=item.h;return next;})];}));return{widgets,layouts};})}>↑</button><button type="button" disabled={saving} aria-label={locale==='en'?`Remove ${widget.title}`:`Quitar ${widget.title}`} onClick={()=>setConfig(c=>removeWidget(c,widget.id))}>×</button></div>;
+ }
  return <section aria-label={ui("Dashboard personalizable")}><div className="dashboard-controls"><div><h2>{ui("Mi dashboard")}</h2><p>{ui("Indicadores y gráficas de los registros a los que tienes acceso.")}</p></div>{!editing?<button className="primary" disabled={!ready} onClick={()=>setEditing(true)}>{ui("Personalizar")}</button>:<button className="primary" disabled={saving} onClick={save}>{ui(saving?'Guardando…':'Guardar dashboard')}</button>}{editing&&<button className="secondary" disabled={saving} onClick={()=>setConfig(defaultConfig(role))}>{ui("Restablecer plantilla")}</button>}</div>
  {(['admin','teacher'].includes(role))&&(data.groups||[]).length>0&&<div className="dashboard-context-filter">
    <div className="sc-dashboard-select"><label>{ui("Grupo para indicadores")}</label>
@@ -45,8 +49,14 @@ export default function Dashboard({summary,data,role='admin',userId=0}:{summary:
  </div>}
  {error&&<p className="error" role="alert">{error}</p>}{!ready&&!error&&<p>{ui("Cargando configuración…")}</p>}
  {editing&&<form className="widget-builder" onSubmit={e=>{e.preventDefault();setConfig(c=>appendWidget(c,kind,title.trim()||widgetKinds[kind]));setTitle('');}}><div className="sc-dashboard-select"><label>{ui("Contenido")}</label><Combobox label="Tipo de widget" value={kind}
-     onChange={value=>setKind(value as Kind)} options={Object.entries(widgetKinds).map(([value,label])=>({value,label:ui(label)}))}/></div><label>{ui("Título del widget")}<input value={title} maxLength={80} placeholder={ui(widgetKinds[kind])} onChange={e=>setTitle(e.target.value)}/></label><button className="secondary" disabled={saving||config.widgets.length>=24}>{ui("Añadir widget")}</button><p>{ui("Arrastra desde el título o ajusta la esquina. En móvil puedes cambiar el orden con las flechas. Guarda para conservar los cambios.")}</p></form>}
- {ready&&<Grid layouts={Object.fromEntries(Object.entries(config.layouts).map(([bp,items])=>[bp,items.map(item=>({...item,minH:2,maxH:20}))]))} breakpoints={{lg:1200,md:800,sm:480,xs:0}} cols={columns} rowHeight={48} margin={[16,16]} isDraggable={editing&&!saving} isResizable={editing&&!saving} draggableHandle=".widget-handle" onLayoutChange={(_,layouts)=>{if(!saving)setConfig(c=>({...c,layouts:Object.fromEntries(Object.entries(layouts).map(([bp,items])=>[bp,(items||[]).map(({i,x,y,w,h})=>({i,x,y,w,h}))]))}));}}>
- {config.widgets.map((widget,index)=><article className="dashboard-widget" key={widget.id}><div className="widget-header"><h3 className={editing?'widget-handle':''} >{ui(widget.title)}</h3>{editing&&<div className="widget-actions"><button type="button" disabled={index===0||saving} aria-label={locale==='en'?`Move ${widget.title} earlier`:`Mover ${widget.title} antes`} onClick={()=>setConfig(c=>{const widgets=[...c.widgets];[widgets[index-1],widgets[index]]=[widgets[index],widgets[index-1]];const layouts=Object.fromEntries(Object.entries(c.layouts).map(([bp,items])=>{let y=0;return[bp,widgets.map(w=>{const item=items.find(i=>i.i===w.id)!;const next={...item,x:0,y};y+=item.h;return next;})];}));return{widgets,layouts};})}>↑</button><button type="button" disabled={saving} aria-label={locale==='en'?`Remove ${widget.title}`:`Quitar ${widget.title}`} onClick={()=>setConfig(c=>removeWidget(c,widget.id))}>×</button></div>}</div><div className="widget-body">{content(widget)}</div></article>)}
+     onChange={value=>setKind(value as Kind)} options={Object.entries(widgetKinds).map(([value,label])=>({value,label:ui(label)}))}/></div><label>{ui("Título del widget")}<input value={title} maxLength={80} placeholder={ui(widgetKinds[kind])} onChange={e=> {config.widgets.map((widget,index)=>isMetricKind(widget.kind)?
+   <DashboardMetricCard key={widget.id} kind={widget.kind} title={ui(widget.title)}
+    value={visibleSummary[widget.kind]} role={role} locale={locale} translate={ui}
+    editing={editing} actions={editing?widgetActions(widget,index):undefined}/>:
+   <article className="dashboard-widget" key={widget.id}>
+    <div className="widget-header"><h3 className={editing?'widget-handle':''}>{ui(widget.title)}</h3>
+     {editing&&widgetActions(widget,index)}</div>
+    <div className="widget-body">{content(widget)}</div>
+   </article>)}</h3>{editing&&<div className="widget-actions"><button type="button" disabled={index===0||saving} aria-label={locale==='en'?`Move ${widget.title} earlier`:`Mover ${widget.title} antes`} onClick={()=>setConfig(c=>{const widgets=[...c.widgets];[widgets[index-1],widgets[index]]=[widgets[index],widgets[index-1]];const layouts=Object.fromEntries(Object.entries(c.layouts).map(([bp,items])=>{let y=0;return[bp,widgets.map(w=>{const item=items.find(i=>i.i===w.id)!;const next={...item,x:0,y};y+=item.h;return next;})];}));return{widgets,layouts};})}>↑</button><button type="button" disabled={saving} aria-label={locale==='en'?`Remove ${widget.title}`:`Quitar ${widget.title}`} onClick={()=>setConfig(c=>removeWidget(c,widget.id))}>×</button></div>}</div><div className="widget-body">{content(widget)}</div></article>)}
  </Grid>}{ready&&!config.widgets.length&&<p>{ui("Tu dashboard está vacío. Añade un widget desde Personalizar.")}</p>}</section>;
 }

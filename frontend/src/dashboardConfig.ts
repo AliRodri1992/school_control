@@ -4,6 +4,10 @@ export const widgetKinds = {
  alerts: 'Acompañamiento', calendar: 'Próximos eventos', announcements: 'Comunicados'
 };
 export type Kind = keyof typeof widgetKinds;
+export const metricKinds=['students','enrollments','pending_admissions','groups','today_classes','grade_drafts','pending_documents'] as const;
+export type MetricKind=(typeof metricKinds)[number];
+export const isMetricKind=(kind:Kind):kind is MetricKind=>metricKinds.some(metric=>metric===kind);
+export const widgetHeight=(kind:Kind):number=>isMetricKind(kind)?4:6;
 export type Widget = {id: string; kind: Kind; title: string};
 export type Item = {i: string; x: number; y: number; w: number; h: number};
 export type Config = {widgets: Widget[]; layouts: Record<string, Item[]>};
@@ -11,7 +15,7 @@ export const columns: Record<string, number> = {lg:12, md:8, sm:4, xs:1};
 export function appendWidget(config: Config, kind: Kind, title: string, id: string = crypto.randomUUID()): Config {
  const layouts = Object.fromEntries(Object.entries(columns).map(([bp, cols]) => {
   const items = config.layouts[bp] || [];
-  return [bp, [...items, {i:id, x:0, y:items.reduce((max,item)=>Math.max(max,item.y+item.h),0), w:Math.min(4,cols), h:kind.endsWith('_chart')?6:4}]];
+  return [bp, [...items, {i:id, x:0, y:items.reduce((max,item)=>Math.max(max,item.y+item.h),0), w:Math.min(4,cols), h:widgetHeight(kind)}]];
  }));
  return {widgets:[...config.widgets,{id,kind,title}],layouts};
 }
@@ -22,15 +26,25 @@ export type DashboardRole='admin'|'teacher'|'guardian'|'student';
 export const presets: Record<DashboardRole,Kind[]> = {
  admin:['students','enrollments','pending_admissions','pending_documents','attendance_chart','alerts','calendar'],
  teacher:['today_classes','grade_drafts','groups','attendance_chart','alerts','calendar','announcements'],
- guardian:['students','pending_documents','attendance_chart','calendar','announcements'],
- student:['attendance_chart','calendar','announcements']
+ guardian:['students','today_classes','pending_documents','attendance_chart','calendar','announcements'],
+ student:['today_classes','attendance_chart','calendar','announcements']
 };
 export function defaultConfig(role: DashboardRole='admin'): Config {
  const config = presets[role]
   .reduce((config,kind)=>appendWidget(config,kind,widgetKinds[kind],kind),{widgets:[],layouts:{}} as Config);
- for (const [bp, cols] of Object.entries(columns)) {
-  const perRow = Math.max(1, Math.floor(cols / 4));
-  config.layouts[bp] = config.layouts[bp].map((item,index)=>({...item,x:(index % perRow)*Math.min(4,cols),y:Math.floor(index/perRow)*6,h:6}));
+ for(const [bp,cols] of Object.entries(columns)){
+  const width=Math.min(4,cols);
+  const perRow=Math.max(1,Math.floor(cols/width));
+  const layout:Item[]=[];
+  let y=0;
+  for(let i=0;i<config.widgets.length;i+=perRow){
+   const row=config.widgets.slice(i,i+perRow);
+   for(const [index,widget] of row.entries()){
+    layout.push({i:widget.id,x:index*width,y,w:width,h:widgetHeight(widget.kind)});
+   }
+   y+=Math.max(...row.map(widget=>widgetHeight(widget.kind)));
+  }
+  config.layouts[bp]=layout;
  }
  return config;
 }
