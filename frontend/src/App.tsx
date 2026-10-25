@@ -1,10 +1,10 @@
+import TableEmptyState from './shared/components/TableEmptyState';
 import Combobox from './shared/components/Combobox';
 import TableAction from './shared/components/TableAction';
 const HelpCenter=lazy(()=>import('./features/help/HelpCenter'));
 const PortalHome=lazy(()=>import('./features/portal/PortalHome'));
 const Preferences=lazy(()=>import('./features/preferences/Preferences'));
 const StudentDetails=lazy(()=>import('./features/students/StudentDetails'));
-import AuliGuide from './shared/components/AuliGuide';
 import StudentRowActions from './features/students/StudentRowActions';
 const EmailTemplateDesigner=lazy(()=>import('./features/mail/EmailTemplateDesigner'));
 const ApiDocs=lazy(()=>import('./features/api/ApiDocs'));
@@ -212,7 +212,7 @@ export default function App(){
      options={statuses.map(status=>({value:status,label:display(status)}))}/></div>
   <button className="text-button" onClick={()=>{setStatusFilter('');setQuery('');setSorting('');setPageNumber(0);}}>{ui('Limpiar filtros')}</button>
   </div>}
-  <div className="table-scroll"><table><thead><tr>{translatedModules[page].columns.map(([key,title])=><th key={key} aria-sort={sorting===key?(ascending?"ascending":"descending"):"none"}><button className="sc-sort-button" aria-label={(locale==='en'?'Sort by ':'Ordenar por ')+title} onClick={()=>sortBy(key)}>{title}{sorting===key?(ascending?" ↑":" ↓"):" ↕"}</button></th>)}<th className="sc-table-action-col">{ui('Acciones')}</th></tr></thead><tbody>{shownRows.map(row=><tr key={row.id}>{translatedModules[page].columns.map(([key])=><td key={key}>{['status','outcome','role','kind'].includes(key)?<span className={`badge ${row[key]||''}`}>{display(row[key])}</span>:key.endsWith('_at')?readableDate(row[key]):display(row[key])}</td>)}<td className="sc-table-action-cell"><div className="sc-table-action-group">
+  {records.length>0&&<div className="table-scroll"><table><thead><tr>{translatedModules[page].columns.map(([key,title])=><th key={key} aria-sort={sorting===key?(ascending?"ascending":"descending"):"none"}><button className="sc-sort-button" aria-label={(locale==='en'?'Sort by ':'Ordenar por ')+title} onClick={()=>sortBy(key)}>{title}{sorting===key?(ascending?" ↑":" ↓"):" ↕"}</button></th>)}<th className="sc-table-action-col">{ui('Acciones')}</th></tr></thead><tbody>{shownRows.map(row=><tr key={row.id}>{translatedModules[page].columns.map(([key])=><td key={key}>{['status','outcome','role','kind'].includes(key)?<span className={`badge ${row[key]||''}`}>{display(row[key])}</span>:key.endsWith('_at')?readableDate(row[key]):display(row[key])}</td>)}<td className="sc-table-action-cell"><div className="sc-table-action-group">
  {page==='grades'&&<GradeActions grade={row} admin={user.role==='admin'} permissions={user.permissions} onChanged={()=>refresh()}/>}
  {page==='student_contacts'&&can('student_contacts.destroy')&&<TableAction kind="delete" ariaLabel={`Eliminar contacto de ${row.student_name||row.name}`} disabled={busy} onClick={()=>{void confirmDanger('Eliminar contacto','Este contacto dejará de estar disponible para el alumno.').then(ok=>{if(ok)void perform(async()=>{await api('student_contacts/'+row.id,'DELETE');});});}}/>}
  {page==='students'&&<StudentRowActions student={row} canView={can('students.show')} canReport={can('students.report')}
@@ -222,19 +222,13 @@ export default function App(){
  {page==='admissions'&&(can('admissions.approve')||can('admissions.reject'))&&row.status==='submitted'&&<><TableAction kind="approve" ariaLabel={`Aprobar solicitud ${row.folio||row.id}`} onClick={()=>approve(row)}/><TableAction kind="reject" ariaLabel={`Rechazar solicitud ${row.folio||row.id}`} onClick={()=>reject(row)}/></>}
  {page==='enrollments'&&can('enrollments.complete')&&row.status==='active'&&<TableAction kind="complete" ariaLabel={`Cerrar ciclo de ${row.student_name||row.id}`} onClick={()=>complete(row)}/>}
  {page==='users'&&can('users.update')&&row.id!==user.id&&<TableAction kind={row.active?"deactivate":"activate"} ariaLabel={`${row.active?"Desactivar":"Activar"} usuario ${row.name||row.id}`} onClick={()=>perform(async()=>{await api(`users/${row.id}`,'PATCH',{active:!row.active});})}/>}
- </div></td></tr>)}</tbody></table></div>{!records.length&&(moduleLoadErrors[page] ?
-   (moduleLoadErrors[page].status===403 ? <ForbiddenEmpty/> :
-    <ModuleLoadFailure message={moduleLoadErrors[page].message} onRetry={()=>void refresh().catch(e=>setError((e as Error).message))}/>) :
-   user.permissions?.[pagePermission(page)]?.length ?
-     (data[page]===undefined ? <PendingRecords/> :
-       <Empty
-         title={ui(query||statusFilter?'No encontramos coincidencias':page==='students'?'Aún no hay alumnos registrados':'Aún no hay registros')}
-         text={query||statusFilter?ui('Intenta con otro término o limpia los filtros para volver a consultar la lista.'):
-           page==='students'?(can('students.create')?ui('Cuando registres al primer alumno, su expediente aparecerá aquí. Usa «Registrar alumno» para comenzar.'):
-             ui('Los expedientes de alumnos aparecerán aquí cuando se registren en el sistema.')):
-           can(`${page}.create`)?ui('Todavía no hay información en esta sección. Puedes registrar el primer elemento con el botón superior.'):
-             ui('Todavía no hay información disponible en esta sección. Cuando se registre, aparecerá aquí.')}
-        />) : <ForbiddenEmpty/>)}
+ </div></td></tr>)}</tbody></table></div>}{!records.length&&(moduleLoadErrors[page]?
+   (moduleLoadErrors[page].status===403?<TableEmptyState mode="forbidden"/>:
+    <div><TableEmptyState mode="error" description={moduleLoadErrors[page].message}/><div className="form-actions"><button className="secondary" type="button" onClick={()=>void refresh().catch(e=>setError((e as Error).message))}>{ui('Reintentar consulta')}</button></div></div>)
+   :!user.permissions?.[pagePermission(page)]?.length?<TableEmptyState mode="forbidden"/>
+   :data[page]===undefined?<TableEmptyState mode="loading"/>
+   :<TableEmptyState mode={query||statusFilter?'filtered':'empty'} canCreate={editable}/>)}
+ 
   {records.length>0&&<div className="sc-pagination">
     <div className="sc-page-size"><label>{ui('Por página')}</label><Combobox label={ui('Registros por página')} value={String(pageSize)}
       onChange={value=>{setPageSize(Number(value));setPageNumber(0);}}
@@ -250,13 +244,6 @@ export default function App(){
  {report&&<div className="overlay"><section role="dialog" aria-modal="true" aria-label="Boleta e historial" className="dialog report"><header><div><span className="eyebrow">{school.name}</span><h2>{report.student.full_name}</h2><p>Boleta de consulta · {report.student.curp}</p></div><div className="actions"><button onClick={()=>window.print()} aria-label="Imprimir boleta"><Printer/></button><button onClick={()=>setReport(null)} aria-label="Cerrar boleta"><X/></button></div></header>{report.years.map((year:Row)=><article key={year.enrollment.id}><h3>{year.enrollment.group_label}</h3><p>{display(year.enrollment.status)} · {display(year.enrollment.outcome)}</p><table><thead><tr><th>Materia</th><th>Trimestre</th><th>Calificación</th><th>Observación</th></tr></thead><tbody>{year.grades.map((g:Row)=><tr key={g.id}><td>{g.subject_name}</td><td>{g.term}</td><td>{g.score}</td><td>{g.feedback}</td></tr>)}</tbody></table><p>Promedio registrado: <strong>{mean(year.grades.map((g:Row)=>Number(g.score)))}</strong></p><div className="actions">{Object.entries(year.attendance).map(([status,total])=><span className="badge" key={status}>{display(status)}: {String(total)}</span>)}</div></article>)}{!report.years.length&&<Empty title="Sin historial académico todavía" text="Este alumno aún no tiene inscripciones aprobadas. Cuando se registre una, su historial aparecerá aquí."/>}<p className="footnote">Documento de consulta interna. No sustituye una certificación oficial.</p></section></div>}
  </Suspense></PortalChrome>;
 }
-function PendingRecords(){const {ui}=useInterfaceLocale();return <div role="status" className="empty sc-auli-empty"><AuliGuide mood="thinking" title={ui('Consultando registros')} text={ui('Estamos cargando la información de esta sección…')} compact/></div>;}
-function ModuleLoadFailure({message,onRetry}:{message:string;onRetry:()=>void}){const {ui}=useInterfaceLocale();
- return <div className="empty sc-auli-empty"><AuliGuide mood="warning" title={ui('No fue posible cargar los registros')} text={ui(message)} compact/>
-  <button type="button" className="secondary" onClick={onRetry}>Reintentar consulta</button></div>;
-}
-function ForbiddenEmpty(){const {ui}=useInterfaceLocale();return <div className="empty sc-auli-empty"><AuliGuide mood="warning" title={ui('No tienes permisos para ver esta sección')} text={ui('Tu rol no tiene autorización para consultar los registros de este módulo.')} compact/></div>;}
-function Empty({title='Todavía no hay registros',text}:{title?:string;text:string}){const {ui}=useInterfaceLocale();return <div className="empty sc-auli-empty"><AuliGuide mood="thinking" title={ui(title)} text={ui(text)} compact/></div>;}
 function SchoolSettings({school,onSave,busy}:{school:Row;onSave:(form:FormData)=>void;busy:boolean}){
  const [preview,setPreview]=useState<string>();
  const [logoFile,setLogoFile]=useState<File|null>(null);

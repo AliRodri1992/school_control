@@ -253,3 +253,10 @@ body,.app{background:#f4f6fb;color:#17233f}
 .sc-table-action-tooltip.is-below{transform:translate(-50%,0)}
 @media(max-width:760px){.sc-table-action{width:44px;height:44px;min-width:44px;min-height:44px}.sc-table-action-group{gap:7px}}
 @media(prefers-reduced-motion:reduce){.sc-table-action{transition:none}.sc-table-action:hover:not(:disabled){transform:none}}
+
+/* Auli-led empty states, shared across school tables and lists. */
+.sc-table-empty-state{width:100%;min-height:200px;display:flex;align-items:center;justify-content:center;padding:28px 18px;box-sizing:border-box}
+.sc-table-empty-state .sc-auli-guide{width:min(100%,620px);margin-inline:auto}
+.sc-details-list>.sc-table-empty-state{min-height:180px}
+.sc-import-history .sc-table-empty-state,.sc-locale-entries .sc-table-empty-state{min-height:180px}
+@media(max-width:600px){.sc-table-empty-state{min-height:155px;padding:14px 8px}}

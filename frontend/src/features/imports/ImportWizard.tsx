@@ -1,3 +1,4 @@
+import TableEmptyState from '../../shared/components/TableEmptyState';
 import {useSchoolLocale} from '../../shared/i18n/LocaleContext';
 import Combobox from '../../shared/components/Combobox';
 import TableAction from '../../shared/components/TableAction';
@@ -21,10 +22,11 @@ export default function ImportWizard(){
  const [mapping,setMapping]=useState<Record<string,string>>({});
  const [error,setError]=useState(''),[fieldError,setFieldError]=useState(''),[busy,setBusy]=useState(false);
  const [history,setHistory]=useState<Batch[]>([]);
+ const [historyLoaded,setHistoryLoaded]=useState(false);
  const [templates,setTemplates]=useState<MappingTemplate[]>([]);
  const [templateName,setTemplateName]=useState('');
  useEffect(()=>{
-   void api('data_imports').then(setHistory).catch(()=>undefined);
+   void api('data_imports').then(setHistory).catch(()=>undefined).finally(()=>setHistoryLoaded(true));
    void api('import_mapping_templates').then(setTemplates).catch(()=>undefined);
  },[]);
  const applicableTemplates=templates.filter(template=>template.kind===kind);
@@ -116,12 +118,12 @@ export default function ImportWizard(){
           maxLength={100} onChange={e=>setTemplateName(e.target.value)}/></label>
         <button className="secondary" type="button" disabled={busy} onClick={saveTemplate}>{ui("Guardar mapeo")}</button>
       </div>
-      <div className="table-scroll"><table><thead><tr><th>{ui("Columna de archivo")}</th><th>{ui("Campo del sistema")}</th><th>{ui("Ejemplo")}</th></tr></thead><tbody>
+      {preview.headers.length>0?<div className="table-scroll"><table><thead><tr><th>{ui("Columna de archivo")}</th><th>{ui("Campo del sistema")}</th><th>{ui("Ejemplo")}</th></tr></thead><tbody>
        {preview.headers.map(header=><tr key={header}><td><strong>{header}</strong></td><td><Combobox label={'Campo para '+header} placeholder={ui("Ignorar columna")} value={mapping[header]||''}
          options={Object.entries(fields).map(([value,label])=>({value,label}))}
          onChange={value=>{setMapping(previous=>({...previous,[header]:value}));setFieldError('');}}/></td>
         <td>{String(preview.sample[0]?.values[header]||'—')}</td></tr>)}
-      </tbody></table></div>
+      </tbody></table></div>:<TableEmptyState/>}
       {fieldError&&<p className="sc-field-error" role="alert">{fieldError}</p>}
       <div className="sc-wizard-actions"><button className="secondary" type="button" onClick={()=>setStep(0)}><ArrowLeft size={17}/> {ui("Volver")}</button>
        <button className="primary" disabled={busy}>{busy?'Validando…':'Validar registros'}<ArrowRight size={17}/></button></div>
@@ -144,9 +146,9 @@ export default function ImportWizard(){
    </div>
    <aside className="panel sc-import-assistant"><AuliGuide title={ui("Auli te acompaña")} mood={step===2?"warning":step===3?"success":"explain"} text={step===0?'Prepara una hoja con los encabezados en la primera fila. Puedes importar CSV o Excel.':step===1?'Relaciona cada columna con el campo correcto. No necesitas que los encabezados tengan nombres idénticos.':step===2?'Revisa los problemas detectados antes de continuar. Ningún registro se importó todavía.' :'Revisa el resumen antes de confirmar. Los cambios solo se realizan después de tu autorización.'}/></aside>
   </div>
-  {history.length>0&&<section className="panel sc-import-history"><h2>{ui("Importaciones recientes")}</h2><div className="table-scroll"><table><thead><tr><th>{ui("Fecha")}</th><th>{ui("Tipo")}</th><th>{ui("Estado")}</th><th>{ui("Registros")}</th><th className="sc-table-action-col">{ui("Acciones")}</th></tr></thead><tbody>
+  <section className="panel sc-import-history"><h2>{ui("Importaciones recientes")}</h2>{history.length>0&&<div className="table-scroll"><table><thead><tr><th>{ui("Fecha")}</th><th>{ui("Tipo")}</th><th>{ui("Estado")}</th><th>{ui("Registros")}</th><th className="sc-table-action-col">{ui("Acciones")}</th></tr></thead><tbody>
    {history.map(item=><tr key={item.id}><td>{new Date((item as Batch & {created_at:string}).created_at).toLocaleString('es-MX')}</td><td>{item.kind}</td><td>{item.status}</td><td>{item.imported_rows} / {item.total_rows}</td><td className="sc-table-action-cell">{(item.status==='failed'||(item.status==='completed'&&item.row_errors?.length>0))&&
    <div className="sc-table-action-group"><TableAction kind="retry" disabled={busy} ariaLabel={`Reintentar pendientes de importación ${item.id}`} onClick={()=>retry(item)}/></div>}</td></tr>)}
-  </tbody></table></div></section>}
+  </tbody></table></div>}{!history.length&&<TableEmptyState mode={historyLoaded?'empty':'loading'} canCreate={false}/>}</section>
  </section>;
 }

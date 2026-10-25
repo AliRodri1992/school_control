@@ -1,3 +1,4 @@
+import TableEmptyState from '../../shared/components/TableEmptyState';
 import {useSchoolLocale} from '../../shared/i18n/LocaleContext';
 import {useEffect,useState} from 'react';
 import {ArrowLeft,BookOpen,FileText,GraduationCap,IdCard,MapPin,Phone,Plus,Users,CalendarDays} from 'lucide-react';
@@ -128,7 +129,7 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
       {report?.years?.length?report.years.map((year:Row)=><article className="sc-record-year" key={year.enrollment.id}>
         <div><strong>{year.enrollment.group_label||'Grupo escolar'}</strong><span >{ui(year.enrollment.status||'Inscripción')}</span></div>
         <small>{year.grades?.length||0} calificaciones · {Object.entries(year.attendance||{}).map(([status,count])=>status+': '+count).join(' · ')||ui('Sin asistencias registradas')}</small>
-       </article>):<p className="sc-details-blank" >{ui(canViewReport?'Sin inscripciones o calificaciones registradas.':'El historial académico no está disponible para tu perfil.')}</p>}
+       </article>):<TableEmptyState mode={canViewReport?'empty':'forbidden'} canCreate={false}/>}
     </>:<>
      <div className="sc-details-heading"><div><span className="eyebrow">{ui("EXPEDIENTE / INFORMACIÓN RELACIONADA")}</span>
        <h2>{ui(category.find(section=>section.kind===kind)?.title||'')}</h2>
@@ -152,7 +153,7 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
           <button className="secondary" type="button" onClick={()=>{setEditing(row);setFieldErrors({});}}>{ui("Editar")}</button>
           <button className="secondary danger" type="button" disabled={busy} onClick={()=>void remove(row)}>{ui("Eliminar")}</button>
          </div>}
-        </article>):<p className="sc-details-blank">{ui("No existen registros en esta sección. Puedes agregar información autorizada.")}</p>}
+        </article>):<TableEmptyState canCreate={writable}/>}
      </div>}
     </>}
    </section>
