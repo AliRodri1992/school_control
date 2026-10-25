@@ -160,7 +160,10 @@ export default function App(){
   if(!modules[action.page])return;
   go(action.page);createOrEdit(undefined,action.page);
  }
- function searchGo(page:string,search?:string){go(page);if(search)setQuery(search);}
+ function searchGo(page:string,search?:string){
+  if(!user?.permissions?.[pagePermission(page)]?.length)return;
+  go(page);if(search)setQuery(search);
+ }
 
  const editable = can(`${page}.create`);
  const linkedEnrollments=new Set((data.enrollments||[]).filter(e=>String(e.student_id)===selectedChild).map(e=>String(e.id)));

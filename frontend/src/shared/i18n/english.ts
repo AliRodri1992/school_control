@@ -714,6 +714,8 @@ Object.assign(englishByText,{"Fecha y hora institucional":"School date and time"
 
 Object.assign(englishByText,{"Buscar en School Control":"Search School Control","Nuevo registro":"New record","Cerrar búsqueda":"Close search","Acciones rápidas":"Quick actions"});
 
+Object.assign(englishByText,{"Búsqueda rápida":"Quick search","Resultados de búsqueda":"Search results"});
+
 export function translateUiText(locale:string,text:string):string{
  if(!locale.toLowerCase().startsWith('en'))return text;
  return englishByText[text]||text;

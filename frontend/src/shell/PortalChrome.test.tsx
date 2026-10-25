@@ -260,3 +260,32 @@ it('offers Ctrl+K keyboard navigation for search',async()=>{
  await userEvent.keyboard('{Enter}');
  expect(navigate).toHaveBeenCalledWith('students',undefined);
 });
+
+it('does not reveal student records to a role without record access',async()=>{
+ const records={students:[{id:4,full_name:'Registro Confidencial'}]};
+ render(<PortalChrome {...props} searchCollections={records} can={p=>p==='dashboard.show'||p==='students.index'}>
+  <div>Página</div></PortalChrome>);
+ await userEvent.click(screen.getByRole('button',{name:'Buscar en School Control'}));
+ await userEvent.type(screen.getByRole('searchbox',{name:'Buscar en School Control'}),'Registro Confidencial');
+ expect(screen.queryByRole('option',{name:/Registro Confidencial/})).toBeNull();
+});
+
+it('opens an authorized student from global search',async()=>{
+ const student={id:4,full_name:'Alex Ejemplo'};
+ const selected=vi.fn();
+ render(<PortalChrome {...props} onSearchStudent={selected} searchCollections={{students:[student]}}><div>Página</div></PortalChrome>);
+ await userEvent.click(screen.getByRole('button',{name:'Buscar en School Control'}));
+ await userEvent.type(screen.getByRole('searchbox',{name:'Buscar en School Control'}),'Alex Ejemplo');
+ await userEvent.click(screen.getByRole('option',{name:/Alex Ejemplo/}));
+ expect(selected).toHaveBeenCalledWith(student);
+});
+
+it('closes the quick action dropdown using Escape',async()=>{
+ render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ const trigger=screen.getByRole('button',{name:'Nuevo registro'});
+ await userEvent.click(trigger);
+ expect(trigger.getAttribute('aria-expanded')).toBe('true');
+ await userEvent.keyboard('{Escape}');
+ expect(trigger.getAttribute('aria-expanded')).toBe('false');
+ expect(document.activeElement).toBe(trigger);
+});
