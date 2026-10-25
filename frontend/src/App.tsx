@@ -1,3 +1,4 @@
+import SchoolBootScreen,{type BootStage} from './features/boot/SchoolBootScreen';
 import TableEmptyState from './shared/components/TableEmptyState';
 import Combobox from './shared/components/Combobox';
 import TableAction from './shared/components/TableAction';
@@ -47,6 +48,7 @@ export default function App(){
  function signedOut(){setUser(null);setData({});setSummary({});setPage('dashboard');setError('');setResetToken('');navigate('/login',{replace:true});}
 
  const [user,setUser] = useState<Row|null>(null),[school,setSchool] = useState<Row>({name:'Aula'});
+ const [loadingStage,setLoadingStage]=useState<BootStage>('connecting');
  const [loading,setLoading] = useState(true),[page,setPage] = useState('dashboard'),[data,setData] = useState<Record<string,Row[]>>({}),[summary,setSummary] = useState<Row>({});
  const [error,setError] = useState(''),[notice,setNotice] = useState(''),[query,setQuery] = useState(''),[mobile,setMobile] = useState(false),[busy,setBusy] = useState(false);
  const [detailStudent,setDetailStudent]=useState<Row|null>(null);
@@ -118,7 +120,7 @@ export default function App(){
      catch(cause){setSummary({});setError('No se pudo cargar el resumen: '+(cause as Error).message);}
    } else setSummary({});
  }
- useEffect(()=>{Promise.all([api('session'),api('school')]).then(async ([session,branding])=>{setSchool(branding);setUser(session.user);await refresh(session.user);}).catch(e=>setError(e.message)).finally(()=>setLoading(false));},[]);
+ useEffect(()=>{Promise.all([api('session'),api('school')]).then(async ([session,branding])=>{setSchool(branding);setUser(session.user);setLoadingStage('modules');await refresh(session.user);}).catch(e=>setError(e.message)).finally(()=>setLoading(false));},[]);
  async function perform(action:()=>Promise<void>){setError('');setFieldErrors({});setBusy(true);try{await action();void notify('Cambios guardados correctamente.');await refresh();}catch(e){setError((e as Error).message);setFieldErrors((e as Error & {fieldErrors?:Record<string,string[]>}).fieldErrors||{});}finally{setBusy(false);}}
  function options(source:string, values:Row = {}):Row[]{
    if(source==='guardians')return (data.users||[]).filter(x=>x.role==='guardian');
@@ -175,7 +177,7 @@ export default function App(){
  const shownRows=records.slice(currentPage*pageSize,(currentPage+1)*pageSize);
  function sortBy(key:string){if(sorting===key)setAscending(value=>!value);else{setSorting(key);setAscending(true);}setPageNumber(0);}
 
- if(loading)return <div className="boot"><BookOpen size={38}/><p>{ui('Preparando tu escuela…')}</p></div>;
+ if(loading)return <SchoolBootScreen locale={locale} stage={loadingStage}/>;
  if(resetToken)return <Suspense fallback={<div className="boot" role="status">{ui('Cargando recuperación de contraseña…')}</div>}><PasswordRecovery schoolName={school.name} token={resetToken} onClose={signedOut}/></Suspense>;
  if(!user)return <Login school={school} initialError={error} onLogin={async account=>{setUser(account);setError('');await refresh(account);}}/>;
  return <PortalChrome user={user} school={school} page={page} mobile={mobile} onMobile={setMobile}

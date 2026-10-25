@@ -722,6 +722,11 @@ Object.assign(englishByText,{
  "Ficha del alumno":"Student profile",
  "Mis hijos":"My children"
 });
+Object.assign(englishByText,{
+ 'Preparando tu escuela…':'Preparing your school…',
+ 'Conectando con tu escuela':'Connecting to your school',
+ 'Verificando accesos y cargando módulos':'Checking access and loading modules'
+});
 export function translateUiText(locale:string,text:string):string{
  if(!locale.toLowerCase().startsWith('en'))return text;
  return englishByText[text]||text;
