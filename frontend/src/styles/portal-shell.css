@@ -551,3 +551,13 @@
 @media(max-width:760px){
  .sc-shell .sc-sidebar.open .sc-sidebar-nav{scroll-padding-block:10px}
 }
+
+/* Sidebar account popovers also avoid visible scrollbars on short mobile viewports.
+   Their internal content can still be reached by wheel, keyboard and touch. */
+.sc-shell .sc-sidebar .sc-sidebar-foot .sc-account-menu{
+ scrollbar-width:none;-ms-overflow-style:none;overscroll-behavior-y:contain;
+}
+.sc-shell .sc-sidebar .sc-sidebar-foot .sc-account-menu::-webkit-scrollbar{
+ width:0;height:0;display:none;
+}
+.sc-shell .sc-sidebar .sc-sidebar-nav{scroll-behavior:auto}

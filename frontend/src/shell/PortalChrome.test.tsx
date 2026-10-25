@@ -460,6 +460,20 @@ it('reveals the active navigation destination inside the scrollbar-free rail',as
   expect(screen.getByRole('button',{name:'Clases'}).getAttribute('aria-current')).toBe('page');
  }finally{
   if(original)HTMLElement.prototype.scrollIntoView=original;
-  else delete (HTMLElement.prototype as {scrollIntoView?:typeof reveal}).scrollIntoView;
+  else Reflect.deleteProperty(HTMLElement.prototype,'scrollIntoView');
  }
+});
+
+it('keeps navigation actions functional after scrolling without a visible scrollbar',async()=>{
+ const navigate=vi.fn();
+ render(<PortalChrome {...props} onNavigate={navigate}><div>Página</div></PortalChrome>);
+ const nav=screen.getByRole('navigation',{name:'Navegación principal'});
+ Object.defineProperty(nav,'clientHeight',{configurable:true,value:140});
+ Object.defineProperty(nav,'scrollHeight',{configurable:true,value:1200});
+ nav.focus();
+ await userEvent.keyboard('{End}');
+ expect(nav.scrollTop).toBe(1060);
+ await userEvent.click(screen.getByRole('button',{name:'Configuración'}));
+ expect(screen.getByRole('button',{name:'Usuarios'})).toBeTruthy();
+ expect(nav.scrollTop).toBe(1060);
 });

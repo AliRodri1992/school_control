@@ -15,6 +15,14 @@ export function sidebarScrollPosition(key:string,current:number,viewport:number,
  }
 }
 
+/** Reveal the active route when changing modules, without jumping the entire page. */
+export function revealActiveSidebarItem(nav:HTMLElement|null):boolean{
+ const selected=nav?.querySelector<HTMLElement>('.sc-nav-item.is-active, .sc-nav-section.is-primary-active');
+ if(!selected||typeof selected.scrollIntoView!=='function')return false;
+ selected.scrollIntoView({block:'nearest',inline:'nearest'});
+ return true;
+}
+
 /** Native wheel and touch scrolling remain enabled; mouse drag starts only on blank areas. */
 export function useSidebarScroll(ref:RefObject<HTMLElement|null>){
  useEffect(()=>{

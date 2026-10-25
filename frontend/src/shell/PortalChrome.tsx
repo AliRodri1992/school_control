@@ -2,7 +2,7 @@ import {LocaleProvider} from '../shared/i18n/LocaleContext';
 import TopbarCommands from './TopbarCommands';
 import {useTopbarMenuPosition} from './useTopbarMenuPosition';
 import {sidebarSections} from './sidebarPresentation';
-import {useSidebarScroll} from './useSidebarScroll';
+import {revealActiveSidebarItem,useSidebarScroll} from './useSidebarScroll';
 import {SidebarBrand} from './SidebarBrand';
 import {translateUiText} from '../shared/i18n/english';
 import {useEffect,useLayoutEffect,useRef,useState,type ReactNode} from 'react';
@@ -34,11 +34,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  useSidebarScroll(sidebarNavRef);
  // Keep the selected destination visible in a scrollbar-free navigation rail.
  useEffect(()=>{
-  const nav=sidebarNavRef.current;
-  const selected=nav?.querySelector<HTMLElement>('.sc-nav-item.is-active, .sc-nav-section.is-primary-active');
-  if(selected&&typeof selected.scrollIntoView==='function'){
-   selected.scrollIntoView({block:'nearest',inline:'nearest'});
-  }
+  revealActiveSidebarItem(sidebarNavRef.current);
  },[page,collapsed,mobile,expanded.join('|')]);
  const [compactPosition,setCompactPosition]=useState<{left:number;top:number}|null>(null);
  const languageRef=useRef<HTMLDivElement>(null);

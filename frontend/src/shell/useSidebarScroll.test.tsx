@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
-import {afterEach,expect,it} from 'vitest';
+import {afterEach,expect,it,vi} from 'vitest';
 import {cleanup,fireEvent,render} from '@testing-library/react';
 import {useRef} from 'react';
-import {sidebarScrollPosition,useSidebarScroll} from './useSidebarScroll';
+import {revealActiveSidebarItem,sidebarScrollPosition,useSidebarScroll} from './useSidebarScroll';
 
 afterEach(()=>cleanup());
 
@@ -82,4 +82,20 @@ it('cancels an interrupted drag and allows another gesture afterward',()=>{
  fireEvent.pointerMove(document,{pointerId:6,clientY:60});
  expect(nav.scrollTop).toBe(old+50);
  fireEvent.pointerUp(document,{pointerId:6});
+});
+
+it('reveals a selected menu item without moving the document or sidebar header',()=>{
+ const {container}=render(<ScrollFixture/>);
+ const nav=container.querySelector('nav')!;
+ const selected=container.querySelector('.blank-space')!;
+ selected.classList.add('sc-nav-item','is-active');
+ const reveal=vi.fn();
+ Object.defineProperty(selected,'scrollIntoView',{configurable:true,value:reveal});
+ expect(revealActiveSidebarItem(nav)).toBe(true);
+ expect(reveal).toHaveBeenCalledWith({block:'nearest',inline:'nearest'});
+ expect(revealActiveSidebarItem(null)).toBe(false);
+});
+it('does not attempt to scroll an absent active menu item',()=>{
+ const {container}=render(<ScrollFixture/>);
+ expect(revealActiveSidebarItem(container.querySelector('nav'))).toBe(false);
 });
