@@ -50,7 +50,7 @@ export function defaultConfig(role: DashboardRole='admin'): Config {
 }
 
 /** Do not discard layouts for untouched breakpoints or widgets when the grid reflows. */
-export function mergeGridLayouts(config:Config,layouts:Partial<Record<string,Item[]>>):Config{
+export function mergeGridLayouts(config:Config,layouts:Partial<Record<string,readonly Item[]>>):Config{
  const ids=config.widgets.map(widget=>widget.id).sort();
  const nextLayouts:Config['layouts']={};
  for(const breakpoint of Object.keys(columns)){

@@ -57,6 +57,7 @@ it('groups Restore and Save as adjacent dashboard actions, with Save primary',as
  const {container}=render(<Dashboard summary={{}} data={{}}/>);
  await personalize();
  const actions=container.querySelector('.dashboard-control-actions')!;
+ expect(screen.getByRole('group',{name:'Acciones del dashboard'})).toBe(actions);
  const buttons=Array.from(actions.querySelectorAll('button'));
  expect(buttons.map(button=>button.textContent)).toEqual(['Restablecer plantilla','Guardar dashboard']);
  expect(buttons[0].classList.contains('dashboard-action-reset')).toBe(true);

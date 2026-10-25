@@ -92,7 +92,7 @@ export default function Dashboard({summary,data,role='admin',userId=0}:{summary:
     <h2>{ui("Mi dashboard")}</h2>
     <p>{ui("Indicadores y gráficas de los registros a los que tienes acceso.")}</p>
    </div>
-   <div className="dashboard-control-actions">
+   <div className="dashboard-control-actions" role="group" aria-label={ui("Acciones del dashboard")}>
     {!editing?
      <button type="button" className="primary dashboard-action-primary" disabled={!ready}
       onClick={()=>{preventProgrammaticLayoutChange.current=false;setRestored(false);setEditing(true);}}>

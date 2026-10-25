@@ -90,3 +90,11 @@ it('accepts missing layout breakpoints without losing saved mobile dimensions',(
  expect(updated).toEqual(config);
  expect(updated.layouts.xs).toHaveLength(config.widgets.length);
 });
+
+it('accepts readonly layouts from react-grid-layout without mutating frozen items',()=>{
+ const factory=defaultConfig('admin');
+ const readonlyItems=Object.freeze(factory.layouts.lg.map(item=>Object.freeze({...item})));
+ const next=mergeGridLayouts(factory,{lg:readonlyItems});
+ expect(next).toEqual(factory);
+ expect(readonlyItems).toBeTruthy();
+});
