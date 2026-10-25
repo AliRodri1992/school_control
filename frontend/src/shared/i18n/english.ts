@@ -240,6 +240,7 @@ Object.assign(englishByText,{
   "Indicadores y gráficas de los registros a los que tienes acceso.": "Indicators and charts for records you are authorized to access.",
   "Personalizar": "Customize",
   "Guardar dashboard": "Save dashboard",
+  "Plantilla original restaurada. Pulsa Guardar dashboard para conservar los cambios.": "Default template restored. Select Save dashboard to keep these changes.",
   "Restablecer plantilla": "Restore template",
   "Grupo para indicadores": "Group for indicators",
   "Todos los grupos autorizados": "All authorized groups",

@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {defaultConfig,appendWidget,removeWidget,columns,isMetricKind,widgetHeight,metricKinds,type DashboardRole} from './dashboardConfig';
+import {defaultConfig,appendWidget,removeWidget,columns,isMetricKind,widgetHeight,metricKinds,mergeGridLayouts,type DashboardRole} from './dashboardConfig';
 describe('dashboard configuration',()=>{
  it('provides layouts bounded to each screen including a single mobile column',()=>{
   const config=defaultConfig();
@@ -60,5 +60,26 @@ describe('redesigned KPI layouts',()=>{
   expect(learner).not.toContain('pending_admissions');
   expect(learner).not.toContain('grade_drafts');
   expect(defaultConfig('guardian').widgets.map(widget=>widget.kind)).toContain('today_classes');
+ });
+});
+
+describe('restored grid layouts',()=>{
+ it('retains missing responsive breakpoints when the grid reports only one',()=>{
+  const initial=defaultConfig('admin');
+  const changed={lg:initial.layouts.lg.map((item,index)=>({...item,y:index===0?item.y+1:item.y}))};
+  const updated=mergeGridLayouts(initial,changed);
+  expect(updated.layouts.md).toEqual(initial.layouts.md);
+  expect(updated.layouts.sm).toEqual(initial.layouts.sm);
+  expect(updated.layouts.xs).toEqual(initial.layouts.xs);
+  expect(updated.layouts.lg[0].y).toBe(initial.layouts.lg[0].y+1);
+ });
+ it('ignores stale grid events for deleted widgets after restoring defaults',()=>{
+  const modified=appendWidget(defaultConfig('admin'),'announcements','Temporal','temporary');
+  const reset=defaultConfig('admin');
+  expect(mergeGridLayouts(reset,modified.layouts)).toEqual(reset);
+ });
+ it('returns the previous state when no positions have changed',()=>{
+  const initial=defaultConfig('teacher');
+  expect(mergeGridLayouts(initial,initial.layouts)).toBe(initial);
  });
 });

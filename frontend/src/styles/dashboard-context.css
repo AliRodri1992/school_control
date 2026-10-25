@@ -2,3 +2,25 @@
 .dashboard-context-filter label{min-width:180px;display:grid;gap:5px;font-weight:650}
 .dashboard-context-filter select{max-width:280px}
 .dashboard-context-filter p{font-size:12px}
+
+/* Group dashboard actions on the same edge, with consistent School Control colors. */
+.dashboard-controls{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:20px 0 16px}
+.dashboard-controls-heading{min-width:220px;flex:1 1 280px}
+.dashboard-controls-heading h2{color:#15365c;font-weight:750}
+.dashboard-controls-heading p{font-size:12px;margin-top:5px;line-height:1.5}
+.dashboard-control-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex:0 0 auto;margin-left:auto}
+.dashboard-control-actions button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:10px 16px;border-radius:10px;font-size:12px;font-weight:700;white-space:nowrap}
+.dashboard-control-actions .dashboard-action-primary{color:#fff;background:#195ea5;border:1px solid #195ea5;box-shadow:0 4px 12px rgba(24,78,142,.13)}
+.dashboard-control-actions .dashboard-action-primary:hover:not(:disabled){background:#134b86}
+.dashboard-control-actions .dashboard-action-reset{color:#245687;background:#fff;border:1px solid #cbdcf1}
+.dashboard-control-actions .dashboard-action-reset:hover:not(:disabled){background:#f0f6ff;border-color:#a8c7ef}
+.dashboard-control-actions button:focus-visible{outline:3px solid #73a7e7;outline-offset:2px}
+.dashboard-reset-notice{display:block;margin:0 0 14px;padding:11px 14px;border-radius:10px;background:#eef5ff;border:1px solid #ccddf4;color:#214e83;font-size:12px;line-height:1.5}
+@media(max-width:760px){
+ .dashboard-controls{align-items:stretch;gap:12px}
+ .dashboard-controls-heading{flex-basis:100%}
+ .dashboard-control-actions{width:100%;margin-left:0;justify-content:flex-end}
+ .dashboard-control-actions button{flex:1 1 0;min-width:0;white-space:normal;text-align:center}
+}
+@media(max-width:380px){.dashboard-control-actions{gap:7px}.dashboard-control-actions button{padding:9px 7px;font-size:11px}}
+@media(prefers-reduced-motion:reduce){.dashboard-control-actions button{transition:none}}

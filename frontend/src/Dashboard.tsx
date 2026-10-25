@@ -1,11 +1,12 @@
 import {useSchoolLocale} from './shared/i18n/LocaleContext';
 import Combobox from './shared/components/Combobox';
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
+import {RotateCcw,Save,SlidersHorizontal} from 'lucide-react';
 import {Responsive, WidthProvider} from 'react-grid-layout/legacy';
 import {BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer} from 'recharts';
 import {api} from './api';
 import {notify} from './notifications';
-import {appendWidget, removeWidget, defaultConfig, widgetKinds, isMetricKind, columns, type Config, type Kind, type DashboardRole} from './dashboardConfig';
+import {appendWidget, removeWidget, defaultConfig, widgetKinds, isMetricKind, mergeGridLayouts, columns, type Config, type Kind, type DashboardRole} from './dashboardConfig';
 import DashboardMetricCard from './DashboardMetricCard';
 import type {Row} from './modules';
 import 'react-grid-layout/css/styles.css';
@@ -20,13 +21,38 @@ export default function Dashboard({summary,data,role='admin',userId=0}:{summary:
  const [version,setVersion] = useState<number|null>(null);
  const [ready,setReady] = useState(false),[editing,setEditing] = useState(false),[saving,setSaving] = useState(false);
  const [error,setError] = useState(''),[kind,setKind] = useState<Kind>('attendance_chart'),[title,setTitle] = useState('');
+ const [restored,setRestored]=useState(false),[gridRevision,setGridRevision]=useState(0);
+ const preventProgrammaticLayoutChange=useRef(false);
  useEffect(()=>{let active=true;setVisibleSummary(summary);return()=>{active=false;};},[summary]);
  useEffect(()=>{let active=true;if(!filterGroup){setVisibleSummary(summary);return;}
    void api('dashboard?group_id='+encodeURIComponent(filterGroup)).then(result=>{if(active)setVisibleSummary(result);}).catch(e=>{if(active)setError(e.message);});
    return()=>{active=false;};
  },[filterGroup,summary,userId]);
  useEffect(()=>{let active=true;api('dashboard_preference').then(result=>{if(active){setConfig(result.configuration||defaultConfig(role));setVersion(result.lock_version);setReady(true);}}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[]);
- async function save(){setSaving(true);setError('');try{const result=await api('dashboard_preference','PUT',{configuration:config,lock_version:version});setVersion(result.lock_version);setEditing(false);void notify('Dashboard guardado correctamente.');}catch(e){setError((e as Error).message);}finally{setSaving(false);}}
+ async function save(){
+  setSaving(true);setError('');
+  try{
+   const result=await api('dashboard_preference','PUT',{configuration:config,lock_version:version});
+   setVersion(result.lock_version);
+   preventProgrammaticLayoutChange.current=false;
+   setEditing(false);
+   setRestored(false);
+   void notify('Dashboard guardado correctamente.');
+  }catch(e){setError((e as Error).message);}
+  finally{setSaving(false);}
+ }
+ function restoreTemplate(){
+  preventProgrammaticLayoutChange.current=true;
+  setConfig(defaultConfig(role));
+  setGridRevision(n=>n+1);
+  setRestored(true);
+  setError('');
+ }
+ function updateWidgets(next:(current:Config)=>Config){
+  preventProgrammaticLayoutChange.current=false;
+  setRestored(false);
+  setConfig(next);
+ }
  function content(widget: Config['widgets'][number]) {
   if(widget.kind.endsWith('_chart')) {
    const entries=Object.entries(visibleSummary[widget.kind]||{}).map(([name,value])=>({name:ui(statusLabels[name]||name),value:Number(value)}));
@@ -38,25 +64,104 @@ export default function Dashboard({summary,data,role='admin',userId=0}:{summary:
   return <strong className="widget-number">{visibleSummary[widget.kind]??0}</strong>;
  }
  function widgetActions(widget:Config['widgets'][number],index:number){
-  return <div className="widget-actions"><button type="button" disabled={index===0||saving} aria-label={locale==='en'?`Move ${widget.title} earlier`:`Mover ${widget.title} antes`} onClick={()=>setConfig(c=>{const widgets=[...c.widgets];[widgets[index-1],widgets[index]]=[widgets[index],widgets[index-1]];const layouts=Object.fromEntries(Object.entries(c.layouts).map(([bp,items])=>{let y=0;return[bp,widgets.map(w=>{const item=items.find(i=>i.i===w.id)!;const next={...item,x:0,y};y+=item.h;return next;})];}));return{widgets,layouts};})}>↑</button><button type="button" disabled={saving} aria-label={locale==='en'?`Remove ${widget.title}`:`Quitar ${widget.title}`} onClick={()=>setConfig(c=>removeWidget(c,widget.id))}>×</button></div>;
+  return <>
+   <button type="button" disabled={index===0||saving}
+    aria-label={locale==='en'?`Move ${widget.title} earlier`:`Mover ${widget.title} antes`}
+    onClick={()=>updateWidgets(current=>{
+     const widgets=[...current.widgets];
+     [widgets[index-1],widgets[index]]=[widgets[index],widgets[index-1]];
+     const layouts=Object.fromEntries(Object.entries(current.layouts).map(([bp,items])=>{
+      let y=0;
+      return [bp,widgets.map(w=>{
+       const item=items.find(i=>i.i===w.id)!;
+       const next={...item,x:0,y};y+=item.h;return next;
+      })];
+     }));
+     return {widgets,layouts};
+    })}>↑</button>
+   <button type="button" disabled={saving}
+    aria-label={locale==='en'?`Remove ${widget.title}`:`Quitar ${widget.title}`}
+    onClick={()=>updateWidgets(current=>removeWidget(current,widget.id))}>×</button>
+  </>;
  }
- return <section aria-label={ui("Dashboard personalizable")}><div className="dashboard-controls"><div><h2>{ui("Mi dashboard")}</h2><p>{ui("Indicadores y gráficas de los registros a los que tienes acceso.")}</p></div>{!editing?<button className="primary" disabled={!ready} onClick={()=>setEditing(true)}>{ui("Personalizar")}</button>:<button className="primary" disabled={saving} onClick={save}>{ui(saving?'Guardando…':'Guardar dashboard')}</button>}{editing&&<button className="secondary" disabled={saving} onClick={()=>setConfig(defaultConfig(role))}>{ui("Restablecer plantilla")}</button>}</div>
- {(['admin','teacher'].includes(role))&&(data.groups||[]).length>0&&<div className="dashboard-context-filter">
-   <div className="sc-dashboard-select"><label>{ui("Grupo para indicadores")}</label>
-     <Combobox label="Grupo para indicadores" value={filterGroup} onChange={setFilterGroup} placeholder="Todos los grupos autorizados"
-       options={(data.groups||[]).map(group=>({value:String(group.id),label:group.label}))}/></div>
-   <p>{ui("El filtro se aplica a la información académica del dashboard.")}</p>
- </div>}
- {error&&<p className="error" role="alert">{error}</p>}{!ready&&!error&&<p>{ui("Cargando configuración…")}</p>}
- {editing&&<form className="widget-builder" onSubmit={e=>{e.preventDefault();setConfig(c=>appendWidget(c,kind,title.trim()||widgetKinds[kind]));setTitle('');}}><div className="sc-dashboard-select"><label>{ui("Contenido")}</label><Combobox label="Tipo de widget" value={kind}
-     onChange={value=>setKind(value as Kind)} options={Object.entries(widgetKinds).map(([value,label])=>({value,label:ui(label)}))}/></div><label>{ui("Título del widget")}<input value={title} maxLength={80} placeholder={ui(widgetKinds[kind])} onChange={e=> {config.widgets.map((widget,index)=>isMetricKind(widget.kind)?
-   <DashboardMetricCard key={widget.id} kind={widget.kind} title={ui(widget.title)}
-    value={visibleSummary[widget.kind]} role={role} locale={locale} translate={ui}
-    editing={editing} actions={editing?widgetActions(widget,index):undefined}/>:
-   <article className="dashboard-widget" key={widget.id}>
-    <div className="widget-header"><h3 className={editing?'widget-handle':''}>{ui(widget.title)}</h3>
-     {editing&&widgetActions(widget,index)}</div>
-    <div className="widget-body">{content(widget)}</div>
-   </article>)}</h3>{editing&&<div className="widget-actions"><button type="button" disabled={index===0||saving} aria-label={locale==='en'?`Move ${widget.title} earlier`:`Mover ${widget.title} antes`} onClick={()=>setConfig(c=>{const widgets=[...c.widgets];[widgets[index-1],widgets[index]]=[widgets[index],widgets[index-1]];const layouts=Object.fromEntries(Object.entries(c.layouts).map(([bp,items])=>{let y=0;return[bp,widgets.map(w=>{const item=items.find(i=>i.i===w.id)!;const next={...item,x:0,y};y+=item.h;return next;})];}));return{widgets,layouts};})}>↑</button><button type="button" disabled={saving} aria-label={locale==='en'?`Remove ${widget.title}`:`Quitar ${widget.title}`} onClick={()=>setConfig(c=>removeWidget(c,widget.id))}>×</button></div>}</div><div className="widget-body">{content(widget)}</div></article>)}
- </Grid>}{ready&&!config.widgets.length&&<p>{ui("Tu dashboard está vacío. Añade un widget desde Personalizar.")}</p>}</section>;
+ return <section aria-label={ui("Dashboard personalizable")}>
+  <div className="dashboard-controls">
+   <div className="dashboard-controls-heading">
+    <h2>{ui("Mi dashboard")}</h2>
+    <p>{ui("Indicadores y gráficas de los registros a los que tienes acceso.")}</p>
+   </div>
+   <div className="dashboard-control-actions">
+    {!editing?
+     <button type="button" className="primary dashboard-action-primary" disabled={!ready}
+      onClick={()=>{preventProgrammaticLayoutChange.current=false;setRestored(false);setEditing(true);}}>
+      <SlidersHorizontal size={17} aria-hidden="true"/>{ui("Personalizar")}
+     </button>:
+     <>
+      <button type="button" className="secondary dashboard-action-reset" disabled={saving} onClick={restoreTemplate}>
+       <RotateCcw size={17} aria-hidden="true"/>{ui("Restablecer plantilla")}
+      </button>
+      <button type="button" className="primary dashboard-action-primary" disabled={saving} onClick={()=>void save()}>
+       <Save size={17} aria-hidden="true"/>{ui(saving?'Guardando…':'Guardar dashboard')}
+      </button>
+     </>
+    }
+   </div>
+  </div>
+  {editing&&restored&&<p className="dashboard-reset-notice" role="status">
+   {ui("Plantilla original restaurada. Pulsa Guardar dashboard para conservar los cambios.")}
+  </p>}
+  {(['admin','teacher'].includes(role))&&(data.groups||[]).length>0&&
+   <div className="dashboard-context-filter">
+    <div className="sc-dashboard-select">
+     <label>{ui("Grupo para indicadores")}</label>
+     <Combobox label="Grupo para indicadores" value={filterGroup} onChange={setFilterGroup}
+      placeholder="Todos los grupos autorizados"
+      options={(data.groups||[]).map(group=>({value:String(group.id),label:group.label}))}/>
+    </div>
+    <p>{ui("El filtro se aplica a la información académica del dashboard.")}</p>
+   </div>
+  }
+  {error&&<p className="error" role="alert">{error}</p>}
+  {!ready&&!error&&<p>{ui("Cargando configuración…")}</p>}
+  {editing&&<form className="widget-builder" onSubmit={event=>{
+   event.preventDefault();
+   updateWidgets(current=>appendWidget(current,kind,title.trim()||widgetKinds[kind]));
+   setTitle('');
+  }}>
+   <div className="sc-dashboard-select">
+    <label>{ui("Contenido")}</label>
+    <Combobox label="Tipo de widget" value={kind} onChange={value=>setKind(value as Kind)}
+     options={Object.entries(widgetKinds).map(([value,label])=>({value,label:ui(label)}))}/>
+   </div>
+   <label>{ui("Título del widget")}
+    <input value={title} maxLength={80} placeholder={ui(widgetKinds[kind])}
+     onChange={event=>setTitle(event.target.value)}/>
+   </label>
+   <button className="secondary" disabled={saving||config.widgets.length>=24}>{ui("Añadir widget")}</button>
+   <p>{ui("Arrastra desde el título o ajusta la esquina. En móvil puedes cambiar el orden con las flechas. Guarda para conservar los cambios.")}</p>
+  </form>}
+  {ready&&<Grid key={gridRevision}
+   layouts={Object.fromEntries(Object.entries(config.layouts).map(([bp,items])=>[bp,items.map(item=>({...item,minH:2,maxH:20}))]))}
+   breakpoints={{lg:1200,md:800,sm:480,xs:0}} cols={columns} rowHeight={48} margin={[16,16]}
+   isDraggable={editing&&!saving} isResizable={editing&&!saving} draggableHandle=".widget-handle"
+   onDragStart={()=>{preventProgrammaticLayoutChange.current=false;setRestored(false);}}
+   onResizeStart={()=>{preventProgrammaticLayoutChange.current=false;setRestored(false);}}
+   onLayoutChange={(_,layouts)=>{
+    if(!editing||saving||preventProgrammaticLayoutChange.current)return;
+    setConfig(current=>mergeGridLayouts(current,layouts));
+   }}>
+   {config.widgets.map((widget,index)=>isMetricKind(widget.kind)?
+    <DashboardMetricCard key={widget.id} kind={widget.kind} title={ui(widget.title)}
+     value={visibleSummary[widget.kind]} role={role} locale={locale} translate={ui}
+     editing={editing} actions={editing?widgetActions(widget,index):undefined}/>:
+    <article className="dashboard-widget" key={widget.id}>
+     <div className="widget-header">
+      <h3 className={editing?'widget-handle':''}>{ui(widget.title)}</h3>
+      {editing&&<div className="widget-actions">{widgetActions(widget,index)}</div>}
+     </div>
+     <div className="widget-body">{content(widget)}</div>
+    </article>)}
+  </Grid>}
+  {ready&&!config.widgets.length&&<p>{ui("Tu dashboard está vacío. Añade un widget desde Personalizar.")}</p>}
+ </section>;
 }
