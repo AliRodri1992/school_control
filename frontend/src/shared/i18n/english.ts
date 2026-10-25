@@ -697,6 +697,15 @@ Object.assign(englishByText,{
   "No tenemos información disponible.": "No information available."
 });
 
+Object.assign(englishByText,{
+ 'Cerrar menú lateral':'Close side menu',
+ 'Barra lateral principal':'Main sidebar',
+ 'Cerrar menú':'Close menu',
+ 'Abrir menú':'Open menu',
+ 'Contraer ':'Collapse ',
+ 'Expandir ':'Expand '
+});
+
 export function translateUiText(locale:string,text:string):string{
  if(!locale.toLowerCase().startsWith('en'))return text;
  return englishByText[text]||text;

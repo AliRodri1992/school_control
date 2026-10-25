@@ -250,3 +250,13 @@
 @media(max-width:1350px){.sc-topbar .sc-clock{font-size:11px}}
 @media(max-width:1180px){.sc-topbar .sc-clock{display:none}}
 @media(max-width:760px){.sc-shell .sc-sidebar{z-index:100}.sc-topbar .sc-clock{display:none}}
+
+/* Responsive QA: avoid duplicate school branding in wide top bars.
+   The sidebar carries full branding on desktop; mobile retains a home shortcut. */
+@media(min-width:761px){.sc-topbar .sc-topbar-brand{display:none}}
+@media(max-width:760px){
+ .sc-shell .sc-sidebar.open .sc-shell-brand{min-width:0}
+ .sc-shell .sc-sidebar.open .sc-shell-brand .sc-sidebar-brand-text{min-width:0;flex:1}
+ .sc-shell .sc-sidebar.open .sc-sidebar-brand-text strong{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .sc-shell .sc-sidebar.open .sc-sidebar-foot .sc-account-menu{max-height:calc(100dvh - 130px)}
+}

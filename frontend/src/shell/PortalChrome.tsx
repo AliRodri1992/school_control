@@ -20,6 +20,8 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const compactGroupTrigger=useRef<HTMLButtonElement|null>(null);
  const compactFlyoutRef=useRef<HTMLDivElement|null>(null);
  const mobileTrigger=useRef<HTMLButtonElement|null>(null);
+ const mobileCloseTrigger=useRef<HTMLButtonElement|null>(null);
+ const sidebarRef=useRef<HTMLElement|null>(null);
  const [compactPosition,setCompactPosition]=useState<{left:number;top:number}|null>(null);
  const languageRef=useRef<HTMLDivElement>(null);
  useEffect(()=>{localStorage.setItem('school-sidebar-collapsed',String(collapsed));},[collapsed]);
@@ -148,10 +150,22 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    if(!mobile)return;
    const prior=document.body.style.overflow;
    document.body.style.overflow='hidden';
+   mobileCloseTrigger.current?.focus();
    return()=>{document.body.style.overflow=prior;};
  },[mobile]);
  useEffect(()=>{
    function onKeydown(event:KeyboardEvent){
+     if(event.key==='Tab'&&mobile){
+       const controls=[...sidebarRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')||[]];
+       if(!controls.length)return;
+       const first=controls[0],last=controls[controls.length-1];
+       if(event.shiftKey&&(document.activeElement===first||!sidebarRef.current?.contains(document.activeElement))){
+         event.preventDefault();last.focus();
+       }else if(!event.shiftKey&&(document.activeElement===last||!sidebarRef.current?.contains(document.activeElement))){
+         event.preventDefault();first.focus();
+       }
+       return;
+     }
      if(event.key!=='Escape')return;
      if(mobile){onMobile(false);mobileTrigger.current?.focus();}
      if(compactGroup){setCompactGroup(null);compactGroupTrigger.current?.focus();}
@@ -219,16 +233,16 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    </section>;
  }
  return <div className={'app sc-shell'+(compact?' sc-shell-collapsed':'')+(mobile?' sc-shell-mobile-open':'')}>
-   {mobile&&<button type="button" className="sc-sidebar-backdrop" aria-label={locale==='en'?'Close side menu':'Cerrar menú lateral'} onClick={()=>onMobile(false)}/>}
+   {mobile&&<button type="button" className="sc-sidebar-backdrop" aria-label={translateUiText(locale,'Cerrar menú lateral')} onClick={()=>{onMobile(false);mobileTrigger.current?.focus();}}/>}
 
-   <aside id="school-sidebar" className={'sidebar sc-sidebar'+(mobile?' open':'')} aria-label={locale==='en'?'Main sidebar':'Barra lateral principal'}>
+   <aside id="school-sidebar" ref={sidebarRef} className={'sidebar sc-sidebar'+(mobile?' open':'')} aria-label={translateUiText(locale,'Barra lateral principal')}>
      <div className="brand sc-shell-brand">
        {school.logo_url?<img src={school.logo_url} alt="Logotipo de la escuela"/>:<div className="brand-icon"><BookOpen/></div>}
        <div className="sc-sidebar-brand-text"><strong>{school.name}</strong><small>SCHOOL CONTROL</small></div>
-       <button className="mobile close" type="button" aria-label={locale==='en'?'Close menu':'Cerrar menú'} onClick={()=>onMobile(false)}><X/></button>
+       <button ref={mobileCloseTrigger} className="mobile close" type="button" aria-label={translateUiText(locale,'Cerrar menú')} onClick={()=>{onMobile(false);mobileTrigger.current?.focus();}}><X/></button>
      </div>
      <div className="workspace sc-workspace"><span className="status-dot"/>{translateUiText(locale,portalLabels[portal])}<span className="tag">{translate('shell.portal','Portal')}</span></div>
-     <nav className="sc-sidebar-nav" aria-label={locale==='en'?'Main navigation':'Navegación principal'}>
+     <nav className="sc-sidebar-nav" aria-label={translateUiText(locale,'Navegación principal')}>
        {groups.map(group=><section className={'sc-nav-section'+(findNavPath([group],page==='student_details'?'students':page).length?' has-active-item':'')} key={group.title}>
          <button type="button" className="sc-nav-section-title" title={translate("group."+group.title,group.title)} aria-label={translate("group."+group.title,group.title)} aria-expanded={compact?compactGroup===group.title:expanded.includes(group.title)}
            onClick={event=>compact?toggleCompactGroup(group.title,event.currentTarget):toggle(group.title)}>
