@@ -76,7 +76,12 @@ export function generateDashboardConfig(kinds:readonly Kind[]):Config{
   const layout:Item[]=[];
   let x=0,y=0,rowHeight=0;
   for(const widget of config.widgets){
-   const w=widgetWidth(widget.kind,bp),h=widgetHeight(widget.kind);
+   // Four administrator analytics form a balanced 2×2 block; the three
+   // subsequent context widgets then share their own complete desktop row.
+   const adminOverview=bp==='lg'&&kinds.length===presets.admin.length&&
+    kinds.every((kind,index)=>kind===presets.admin[index]);
+   const w=adminOverview&&isAnalyticChartKind(widget.kind)?6:widgetWidth(widget.kind,bp);
+   const h=widgetHeight(widget.kind);
    if(x+w>cols){y+=rowHeight;x=0;rowHeight=0;}
    layout.push({i:widget.id,x,y,w,h});
    x+=w;rowHeight=Math.max(rowHeight,h);
@@ -215,6 +220,27 @@ export function compactAutoStackedAnalytics(config:Config,role:DashboardRole):Co
  * untouched auto-stacks are compacted into available row space.
  */
 export function upgradeSavedDashboardConfig(saved:Config,role:DashboardRole):Config{
+ // Migrate the exact previous administrator factory layout, including saved
+ // version-2 preferences. Do not rewrite moved, renamed, or resized widgets.
+ if(role==='admin'){
+  const factory=defaultConfig('admin');
+  const sameWidgets=saved.widgets.length===factory.widgets.length&&
+   saved.widgets.every((widget,index)=>JSON.stringify(widget)===JSON.stringify(factory.widgets[index]));
+  const previousFactory=generateDashboardConfig(presets.admin);
+  const legacyLayouts={...previousFactory.layouts,lg:(()=>{
+   let x=0,y=0,rowHeight=0;
+   return previousFactory.widgets.map(widget=>{
+    const w=widgetWidth(widget.kind,'lg'),h=widgetHeight(widget.kind);
+    if(x+w>12){y+=rowHeight;x=0;rowHeight=0;}
+    const item={i:widget.id,x,y,w,h};
+    x+=w;rowHeight=Math.max(rowHeight,h);
+    return item;
+   });
+  })()};
+  if(sameWidgets&&Object.keys(columns).every(bp=>
+   JSON.stringify(saved.layouts[bp])===JSON.stringify(legacyLayouts[bp])))
+   return {...factory,schema_version:DASHBOARD_CONFIG_VERSION};
+ }
  if(saved.schema_version!==undefined&&saved.schema_version>=DASHBOARD_CONFIG_VERSION)
   return compactAutoStackedAnalytics(saved,role);
  const legacy=upgradeRoleCharts(upgradeLegacyDashboardConfig(saved,role),role);

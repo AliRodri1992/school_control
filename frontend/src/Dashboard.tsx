@@ -231,7 +231,7 @@ export default function Dashboard({summary,data,role='admin',userId=0,selectedCh
    <button className="secondary" disabled={saving||config.widgets.length>=24}>{ui("Añadir widget")}</button>
    <p>{ui("Arrastra desde el título o ajusta la esquina. En móvil puedes cambiar el orden con las flechas. Guarda para conservar los cambios.")}</p>
   </form>}
-  {ready&&<Grid key={gridRevision}
+  {ready&&<Grid className="school-dashboard-grid" key={gridRevision}
    layouts={Object.fromEntries(Object.entries(config.layouts).map(([bp,items])=>[bp,items.map(item=>({...item,minH:2,maxH:20}))]))}
    breakpoints={{lg:1200,md:800,sm:480,xs:0}} cols={columns} rowHeight={52} margin={[14,14]}
    isDraggable={editing&&!saving} isResizable={editing&&!saving} draggableHandle=".widget-handle"

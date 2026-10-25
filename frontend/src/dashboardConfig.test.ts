@@ -155,6 +155,36 @@ describe('dashboard rows and overflow regression',()=>{
  });
 });
 
+it('keeps four administrator analytics in a 2 by 2 grid and the three context cards on one row',()=>{
+ const config=defaultConfig('admin');
+ const find=(id:string)=>config.layouts.lg.find(item=>item.i===id)!;
+ const analytics=['enrollment_trend','students_by_grade','attendance_rate','admission_status'].map(find);
+ expect(analytics.map(item=>[item.x,item.y,item.w])).toEqual([
+  [0,3,6],[6,3,6],[0,9,6],[6,9,6]
+ ]);
+ const contexts=['attendance_chart','alerts','calendar'].map(find);
+ expect(contexts.map(item=>item.x)).toEqual([0,4,8]);
+ expect(new Set(contexts.map(item=>item.y)).size).toBe(1);
+ expect(contexts[0].y).toBe(15);
+});
+
+it('migrates only an untouched former 3-column administrator preset',()=>{
+ const current=defaultConfig('admin');
+ const old=generateDashboardConfig(presets.admin);
+ let x=0,y=0,rowHeight=0;
+ const lg=old.widgets.map(widget=>{
+  const w=widgetWidth(widget.kind,'lg'),h=widgetHeight(widget.kind);
+  if(x+w>12){y+=rowHeight;x=0;rowHeight=0;}
+  const item={i:widget.id,x,y,w,h};x+=w;rowHeight=Math.max(rowHeight,h);
+  return item;
+ });
+ const saved={...old,layouts:{...old.layouts,lg},schema_version:2};
+ expect(upgradeSavedDashboardConfig(saved,'admin').layouts.lg).toEqual(current.layouts.lg);
+ const moved={...saved,layouts:{...saved.layouts,lg:saved.layouts.lg.map((item,index)=>
+  index===4?{...item,x:1}:item)}};
+ expect(upgradeSavedDashboardConfig(moved,'admin').layouts.lg).toEqual(moved.layouts.lg);
+});
+
 it('ships dedicated role-specific analytics without removing the prior attendance widget',()=>{
  const admin=defaultConfig('admin').widgets.map(w=>w.kind);
  const teacher=defaultConfig('teacher').widgets.map(w=>w.kind);

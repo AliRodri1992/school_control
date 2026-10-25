@@ -215,6 +215,16 @@ it('shows the attendance empty state with a learner-specific explanation',async(
  expect(container.querySelector('[data-empty-kind="calendar"]')).toBeTruthy();
 });
 
+it('keeps the administrator desktop context cards in a shared row',async()=>{
+ vi.mocked(api).mockImplementation(async resource=>resource==='dashboard_preference'?
+  {configuration:defaultConfig('admin'),lock_version:1}:{});
+ const {container}=render(<Dashboard role="admin" userId={1} summary={{}} data={{}}/>);
+ await waitFor(()=>expect(container.querySelectorAll('.school-dashboard-grid .dashboard-widget')).toHaveLength(7));
+ const layout=defaultConfig('admin').layouts.lg;
+ expect(['attendance_chart','alerts','calendar'].map(id=>layout.find(item=>item.i===id)?.y))
+  .toEqual([15,15,15]);
+});
+
 it('shows role-specific analytics and preserves them in the default reset',async()=>{
  vi.mocked(api).mockImplementation(async resource=>resource==='dashboard_preference'?
   {configuration:null,lock_version:null}:{attendance_rate:[{label:'Asistencias',value:12},{label:'Faltas',value:3}]});
