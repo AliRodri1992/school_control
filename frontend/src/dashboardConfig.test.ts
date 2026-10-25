@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {defaultConfig,appendWidget,removeWidget,columns,isMetricKind,widgetHeight,metricKinds,mergeGridLayouts,upgradeLegacyDashboardConfig,upgradeRoleCharts,generateDashboardConfig,allowedChartKinds,upgradeSavedDashboardConfig,compactAutoStackedAnalytics,nextWidgetPosition,widgetWidth,widgetKinds,DASHBOARD_CONFIG_VERSION,type DashboardRole,type Config,type Kind} from './dashboardConfig';
+import {defaultConfig,appendWidget,removeWidget,columns,isMetricKind,widgetHeight,metricKinds,mergeGridLayouts,upgradeLegacyDashboardConfig,upgradeRoleCharts,generateDashboardConfig,allowedChartKinds,upgradeSavedDashboardConfig,compactAutoStackedAnalytics,nextWidgetPosition,widgetWidth,widgetKinds,presets,moveWidgetEarlier,DASHBOARD_CONFIG_VERSION,type DashboardRole,type Config,type Kind} from './dashboardConfig';
 describe('dashboard configuration',()=>{
  it('provides layouts bounded to each screen including a single mobile column',()=>{
   const config=defaultConfig();
@@ -27,8 +27,14 @@ describe('dashboard configuration',()=>{
     added.x+added.w<=item.x||added.y>=item.y+item.h||
     added.y+added.h<=item.y)).toBe(true);
   }
-  expect(next.layouts.lg.at(-1)!.y).toBeLessThan(
+  // The administrator preset ends with a complete three-card context row.
+  expect(next.layouts.lg.at(-1)!.y).toBe(
    Math.max(...initial.layouts.lg.map(item=>item.y+item.h)));
+  const partial=generateDashboardConfig(['students','enrollments','pending_admissions','pending_documents',
+   'enrollment_trend']);
+  const beside=appendWidget(partial,'students_by_grade','Alumnos por grado','extra-grade');
+  expect(beside.layouts.lg.at(-1)!.y).toBe(partial.layouts.lg.at(-1)!.y);
+  expect(beside.layouts.lg.at(-1)!.x).toBe(4);
   expect(next.layouts.xs.at(-1)!.x).toBe(0);
  });
 });
@@ -118,11 +124,15 @@ describe('dashboard rows and overflow regression',()=>{
    expect(item).toEqual({i:kind,x:index*3,y:0,w:3,h:3});
   }
   expect(dashboard.layouts.lg.filter(item=>item.y===0)).toHaveLength(4);
-  const content=dashboard.layouts.lg.filter(item=>!expected.includes(item.i));
-  expect(content).toHaveLength(dashboard.widgets.length-4);
-  expect(content.every(item=>item.y>=3&&item.w===4&&item.h===6)).toBe(true);
+  const analyticKinds=['enrollment_trend','students_by_grade','attendance_rate','admission_status'];
+  const charts=dashboard.layouts.lg.filter(item=>analyticKinds.includes(item.i));
+  expect(charts).toHaveLength(4);
+  expect(charts.every(item=>item.y>=3&&item.w===6&&item.h===6)).toBe(true);
+  const contexts=dashboard.layouts.lg.filter(item=>['attendance_chart','alerts','calendar'].includes(item.i));
+  expect(contexts).toHaveLength(3);
+  expect(contexts.every(item=>item.y===15&&item.w===4&&item.h===6)).toBe(true);
   const finalY=Math.max(...dashboard.layouts.lg.map(item=>item.y+item.h));
-  expect(finalY).toBe(3+Math.ceil(content.length/3)*6);
+  expect(finalY).toBe(21);
  });
  it('lays out cards responsively as four, two, two or one per row',()=>{
   const config=defaultConfig('admin');
@@ -415,8 +425,10 @@ it('reflows only the auto-stacked missing graphs when Matrícula por ciclo was a
  const corrected=upgradeSavedDashboardConfig(old,'admin');
  const ids=['students_by_grade','attendance_rate','admission_status'];
  const lg=ids.map(id=>corrected.layouts.lg.find(item=>item.i===id)!);
- expect(new Set(lg.map(item=>item.y)).size).toBe(1);
- expect(lg.map(item=>item.x)).toEqual([0,4,8]);
+ const first=corrected.layouts.lg.find(item=>item.i==='enrollment_trend')!;
+ expect(lg[0]).toMatchObject({x:4,y:first.y});
+ expect(lg[1]).toMatchObject({x:8,y:first.y});
+ expect(lg[2]).toMatchObject({x:0,y:first.y+6});
  for(const bp of Object.keys(columns)){
   for(const item of base.layouts[bp])
    expect(corrected.layouts[bp].find(entry=>entry.i===item.i)).toEqual(item);
@@ -425,4 +437,20 @@ it('reflows only the auto-stacked missing graphs when Matrícula por ciclo was a
  const manuallyMoved:Config={...old,layouts:{...old.layouts,
   lg:old.layouts.lg.map(item=>item.i==='attendance_rate'?{...item,x:4}:item)}};
  expect(upgradeSavedDashboardConfig(manuallyMoved,'admin').layouts.lg).toEqual(manuallyMoved.layouts.lg);
+});
+
+it('moves a chart earlier without stacking all of the following desktop widgets',()=>{
+ const before=defaultConfig('admin');
+ const index=before.widgets.findIndex(widget=>widget.kind==='admission_status');
+ const next=moveWidgetEarlier(before,index);
+ expect(next.schema_version).toBe(before.schema_version);
+ expect(next.widgets[index-1].kind).toBe('admission_status');
+ expect(before.widgets[index].kind).toBe('admission_status');
+ expect(next.widgets.map(widget=>widget.id).sort()).toEqual(before.widgets.map(widget=>widget.id).sort());
+ const contexts=['attendance_chart','alerts','calendar'];
+ expect(contexts.map(id=>next.layouts.lg.find(item=>item.i===id)?.x)).toEqual([0,4,8]);
+ expect(new Set(contexts.map(id=>next.layouts.lg.find(item=>item.i===id)?.y)).size).toBe(1);
+ expect(next.layouts.md.every(item=>item.x+item.w<=columns.md)).toBe(true);
+ expect(next.layouts.xs.every(item=>item.x===0)).toBe(true);
+ expect(moveWidgetEarlier(before,0)).toBe(before);
 });

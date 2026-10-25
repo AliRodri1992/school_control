@@ -23,8 +23,8 @@ vi.mock('./shared/components/Combobox',()=>({
  </select>
 }));
 vi.mock('react-grid-layout/legacy',()=>({
- Responsive:({children,onLayoutChange}:{children:ReactNode;onLayoutChange:(layout:unknown,all:Record<string,unknown>)=>void})=>
-  <div data-testid="grid">
+ Responsive:({children,onLayoutChange,className}:{children:ReactNode;className?:string;onLayoutChange:(layout:unknown,all:Record<string,unknown>)=>void})=>
+  <div data-testid="grid" className={className}>
    {children}
    <button type="button" data-testid="grid-layout-event" onClick={()=>onLayoutChange([],{
     lg:[{i:'obsolete',x:0,y:0,w:4,h:6}]
@@ -451,4 +451,25 @@ it('does not offer layout recovery for a saved dashboard whose coordinates are u
  await waitFor(()=>expect(container.querySelectorAll('[data-testid="analytics-chart"]')).toHaveLength(4));
  expect(screen.queryByRole('button',{name:'Guardar distribución corregida'})).toBeNull();
  expect(screen.queryByRole('button',{name:'Guardar gráficas recuperadas'})).toBeNull();
+});
+
+it('keeps analytics and the context cards in rows after reordering a dashboard widget',async()=>{
+ vi.mocked(api).mockImplementation(async (resource:string,method?:string)=>{
+  if(resource==='dashboard_preference'&&method==='PUT')return {lock_version:3};
+  if(resource==='dashboard_preference')return {configuration:defaultConfig('admin'),lock_version:2};
+  return {};
+ });
+ const {container}=render(<Dashboard summary={{}} data={{}} role="admin" userId={13}/>);
+ await personalize();
+ await userEvent.click(screen.getByRole('button',{name:'Mover Estado de admisiones antes'}));
+ await userEvent.click(screen.getByRole('button',{name:'Guardar dashboard'}));
+ await waitFor(()=>expect(vi.mocked(api).mock.calls.some(call=>call[0]==='dashboard_preference'&&call[1]==='PUT')).toBe(true));
+ const payload=vi.mocked(api).mock.calls.find(call=>call[0]==='dashboard_preference'&&call[1]==='PUT')?.[2] as
+  {configuration:Config;lock_version:number};
+ const lg=payload.configuration.layouts.lg;
+ expect(['attendance_chart','alerts','calendar'].map(id=>lg.find(item=>item.i===id)?.x)).toEqual([0,4,8]);
+ expect(new Set(['attendance_chart','alerts','calendar'].map(id=>lg.find(item=>item.i===id)?.y)).size).toBe(1);
+ expect(payload.configuration.widgets.filter(widget=>widget.kind.endsWith('chart')).length).toBeGreaterThan(0);
+ expect(payload.configuration.widgets.some(widget=>widget.id==='admission_status')).toBe(true);
+ expect(container.querySelectorAll('.school-dashboard-grid .dashboard-widget')).toHaveLength(7);
 });

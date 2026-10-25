@@ -6,7 +6,7 @@ import {Responsive, WidthProvider} from 'react-grid-layout/legacy';
 import {BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer} from 'recharts';
 import {api} from './api';
 import {notify} from './notifications';
-import {appendWidget, removeWidget, defaultConfig, DASHBOARD_CONFIG_VERSION, widgetKinds, isMetricKind, isAnalyticChartKind, allowedChartKinds, mergeGridLayouts, upgradeSavedDashboardConfig, columns, type Config, type Kind, type DashboardRole} from './dashboardConfig';
+import {appendWidget, removeWidget, moveWidgetEarlier, defaultConfig, DASHBOARD_CONFIG_VERSION, widgetKinds, isMetricKind, isAnalyticChartKind, allowedChartKinds, mergeGridLayouts, upgradeSavedDashboardConfig, columns, type Config, type Kind, type DashboardRole} from './dashboardConfig';
 import DashboardChart from './DashboardChart';
 import DashboardMetricCard from './DashboardMetricCard';
 import DashboardEmptyState from './DashboardEmptyState';
@@ -137,18 +137,7 @@ export default function Dashboard({summary,data,role='admin',userId=0,selectedCh
   return <>
    <button type="button" disabled={index===0||saving}
     aria-label={locale==='en'?`Move ${widget.title} earlier`:`Mover ${widget.title} antes`}
-    onClick={()=>updateWidgets(current=>{
-     const widgets=[...current.widgets];
-     [widgets[index-1],widgets[index]]=[widgets[index],widgets[index-1]];
-     const layouts=Object.fromEntries(Object.entries(current.layouts).map(([bp,items])=>{
-      let y=0;
-      return [bp,widgets.map(w=>{
-       const item=items.find(i=>i.i===w.id)!;
-       const next={...item,x:0,y};y+=item.h;return next;
-      })];
-     }));
-     return {widgets,layouts};
-    })}>↑</button>
+    onClick={()=>updateWidgets(current=>moveWidgetEarlier(current,index))}>↑</button>
    <button type="button" disabled={saving}
     aria-label={locale==='en'?`Remove ${widget.title}`:`Quitar ${widget.title}`}
     onClick={()=>updateWidgets(current=>removeWidget(current,widget.id))}>×</button>

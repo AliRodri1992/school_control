@@ -58,6 +58,28 @@ export function appendWidget(config: Config, kind: Kind, title: string, id: stri
  }));
  return {...config,widgets:[...config.widgets,{id,kind,title}],layouts};
 }
+/** Move a card one position earlier without collapsing every desktop row to x=0. */
+export function moveWidgetEarlier(config:Config,index:number):Config{
+ if(index<=0||index>=config.widgets.length)return config;
+ const widgets=[...config.widgets];
+ [widgets[index-1],widgets[index]]=[widgets[index],widgets[index-1]];
+ const layouts=Object.fromEntries(Object.entries(columns).map(([bp,cols])=>{
+  const existing=config.layouts[bp]||[];
+  const byId=new Map(existing.map(item=>[item.i,item]));
+  let x=0,y=0,rowHeight=0;
+  const arranged=widgets.map(widget=>{
+   const original=byId.get(widget.id);
+   const w=original?.w??widgetWidth(widget.kind,bp);
+   const h=original?.h??widgetHeight(widget.kind);
+   if(x+w>cols){y+=rowHeight;x=0;rowHeight=0;}
+   const next={i:widget.id,x,y,w,h};
+   x+=w;rowHeight=Math.max(rowHeight,h);
+   return next;
+  });
+  return [bp,arranged];
+ }));
+ return {...config,widgets,layouts};
+}
 export function removeWidget(config: Config, id: string): Config {
  return {...config,widgets:config.widgets.filter(w=>w.id!==id), layouts:Object.fromEntries(Object.entries(config.layouts).map(([bp,items])=>[bp,items.filter(i=>i.i!==id)]))};
 }
@@ -173,6 +195,11 @@ export function compactAutoStackedAnalytics(config:Config,role:DashboardRole):Co
  const runs:Array<Widget[]>=[];
  for(let start=0;start<config.widgets.length;start++){
   const first=config.widgets[start];
+  const previous=config.widgets[start-1];
+  // If an earlier chart in the same factory sequence was manually moved,
+  // do not re-interpret its untouched-looking suffix as an auto-restored run.
+  if(previous&&kinds.includes(previous.kind as AnalyticChartKind)&&
+   previous.id===previous.kind&&previous.title===widgetKinds[previous.kind])continue;
   const firstIndex=kinds.indexOf(first.kind as AnalyticChartKind);
   if(firstIndex<0||first.id!==first.kind||first.title!==widgetKinds[first.kind])continue;
   const run=[first];
