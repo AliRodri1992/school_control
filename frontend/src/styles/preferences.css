@@ -66,6 +66,7 @@
 .sc-pref-theme-choice.is-selected .sc-pref-choice-indicator{border-color:#405cf5;background:#405cf5;color:#fff}
 .sc-pref-density-options{padding:25px 25px 16px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .sc-pref-density-choice{position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;min-height:82px;padding:15px 16px;border:1px solid #d9e3f1;border-radius:12px;background:#fff;text-align:left}
+.sc-pref-theme-choice:focus-visible,.sc-pref-density-choice:focus-visible{outline:3px solid #7188fb;outline-offset:3px}
 .sc-pref-density-choice:hover:not(:disabled){background:#f7f9ff;border-color:#8da0ed}
 .sc-pref-density-choice.is-selected{background:#f2f5ff;border-color:#526af2;box-shadow:0 0 0 2px rgba(64,92,245,.09)}
 .sc-pref-density-choice strong{color:#263a63;font:780 24px/1.2 'Plus Jakarta Sans',Inter,sans-serif}

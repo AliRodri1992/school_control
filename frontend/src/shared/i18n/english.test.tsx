@@ -167,3 +167,8 @@ it('clarifies in English that the preferences preview is not applied until saved
  expect(translateUiText('en',text)).toBe('The preview updates as you make selections; settings only apply when you save.');
  expect(translateUiText('es',text)).toBe(text);
 });
+
+it('translates page density option names used by accessible buttons',()=>{
+ expect(translateUiText('en','registros por página')).toBe('records per page');
+ expect(translateUiText('es','registros por página')).toBe('registros por página');
+});

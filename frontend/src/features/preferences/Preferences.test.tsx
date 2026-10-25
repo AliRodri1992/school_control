@@ -158,3 +158,13 @@ it('explains the difference between the live illustrative preview and unapplied 
  expect(screen.getByRole('status').textContent).toContain('Cambios sin guardar');
  expect(document.documentElement.dataset.schoolTheme).toBeUndefined();
 });
+
+it('provides explicit accessible page-density choices for keyboard and screen-reader users',async()=>{
+ render(<Preferences/>);
+ const choice=await screen.findByRole('button',{name:'25 registros por página'});
+ choice.focus();
+ expect(document.activeElement).toBe(choice);
+ await userEvent.keyboard('{Enter}');
+ expect(choice.getAttribute('aria-pressed')).toBe('true');
+ expect(screen.getByRole('button',{name:'10 registros por página'}).getAttribute('aria-pressed')).toBe('false');
+});

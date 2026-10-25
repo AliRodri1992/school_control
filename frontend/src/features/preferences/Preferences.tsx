@@ -156,7 +156,8 @@ export default function Preferences({onSaved}:{onSaved?:(settings:Settings)=>voi
        </div>
       </div>
       <div className="sc-pref-density-options" role="group" aria-label={ui('Registros por página')}>
-       {pageSizes.map(size=><button key={size} type="button" aria-pressed={settings.rows_per_page===size}
+       {pageSizes.map(size=><button key={size} type="button" aria-label={size+' '+ui('registros por página')}
+        aria-pressed={settings.rows_per_page===size}
         className={'sc-pref-density-choice'+(settings.rows_per_page===size?' is-selected':'')}
         disabled={busy} onClick={()=>update('rows_per_page',size)}>
         <strong>{size}</strong><small>{ui('registros')}</small>

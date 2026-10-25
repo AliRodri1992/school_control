@@ -948,6 +948,9 @@ Object.assign(englishByText,{
 Object.assign(englishByText,{
  'La vista previa cambia mientras eliges opciones; los ajustes solo se aplican cuando guardas.':'The preview updates as you make selections; settings only apply when you save.'
 });
+Object.assign(englishByText,{
+ 'registros por página':'records per page'
+});
 export function translateUiText(locale:string,text:string):string{
  if(!locale.toLowerCase().startsWith('en'))return text;
  return englishByText[text]||text;
