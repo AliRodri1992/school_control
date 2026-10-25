@@ -195,7 +195,7 @@ it('removes the redundant portal/page heading while preserving breadcrumbs',()=>
  expect(header?.querySelector('.sc-collapse-toggle')).toBeTruthy();
  const trail=screen.getByRole('navigation',{name:'Ruta de navegación'});
  expect(trail.textContent).toContain('Inicio');
- expect(trail.textContent).toContain('Resumen');
+ expect(trail.textContent).toContain('Dashboard');
 });
 
 it('keeps the sidebar collapse button as the first desktop control',async()=>{
@@ -510,7 +510,7 @@ it('keeps navigation actions functional after scrolling without a visible scroll
 
 it('updates breadcrumb labels when the actual route changes without remounting PortalChrome',()=>{
  const cases=[
-  ['dashboard','Resumen',1],
+  ['dashboard','Dashboard',1],
   ['students','Alumnos y expedientes',1],
   ['admissions','Admisiones',1],
   ['groups','Grupos',2],
@@ -538,18 +538,18 @@ it('navigates from the sidebar to a different module and updates the breadcrumb 
  }
  render(<PageFixture/>);
  const trail=screen.getByRole('navigation',{name:'Ruta de navegación'});
- expect(trail.querySelector('[aria-current="page"]')?.textContent).toBe('Resumen');
+ expect(trail.querySelector('[aria-current="page"]')?.textContent).toBe('Dashboard');
  await userEvent.click(screen.getByRole('button',{name:'Alumnos y expedientes'}));
  expect(trail.querySelector('[aria-current="page"]')?.textContent).toBe('Alumnos y expedientes');
  expect(trail.getAttribute('data-current-page')).toBe('students');
  await userEvent.click(screen.getByRole('button',{name:'Ir al inicio'}));
- expect(trail.querySelector('[aria-current="page"]')?.textContent).toBe('Resumen');
+ expect(trail.querySelector('[aria-current="page"]')?.textContent).toBe('Dashboard');
 });
 
 it('updates breadcrumbs on mobile when changing between nested school modules',()=>{
  const {rerender}=render(<PortalChrome {...props} mobile page="dashboard"><div>Página</div></PortalChrome>);
  const breadcrumb=screen.getByRole('navigation',{name:'Ruta de navegación'});
- expect(breadcrumb.querySelector('[aria-current=page]')?.textContent).toBe('Resumen');
+ expect(breadcrumb.querySelector('[aria-current=page]')?.textContent).toBe('Dashboard');
  rerender(<PortalChrome {...props} mobile page="courses"><div>Página</div></PortalChrome>);
  expect(breadcrumb.querySelector('[aria-current=page]')?.textContent).toBe('Clases');
  expect(breadcrumb.querySelectorAll('.sc-crumb-ancestor')).toHaveLength(2);
@@ -799,4 +799,13 @@ it('shows compact initials in the navbar without rendering a photo',async()=>{
  await userEvent.click(trigger);
  expect(screen.getByRole('button',{name:'Cerrar sesión'})).toBeTruthy();
  expect(screen.getByRole('button',{name:'Ayuda y guía de uso'})).toBeTruthy();
+});
+
+it('uses Dashboard consistently for the admin breadcrumb and navigation in both languages',async()=>{
+ const {container}=render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ expect(screen.getByRole('navigation',{name:'Ruta de navegación'}).querySelector('[aria-current="page"]')?.textContent).toBe('Dashboard');
+ expect(container.querySelector('.sc-sidebar')?.textContent).not.toContain('Resumen');
+ await userEvent.click(screen.getByRole('button',{name:'Idioma'}));
+ await userEvent.click(screen.getByRole('button',{name:'English · EN'}));
+ expect(screen.getByRole('navigation',{name:'Breadcrumbs'}).querySelector('[aria-current="page"]')?.textContent).toBe('Dashboard');
 });

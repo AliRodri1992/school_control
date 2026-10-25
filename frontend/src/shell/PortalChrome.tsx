@@ -18,7 +18,7 @@ import {Bell,BookOpen,House,MoreHorizontal,CalendarClock,ChevronDown,ChevronRigh
 import {api} from '../api';
 import Combobox from '../shared/components/Combobox';
 import type {Row} from '../modules';
-import {currentPortal,makePortalUrl,portalLabels,visibleGroups,findNavPath,breadcrumbPath,breadcrumbDestination,breadcrumbTranslationKey,shouldCondenseBreadcrumbs,type NavItem} from './portalNavigation';
+import {currentPortal,makePortalUrl,portalLabels,visibleGroups,findNavPath,breadcrumbPath,breadcrumbDestination,breadcrumbTranslationKey,shouldCondenseBreadcrumbs,resolveNavigationLabel,type NavItem} from './portalNavigation';
 
 export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmissions,onNavigate,onSearchNavigate,onSearchStudent,searchCollections={},onSignOut,children,childrenList=[],selectedChildId='',onSelectChild=()=>undefined}:{
  user:Row;school:Row;page:string;mobile:boolean;onMobile:(open:boolean)=>void;
@@ -58,7 +58,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const [locale,setLocale]=useState<string>(()=>localStorage.getItem('school-locale')||'es');
  const [availableLocales,setAvailableLocales]=useState<{id:number;code:string;name:string;native_name:string;status:string;text_direction:string}[]>([]);
  const [translations,setTranslations]=useState<Record<string,string>>({});
- const fallbackEn:Record<string,string>={'shell.portal':'Portal','shell.locale':'Language','shell.profile':'My profile and security','shell.help':'Help and user guide','shell.signout':'Sign out','shell.notifications':'Notifications','shell.no_notifications':'No recent notifications.','shell.view_all':'View all notifications','nav.dashboard':'Overview','nav.students':'Students and records','nav.student_records':'Records','nav.student_contacts':'Family contacts','nav.documents':'Documents','nav.admissions':'Admissions','nav.enrollments':'Enrollment and history','nav.academic_years':'School years','nav.groups':'Groups','nav.courses':'Classes','nav.subjects':'Subjects','nav.schedule':'Schedules','nav.attendances':'Attendance','nav.grades':'Grades','nav.classroom':'Virtual classroom','nav.messages':'Messages','nav.announcements':'Announcements','nav.calendar_events':'Calendar','nav.reports':'Reports','nav.imports':'Imports','nav.users':'Users','nav.access_roles':'Roles and permissions','nav.school':'My school','nav.email_templates':'Email templates','nav.languages':'Languages and translations','nav.api_docs':'API documentation','group.Inicio':'Home','group.Gestión escolar':'School management','group.Gestión académica':'Academic management','group.Comunicación':'Communication','group.Análisis y sistema':'Analytics and system','group.Mi actividad':'My activity','group.Mi escuela':'My school','group.Mi familia':'My family','group.Comunidad':'Community','group.Seguimiento':'Progress'};
+ const fallbackEn:Record<string,string>={'shell.portal':'Portal','shell.locale':'Language','shell.profile':'My profile and security','shell.help':'Help and user guide','shell.signout':'Sign out','shell.notifications':'Notifications','shell.no_notifications':'No recent notifications.','shell.view_all':'View all notifications','nav.dashboard':'Dashboard','nav.students':'Students and records','nav.student_records':'Records','nav.student_contacts':'Family contacts','nav.documents':'Documents','nav.admissions':'Admissions','nav.enrollments':'Enrollment and history','nav.academic_years':'School years','nav.groups':'Groups','nav.courses':'Classes','nav.subjects':'Subjects','nav.schedule':'Schedules','nav.attendances':'Attendance','nav.grades':'Grades','nav.classroom':'Virtual classroom','nav.messages':'Messages','nav.announcements':'Announcements','nav.calendar_events':'Calendar','nav.reports':'Reports','nav.imports':'Imports','nav.users':'Users','nav.access_roles':'Roles and permissions','nav.school':'My school','nav.email_templates':'Email templates','nav.languages':'Languages and translations','nav.api_docs':'API documentation','group.Inicio':'Home','group.Gestión escolar':'School management','group.Gestión académica':'Academic management','group.Comunicación':'Communication','group.Análisis y sistema':'Analytics and system','group.Mi actividad':'My activity','group.Mi escuela':'My school','group.Mi familia':'My family','group.Comunidad':'Community','group.Seguimiento':'Progress'};
  const translate=(key:string,fallback:string)=>translations[key]||(locale==='en'?fallbackEn[key]:undefined)||translateUiText(locale,fallback);
  const sectionIcons:Record<string,ReactNode>={'Inicio':<House size={21}/>,'Alumnos':<Users size={21}/>,'Matrícula':<GraduationCap size={21}/>,'Académico':<BookOpen size={21}/>,'Asistencia':<ClipboardCheck size={21}/>,'Documentos':<FolderOpen size={21}/>,'Reportes':<BarChart3 size={21}/>,'Configuración':<Settings size={21}/>, 'Gestión escolar':<Users size={21}/>, 'Gestión académica':<GraduationCap size={21}/>, 'Comunicación':<MessageSquare size={21}/>, 'Análisis y sistema':<BarChart3 size={21}/>, 'Mi actividad':<BookOpenCheck size={21}/>, 'Mi escuela':<School size={21}/>, 'Mi familia':<Users size={21}/>, 'Comunidad':<MessageSquare size={21}/>, 'Seguimiento':<ClipboardList size={21}/>};
  const moduleIcons:Record<string,ReactNode>={
@@ -303,7 +303,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    const exact=(item.key==='students'&&page==='student_details')||item.key===page;
    const isAncestor=!exact&&findNavPath([{title:'',items:[item]}],page).length>0;
    const isOpen=expanded.includes(item.key);
-   const translated=translate('nav.'+item.key,item.title);
+   const translated=resolveNavigationLabel(portal,item.key,translate('nav.'+item.key,item.title));
    return <div className="sc-nav-node" key={item.key+'-'+depth}>
      <div className={'sc-nav-item'+(exact?' is-active':'')+(isAncestor?' is-ancestor':'')}
        style={{paddingLeft:Math.min(depth,3)*8}}>
@@ -323,7 +323,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    </div>;
  }
  const trail=breadcrumbPath(groups,page,portal);
- const crumbLabel=(key:string,title:string)=>translate(breadcrumbTranslationKey(key),title);
+ const crumbLabel=(key:string,title:string)=>resolveNavigationLabel(portal,key,translate(breadcrumbTranslationKey(key),title));
  // Measure the complete trail whenever the content or available space changes.
  // Collapsed ancestors remain accessible in the existing overflow menu.
  const crumbKey=trail.map(item=>item.key).join('|');

@@ -89,7 +89,7 @@ end
   [ "shell.locale", "Idioma", "Language" ],
   [ "shell.help", "Inicio y ayuda", "Home and help" ],
   [ "shell.current", "Inicio", "Home" ],
-  [ "nav.dashboard", "Resumen", "Overview" ],
+  [ "nav.dashboard", "Dashboard", "Dashboard" ],
   [ "nav.students", "Alumnos y expedientes", "Students and records" ],
   [ "nav.student_contacts", "Contactos familiares", "Family contacts" ],
   [ "nav.documents", "Documentos", "Documents" ],

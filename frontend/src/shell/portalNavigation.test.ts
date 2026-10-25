@@ -1,5 +1,5 @@
 import {expect,it} from 'vitest';
-import {currentPortal,findNavPath,visibleGroups,portalGroups,breadcrumbPath,breadcrumbDestination,breadcrumbTranslationKey,shouldCondenseBreadcrumbs,resolvePortalLocation} from './portalNavigation';
+import {currentPortal,findNavPath,visibleGroups,portalGroups,breadcrumbPath,breadcrumbDestination,breadcrumbTranslationKey,shouldCondenseBreadcrumbs,resolvePortalLocation,resolveNavigationLabel} from './portalNavigation';
 
 it('provides distinct navigation group structures for each school portal',()=>{
  const portals=['admin','teachers','students','tutors'] as const;
@@ -30,7 +30,7 @@ it('hides inaccessible modules rather than rendering disabled navigation entries
  expect(breadcrumbPath(groups,'student_details','admin').map(item=>item.title)).toEqual(['Alumnos','Expedientes','Ficha del alumno']);
  expect(breadcrumbPath(groups,'student_details','tutors').map(item=>item.title)).toEqual(['Mis hijos','Expedientes','Ficha del alumno']);
  expect(breadcrumbPath(groups,'preferences','admin').map(item=>item.title)).toEqual(['Preferencias']);
- expect(breadcrumbPath(groups,'dashboard','admin').map(item=>item.title)).toEqual(['Resumen']);
+ expect(breadcrumbPath(groups,'dashboard','admin').map(item=>item.title)).toEqual(['Dashboard']);
 });
 
 it('resolves the student-records breadcrumb to an existing route in every portal',()=>{
@@ -98,4 +98,14 @@ it('supports the real authenticated legal footer destinations without undocument
  expect(resolvePortalLocation('/admin/terms','admin',{})).toBe('terms');
  expect(resolvePortalLocation('/teachers/privacy','teacher',{})).toBe('privacy');
  expect(resolvePortalLocation('/tutors/terms','guardian',{})).toBe('terms');
+});
+
+it('keeps the admin Dashboard label even with an outdated published language bundle',()=>{
+ expect(resolveNavigationLabel('admin','dashboard','Resumen')).toBe('Dashboard');
+ expect(resolveNavigationLabel('admin','dashboard','Overview')).toBe('Dashboard');
+ expect(resolveNavigationLabel('admin','dashboard','Dashboard')).toBe('Dashboard');
+ expect(resolveNavigationLabel('admin','reports','Reportes')).toBe('Reportes');
+ expect(resolveNavigationLabel('teachers','dashboard','Mi día')).toBe('Mi día');
+ expect(resolveNavigationLabel('students','dashboard','Mi inicio')).toBe('Mi inicio');
+ expect(resolveNavigationLabel('tutors','dashboard','Inicio familiar')).toBe('Inicio familiar');
 });

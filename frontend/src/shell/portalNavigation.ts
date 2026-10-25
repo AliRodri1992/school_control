@@ -5,6 +5,9 @@ export type NavGroup={title:string;items:NavItem[]};
 export const roots:Record<PortalId,string>={admin:'/admin',teachers:'/teachers',students:'/students',tutors:'/tutors'};
 export const currentPortal=(role:string):PortalId=>({admin:'admin',teacher:'teachers',student:'students',guardian:'tutors'} as Record<string,PortalId>)[role]||'tutors';
 export const portalLabels:Record<PortalId,string>={admin:'Administración',teachers:'Docentes',students:'Alumnos',tutors:'Tutores'};
+/** Keep the renamed admin option consistent even if a published translation still says Resumen. */
+export const resolveNavigationLabel=(portal:PortalId,key:string,translated:string):string=>
+ portal==='admin'&&key==='dashboard'?'Dashboard':translated;
 const aliases:Record<string,string>={dashboard:'dashboard.show',documents:'student_documents.index',classroom:'assignments.index',schedule:'schedule_slots.index',school:'schools.update',imports:'students.create',languages:'access_roles.update',api_docs:'access_roles.index'};
 export const permissionFor=(key:string):string=>aliases[key]||(key+'.index');
 export const importerPermissions=['students.create','subjects.create','groups.create','grades.create','users.create'] as const;
@@ -17,7 +20,7 @@ export function canImportFromPermissions(permissions:Row={}):boolean{
 }
 export const portalGroups:Record<PortalId,NavGroup[]>={
  admin:[
-  {title:'Inicio',items:[{key:'dashboard',title:'Resumen'}]},
+  {title:'Inicio',items:[{key:'dashboard',title:'Dashboard'}]},
   {title:'Gestión escolar',items:[{key:'students',title:'Alumnos y expedientes',children:[{key:'student_contacts',title:'Contactos familiares'},{key:'documents',title:'Documentos'}]},{key:'admissions',title:'Admisiones',children:[{key:'enrollments',title:'Matrícula y trayectoria'}]}]},
   {title:'Gestión académica',items:[{key:'academic_years',title:'Ciclos escolares',children:[{key:'groups',title:'Grupos',children:[{key:'courses',title:'Clases'}]}]},{key:'subjects',title:'Materias'},{key:'schedule',title:'Horarios'},{key:'attendances',title:'Asistencia'},{key:'grades',title:'Calificaciones'}]},
   {title:'Comunicación',items:[{key:'classroom',title:'Aula virtual'},{key:'messages',title:'Mensajes'},{key:'announcements',title:'Comunicados'},{key:'calendar_events',title:'Calendario'}]},
