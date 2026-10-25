@@ -161,3 +161,9 @@ it('localizes the full-width preference workspace, the single save toast, and se
   expect(translateUiText('es',text)).toBe(text);
  }
 });
+
+it('clarifies in English that the preferences preview is not applied until saved',()=>{
+ const text='La vista previa cambia mientras eliges opciones; los ajustes solo se aplican cuando guardas.';
+ expect(translateUiText('en',text)).toBe('The preview updates as you make selections; settings only apply when you save.');
+ expect(translateUiText('es',text)).toBe(text);
+});

@@ -82,7 +82,7 @@ export default function Preferences({onSaved}:{onSaved?:(settings:Settings)=>voi
    <button type="button" className="secondary" onClick={()=>setAttempt(value=>value+1)}>
     <RefreshCw size={16} aria-hidden="true"/>{ui('Reintentar')}
    </button>
-  </div>:<form className="sc-pref-workspace" onSubmit={save}>
+  </div>:<form className="sc-pref-workspace" onSubmit={save} aria-busy={busy}>
    <header className="sc-pref-banner">
     <div className="sc-pref-banner-copy">
      <span className="sc-pref-banner-label"><SlidersHorizontal size={15} aria-hidden="true"/>{ui('TU ESPACIO, TUS REGLAS')}</span>
@@ -191,6 +191,7 @@ export default function Preferences({onSaved}:{onSaved?:(settings:Settings)=>voi
          </div>
         </div>
        </div>
+       <p className="sc-pref-preview-edit-note">{ui('La vista previa cambia mientras eliges opciones; los ajustes solo se aplican cuando guardas.')}</p>
        <span className="sc-pref-preview-disclaimer">{ui('Vista ilustrativa · No representa información real de la escuela')}</span>
       </div>
      </section>
@@ -226,3 +227,4 @@ export default function Preferences({onSaved}:{onSaved?:(settings:Settings)=>voi
    </footer>
   </form>}
  </section>;
+}

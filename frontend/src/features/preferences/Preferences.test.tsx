@@ -147,3 +147,14 @@ it('respects the existing school theme until Save and shows clear selected-butto
  expect(within(theme).getByRole('button',{name:/Claro/}).getAttribute('aria-pressed')).toBe('true');
  expect(document.documentElement.dataset.schoolTheme).toBe('dark');
 });
+
+it('explains the difference between the live illustrative preview and unapplied settings',async()=>{
+ render(<Preferences/>);
+ const preview=await screen.findByLabelText('Vista previa ilustrativa del sistema');
+ expect(preview).toBeTruthy();
+ expect(screen.getByText('La vista previa cambia mientras eliges opciones; los ajustes solo se aplican cuando guardas.')).toBeTruthy();
+ expect(document.documentElement.dataset.schoolTheme).toBeUndefined();
+ await userEvent.click(screen.getByRole('button',{name:/Oscuro/}));
+ expect(screen.getByRole('status').textContent).toContain('Cambios sin guardar');
+ expect(document.documentElement.dataset.schoolTheme).toBeUndefined();
+});

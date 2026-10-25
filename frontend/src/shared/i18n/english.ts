@@ -945,6 +945,9 @@ Object.assign(englishByText,{
  "Guardar preferencias": "Save preferences",
  "Preferencias actualizadas correctamente.": "Preferences updated successfully."
 });
+Object.assign(englishByText,{
+ 'La vista previa cambia mientras eliges opciones; los ajustes solo se aplican cuando guardas.':'The preview updates as you make selections; settings only apply when you save.'
+});
 export function translateUiText(locale:string,text:string):string{
  if(!locale.toLowerCase().startsWith('en'))return text;
  return englishByText[text]||text;
