@@ -478,8 +478,10 @@
 .sc-shell .sc-sidebar .sc-sidebar-foot{border-color:#245586}
 .sc-shell .sc-sidebar .sc-sidebar-account{background:rgba(255,255,255,.05);border-radius:12px}
 .sc-shell .sc-sidebar .sc-sidebar-account:hover{background:rgba(255,255,255,.13)}
-.sc-shell .sc-sidebar .sc-sidebar-avatar{overflow:hidden;background:#cce7ff;border-radius:50%;width:41px;height:41px}
-.sc-shell .sc-sidebar .sc-sidebar-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.sc-shell .sc-sidebar .sc-sidebar-avatar{box-sizing:border-box;display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;aspect-ratio:1;border:1px solid rgba(255,255,255,.7);border-radius:50%;padding:0;background:#d9eaff;color:#123d73;font-size:14px;font-weight:800;line-height:1;letter-spacing:.4px;text-align:center;white-space:nowrap;box-shadow:0 2px 8px rgba(0,22,61,.18)}
+.sc-shell .sc-sidebar .sc-sidebar-foot{display:block;width:100%;min-width:0}
+.sc-shell .sc-sidebar .sc-sidebar-foot .sc-sidebar-account{display:flex;box-sizing:border-box;width:100%;min-height:64px;margin:0;padding:9px 12px;align-items:center;justify-content:flex-start;gap:12px;text-align:left}
+@media(min-width:761px){.sc-shell.sc-shell-collapsed .sc-sidebar .sc-sidebar-foot .sc-sidebar-account{min-height:60px;padding:9px 0;justify-content:center;gap:0}}
 .sc-shell .sc-sidebar .sc-sidebar-user strong{font-size:12px}
 .sc-shell .sc-sidebar .sc-sidebar-user small{font-size:11px}
 .sc-shell .sc-topbar .sc-account-button{display:flex;flex-direction:row;align-items:center;gap:10px;border-left:1px solid rgba(236,247,255,.24);padding:4px 0 4px 14px}

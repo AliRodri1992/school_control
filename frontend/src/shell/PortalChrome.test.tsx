@@ -566,3 +566,34 @@ it('shows a readable compact footer with language switching',async()=>{
  expect(screen.getByRole('button',{name:'Privacy notice'})).toBeTruthy();
  expect(screen.getByRole('button',{name:'Terms of use'})).toBeTruthy();
 });
+
+it('shows the signed-in user initials rather than an image in the sidebar account circle',async()=>{
+ const {container}=render(<PortalChrome {...props} user={{...user,name:'Ana María López',avatar_url:'/real-avatar.jpg'}}><div>Página</div></PortalChrome>);
+ const sidebarButton=container.querySelector<HTMLButtonElement>('.sc-sidebar .sc-sidebar-account')!;
+ const avatar=sidebarButton.querySelector('.sc-sidebar-avatar')!;
+ expect(avatar.textContent).toBe('AL');
+ expect(avatar.getAttribute('aria-hidden')).toBe('true');
+ expect(avatar.querySelector('img')).toBeNull();
+ expect(sidebarButton.querySelector('.sc-sidebar-user strong')?.textContent).toBe('Ana María López');
+ expect(container.querySelector('.sc-topbar-avatar img')?.getAttribute('src')).toBe('/real-avatar.jpg');
+ await userEvent.click(sidebarButton);
+ expect(screen.getByRole('button',{name:'Mi perfil y seguridad'})).toBeTruthy();
+ expect(screen.getByRole('button',{name:'Cerrar sesión'})).toBeTruthy();
+});
+
+it('keeps the circular account initials in the centered rail when the sidebar collapses',async()=>{
+ localStorage.setItem('school-sidebar-collapsed','true');
+ const {container}=render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ const shell=container.querySelector('.sc-shell')!;
+ expect(shell.classList.contains('sc-shell-collapsed')).toBe(true);
+ const sidebarButton=container.querySelector<HTMLButtonElement>('.sc-sidebar .sc-sidebar-account')!;
+ expect(sidebarButton.querySelector('.sc-sidebar-avatar')?.textContent).toBe('MG');
+ expect(sidebarButton.querySelector('.sc-sidebar-user')).toBeTruthy();
+ await userEvent.click(sidebarButton);
+ expect(screen.getByRole('button',{name:'Preferencias'})).toBeTruthy();
+});
+
+it('keeps the initials readable in the mobile sidebar profile area',()=>{
+ const {container}=render(<PortalChrome {...props} mobile><div>Página</div></PortalChrome>);
+ expect(container.querySelector('.sc-sidebar.open .sc-sidebar-avatar')?.textContent).toBe('MG');
+});

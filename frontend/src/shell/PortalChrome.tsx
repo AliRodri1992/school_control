@@ -4,6 +4,7 @@ import {useTopbarMenuPosition} from './useTopbarMenuPosition';
 import {sidebarSections} from './sidebarPresentation';
 import {revealActiveSidebarItem,useSidebarScroll} from './useSidebarScroll';
 import {SidebarBrand} from './SidebarBrand';
+import {userInitials} from './userInitials';
 import {PortalFooter} from './PortalFooter';
 import {translateUiText} from '../shared/i18n/english';
 import {useEffect,useLayoutEffect,useRef,useState,type ReactNode} from 'react';
@@ -331,7 +332,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
      <div className="sidebar-bottom sc-sidebar-foot sc-flyout-holder" ref={sidebarAccountRef}>
        <button className="sc-sidebar-account" type="button" aria-label={translateUiText(locale,'Opciones de cuenta de ')+user.name}
          aria-expanded={accountTarget==='sidebar'} onClick={()=>{setAccountTarget(v=>v==='sidebar'?null:'sidebar');setNotificationsOpen(false);}}>
-         <span className="sc-sidebar-avatar"><img src={user.avatar_url||'/images/default-account-avatar.svg'} alt="" loading="lazy" referrerPolicy="no-referrer"/></span>
+         <span className="sc-sidebar-avatar" aria-hidden="true">{userInitials(user.name)}</span>
          <span className="sc-sidebar-user"><strong>{user.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span><ChevronDown className="sc-sidebar-user-chevron" size={16}/>
        </button>
        {accountTarget==='sidebar'&&accountMenu()}
