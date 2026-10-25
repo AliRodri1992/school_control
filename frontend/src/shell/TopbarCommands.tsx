@@ -46,8 +46,7 @@ export default function TopbarCommands({groups,records,can,locale,translate,onNa
   return()=>{document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',esc);};
  },[searchOpen]);
  const choose=(item:Hit)=>{setSearchOpen(false);if(item.student)onStudent(item.student);else onNavigate(item.page,item.id.startsWith('module:')?undefined:query.trim());};
- return <>
-  <div className="sc-global-search sc-flyout-holder" ref={searchHost} role="search">
+ return <div className="sc-global-search sc-flyout-holder" ref={searchHost} role="search">
    <button type="button" ref={searchButton} className="sc-global-search-trigger" aria-label={searchLabel} aria-haspopup="true" aria-expanded={searchOpen}
     onClick={()=>{setSearchOpen(true);onOpen();}}><Search size={19} aria-hidden="true"/><span className="sc-global-search-placeholder">{en?'Search students, groups, documents…':'Buscar alumnos, grupos, documentos…'}</span><kbd>⌘K</kbd></button>
    {searchOpen&&<div className="sc-flyout sc-global-search-menu" role="region" aria-label={en?'Quick search':'Búsqueda rápida'}>
@@ -66,7 +65,5 @@ export default function TopbarCommands({groups,records,can,locale,translate,onNa
      {!results.length&&<p>{en?'No matching records.':'No hay coincidencias.'}</p>}
     </div><footer>{en?'↑↓ Navigate · Enter Open · Esc Close':'↑↓ Navegar · Enter Abrir · Esc Cerrar'}</footer>
    </div>}
-  </div>
-
- </>;
+  </div>;
 }

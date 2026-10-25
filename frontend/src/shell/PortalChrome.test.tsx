@@ -307,3 +307,20 @@ it('places the portrait before the user name and role at the far right of the na
  expect(account.children[1].querySelector('small')?.textContent).toBe('Administración');
  expect(account.querySelector('img')?.getAttribute('src')).toBe('/images/default-account-avatar.svg');
 });
+
+it('keeps institution identity available without repeating it in the new brand heading',()=>{
+ const {container}=render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ const brand=container.querySelector('.sc-sidebar .sc-shell-brand');
+ expect(brand?.getAttribute('title')).toBe('Primaria Hidalgo');
+ expect(brand?.querySelector('strong')?.textContent).toBe('School Control');
+ expect(brand?.querySelector('small')?.textContent).toBe('Gestión escolar inteligente');
+});
+
+it('keeps the portrait first and profile details readable when an actual photo is available',()=>{
+ const {container}=render(<PortalChrome {...props} user={{...user,avatar_url:'/real-avatar.jpg'}}><div>Página</div></PortalChrome>);
+ const button=container.querySelector('.sc-topbar .sc-account-button')!;
+ expect(button.children[0].querySelector('img')?.getAttribute('src')).toBe('/real-avatar.jpg');
+ expect(button.children[1].querySelector('strong')?.textContent).toBe('María González');
+ expect(button.children[1].querySelector('small')?.textContent).toBe('Administración');
+ expect(screen.queryByRole('button',{name:'Nuevo registro'})).toBeNull();
+});

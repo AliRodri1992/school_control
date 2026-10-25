@@ -395,22 +395,12 @@
 .sc-global-result-text small{font-size:11px;color:#8192ab}
 .sc-global-search-results p{padding:18px;font-size:13px;color:#7c8ca3}
 .sc-global-search-menu footer{background:#f8fbff;border-top:1px solid #edf1f8;padding:10px 14px;color:#8092ac;font-size:11px}
-.sc-shell .sc-quick-trigger{height:43px;display:flex;align-items:center;gap:8px;padding:0 15px;background:linear-gradient(135deg,#128df4,#0363cf);border:1px solid rgba(186,219,255,.4);color:#fff;font-weight:750;border-radius:23px;box-shadow:0 5px 13px rgba(5,38,94,.19)}
-.sc-shell .sc-quick-trigger:hover{background:linear-gradient(135deg,#31a1ff,#0870db)}
-.sc-quick-menu{padding:9px!important}
-.sc-quick-menu>strong{display:block;padding:8px 10px 12px;font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:#7990ac}
-.sc-quick-menu>button{display:flex;align-items:center;gap:10px;min-height:44px;width:100%;padding:6px 9px;border-radius:9px;text-align:left;font-size:13px;color:#263d61}
-.sc-quick-menu>button:hover{background:#eff5fe}
-.sc-quick-item-icon{width:34px;height:34px;display:grid;place-items:center;background:#e7f7f3;color:#067d70;border-radius:10px}
-.sc-global-search-trigger:focus-visible,.sc-quick-trigger:focus-visible{outline:3px solid #b5dbff;outline-offset:3px}
 @media(max-width:1190px){.sc-shell .sc-topbar .sc-account-identity{display:none}}
 @media(max-width:760px){
  .sc-shell .sc-topbar{gap:7px;min-height:63px;padding:8px}
  .sc-shell .sc-global-search{max-width:none;flex:none;width:42px;margin-left:auto;margin-right:0}
  .sc-shell .sc-global-search-trigger{width:42px;height:42px;justify-content:center;padding:0;background:rgba(255,255,255,.11);border:1px solid rgba(224,241,255,.22);box-shadow:none;color:#fff}
  .sc-global-search-placeholder,.sc-global-search-trigger kbd{display:none}
- .sc-shell .sc-quick-trigger{width:42px;height:42px;padding:0;justify-content:center;border-radius:12px}
- .sc-shell .sc-quick-trigger span,.sc-shell .sc-quick-trigger>svg:last-child{display:none}
  .sc-shell .sc-topbar .sc-language-button{width:42px;min-width:42px;height:42px;justify-content:center;padding:0;gap:0}
  .sc-language-code,.sc-language-chevron{display:none}
  .sc-shell .sc-topbar .sc-account-button{padding:3px 0 3px 6px}
@@ -419,7 +409,6 @@
 @media(max-width:365px){.sc-shell .sc-topbar{gap:4px;padding-inline:5px}.sc-shell .sc-topbar .sc-topbar-brand{display:none}.sc-shell .sc-topbar .sc-account-button>svg{display:none}}
 
 /* Visible keyboard states and readable overlay text on all header variants. */
-.sc-global-search-result:focus-visible,.sc-quick-menu>button:focus-visible,.sc-global-search-input button:focus-visible{outline:2px solid #4f82d5;outline-offset:-2px}
 .sc-global-search-menu[aria-label],.sc-quick-menu[aria-label]{color:#233b60}
 .sc-shell .sc-topbar .sc-global-search-menu footer{line-height:1.4}
 @media(max-width:760px){.sc-shell .sc-topbar .sc-quick-menu,.sc-shell .sc-topbar .sc-global-search-menu{max-width:calc(100vw - 24px)}}
@@ -489,3 +478,11 @@
  .sc-shell .sc-sidebar .sc-shell-brand{padding-top:8px}
 }
 @media(prefers-reduced-motion:reduce){.sc-shell .sc-sidebar .sc-nav-section-title{transition:none}}
+
+
+/* Keep the institutional brand discoverable, and preserve account text at desktop sizes. */
+.sc-shell .sc-sidebar .sc-shell-brand[title]{cursor:default}
+.sc-shell .sc-sidebar .sc-shell-brand:focus-within .sc-sidebar-system-mark{box-shadow:0 0 0 2px rgba(163,208,255,.7)}
+.sc-shell .sc-topbar .sc-account-button .sc-account-identity{flex:0 1 auto}
+.sc-shell .sc-topbar .sc-account-button .sc-account-identity strong{line-height:1.3}
+.sc-shell .sc-topbar .sc-account-button .sc-account-identity small{line-height:1.2}

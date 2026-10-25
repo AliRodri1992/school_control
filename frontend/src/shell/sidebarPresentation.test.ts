@@ -10,7 +10,11 @@ it('renders the reference categories with unique allowed routes',()=>{
 });
 it('does not show unauthorized modules',()=>{
  const sections=sidebarSections('admin',visibleGroups('admin',p=>p==='dashboard.show'||p==='students.index'));
- expect(sections.flatMap(s=>s.items.map(i=>i.key))).toEqual(['dashboard','students']);
+ // Messaging is explicitly available to all school roles in visibleGroups.
+ const available=sections.flatMap(s=>s.items.map(i=>i.key));
+ expect(available).toEqual(['dashboard','students','messages']);
+ expect(available).not.toContain('users');
+ expect(available).not.toContain('access_roles');
 });
 it('preserves non-admin menus',()=>{
  for(const role of ['teachers','students','tutors'] as const){

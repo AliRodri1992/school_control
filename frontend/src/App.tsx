@@ -129,14 +129,14 @@ export default function App(){
    return data[source]||[];
  }
  const optionName = (row:Row) => row.label||row.full_name||row.name||row.title||String(row.id);
- function createOrEdit(record?:Row,targetPage=page){
-   const module = translatedModules[targetPage];
+ function createOrEdit(record?:Row){
+   const module = translatedModules[page];
    let fields = module.fields.filter(f=>!(f.key==='guardian_id'&&user?.role==='guardian'));
-   if(targetPage==='student_contacts'&&record)fields=fields.filter(f=>f.key!=='student_id');
-   if(targetPage==='users'&&record)fields=fields.filter(f=>['name','email'].includes(f.key));
+   if(page==='student_contacts'&&record)fields=fields.filter(f=>f.key!=='student_id');
+   if(page==='users'&&record)fields=fields.filter(f=>['name','email'].includes(f.key));
    setFieldErrors({});setDialog({title:`${ui(record?'Editar':'Registrar')} ${module.singular}`,fields,values:record||{},submit:async(values)=>{
-     const updateAsCreate=['attendances','grades'].includes(targetPage);
-     await api(record&&!updateAsCreate?`${targetPage}/${record.id}`:targetPage,record&&!updateAsCreate?'PATCH':'POST',values);setDialog(null);
+     const updateAsCreate=['attendances','grades'].includes(page);
+     await api(record&&!updateAsCreate?`${page}/${record.id}`:page,record&&!updateAsCreate?'PATCH':'POST',values);setDialog(null);
    }});
  }
  function approve(record:Row){

@@ -260,7 +260,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    {mobile&&<button type="button" className="sc-sidebar-backdrop" aria-label={translateUiText(locale,'Cerrar menú lateral')} onClick={()=>{onMobile(false);mobileTrigger.current?.focus();}}/>}
 
    <aside id="school-sidebar" ref={sidebarRef} className={'sidebar sc-sidebar'+(mobile?' open':'')} aria-label={translateUiText(locale,'Barra lateral principal')}>
-     <div className="brand sc-shell-brand">
+     <div className="brand sc-shell-brand" title={school.name}>
        <span className="sc-sidebar-system-mark" aria-hidden="true"><BookOpen size={32} strokeWidth={2.25}/></span>
        <div className="sc-sidebar-brand-text"><strong>School Control</strong><small>{locale==='en'?'Smart school management':'Gestión escolar inteligente'}</small></div>
        <button ref={mobileCloseTrigger} className="mobile close" type="button" aria-label={translateUiText(locale,'Cerrar menú')} onClick={()=>{onMobile(false);mobileTrigger.current?.focus();}}><X/></button>
@@ -287,7 +287,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
      <div className="sidebar-bottom sc-sidebar-foot sc-flyout-holder" ref={sidebarAccountRef}>
        <button className="sc-sidebar-account" type="button" aria-label={translateUiText(locale,'Opciones de cuenta de ')+user.name}
          aria-expanded={accountTarget==='sidebar'} onClick={()=>{setAccountTarget(v=>v==='sidebar'?null:'sidebar');setNotificationsOpen(false);}}>
-         <span className="sc-sidebar-avatar"><img src={user.avatar_url||'/images/default-account-avatar.svg'} alt="" loading="lazy"/></span>
+         <span className="sc-sidebar-avatar"><img src={user.avatar_url||'/images/default-account-avatar.svg'} alt="" loading="lazy" referrerPolicy="no-referrer"/></span>
          <span className="sc-sidebar-user"><strong>{user.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span><ChevronDown className="sc-sidebar-user-chevron" size={16}/>
        </button>
        {accountTarget==='sidebar'&&accountMenu()}
