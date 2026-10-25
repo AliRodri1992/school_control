@@ -9,13 +9,14 @@ type Props={
  title?:string;
  description?:string;
  className?:string;
+ announceError?:boolean;
 };
 
 /**
  * Consistent mascot-led empty states for all school lists.
  * A successful empty result is different from a denied or failed request.
  */
-export default function TableEmptyState({mode='empty',canCreate=true,title,description,className=''}:Props){
+export default function TableEmptyState({mode='empty',canCreate=true,title,description,className='',announceError=true}:Props){
  const {locale,t}=useSchoolLocale();
  const english=locale.toLowerCase().startsWith('en');
  const fallback={
@@ -48,7 +49,7 @@ export default function TableEmptyState({mode='empty',canCreate=true,title,descr
   }
  }[mode];
  return <div className={'empty sc-auli-empty sc-table-empty-state '+className}
-   role={mode==='error'?'alert':'status'} data-empty-state={mode}>
+   role={mode==='error'&&announceError?'alert':'status'} data-empty-state={mode}>
   <AuliGuide compact mood={fallback.mood}
     title={title??t('table.'+mode+'.title',fallback.title)}
     text={description??t('table.'+mode+(mode==='empty'&&!canCreate?'.readonly':'')+'.description',fallback.description)}/>
