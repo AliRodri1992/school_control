@@ -93,3 +93,12 @@
 [data-school-theme=dark] .sc-profile-card-heading h2,[data-school-theme=dark] .sc-profile-field label,[data-school-theme=dark] .sc-profile-option-copy strong{color:#edf2ff}
 [data-school-theme=dark] .sc-profile-field input:not([readOnly]){background:#fff;color:#17233f}
 [data-school-theme=dark] .sc-profile-notification-option,[data-school-theme=dark] .sc-profile-form-actions{background:#1a2c55}
+
+/* The profile error/retry state must remain usable on narrow portal layouts. */
+@media(max-width:600px){
+ .sc-profile-load-error{flex-wrap:wrap;gap:12px;padding:20px}
+ .sc-profile-load-error>div{flex:1 1 180px;min-width:0}
+ .sc-profile-load-error button{width:100%;margin:0}
+ .sc-profile-loading{padding:20px}
+}
+.sc-profile-load-error p,.sc-profile-form-error{overflow-wrap:anywhere}

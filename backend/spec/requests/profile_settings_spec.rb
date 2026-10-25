@@ -35,3 +35,15 @@ RSpec.describe "Self-service profile settings", type: :request do
     expect(response).to have_http_status(:unauthorized)
   end
 end
+
+RSpec.describe "Profile name normalization", type: :request do
+  it "trims extra spaces for requests that bypass the React form" do
+    user = create(:user, role: "guardian")
+    post "/api/session", params: { email: user.email, password: "School-test-password-26" }, as: :json
+    expect(response).to have_http_status(:ok)
+    patch "/api/profile", params: { name: "  Ana Rodríguez  " }, as: :json
+    expect(response).to have_http_status(:ok)
+    expect(response.parsed_body.fetch("name")).to eq("Ana Rodríguez")
+    expect(user.reload.name).to eq("Ana Rodríguez")
+  end
+end

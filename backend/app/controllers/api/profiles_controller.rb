@@ -5,7 +5,9 @@ module Api
     end
 
     def update
-      current_user.update!(params.permit(:name, :email_notifications))
+      changes = params.permit(:name, :email_notifications)
+      changes[:name] = changes[:name].to_s.strip if changes.key?(:name)
+      current_user.update!(changes)
       show
     end
   end

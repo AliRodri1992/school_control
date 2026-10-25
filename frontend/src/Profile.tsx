@@ -18,9 +18,11 @@ export default function Profile({onChange,onSignedOut}:{onChange:(user:Row)=>voi
  const [profile,setProfile]=useState<ProfileRecord|null>(null);
  const [name,setName]=useState(''),[emailNotices,setEmailNotices]=useState(false);
  const [loading,setLoading]=useState(true),[busy,setBusy]=useState(false);
+ const [reloadKey,setReloadKey]=useState(0);
  const [error,setError]=useState(''),[saved,setSaved]=useState(false);
  useEffect(()=>{
   let active=true;
+  setLoading(true);setError('');
   void api('profile').then((result:ProfileRecord)=>{
    if(!active)return;
    setProfile(result);setName(result.name||'');setEmailNotices(Boolean(result.email_notifications));
@@ -28,7 +30,7 @@ export default function Profile({onChange,onSignedOut}:{onChange:(user:Row)=>voi
   }).catch((cause:Error)=>{if(active)setError(cause.message);})
    .finally(()=>{if(active)setLoading(false);});
   return()=>{active=false;};
- },[]);
+ },[reloadKey]);
  const dirty=profile!==null&&(name!==profile.name||emailNotices!==Boolean(profile.email_notifications));
  function discard(){
   if(!profile)return;
@@ -67,7 +69,7 @@ export default function Profile({onChange,onSignedOut}:{onChange:(user:Row)=>voi
   </div>:!profile?<div className="sc-profile-load-error" role="alert">
    <LockKeyhole size={22} aria-hidden="true"/>
    <div><strong>{ui('No fue posible cargar tu perfil.')}</strong><p>{error}</p></div>
-   <button type="button" className="secondary" onClick={()=>window.location.reload()}>{ui('Reintentar')}</button>
+   <button type="button" className="secondary" onClick={()=>setReloadKey(value=>value+1)}>{ui('Reintentar')}</button>
   </div>:<>
    <header className="sc-profile-identity">
     <div className="sc-profile-identity-details">
@@ -150,3 +152,4 @@ export default function Profile({onChange,onSignedOut}:{onChange:(user:Row)=>voi
    </div>
   </>}
  </section>;
+}

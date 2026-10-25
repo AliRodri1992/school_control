@@ -86,3 +86,13 @@ it('shows a distinct failure state when profile loading fails',async()=>{
  expect(await screen.findByRole('alert')).toHaveProperty('textContent',expect.stringContaining('Sin conexión con la escuela'));
  expect(screen.queryByRole('textbox',{name:/Nombre completo/})).toBeNull();
 });
+
+it('retries loading the profile inside the page without resetting the whole portal',async()=>{
+ request.mockRejectedValueOnce(new Error('Servidor temporalmente ocupado')).mockResolvedValue({...initial});
+ render(<Profile onChange={vi.fn()} onSignedOut={vi.fn()}/>);
+ expect((await screen.findByRole('alert')).textContent).toContain('Servidor temporalmente ocupado');
+ await userEvent.click(screen.getByRole('button',{name:'Reintentar'}));
+ expect(await screen.findByRole('heading',{name:'María González'})).toBeTruthy();
+ expect(request).toHaveBeenCalledTimes(2);
+ expect(screen.queryByRole('alert')).toBeNull();
+});
