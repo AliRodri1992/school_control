@@ -23,6 +23,7 @@ import './styles/dashboard-charts.css';
 import './styles/dashboard-kpis.css';
 import './styles/dashboard-empty.css';
 import './styles/preferences.css';
+import './styles/profile.css';
 import './styles/portal-home.css';
 import './styles/help.css';
 // Place interactive language-state styles last to avoid generic flyout overrides.

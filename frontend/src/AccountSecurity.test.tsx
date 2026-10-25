@@ -72,3 +72,34 @@ it('shows missing recovery email under the email field without calling Rails',as
  expect(screen.getByText('Correo electrónico no puede estar vacío.')).toBeTruthy();
  expect(request).not.toHaveBeenCalled();
 });
+
+it('toggles new password visibility without revealing the current password',async()=>{
+ const signedOut=vi.fn();
+ render(<AccountSecurity onSignedOut={signedOut}/>);
+ const current=screen.getByLabelText('Contraseña actual') as HTMLInputElement;
+ const newPassword=screen.getByLabelText('Nueva contraseña') as HTMLInputElement;
+ const confirmation=screen.getByLabelText('Confirmar nueva contraseña') as HTMLInputElement;
+ expect(current.type).toBe('password');
+ expect(newPassword.type).toBe('password');
+ await userEvent.click(screen.getByRole('button',{name:'Mostrar contraseñas'}));
+ expect(newPassword.type).toBe('text');
+ expect(confirmation.type).toBe('text');
+ expect(current.type).toBe('password');
+ await userEvent.click(screen.getByRole('button',{name:'Ocultar contraseñas'}));
+ expect(newPassword.type).toBe('password');
+ expect(confirmation.type).toBe('password');
+ expect(request).not.toHaveBeenCalled();
+ expect(signedOut).not.toHaveBeenCalled();
+});
+
+it('blocks password updates when confirmation differs and preserves the session',async()=>{
+ const signedOut=vi.fn();
+ render(<AccountSecurity onSignedOut={signedOut}/>);
+ await userEvent.type(screen.getByLabelText('Contraseña actual'),'School-test-password-26');
+ await userEvent.type(screen.getByLabelText('Nueva contraseña'),'New-school-password-26');
+ await userEvent.type(screen.getByLabelText('Confirmar nueva contraseña'),'Different-school-password-26');
+ await userEvent.click(screen.getByRole('button',{name:'Actualizar contraseña y cerrar sesiones'}));
+ expect(screen.getByRole('alert').textContent).toContain('Las contraseñas no coinciden.');
+ expect(request).not.toHaveBeenCalled();
+ expect(signedOut).not.toHaveBeenCalled();
+});
