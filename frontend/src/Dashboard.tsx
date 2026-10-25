@@ -10,6 +10,7 @@ import {appendWidget, removeWidget, defaultConfig, DASHBOARD_CONFIG_VERSION, wid
 import DashboardChart from './DashboardChart';
 import DashboardMetricCard from './DashboardMetricCard';
 import DashboardEmptyState from './DashboardEmptyState';
+import DashboardUpcomingEvents from './DashboardUpcomingEvents';
 import type {Row} from './modules';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -128,7 +129,7 @@ export default function Dashboard({summary,data,role='admin',userId=0,selectedCh
    return entries.length?<><div className="widget-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={entries}><XAxis dataKey="name"/><YAxis allowDecimals={false}/><Tooltip/><Bar dataKey="value" name={ui("Registros")} fill="#405CF5" radius={[6,6,0,0]}/></BarChart></ResponsiveContainer></div><p className="chart-description">{entries.map(e=>`${e.name}: ${e.value}`).join(' · ')}</p></>:<p>{ui("No hay registros para graficar.")}</p>;
   }
   if(widget.kind==='alerts')return visibleSummary.alerts?.length?visibleSummary.alerts.map((a:Row,i:number)=><p key={i}><strong>{a.student_name}</strong><br/>{a.message}</p>):<DashboardEmptyState kind="alerts" role={role} translate={ui}/>;
-  if(widget.kind==='calendar') {const events=(data.calendar_events||[]).filter(e=>new Date(e.ends_at)>=new Date()).sort((a,b)=>a.starts_at.localeCompare(b.starts_at));return events.length?events.slice(0,6).map(e=><p key={e.id}><strong>{e.title}</strong><br/>{new Date(e.starts_at).toLocaleString(locale==='en'?'en-US':'es-MX')}</p>):<DashboardEmptyState kind="calendar" role={role} translate={ui}/>;}
+  if(widget.kind==='calendar')return <DashboardUpcomingEvents events={data.calendar_events||[]} locale={locale} empty={<DashboardEmptyState kind="calendar" role={role} translate={ui}/>}/>;
   if(widget.kind==='announcements')return data.announcements?.length?[...data.announcements].reverse().slice(0,5).map(a=><p key={a.id}><strong>{a.title}</strong><br/>{a.body}</p>):<p>{ui("No hay comunicados.")}</p>;
   return <strong className="widget-number">{visibleSummary[widget.kind]??0}</strong>;
  }

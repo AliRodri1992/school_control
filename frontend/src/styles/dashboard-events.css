@@ -1,0 +1,19 @@
+/* Compact institutional agenda for populated dashboard calendar widgets. */
+.sc-events-agenda{display:flex;flex-direction:column;min-width:0;height:100%;gap:10px}
+.sc-events-summary{display:flex;align-items:center;gap:8px;color:#647b9a;font-size:11px;font-weight:650}
+.sc-events-summary-icon{display:grid;place-items:center;width:27px;height:27px;border-radius:9px;background:#edf4ff;color:#215fa8;flex:none}
+.sc-events-summary strong{margin-left:auto;color:#31649e;background:#edf4ff;border-radius:999px;padding:5px 9px;font-size:10px;white-space:nowrap}
+.sc-events-list{margin:0;padding:0;list-style:none;overflow:auto;min-height:0;display:flex;flex-direction:column;gap:9px}
+.sc-event-row{display:flex;align-items:center;gap:12px;min-width:0;padding:12px;border-radius:13px;background:linear-gradient(110deg,#f7faff,#fff);border:1px solid #e2ebf6}
+.sc-event-row:first-child{border-color:#c8ddf5;background:linear-gradient(110deg,#edf5ff,#fbfdff);box-shadow:0 5px 16px rgba(31,90,154,.06)}
+.sc-event-date{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:#fff;border:1px solid #d9e6f5;border-radius:11px;width:53px;min-width:53px;height:61px;box-shadow:0 2px 6px rgba(21,65,111,.035)}
+.sc-event-date span{font-size:10px;font-weight:800;letter-spacing:.65px;color:#37699f}
+.sc-event-date strong{font:800 24px/1 'Plus Jakarta Sans',Inter,sans-serif;color:#173f70}
+.sc-event-details{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.sc-event-eyebrow{font-size:9px;letter-spacing:.9px;font-weight:800;color:#4f83bb;text-transform:uppercase}
+.sc-event-title{font-size:12px;line-height:1.4;color:#183956;overflow-wrap:anywhere}
+.sc-event-time{display:flex;align-items:center;gap:5px;color:#7388a0;font-size:10px;font-weight:600;line-height:1.4}
+.sc-event-time svg{flex:none}
+.sc-event-accent{color:#94b5d6;flex:none;align-self:flex-start}
+.sc-events-more{font-size:10px;text-align:center;color:#738ba6;padding:2px}
+@media(max-width:600px){.sc-event-row{gap:9px;padding:10px}.sc-event-date{width:49px;min-width:49px;height:56px}}

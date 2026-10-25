@@ -22,6 +22,7 @@ import './styles/dashboard-context.css';
 import './styles/dashboard-charts.css';
 import './styles/dashboard-kpis.css';
 import './styles/dashboard-empty.css';
+import './styles/dashboard-events.css';
 import './styles/preferences.css';
 import './styles/profile.css';
 import './styles/portal-home.css';
