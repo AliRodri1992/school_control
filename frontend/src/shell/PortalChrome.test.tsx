@@ -124,8 +124,11 @@ it('shows the redesigned notification panel with filters and a helpful empty sta
  expect(panel.classList.contains('sc-notification-panel')).toBe(true);
  expect(panel.querySelector('.sc-np-header-icon svg')).toBeTruthy();
  expect(screen.getByText('Novedades de tu comunidad escolar')).toBeTruthy();
- expect(screen.getByRole('tab',{name:'Todas 0'})).toBeTruthy();
+ const allTab=screen.getByRole('tab',{name:'Todas 0'});
+ expect(allTab.getAttribute('aria-selected')).toBe('true');
+ expect(allTab.getAttribute('aria-controls')).toBe(screen.getByRole('tabpanel').id);
  await userEvent.click(screen.getByRole('tab',{name:'Sin leer 0'}));
+ expect(screen.getByRole('tab',{name:'Sin leer 0'}).getAttribute('aria-selected')).toBe('true');
  expect(screen.getByText('Ya revisaste todas tus notificaciones')).toBeTruthy();
  expect(screen.queryByRole('button',{name:'Marcar todas como leídas'})).toBeNull();
 });

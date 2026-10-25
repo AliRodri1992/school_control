@@ -30,6 +30,8 @@ it('filters between all and unread without changing the original order',async()=
  show();
  await userEvent.click(screen.getByRole('tab',{name:'Sin leer 2'}));
  expect(screen.getByRole('tab',{name:'Sin leer 2'}).getAttribute('aria-selected')).toBe('true');
+ expect(screen.getByRole('tab',{name:'Sin leer 2'}).getAttribute('aria-controls')).toBe(screen.getByRole('tabpanel').id);
+ expect(screen.getByRole('tabpanel').getAttribute('aria-labelledby')).toBe(screen.getByRole('tab',{name:'Sin leer 2'}).id);
  expect(screen.getAllByRole('button',{name:/Abrir notificación:/})).toHaveLength(2);
  expect(screen.queryByText('Hay una actualización de calificaciones')).toBeNull();
  await userEvent.click(screen.getByRole('tab',{name:'Todas 3'}));
@@ -71,4 +73,21 @@ it('supports English labels and handles invalid timestamps gracefully',()=>{
  expect(notificationTime('not-a-date','es')).toBe('');
  expect(notificationTime(null,'en')).toBe('');
  expect(notificationTime('2026-10-25T10:00:00Z','en',Date.parse('2026-10-25T10:04:00Z'))).toContain('4');
+});
+
+it('supports arrow, Home and End navigation between the two notification filters',async()=>{
+ show();
+ const all=screen.getByRole('tab',{name:'Todas 3'});
+ const unread=screen.getByRole('tab',{name:'Sin leer 2'});
+ all.focus();
+ await userEvent.keyboard('{ArrowRight}');
+ expect(document.activeElement).toBe(unread);
+ expect(unread.getAttribute('aria-selected')).toBe('true');
+ await userEvent.keyboard('{ArrowRight}');
+ expect(document.activeElement).toBe(all);
+ expect(all.getAttribute('aria-selected')).toBe('true');
+ await userEvent.keyboard('{End}');
+ expect(document.activeElement).toBe(unread);
+ await userEvent.keyboard('{Home}');
+ expect(document.activeElement).toBe(all);
 });

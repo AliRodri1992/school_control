@@ -89,6 +89,9 @@
 }
 .sc-np-footer button:hover{background:#e9f2ff;border-color:#c4daf7}
 .sc-shell .sc-topbar .sc-notification-panel button:focus-visible{outline:2px solid #6ca8ff;outline-offset:-2px}
+.sc-shell .sc-topbar .sc-notification-panel .sc-np-scroll:focus-visible{outline:2px solid #6ca8ff;outline-offset:-3px}
+.sc-shell .sc-topbar .sc-notification-panel .sc-np-tab:focus-visible{outline-offset:-3px;border-radius:4px}
+.sc-shell .sc-topbar .sc-notification-panel .sc-np-tab[aria-selected=true] span{background:#dbeaff;color:#174f95}
 @media(max-width:480px){
  .sc-np-header{padding:14px}
  .sc-np-toolbar{padding:11px}

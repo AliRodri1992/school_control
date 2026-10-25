@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useId,useState,type KeyboardEvent} from 'react';
 import {ArrowRight,Bell,BellOff,BookOpenCheck,CalendarDays,CheckCheck,ClipboardCheck,FileText,GraduationCap,Mail,MessageSquare,ShieldCheck,X} from 'lucide-react';
 
 export type NotificationPreview={
@@ -39,7 +39,20 @@ export function notificationTime(value:string|null|undefined,locale:string,now=D
 /** Notifications are a separate read-only flyout, with explicit read actions. */
 export default function NotificationPopover({locale,items,unread,loading=false,busy=false,error='',onRead,onReadAll,onClose,onViewAll}:Props){
  const [filter,setFilter]=useState<'all'|'unread'>('all');
+ const panelId=useId();
  const labels=locale==='en'?copy.en:copy.es;
+ function navigateTabs(event:KeyboardEvent<HTMLDivElement>){
+  if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+  const tabs=Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role=tab]'));
+  if(!tabs.length)return;
+  event.preventDefault();
+  const current=tabs.indexOf(document.activeElement as HTMLButtonElement);
+  const next=event.key==='Home'?0:event.key==='End'?tabs.length-1:
+   event.key==='ArrowRight'?(current+1)%tabs.length:(current<=0?tabs.length-1:current-1);
+  const destination=tabs[next];
+  setFilter(destination.dataset.filter==='unread'?'unread':'all');
+  destination.focus();
+ }
  const filtered=(filter==='unread'?items.filter(item=>!item.read_at):items).slice(0,6);
  return <section className="sc-flyout sc-notification-panel" aria-label={labels.title}>
   <header className="sc-np-header">
@@ -56,11 +69,13 @@ export default function NotificationPopover({locale,items,unread,loading=false,b
    </span>
    {unread>0&&<button type="button" className="sc-np-mark-all" disabled={busy} onClick={onReadAll}><CheckCheck size={15}/>{labels.markAll}</button>}
   </div>
-  <div className="sc-np-tabs" role="tablist" aria-label={labels.title}>
-   <button type="button" role="tab" aria-selected={filter==='all'} className={'sc-np-tab'+(filter==='all'?' is-active':'')} onClick={()=>setFilter('all')}>{labels.all}<span>{items.length}</span></button>
-   <button type="button" role="tab" aria-selected={filter==='unread'} className={'sc-np-tab'+(filter==='unread'?' is-active':'')} onClick={()=>setFilter('unread')}>{labels.unread}<span>{unread}</span></button>
+  <div className="sc-np-tabs" role="tablist" aria-label={labels.title} onKeyDown={navigateTabs}>
+   <button type="button" id={panelId+'-all'} data-filter="all" role="tab" aria-controls={panelId} aria-label={labels.all+' '+items.length}
+    aria-selected={filter==='all'} className={'sc-np-tab'+(filter==='all'?' is-active':'')} onClick={()=>setFilter('all')}>{labels.all}<span aria-hidden="true">{items.length}</span></button>
+   <button type="button" id={panelId+'-unread'} data-filter="unread" role="tab" aria-controls={panelId} aria-label={labels.unread+' '+unread}
+    aria-selected={filter==='unread'} className={'sc-np-tab'+(filter==='unread'?' is-active':'')} onClick={()=>setFilter('unread')}>{labels.unread}<span aria-hidden="true">{unread}</span></button>
   </div>
-  <div className="sc-np-scroll" role="tabpanel" aria-live="polite">
+  <div id={panelId} className="sc-np-scroll" role="tabpanel" aria-labelledby={panelId+'-'+filter} aria-live="polite" tabIndex={0}>
    {error&&<p className="sc-np-error" role="alert">{error}</p>}
    {loading?<div className="sc-np-empty" role="status"><Bell size={23}/><strong>{labels.loading}</strong></div>:
     filtered.length?filtered.map(item=>{

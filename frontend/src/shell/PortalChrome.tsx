@@ -170,6 +170,19 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    setNotificationLoading(true);void update();const interval=window.setInterval(()=>void update(),60000);
    return()=>{active=false;window.clearInterval(interval);}
  },[user.id]);
+ // Refresh on opening as well as on the background interval, so the flyout isn't stale.
+ useEffect(()=>{
+   if(!notificationsOpen)return;
+   let active=true;
+   void api('notifications').then(result=>{
+     if(!active)return;
+     setUnread(result.unread_count||0);
+     setNotificationItems(result.items||[]);
+     setNoticeError('');
+   }).catch(error=>{if(active)setNoticeError((error as Error).message);})
+     .finally(()=>{if(active)setNotificationLoading(false);});
+   return()=>{active=false;};
+ },[notificationsOpen,user.id]);
  useEffect(()=>{
    const selectedPage=page==='student_details'?'students':page;
    const group=sections.find(section=>section.items.some(item=>item.key===selectedPage||findNavPath([{title:'',items:[item]}],selectedPage).length>0));
