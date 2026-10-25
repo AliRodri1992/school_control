@@ -1,8 +1,9 @@
 import {Area,AreaChart,Bar,BarChart,CartesianGrid,Cell,Legend,Line,LineChart,Pie,PieChart,ResponsiveContainer,Tooltip,XAxis,YAxis} from 'recharts';
-import type {AnalyticChartKind} from './dashboardConfig';
+import type {AnalyticChartKind,DashboardRole} from './dashboardConfig';
+import DashboardEmptyState,{type DashboardEmptyKind} from './DashboardEmptyState';
 
 export type ChartPoint={label:string;value?:number;absent?:number;late?:number};
-type Props={kind:AnalyticChartKind;data:unknown;title:string;translate:(value:string)=>string};
+type Props={kind:AnalyticChartKind;data:unknown;title:string;translate:(value:string)=>string;role?:DashboardRole};
 
 const palette=['#315fbe','#54a5d9','#8e7ce9','#f0b35d','#32a5a1','#d97781'];
 const donuts:AnalyticChartKind[]=['attendance_rate','admission_status','assignment_progress'];
@@ -11,20 +12,26 @@ const areas:AnalyticChartKind[]=['attendance_trend'];
 const horizontal:AnalyticChartKind[]=['students_by_grade','grades_by_subject'];
 const percentage:AnalyticChartKind[]=['attendance_trend'];
 const score:AnalyticChartKind[]=['grades_by_subject','grades_by_term'];
+const designedEmptyKinds:readonly AnalyticChartKind[]=['admission_status','attendance_rate','students_by_grade','enrollment_trend'];
 const readableDate=(value:string)=>/^\d{4}-\d{2}$/.test(value)?value.slice(5)+'/'+value.slice(2,4):value;
 
 /** Charts present only server aggregates; missing data never produces synthetic results. */
-export default function DashboardChart({kind,data,title,translate}:Props){
+export default function DashboardChart({kind,data,title,translate,role='admin'}:Props){
  const rows:Array<ChartPoint>=Array.isArray(data)?data.filter((item):item is ChartPoint=>
   item!==null&&typeof item==='object'&&typeof item.label==='string'&&
   (typeof item.value==='number'||(typeof item.absent==='number'&&typeof item.late==='number'))).map(item=>({
    ...item,label:readableDate(item.label)
   })):[];
- const hasData=rows.length>0&&(!donuts.includes(kind)||rows.some(row=>Number(row.value||0)>0));
- if(!hasData)return <div className="sc-analytics-empty" role="status">
-  <strong>{translate('Sin datos para el periodo seleccionado')}</strong>
-  <span>{translate('Cuando existan registros autorizados, aparecerá la gráfica aquí.')}</span>
- </div>;
+ const hasData=rows.length>0&&(!donuts.includes(kind)&&!designedEmptyKinds.includes(kind)||
+  rows.some(row=>Number(row.value||0)>0));
+ if(!hasData){
+  if(designedEmptyKinds.includes(kind))return <DashboardEmptyState
+   kind={kind as DashboardEmptyKind} role={role} translate={translate}/>;
+  return <div className="sc-analytics-empty" role="status">
+   <strong>{translate('Sin datos para el periodo seleccionado')}</strong>
+   <span>{translate('Cuando existan registros autorizados, aparecerá la gráfica aquí.')}</span>
+  </div>;
+ }
  const units=percentage.includes(kind)?'%':score.includes(kind)?'/10':'';
  const tooltipFormatter=(value:unknown)=>`${Number(value||0).toLocaleString('es-MX',{maximumFractionDigits:2})}${units}`;
  if(donuts.includes(kind)){

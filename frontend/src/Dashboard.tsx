@@ -91,7 +91,7 @@ export default function Dashboard({summary,data,role='admin',userId=0,selectedCh
  }
  function content(widget: Config['widgets'][number]) {
   if(isAnalyticChartKind(widget.kind))return <DashboardChart kind={widget.kind}
-   data={visibleSummary[widget.kind]} title={ui(widget.title)} translate={ui}/>;
+   data={visibleSummary[widget.kind]} title={ui(widget.title)} translate={ui} role={role}/>;
   if(widget.kind.endsWith('_chart')) {
    const values=visibleSummary[widget.kind];
    const entries=Object.entries(values&&typeof values==='object'&&!Array.isArray(values)?values:{}).map(([name,value])=>{

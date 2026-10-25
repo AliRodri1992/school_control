@@ -10,7 +10,8 @@ import {appendWidget,defaultConfig} from './dashboardConfig';
 
 vi.mock('./api',()=>({api:vi.fn()}));
 vi.mock('./notifications',()=>({notify:vi.fn()}));
-vi.mock('./DashboardChart',()=>({default:({title}:{title:string})=><div data-testid="analytics-chart">{title}</div>}));
+vi.mock('./DashboardChart',()=>({default:({title,role}:{title:string;role:string})=>
+ <div data-testid="analytics-chart" data-portal={role}>{title}</div>}));
 vi.mock('./shared/i18n/LocaleContext',()=>({
  useSchoolLocale:()=>({ui:(text:string)=>text,locale:'es'})
 }));
@@ -220,6 +221,7 @@ it('shows role-specific analytics and preserves them in the default reset',async
  const {container}=render(<Dashboard role="guardian" userId={8} summary={{}} data={{}} selectedChildId="9"/>);
  await waitFor(()=>expect(container.querySelectorAll('[data-testid="analytics-chart"]').length).toBeGreaterThan(2));
  expect(screen.getAllByText('Entregas de tareas').length).toBeGreaterThan(0);
+ expect(container.querySelectorAll('[data-testid="analytics-chart"][data-portal="guardian"]').length).toBeGreaterThan(2);
  expect(screen.queryByText('Matrícula por ciclo')).toBeNull();
  await personalize();
  await userEvent.click(screen.getByRole('button',{name:'Restablecer plantilla'}));

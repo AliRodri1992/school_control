@@ -60,3 +60,34 @@ it('applies a distinct, restrained theme to each empty state',()=>{
   view.unmount();
  }
 });
+
+it.each([
+ ['admission_status','Aún no hay admisiones','amber','Estados: enviadas, aprobadas y rechazadas'],
+ ['attendance_rate','Sin datos de asistencia','cyan','Resumen del periodo seleccionado'],
+ ['students_by_grade','Aún no hay alumnos por grado','indigo','Grados del ciclo escolar disponible'],
+ ['enrollment_trend','Sin matrícula para comparar','teal','Comparativo de ciclos escolares']
+] as [DashboardEmptyKind,string,string,string][])(
+ 'shows a role-safe, custom illustration and help text for %s',
+ (kind,title,tone,note)=>{
+  const {container}=render(<DashboardEmptyState kind={kind} role="admin" translate={translate}/>);
+  const card=container.querySelector('.sc-dashboard-empty')!;
+  expect(card.getAttribute('aria-label')).toBe(title);
+  expect(card.classList.contains('sc-dashboard-empty-'+tone)).toBe(true);
+  expect(screen.getByText(title)).toBeTruthy();
+  expect(screen.getByText(note)).toBeTruthy();
+  expect(container.querySelector('.sc-dashboard-empty-icon svg')).toBeTruthy();
+  expect(container.querySelector('.sc-dashboard-empty-check')).toBeNull();
+  expect(container.querySelectorAll('button')).toHaveLength(0);
+ }
+);
+it.each([
+ ['teacher','La proporción de asistencias y faltas de tus grupos aparecerá cuando haya registros.'],
+ ['guardian','La proporción de asistencias y faltas de tus hijos aparecerá cuando haya registros.'],
+ ['student','Tu distribución de asistencia y faltas aparecerá cuando haya registros.']
+] as [DashboardRole,string][])(
+ 'uses attendance distribution guidance relevant to the %s portal',
+ (role,description)=>{
+  render(<DashboardEmptyState kind="attendance_rate" role={role} translate={translate}/>);
+  expect(screen.getByText(description)).toBeTruthy();
+ }
+);

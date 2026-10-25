@@ -13,6 +13,28 @@
 }
 .sc-dashboard-empty-mint{--empty-accent:#198175;--empty-pale:#e3f6ef;--empty-pale-border:#aee3d4}
 .sc-dashboard-empty-violet{--empty-accent:#6555b7;--empty-pale:#eeeaff;--empty-pale-border:#d5cafa}
+/* Specialized analytics empty states share the visual system without fake charts. */
+.sc-dashboard-empty-amber{--empty-accent:#a76c21;--empty-pale:#fff3d9;--empty-pale-border:#f2d59f}
+.sc-dashboard-empty-cyan{--empty-accent:#167b95;--empty-pale:#e2f6fb;--empty-pale-border:#b9e6ef}
+.sc-dashboard-empty-indigo{--empty-accent:#545bb1;--empty-pale:#ededff;--empty-pale-border:#cacbf4}
+.sc-dashboard-empty-teal{--empty-accent:#168276;--empty-pale:#e0f6ef;--empty-pale-border:#aee2d1}
+.sc-dashboard-empty:is(.sc-dashboard-empty-amber,.sc-dashboard-empty-cyan,.sc-dashboard-empty-indigo,.sc-dashboard-empty-teal){
+ gap:12px;
+}
+.sc-dashboard-empty:is(.sc-dashboard-empty-amber,.sc-dashboard-empty-cyan,.sc-dashboard-empty-indigo,.sc-dashboard-empty-teal) .sc-dashboard-empty-art::after{
+ content:'';position:absolute;right:4px;bottom:6px;width:17px;height:17px;
+ border:2px solid var(--empty-pale-border);border-radius:6px;transform:rotate(19deg);
+ background:rgba(255,255,255,.7);
+}
+.sc-dashboard-empty:is(.sc-dashboard-empty-amber,.sc-dashboard-empty-cyan,.sc-dashboard-empty-indigo,.sc-dashboard-empty-teal) .sc-dashboard-empty-note{
+ color:var(--empty-accent);border-color:var(--empty-pale-border);
+ background:rgba(255,255,255,.92);
+}
+/* The chart frame must stay inside its react-grid-layout cell at any viewport. */
+.sc-home .react-grid-item .widget-body:has(> .sc-dashboard-empty){
+ box-sizing:border-box;max-width:100%;max-height:100%;
+}
+
 .sc-dashboard-empty-art{position:relative;flex:none;display:grid;place-items:center;width:76px;height:73px}
 .sc-dashboard-empty-art::before{
  content:'';position:absolute;width:63px;height:63px;border-radius:23px;

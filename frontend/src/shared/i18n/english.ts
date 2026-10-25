@@ -818,6 +818,27 @@ Object.assign(englishByText,{
  "Faltas y retardos por mes": "Monthly absences and lateness",
  "Entregas de tareas": "Assignment submissions"
 });
+Object.assign(englishByText,{
+ 'PROCESO DE ADMISIÓN':'ADMISSIONS PROCESS',
+ 'Aún no hay admisiones':'No admission records yet',
+ 'Cuando haya solicitudes registradas en tu ámbito autorizado, verás la distribución de sus estados.':'Once applications are registered within your access, their status breakdown will appear here.',
+ 'Estados: enviadas, aprobadas y rechazadas':'Statuses: submitted, approved and rejected',
+ 'PANORAMA DE ASISTENCIA':'ATTENDANCE OVERVIEW',
+ 'Sin datos de asistencia':'No attendance data yet',
+ 'La proporción de asistencias y faltas aparecerá cuando existan registros en el periodo.':'The breakdown of attendance and absences will appear when records exist for this period.',
+ 'Resumen del periodo seleccionado':'Summary for the selected period',
+ 'La proporción de asistencias y faltas de tus grupos aparecerá cuando haya registros.':'Your groups’ attendance and absence breakdown will appear when records are available.',
+ 'La proporción de asistencias y faltas de tus hijos aparecerá cuando haya registros.':'Your children’s attendance and absence breakdown will appear when records are available.',
+ 'Tu distribución de asistencia y faltas aparecerá cuando haya registros.':'Your attendance and absence breakdown will appear when records are available.',
+ 'DISTRIBUCIÓN ESCOLAR':'STUDENT DISTRIBUTION',
+ 'Aún no hay alumnos por grado':'No students by grade yet',
+ 'Aquí podrás comparar alumnos por grado cuando existan inscripciones en los grupos autorizados.':'Compare students by grade when enrollments exist in the groups you can access.',
+ 'Grados del ciclo escolar disponible':'Grades in the available school year',
+ 'EVOLUCIÓN DE MATRÍCULA':'ENROLLMENT HISTORY',
+ 'Sin matrícula para comparar':'No enrollment history to compare',
+ 'La evolución de inscripciones aparecerá cuando existan registros en los ciclos escolares disponibles.':'Enrollment history will appear when records exist in the available school years.',
+ 'Comparativo de ciclos escolares':'School year comparison'
+});
 export function translateUiText(locale:string,text:string):string{
  if(!locale.toLowerCase().startsWith('en'))return text;
  return englishByText[text]||text;

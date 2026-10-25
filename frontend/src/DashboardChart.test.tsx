@@ -35,11 +35,51 @@ it.each(['enrollment_trend','grades_by_term','attendance_trend','students_by_gra
   expect(screen.getByText('1 categoría · Datos reales del periodo seleccionado')).toBeTruthy();
  });
 it('handles missing, malformed and zero-only statistics without generating fabricated values',()=>{
- const {rerender}=render(<DashboardChart kind="attendance_rate" data={null} title="Asistencia" translate={translate}/>);
- expect(screen.getByRole('status').textContent).toContain('Sin datos');
+ const {rerender,container}=render(<DashboardChart kind="attendance_rate" data={null} title="Asistencia" translate={translate}/>);
+ expect(container.querySelector('[data-empty-kind="attendance_rate"]')).toBeTruthy();
  rerender(<DashboardChart kind="grades_by_term" data={[{label:'P1',value:0}]} title="Calificaciones" translate={translate}/>);
  expect(screen.queryByRole('status')).toBeNull();
  expect(screen.getByRole('group',{name:'Calificaciones'})).toBeTruthy();
  rerender(<DashboardChart kind="attendance_trend" data={[{label:'P1',value:'inseguro'}]} title="Serie" translate={translate}/>);
  expect(screen.getByRole('status').textContent).toContain('Sin datos');
+});
+
+it.each([
+ ['admission_status','Aún no hay admisiones'],
+ ['attendance_rate','Sin datos de asistencia'],
+ ['students_by_grade','Aún no hay alumnos por grado'],
+ ['enrollment_trend','Sin matrícula para comparar']
+] as [AnalyticChartKind,string][])(
+ 'renders a distinctive empty state for %s on missing and zero-only data',
+ (kind,expectedTitle)=>{
+  const {rerender,container}=render(<DashboardChart kind={kind} data={undefined} title="Mi gráfica" translate={translate}/>);
+  expect(container.querySelector('[data-empty-kind="'+kind+'"]')).toBeTruthy();
+  expect(screen.getByText(expectedTitle)).toBeTruthy();
+  expect(container.querySelector('.sc-analytics-canvas')).toBeNull();
+  expect(container.querySelector('.sc-dashboard-empty-art svg')).toBeTruthy();
+  expect(container.querySelector('.sc-dashboard-empty-note')).toBeTruthy();
+  rerender(<DashboardChart kind={kind} data={[{label:'Uno',value:0},{label:'Dos',value:0}]}
+   title="Mi gráfica" translate={translate}/>);
+  expect(container.querySelector('[data-empty-kind="'+kind+'"]')).toBeTruthy();
+  expect(container.querySelector('.sc-analytics-canvas')).toBeNull();
+ }
+);
+it.each([
+ 'admission_status','attendance_rate','students_by_grade','enrollment_trend'
+] as AnalyticChartKind[])('preserves actual %s chart values',kind=>{
+ const {container}=render(<DashboardChart kind={kind} data={[{label:'Periodo 1',value:9},{label:'Periodo 2',value:3}]}
+  title="Datos registrados" translate={translate}/>);
+ expect(container.querySelector('.sc-dashboard-empty')).toBeNull();
+ expect(screen.getByRole('group',{name:'Datos registrados'})).toBeTruthy();
+ expect(container.querySelector('.sc-analytics-canvas, .sc-analytics-plot')).toBeTruthy();
+});
+it.each([
+ ['teacher','La proporción de asistencias y faltas de tus grupos aparecerá cuando haya registros.'],
+ ['guardian','La proporción de asistencias y faltas de tus hijos aparecerá cuando haya registros.'],
+ ['student','Tu distribución de asistencia y faltas aparecerá cuando haya registros.']
+] as const)('scopes the empty attendance distribution to the %s portal',(role,description)=>{
+ const {container}=render(<DashboardChart kind="attendance_rate" data={[]} title="Distribución"
+  translate={translate} role={role}/>);
+ expect(container.querySelector('[data-empty-kind="attendance_rate"]')).toBeTruthy();
+ expect(screen.getByText(description)).toBeTruthy();
 });

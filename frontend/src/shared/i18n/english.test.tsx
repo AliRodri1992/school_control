@@ -91,3 +91,27 @@ it('translates each purpose-built dashboard empty state into English',()=>{
   expect(translateUiText('es',phrase)).toBe(phrase);
  }
 });
+
+it('translates all four redesigned analytics empty states, including role-aware attendance',()=>{
+ const phrases=[
+  'PROCESO DE ADMISIÓN','Aún no hay admisiones',
+  'Cuando haya solicitudes registradas en tu ámbito autorizado, verás la distribución de sus estados.',
+  'Estados: enviadas, aprobadas y rechazadas',
+  'PANORAMA DE ASISTENCIA','Sin datos de asistencia',
+  'La proporción de asistencias y faltas aparecerá cuando existan registros en el periodo.',
+  'Resumen del periodo seleccionado',
+  'La proporción de asistencias y faltas de tus grupos aparecerá cuando haya registros.',
+  'La proporción de asistencias y faltas de tus hijos aparecerá cuando haya registros.',
+  'Tu distribución de asistencia y faltas aparecerá cuando haya registros.',
+  'DISTRIBUCIÓN ESCOLAR','Aún no hay alumnos por grado',
+  'Aquí podrás comparar alumnos por grado cuando existan inscripciones en los grupos autorizados.',
+  'Grados del ciclo escolar disponible',
+  'EVOLUCIÓN DE MATRÍCULA','Sin matrícula para comparar',
+  'La evolución de inscripciones aparecerá cuando existan registros en los ciclos escolares disponibles.',
+  'Comparativo de ciclos escolares'
+ ];
+ for(const phrase of phrases){
+  expect(translateUiText('en',phrase)).not.toBe(phrase);
+  expect(translateUiText('es',phrase)).toBe(phrase);
+ }
+});
