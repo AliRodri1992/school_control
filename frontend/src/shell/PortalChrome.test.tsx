@@ -168,7 +168,7 @@ it('removes the redundant portal/page heading while preserving breadcrumbs',()=>
  expect(header?.querySelector('.sc-topbar-context')).toBeNull();
  expect(header?.querySelector('.sc-collapse-toggle')).toBeTruthy();
  const trail=screen.getByRole('navigation',{name:'Ruta de navegación'});
- expect(trail.textContent).toContain('Administración');
+ expect(trail.textContent).toContain('Inicio');
  expect(trail.textContent).toContain('Resumen');
 });
 
@@ -208,7 +208,7 @@ it('shows the complete hierarchy with a compact home shortcut',async()=>{
  const navigate=vi.fn();
  render(<PortalChrome {...props} page="courses" onNavigate={navigate}><div>Página</div></PortalChrome>);
  const crumbs=screen.getByRole('navigation',{name:'Ruta de navegación'});
- expect(crumbs.textContent).toContain('Administración');
+ expect(crumbs.textContent).toContain('Inicio');
  expect(crumbs.textContent).toContain('Ciclos escolares');
  expect(crumbs.textContent).toContain('Grupos');
  expect(crumbs.querySelector('[aria-current="page"]')?.textContent).toBe('Clases');
@@ -361,11 +361,11 @@ it('retains the accessible mobile ancestor menu for the design-one student recor
 it('retains normal active route links alongside the illustrated breadcrumb icons',async()=>{
  const navigate=vi.fn();
  const {container}=render(<PortalChrome {...props} page="courses" onNavigate={navigate}><div>Página</div></PortalChrome>);
- const links=container.querySelectorAll('.sc-breadcrumb-design-one .sc-crumb-link');
+ const links=container.querySelectorAll<HTMLButtonElement>('.sc-breadcrumb-design-one .sc-crumb-link');
  expect(links).toHaveLength(2);
  expect(links[0].querySelector('.sc-crumb-icon svg')).toBeTruthy();
  expect(links[1].querySelector('.sc-crumb-icon svg')).toBeTruthy();
- await userEvent.click(screen.getByRole('button',{name:'Grupos'}));
+ await userEvent.click(links[1]);
  expect(navigate).toHaveBeenCalledWith('groups');
 });
 it('shows the original virtual student-record label in the guardian breadcrumb',()=>{

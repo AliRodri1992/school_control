@@ -76,6 +76,14 @@ export function breadcrumbPath(groups:NavGroup[],page:string,portal:PortalId):Na
  const standalone:Record<string,string>={profile:'Mi perfil',preferences:'Preferencias',help:'Ayuda',notifications:'Notificaciones'};
  return [{key:page,title:standalone[page]||page.replaceAll('_',' ')}];
 }
+/** Keep breadcrumb-specific labels separate from shared module headings. */
+export function breadcrumbTranslationKey(key:string):string{
+ const standalone:Record<string,string>={
+  profile:'shell.profile',preferences:'shell.preferences',
+  help:'shell.help',notifications:'shell.notification_center'
+ };
+ return standalone[key]||'nav.'+key;
+}
 /** Maps a non-route breadcrumb group to its existing, authorized destination. */
 export function breadcrumbDestination(key:string):string{
  return key==='student_records'?'students':key;

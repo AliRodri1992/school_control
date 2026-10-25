@@ -1,5 +1,5 @@
 import {expect,it} from 'vitest';
-import {currentPortal,findNavPath,visibleGroups,portalGroups,breadcrumbPath,breadcrumbDestination} from './portalNavigation';
+import {currentPortal,findNavPath,visibleGroups,portalGroups,breadcrumbPath,breadcrumbDestination,breadcrumbTranslationKey} from './portalNavigation';
 
 it('provides distinct navigation group structures for each school portal',()=>{
  const portals=['admin','teachers','students','tutors'] as const;
@@ -38,4 +38,11 @@ it('resolves the student-records breadcrumb to an existing route in every portal
  expect(breadcrumbDestination('students')).toBe('students');
  expect(breadcrumbDestination('groups')).toBe('groups');
  expect(breadcrumbDestination('courses')).toBe('courses');
+});
+
+it('keeps virtual breadcrumb translations scoped to navigation, not module headings',()=>{
+ expect(breadcrumbTranslationKey('student_records')).toBe('nav.student_records');
+ expect(breadcrumbTranslationKey('student_details')).toBe('nav.student_details');
+ expect(breadcrumbTranslationKey('preferences')).toBe('shell.preferences');
+ expect(breadcrumbTranslationKey('courses')).toBe('nav.courses');
 });

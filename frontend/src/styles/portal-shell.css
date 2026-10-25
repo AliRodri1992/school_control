@@ -566,3 +566,12 @@
  .sc-breadcrumb-design-one .sc-crumb-step .sc-crumb-link{max-width:168px;gap:5px;padding-inline:4px}
  .sc-breadcrumb-design-one .sc-crumb-current-label[aria-current=page]{max-width:230px}
 }
+
+/* The last breadcrumb is a label, not a clickable route: retain consistent focus styling
+   on its preceding link while keeping the current label visually distinct. */
+.sc-breadcrumb-design-one .sc-crumb-link .sc-crumb-icon svg{display:block}
+.sc-breadcrumb-design-one .sc-crumb-current-label[aria-current=page]{border:1px solid rgba(41,111,225,.06)}
+@media(max-width:760px){
+ .sc-breadcrumb-design-one .sc-crumb-more-menu .sc-crumb-icon{display:inline-flex;flex:none}
+ .sc-breadcrumb-design-one .sc-crumb-current{max-width:100%}
+}
