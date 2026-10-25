@@ -1,5 +1,5 @@
 import {expect,it} from 'vitest';
-import {currentPortal,findNavPath,visibleGroups,portalGroups,breadcrumbPath,breadcrumbDestination,breadcrumbTranslationKey} from './portalNavigation';
+import {currentPortal,findNavPath,visibleGroups,portalGroups,breadcrumbPath,breadcrumbDestination,breadcrumbTranslationKey,shouldCondenseBreadcrumbs} from './portalNavigation';
 
 it('provides distinct navigation group structures for each school portal',()=>{
  const portals=['admin','teachers','students','tutors'] as const;
@@ -45,4 +45,13 @@ it('keeps virtual breadcrumb translations scoped to navigation, not module headi
  expect(breadcrumbTranslationKey('student_details')).toBe('nav.student_details');
  expect(breadcrumbTranslationKey('preferences')).toBe('shell.preferences');
  expect(breadcrumbTranslationKey('courses')).toBe('nav.courses');
+});
+
+it('collapses only when breadcrumb content genuinely exceeds available width',()=>{
+ expect(shouldCondenseBreadcrumbs(750,375)).toBe(true);
+ expect(shouldCondenseBreadcrumbs(470,470)).toBe(false);
+ expect(shouldCondenseBreadcrumbs(471,470)).toBe(false);
+ expect(shouldCondenseBreadcrumbs(473,470)).toBe(true);
+ expect(shouldCondenseBreadcrumbs(0,0)).toBe(false);
+ expect(shouldCondenseBreadcrumbs(Number.NaN,480)).toBe(false);
 });

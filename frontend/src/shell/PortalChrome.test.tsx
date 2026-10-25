@@ -375,3 +375,29 @@ it('shows the original virtual student-record label in the guardian breadcrumb',
  expect(nav.textContent).toContain('Expedientes');
  expect(nav.querySelector('[aria-current=page]')?.textContent).toBe('Ficha del alumno');
 });
+
+it('collapses intermediate breadcrumb steps instead of creating a horizontal scrollbar',async()=>{
+ const {container}=render(<PortalChrome {...props} page="courses"><div>Página</div></PortalChrome>);
+ const crumbs=container.querySelector<HTMLElement>('.sc-breadcrumb-design-one .sc-crumbs')!;
+ Object.defineProperty(crumbs,'scrollWidth',{configurable:true,get:()=>710});
+ Object.defineProperty(crumbs,'clientWidth',{configurable:true,get:()=>370});
+ await import('@testing-library/react').then(({act})=>act(()=>window.dispatchEvent(new Event('resize'))));
+ expect(crumbs.classList.contains('sc-crumbs-condensed')).toBe(true);
+ expect(screen.getByRole('button',{name:'Mostrar páginas anteriores'})).toBeTruthy();
+ expect(crumbs.querySelectorAll('.sc-crumb-ancestor')).toHaveLength(2);
+ expect(crumbs.querySelector('[aria-current="page"]')?.textContent).toBe('Clases');
+});
+
+it('restores all breadcrumb ancestors when there is enough room',async()=>{
+ const {container}=render(<PortalChrome {...props} page="courses"><div>Página</div></PortalChrome>);
+ const crumbs=container.querySelector<HTMLElement>('.sc-breadcrumb-design-one .sc-crumbs')!;
+ let full=710;
+ Object.defineProperty(crumbs,'scrollWidth',{configurable:true,get:()=>full});
+ Object.defineProperty(crumbs,'clientWidth',{configurable:true,get:()=>370});
+ const {act}=await import('@testing-library/react');
+ act(()=>window.dispatchEvent(new Event('resize')));
+ expect(crumbs.classList.contains('sc-crumbs-condensed')).toBe(true);
+ full=280;
+ act(()=>window.dispatchEvent(new Event('resize')));
+ expect(crumbs.classList.contains('sc-crumbs-condensed')).toBe(false);
+});

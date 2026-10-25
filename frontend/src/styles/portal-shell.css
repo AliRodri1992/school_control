@@ -288,74 +288,99 @@
  .sc-shell .sc-topbar{padding-inline-start:8px}
 }
 
-/* Breadcrumbs: one set of visual rules for desktop, tablets and phones. */
-.sc-main .sc-breadcrumb-bar{
+/* Breadcrumbs · Design 1 — one compact layout, no horizontal scrollbars.
+   On overflow (or on mobile), ancestor links move to the existing "…" menu. */
+.sc-main .sc-breadcrumb-bar.sc-breadcrumb-design-one{
  position:relative;z-index:2;display:flex;align-items:center;box-sizing:border-box;
- width:100%;min-width:0;min-height:46px;margin:0;padding:0 clamp(18px,2.2vw,38px);
- background:#fff;border-bottom:1px solid #e3e8f1;
+ width:100%;min-width:0;min-height:43px;margin:0;padding:0 clamp(11px,1.4vw,20px);
+ background:linear-gradient(90deg,#f5f9ff,#eef6ff);
+ border-bottom:1px solid #e3edfa;
 }
-.sc-main .sc-breadcrumb-bar .sc-crumbs{
- display:flex;align-items:center;gap:7px;flex:1;width:100%;min-width:0;
- padding:6px 0;overflow-x:auto;overflow-y:hidden;white-space:nowrap;
- scrollbar-width:thin;overscroll-behavior-x:contain;
- font-size:12px;color:#64748b;
+.sc-main .sc-breadcrumb-design-one .sc-crumbs{
+ display:flex;flex:1;align-items:center;gap:3px;width:100%;min-width:0;
+ padding:4px 0;overflow:visible;white-space:nowrap;
+ font-size:12px;color:#24476f;scrollbar-width:none;mask-image:none;
 }
-.sc-breadcrumb-bar .sc-crumb-home{
- display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:none;
- min-height:32px;padding:5px 7px;border-radius:8px;
- font-weight:600;color:#526580;
+.sc-breadcrumb-design-one .sc-crumb-home{
+ display:inline-flex;align-items:center;justify-content:center;flex:none;
+ gap:4px;min-height:30px;padding:3px 4px;border-radius:7px;
+ color:#1e467b;font-size:12px;font-weight:600;
 }
-.sc-breadcrumb-bar .sc-crumb-step{display:inline-flex;align-items:center;gap:7px;min-width:0;flex:none}
-.sc-breadcrumb-bar .sc-crumb-divider{flex:none;color:#9aa9bf}
-.sc-breadcrumb-bar .sc-crumb-step button{
- display:block;max-width:210px;min-height:32px;padding:6px;
- border-radius:7px;overflow:hidden;text-overflow:ellipsis;
- font-size:12px;font-weight:550;white-space:nowrap;color:#64748b;
+.sc-breadcrumb-design-one .sc-crumb-home svg{flex:none;color:#174475}
+.sc-breadcrumb-design-one .sc-crumb-home-label{display:inline;font-weight:600}
+.sc-breadcrumb-design-one .sc-crumb-step{
+ display:inline-flex;align-items:center;gap:2px;min-width:0;flex:none;
 }
-.sc-breadcrumb-bar .sc-crumb-step [aria-current=page]{
- display:block;max-width:300px;overflow:hidden;text-overflow:ellipsis;
- font-size:12px;font-weight:750;white-space:nowrap;color:#1b2d56;
+.sc-breadcrumb-design-one .sc-crumb-divider{width:12px;height:12px;flex:none;color:#8b9fb7}
+.sc-breadcrumb-design-one .sc-crumb-link{
+ display:inline-flex;align-items:center;gap:4px;min-height:30px;
+ max-width:185px;padding:3px 4px;border-radius:7px;
+ color:#31547b;font-size:12px;font-weight:550;
+ text-align:start;overflow:hidden;white-space:nowrap;
 }
-.sc-breadcrumb-bar .sc-crumb-home:hover,
-.sc-breadcrumb-bar .sc-crumb-step button:hover,
-.sc-breadcrumb-bar .sc-crumb-more-trigger:hover,
-.sc-breadcrumb-bar .sc-crumb-more-menu button:hover{background:#eef2ff;color:#405cf5}
-.sc-breadcrumb-bar .sc-crumbs button:focus-visible{
- outline:2px solid #405cf5;outline-offset:2px;
+.sc-breadcrumb-design-one .sc-crumb-icon{
+ display:inline-flex;align-items:center;justify-content:center;
+ width:16px;height:16px;flex:none;color:#3b6494;
 }
-.sc-breadcrumb-bar .sc-crumb-more{display:none}
+.sc-breadcrumb-design-one .sc-crumb-icon svg{width:16px;height:16px;display:block}
+.sc-breadcrumb-design-one .sc-crumb-label{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.sc-breadcrumb-design-one .sc-crumb-current-label[aria-current=page]{
+ display:block;max-width:min(250px,35vw);min-width:0;
+ padding:6px 9px;border:1px solid rgba(41,111,225,.08);border-radius:8px;
+ overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+ background:#e3efff;color:#075bd5;font-size:12px;line-height:1.4;font-weight:750;
+}
+.sc-breadcrumb-design-one .sc-crumb-home:hover,
+.sc-breadcrumb-design-one .sc-crumb-link:hover,
+.sc-breadcrumb-design-one .sc-crumb-more-trigger:hover,
+.sc-breadcrumb-design-one .sc-crumb-more-menu button:hover{background:#e0edff;color:#095bd1}
+.sc-breadcrumb-design-one .sc-crumbs button:focus-visible{
+ outline:2px solid #1666d6;outline-offset:2px;
+}
+/* Keep the ancestor popover outside scroll and clipping containers. */
+.sc-breadcrumb-design-one .sc-crumb-more{
+ display:none;align-items:center;gap:2px;position:relative;flex:none;
+}
+.sc-breadcrumb-design-one .sc-crumb-more-trigger{
+ display:inline-flex;align-items:center;justify-content:center;
+ width:30px;height:30px;border-radius:7px;color:#42638a;
+}
+.sc-breadcrumb-design-one .sc-crumb-more-menu{
+ position:absolute;top:calc(100% + 6px);inset-inline-start:0;z-index:60;
+ display:grid;gap:2px;width:min(260px,calc(100vw - 28px));
+ padding:5px;background:#fff;border:1px solid #dce7f6;border-radius:10px;
+ box-shadow:0 13px 32px rgba(13,40,81,.18);
+}
+.sc-breadcrumb-design-one .sc-crumb-more-menu button{
+ display:flex;align-items:center;gap:8px;min-height:38px;width:100%;
+ padding:7px 9px;border-radius:7px;font-size:12px;line-height:1.4;
+ text-align:start;white-space:normal;color:#31547b;
+}
+.sc-breadcrumb-design-one .sc-crumbs-condensed .sc-crumb-ancestor{display:none}
+.sc-breadcrumb-design-one .sc-crumbs-condensed .sc-crumb-more{display:inline-flex}
+.sc-breadcrumb-design-one .sc-crumbs-condensed .sc-crumb-current{
+ display:inline-flex;align-items:center;gap:2px;flex:1;min-width:0;
+}
+.sc-breadcrumb-design-one .sc-crumbs-condensed .sc-crumb-current-label[aria-current=page]{
+ max-width:100%;width:auto;
+}
 @media(max-width:760px){
- .sc-main .sc-breadcrumb-bar{min-height:44px;padding-inline:14px}
- .sc-main .sc-breadcrumb-bar .sc-crumbs{overflow:visible;gap:5px}
- .sc-breadcrumb-bar .sc-crumb-home{width:34px;height:34px;padding:0}
- .sc-breadcrumb-bar .sc-crumb-home-label{display:none}
- .sc-breadcrumb-bar .sc-crumb-ancestor{display:none}
- .sc-breadcrumb-bar .sc-crumb-more{
-  display:inline-flex;align-items:center;gap:5px;order:1;position:relative;flex:none;
+ .sc-main .sc-breadcrumb-bar.sc-breadcrumb-design-one{min-height:42px;padding-inline:10px}
+ .sc-main .sc-breadcrumb-design-one .sc-crumbs{gap:2px;padding:3px 0}
+ .sc-breadcrumb-design-one .sc-crumb-home{min-height:30px;gap:3px;padding-inline:3px}
+ .sc-breadcrumb-design-one .sc-crumb-home-label{max-width:52px;overflow:hidden;text-overflow:ellipsis}
+ .sc-breadcrumb-design-one .sc-crumb-ancestor{display:none}
+ .sc-breadcrumb-design-one .sc-crumb-more{display:inline-flex;order:1}
+ .sc-breadcrumb-design-one .sc-crumb-current{order:2;display:inline-flex;flex:1;min-width:0;gap:2px}
+ .sc-breadcrumb-design-one .sc-crumb-current-label[aria-current=page]{
+  max-width:100%;font-size:12px;padding:5px 8px;
  }
- .sc-breadcrumb-bar .sc-crumb-current{order:2}
- .sc-breadcrumb-bar .sc-crumb-current [aria-current=page]{
-  max-width:calc(100vw - 145px);
- }
- .sc-breadcrumb-bar .sc-crumb-more-trigger{
-  display:inline-flex;align-items:center;justify-content:center;
-  width:34px;height:34px;border-radius:8px;color:#526580;
- }
- .sc-breadcrumb-bar .sc-crumb-more-menu{
-  position:absolute;top:calc(100% + 8px);inset-inline-start:0;
-  z-index:50;display:grid;gap:3px;
-  width:min(270px,calc(100vw - 40px));padding:7px;
-  background:#fff;border:1px solid #dfe6f1;border-radius:12px;
-  box-shadow:0 14px 32px rgba(17,29,66,.16);
- }
- .sc-breadcrumb-bar .sc-crumb-more-menu button{
-  display:block;width:100%;min-height:40px;padding:10px 12px;
-  text-align:start;white-space:normal;border-radius:8px;
-  font-size:12px;color:#334667;
- }
+}
+@media(max-width:370px){
+ .sc-breadcrumb-design-one .sc-crumb-home-label{display:none}
 }
 @media(prefers-reduced-motion:reduce){
- .sc-main .sc-breadcrumb-bar .sc-crumbs{scroll-behavior:auto}
+ .sc-main .sc-breadcrumb-design-one .sc-crumbs{scroll-behavior:auto}
 }
 
 /* Modern branded School Control topbar, based on approved navy-blue proposal. */
@@ -487,91 +512,3 @@
 .sc-shell .sc-topbar .sc-account-button .sc-account-identity strong{line-height:1.3}
 .sc-shell .sc-topbar .sc-account-button .sc-account-identity small{line-height:1.2}
 
-/* Breadcrumbs — design 1: condensed labels, illustrated ancestry and blue active chip.
-   Scoped to the breadcrumb bar so the sidebar/topbar retain their established styling. */
-.sc-main .sc-breadcrumb-design-one{
- min-height:53px;
- padding-inline:clamp(14px,1.65vw,28px);
- background:linear-gradient(90deg,#f4f9ff 0%,#edf6ff 56%,#f5faff 100%);
- border-bottom:1px solid #e5eefc;
-}
-.sc-main .sc-breadcrumb-design-one .sc-crumbs{
- display:flex;align-items:center;gap:6px;min-width:0;
- padding:7px 0;overflow-x:auto;overflow-y:hidden;white-space:nowrap;
- font-size:13px;color:#193e78;scrollbar-width:thin;mask-image:none;
-}
-.sc-breadcrumb-design-one .sc-crumb-home{
- flex:none;min-height:32px;display:inline-flex;align-items:center;justify-content:flex-start;
- gap:8px;padding:4px 6px 4px 0;border-radius:8px;
- color:#193d77;font-size:13px;font-weight:560;
-}
-.sc-breadcrumb-design-one .sc-crumb-home svg{flex:none;color:#0d356f}
-.sc-breadcrumb-design-one .sc-crumb-home-label{display:inline!important;font-weight:560}
-.sc-breadcrumb-design-one .sc-crumb-step{display:inline-flex;align-items:center;gap:6px;flex:none;min-width:0}
-.sc-breadcrumb-design-one .sc-crumb-divider{color:#143b7a;flex:none}
-.sc-breadcrumb-design-one .sc-crumb-step .sc-crumb-link{
- display:inline-flex;align-items:center;gap:8px;min-height:32px;
- padding:4px 6px;max-width:230px;border-radius:8px;
- background:transparent;color:#193e79;font-size:13px;font-weight:550;
-}
-.sc-breadcrumb-design-one .sc-crumb-icon{flex:none;width:19px;height:19px;display:inline-flex;align-items:center;justify-content:center;color:#123b7e}
-.sc-breadcrumb-design-one .sc-crumb-label{min-width:0;overflow:hidden;text-overflow:ellipsis}
-.sc-breadcrumb-design-one .sc-crumb-current-label[aria-current=page]{
- display:inline-flex;align-items:center;justify-content:center;
- min-height:32px;max-width:min(320px,35vw);
- padding:5px 12px;border-radius:10px;
- background:#e0edff;color:#0461e9;
- font-size:13px;line-height:1.4;font-weight:750;
- overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
-}
-.sc-breadcrumb-design-one .sc-crumb-home:hover,
-.sc-breadcrumb-design-one .sc-crumb-step .sc-crumb-link:hover{
- background:#dfecff;color:#075ed3
-}
-.sc-breadcrumb-design-one .sc-crumb-home:focus-visible,
-.sc-breadcrumb-design-one .sc-crumb-step .sc-crumb-link:focus-visible,
-.sc-breadcrumb-design-one .sc-crumb-more-trigger:focus-visible,
-.sc-breadcrumb-design-one .sc-crumb-more-menu button:focus-visible{
- outline:2px solid #1268e6;outline-offset:2px;
-}
-@media(max-width:760px){
- .sc-main .sc-breadcrumb-design-one{min-height:46px;padding-inline:12px}
- .sc-main .sc-breadcrumb-design-one .sc-crumbs{gap:4px;overflow:visible;padding:5px 0}
- .sc-breadcrumb-design-one .sc-crumb-home{width:auto;height:34px;gap:5px;padding:2px 4px}
- .sc-breadcrumb-design-one .sc-crumb-home-label{display:inline!important;max-width:65px;overflow:hidden;text-overflow:ellipsis}
- .sc-breadcrumb-design-one .sc-crumb-ancestor{display:none}
- .sc-breadcrumb-design-one .sc-crumb-more{display:inline-flex;order:1;gap:4px;align-items:center}
- .sc-breadcrumb-design-one .sc-crumb-current{order:2;gap:4px;min-width:0;flex:1}
- .sc-breadcrumb-design-one .sc-crumb-current-label[aria-current=page]{
-  max-width:calc(100vw - 164px);min-width:0;justify-content:flex-start;
-  font-size:12px;padding-inline:10px
- }
- .sc-breadcrumb-design-one .sc-crumb-more-menu button{
-  display:flex;align-items:center;gap:10px;text-align:start
- }
-}
-@media(max-width:370px){
- .sc-breadcrumb-design-one .sc-crumb-home-label{display:none!important}
- .sc-breadcrumb-design-one .sc-crumb-current-label[aria-current=page]{max-width:calc(100vw - 125px)}
-}
-@media(prefers-reduced-motion:reduce){
- .sc-main .sc-breadcrumb-design-one .sc-crumbs{scroll-behavior:auto}
-}
-
-/* Design 1: preserve the compact full hierarchy on mid-size desktop/tablet widths. */
-@media(min-width:761px) and (max-width:1000px){
- .sc-main .sc-breadcrumb-design-one{padding-inline:14px}
- .sc-main .sc-breadcrumb-design-one .sc-crumbs{gap:4px}
- .sc-breadcrumb-design-one .sc-crumb-step{gap:4px}
- .sc-breadcrumb-design-one .sc-crumb-step .sc-crumb-link{max-width:168px;gap:5px;padding-inline:4px}
- .sc-breadcrumb-design-one .sc-crumb-current-label[aria-current=page]{max-width:230px}
-}
-
-/* The last breadcrumb is a label, not a clickable route: retain consistent focus styling
-   on its preceding link while keeping the current label visually distinct. */
-.sc-breadcrumb-design-one .sc-crumb-link .sc-crumb-icon svg{display:block}
-.sc-breadcrumb-design-one .sc-crumb-current-label[aria-current=page]{border:1px solid rgba(41,111,225,.06)}
-@media(max-width:760px){
- .sc-breadcrumb-design-one .sc-crumb-more-menu .sc-crumb-icon{display:inline-flex;flex:none}
- .sc-breadcrumb-design-one .sc-crumb-current{max-width:100%}
-}

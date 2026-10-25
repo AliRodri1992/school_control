@@ -84,6 +84,11 @@ export function breadcrumbTranslationKey(key:string):string{
  };
  return standalone[key]||'nav.'+key;
 }
+/** A real width check; keep a 2px tolerance for subpixel font rendering. */
+export function shouldCondenseBreadcrumbs(contentWidth:number,availableWidth:number):boolean{
+ return Number.isFinite(contentWidth)&&Number.isFinite(availableWidth)&&
+  availableWidth>0&&contentWidth>availableWidth+2;
+}
 /** Maps a non-route breadcrumb group to its existing, authorized destination. */
 export function breadcrumbDestination(key:string):string{
  return key==='student_records'?'students':key;
