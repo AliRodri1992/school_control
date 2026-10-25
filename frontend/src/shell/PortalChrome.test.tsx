@@ -104,3 +104,37 @@ it('displays profile and signout in the mobile sidebar avatar menu',async()=>{
  expect(screen.getByRole('button',{name:'Mi perfil y seguridad'})).toBeTruthy();
  expect(screen.getByRole('button',{name:'Cerrar sesión'})).toBeTruthy();
 });
+
+it('keeps the language icon, marks active language and closes sibling menus',async()=>{
+ render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ const language=screen.getByRole('button',{name:'Idioma'});
+ expect(language.querySelector('svg')).toBeTruthy();
+ await userEvent.click(language);
+ expect(screen.getByRole('group',{name:'Idiomas disponibles'})).toBeTruthy();
+ expect(screen.getByRole('button',{name:/Español · ES/}).querySelector('svg')).toBeTruthy();
+ await userEvent.click(screen.getByRole('button',{name:'Notificaciones: 0 sin leer'}));
+ expect(screen.queryByRole('group',{name:'Idiomas disponibles'})).toBeNull();
+ expect(screen.getByRole('region',{name:'Notificaciones'})).toBeTruthy();
+});
+it('dismisses notification popover on outside click and Escape, restoring focus',async()=>{
+ render(<PortalChrome {...props}><button type="button">Outside</button></PortalChrome>);
+ const bell=screen.getByRole('button',{name:'Notificaciones: 0 sin leer'});
+ await userEvent.click(bell);await userEvent.click(screen.getByRole('button',{name:'Outside'}));
+ expect(screen.queryByRole('region',{name:'Notificaciones'})).toBeNull();
+ await userEvent.click(bell);await userEvent.keyboard('{Escape}');
+ expect(screen.queryByRole('region',{name:'Notificaciones'})).toBeNull();
+ expect(document.activeElement).toBe(bell);
+});
+it('translates current page context and notification labels',async()=>{
+ render(<PortalChrome {...props} page="grades"><div>Página</div></PortalChrome>);
+ expect(screen.getByLabelText('Página actual')).toHaveProperty('textContent','Calificaciones');
+ await userEvent.click(screen.getByRole('button',{name:'Idioma'}));
+ await userEvent.click(screen.getByRole('button',{name:'English · EN'}));
+ expect(screen.getByLabelText('Current page')).toHaveProperty('textContent','Grades');
+ expect(screen.getByRole('button',{name:'Notifications: 0 unread'})).toBeTruthy();
+});
+it('keeps the guardian child selector in the header',()=>{
+ render(<PortalChrome {...props} user={{...user,role:'guardian'}} childrenList={[{id:3,full_name:'Alex Ejemplo'}]}>
+ <div>Página</div></PortalChrome>);
+ expect(screen.getByRole('combobox',{name:'Seleccionar hijo'})).toBeTruthy();
+});

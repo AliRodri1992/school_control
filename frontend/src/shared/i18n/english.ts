@@ -706,6 +706,8 @@ Object.assign(englishByText,{
  'Expandir ':'Expand '
 });
 
+Object.assign(englishByText,{"Página actual":"Current page","Idiomas disponibles":"Available languages","Ruta de navegación":"Breadcrumbs","Zona horaria: ":"Time zone: "});
+
 export function translateUiText(locale:string,text:string):string{
  if(!locale.toLowerCase().startsWith('en'))return text;
  return englishByText[text]||text;

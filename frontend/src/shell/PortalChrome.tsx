@@ -1,8 +1,10 @@
 import {LocaleProvider} from '../shared/i18n/LocaleContext';
+import TopbarClock from './TopbarClock';
+import {useTopbarMenuPosition} from './useTopbarMenuPosition';
 import {translateUiText} from '../shared/i18n/english';
 import {useEffect,useRef,useState,type ReactNode} from 'react';
 import {createPortal} from 'react-dom';
-import {Bell,BookOpen,CalendarClock,ChevronDown,ChevronRight,HelpCircle,Languages,LogOut,Menu,PanelLeftClose,PanelLeftOpen,UserRound,X,LayoutDashboard,Users,GraduationCap,BookOpenCheck,CalendarDays,MessageSquare,BarChart3,Settings,School,FolderOpen,ClipboardList,UserRoundCheck,ClipboardCheck,ClipboardPenLine,BookMarked,FileSpreadsheet,ShieldCheck,Mail,Globe2,Code2,FileText,ContactRound,ChartNoAxesCombined,NotebookTabs,IdCard} from 'lucide-react';
+import {Bell,BookOpen,Check,ChevronDown,ChevronRight,HelpCircle,Languages,LogOut,Menu,PanelLeftClose,PanelLeftOpen,UserRound,X,LayoutDashboard,Users,GraduationCap,BookOpenCheck,CalendarDays,MessageSquare,BarChart3,Settings,School,FolderOpen,ClipboardList,UserRoundCheck,ClipboardCheck,ClipboardPenLine,BookMarked,FileSpreadsheet,ShieldCheck,Mail,Globe2,Code2,FileText,ContactRound,ChartNoAxesCombined,NotebookTabs,IdCard} from 'lucide-react';
 import {api} from '../api';
 import Combobox from '../shared/components/Combobox';
 import type {Row} from '../modules';
@@ -24,11 +26,12 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const sidebarRef=useRef<HTMLElement|null>(null);
  const [compactPosition,setCompactPosition]=useState<{left:number;top:number}|null>(null);
  const languageRef=useRef<HTMLDivElement>(null);
+ const notificationRef=useRef<HTMLDivElement>(null);
+ const breadcrumbRef=useRef<HTMLElement>(null);
  useEffect(()=>{localStorage.setItem('school-sidebar-collapsed',String(collapsed));},[collapsed]);
  useEffect(()=>{const changed=()=>setLocale(localStorage.getItem('school-locale')||'es');window.addEventListener('school-locale-changed',changed);return()=>window.removeEventListener('school-locale-changed',changed);},[]);
- useEffect(()=>{function close(event:PointerEvent){if(!languageRef.current?.contains(event.target as Node))setLanguageOpen(false);}document.addEventListener('pointerdown',close);return()=>document.removeEventListener('pointerdown',close);},[]);
+ useEffect(()=>{function close(event:PointerEvent){const node=event.target as Node;if(!languageRef.current?.contains(node))setLanguageOpen(false);if(!notificationRef.current?.contains(node))setNotificationsOpen(false);}document.addEventListener('pointerdown',close);return()=>document.removeEventListener('pointerdown',close);},[]);
  const compact=collapsed&&!mobile;
- const [clock,setClock]=useState(()=>new Date());
  const [locale,setLocale]=useState<string>(()=>localStorage.getItem('school-locale')||'es');
  const [availableLocales,setAvailableLocales]=useState<{id:number;code:string;name:string;native_name:string;status:string;text_direction:string}[]>([]);
  const [translations,setTranslations]=useState<Record<string,string>>({});
@@ -53,6 +56,9 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const [accountTarget,setAccountTarget]=useState<'sidebar'|'topbar'|null>(null);
  const sidebarAccountRef=useRef<HTMLDivElement>(null);
  const topbarAccountRef=useRef<HTMLDivElement>(null);
+ useTopbarMenuPosition(languageOpen,languageRef,210);
+ useTopbarMenuPosition(notificationsOpen,notificationRef,345);
+ useTopbarMenuPosition(accountTarget==='topbar',topbarAccountRef,330);
  useEffect(()=>{
    function closeOnEscape(event:KeyboardEvent){if(event.key==='Escape')setAccountTarget(null);}
    function closeOutside(event:PointerEvent){
@@ -67,7 +73,6 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const [unread,setUnread]=useState(0);
  const [notificationItems,setNotificationItems]=useState<Row[]>([]);
  const [noticeError,setNoticeError]=useState('');
- useEffect(()=>{const interval=window.setInterval(()=>setClock(new Date()),1000);return()=>window.clearInterval(interval)},[]);
  useEffect(()=>{let mounted=true;
    void api('languages').then(result=>{if(!mounted)return;
      setAvailableLocales(result.filter((row:{status:string})=>row.status==='active'));
@@ -112,6 +117,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    setCompactGroup(null);
    setAccountTarget(null);
    setNotificationsOpen(false);
+   setLanguageOpen(false);
  }
  function positionCompactMenu(){
    const trigger=compactGroupTrigger.current;
@@ -167,6 +173,9 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
        return;
      }
      if(event.key!=='Escape')return;
+     if(languageOpen)languageRef.current?.querySelector('button')?.focus();
+     else if(notificationsOpen)notificationRef.current?.querySelector('button')?.focus();
+     else if(accountTarget==='topbar')topbarAccountRef.current?.querySelector('button')?.focus();
      if(mobile){onMobile(false);mobileTrigger.current?.focus();}
      if(compactGroup){setCompactGroup(null);compactGroupTrigger.current?.focus();}
      setAccountTarget(null);
@@ -175,7 +184,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    }
    document.addEventListener('keydown',onKeydown);
    return()=>document.removeEventListener('keydown',onKeydown);
- },[mobile,onMobile,compactGroup]);
+ },[mobile,onMobile,compactGroup,languageOpen,notificationsOpen,accountTarget]);
  async function read(item:Row){
    try{
      await api('notifications/'+item.id+'/read','POST');
@@ -211,8 +220,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const trail=page==='student_details'?[{key:'students',title:portal==='tutors'?'Mis hijos':'Alumnos'},{key:'student_details',title:'Expediente'}]:findNavPath(groups,page);
  const label=translate('nav.'+page,page==='dashboard'?'Inicio':page==='profile'?'Mi perfil':page==='help'?'Ayuda':page==='notifications'?'Notificaciones':trail.at(-1)?.title||page);
  const tz=school.timezone||'America/Mexico_City';
- const formatted=new Intl.DateTimeFormat(locale==='es'?'es-MX':locale,{dateStyle:'medium',timeZone:tz}).format(clock);
- const time=new Intl.DateTimeFormat(locale==='es'?'es-MX':locale,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:tz}).format(clock);
+ useEffect(()=>{if(breadcrumbRef.current)breadcrumbRef.current.scrollLeft=breadcrumbRef.current.scrollWidth;},[page,locale]);
  useEffect(()=>{
   document.documentElement.lang=locale;
   document.documentElement.dir=availableLocales.find(item=>item.code===locale)?.text_direction==='rtl'?'rtl':'ltr';
@@ -270,28 +278,29 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    <main className="sc-main">
      <header className="topbar sc-topbar">
        <button ref={mobileTrigger} type="button" className="mobile" aria-label={locale==='en'?'Open menu':'Abrir menú'} aria-controls="school-sidebar" aria-expanded={mobile} onClick={()=>onMobile(true)}><Menu/></button>
-       <button type="button" className="sc-collapse-toggle" aria-label={collapsed?'Expandir barra lateral':'Colapsar barra lateral'} aria-expanded={!collapsed} onClick={()=>{setCollapsed(v=>!v);setCompactGroup(null);}}>{collapsed?<PanelLeftOpen size={21}/>:<PanelLeftClose size={21}/>}</button>
+       <button type="button" className="sc-collapse-toggle" aria-label={translateUiText(locale,collapsed?'Expandir barra lateral':'Colapsar barra lateral')} aria-expanded={!collapsed} onClick={()=>{setCollapsed(v=>!v);setCompactGroup(null);}}>{collapsed?<PanelLeftOpen size={21}/>:<PanelLeftClose size={21}/>}</button>
        <button type="button" className="sc-topbar-brand" onClick={()=>navigate('dashboard')} aria-label={'Ir al inicio de '+school.name}>
          {school.logo_url?<img src={school.logo_url} alt=""/>:<span className="sc-topbar-mark"><BookOpen size={22}/></span>}
          <span className="sc-topbar-brand-text"><strong>{school.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span>
        </button>
+       <div className="sc-topbar-context" aria-label={translateUiText(locale,'Página actual')}><span>{translateUiText(locale,portalLabels[portal])}</span><strong>{label}</strong></div>
        {portal==='tutors'&&childrenList.length>0&&<div className="sc-child-picker">
          <Combobox value={selectedChildId} label="Seleccionar hijo" placeholder="Todos mis hijos" onChange={onSelectChild}
            options={childrenList.map(child=>({value:String(child.id),label:child.full_name||child.first_name}))}/>
        </div>}
        <div className="sc-top-actions">
-         <div className="sc-clock" title={'Zona horaria: '+tz}><CalendarClock size={17}/><time>{formatted} · {time}</time></div>
+         <TopbarClock locale={locale} timeZone={tz}/>
          <div className="sc-language sc-flyout-holder" ref={languageRef}>
-           <button type="button" className="sc-icon-button sc-language-button" aria-label={translate('shell.locale','Idioma')} title={translate('shell.locale','Idioma')} aria-expanded={languageOpen} onClick={()=>setLanguageOpen(v=>!v)}><Languages size={19}/></button>
-           {languageOpen&&<div className="sc-flyout sc-language-menu" role="group" aria-label="Idiomas disponibles">
-             {(availableLocales.length?availableLocales:[{id:0,code:'es',name:'Español',native_name:'Español',status:'active',text_direction:'ltr'},{id:1,code:'en',name:'English',native_name:'English',status:'active',text_direction:'ltr'}]).map(language=><button type="button" className="sc-flyout-link" key={language.code} aria-pressed={locale===language.code} onClick={()=>setLanguage(language.code)}>{language.native_name} · {language.code.toUpperCase()}</button>)}
+           <button type="button" className="sc-icon-button sc-language-button" aria-label={translate('shell.locale','Idioma')} title={translate('shell.locale','Idioma')} aria-expanded={languageOpen} onClick={()=>{setLanguageOpen(v=>!v);setNotificationsOpen(false);setAccountTarget(null);}}><Languages size={19}/></button>
+           {languageOpen&&<div className="sc-flyout sc-language-menu" role="group" aria-label={translateUiText(locale,"Idiomas disponibles")}>
+             {(availableLocales.length?availableLocales:[{id:0,code:'es',name:'Español',native_name:'Español',status:'active',text_direction:'ltr'},{id:1,code:'en',name:'English',native_name:'English',status:'active',text_direction:'ltr'}]).map(language=><button type="button" className="sc-flyout-link" key={language.code} aria-pressed={locale===language.code} onClick={()=>setLanguage(language.code)}>{language.native_name} · {language.code.toUpperCase()}{locale===language.code&&<Check size={16} aria-hidden="true"/>}</button>)}
            </div>}
          </div>
-         <div className="sc-flyout-holder">
-           <button className="sc-icon-button" aria-label={'Notificaciones: '+unread+' sin leer'} aria-expanded={notificationsOpen}
-             onClick={()=>{setNotificationsOpen(v=>!v);setAccountTarget(null);}}><Bell size={19}/>{unread>0&&<b className="sc-notification-count">{unread>99?'99+':unread}</b>}</button>
+         <div className="sc-flyout-holder" ref={notificationRef}>
+           <button className="sc-icon-button" aria-label={(locale==='en'?'Notifications: ':'Notificaciones: ')+unread+(locale==='en'?' unread':' sin leer')} aria-expanded={notificationsOpen}
+             onClick={()=>{setNotificationsOpen(v=>!v);setAccountTarget(null);setLanguageOpen(false);}}><Bell size={19}/>{unread>0&&<b className="sc-notification-count">{unread>99?'99+':unread}</b>}</button>
            {notificationsOpen&&<section className="sc-flyout" aria-label="Notificaciones">
-             <div className="sc-flyout-title"><strong>{translate("shell.notifications","Notificaciones")}</strong><button aria-label="Cerrar" onClick={()=>setNotificationsOpen(false)}><X size={16}/></button></div>
+             <div className="sc-flyout-title"><strong>{translate("shell.notifications","Notificaciones")}</strong><button type="button" aria-label={translateUiText(locale,"Cerrar")} onClick={()=>{setNotificationsOpen(false);notificationRef.current?.querySelector("button")?.focus();}}><X size={16}/></button></div>
              {noticeError&&<p role="alert">{noticeError}</p>}
              {notificationItems.slice(0,6).map(item=><button className="sc-flyout-link" key={item.id} onClick={()=>void read(item)}>{!item.read_at&&<span className="sc-unread"/>}{item.title}</button>)}
              {!notificationItems.length&&<p>{translate("shell.no_notifications","No hay notificaciones recientes.")}</p>}
@@ -300,7 +309,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
          </div>
          <div className="sc-flyout-holder" ref={topbarAccountRef}>
            <button className="sc-account-button" type="button" aria-label={'Opciones de cuenta de '+user.name}
-             aria-expanded={accountTarget==='topbar'} onClick={()=>{setAccountTarget(v=>v==='topbar'?null:'topbar');setNotificationsOpen(false);}}>
+             aria-expanded={accountTarget==='topbar'} onClick={()=>{setAccountTarget(v=>v==='topbar'?null:'topbar');setNotificationsOpen(false);setLanguageOpen(false);}}>
              <span className="sc-account-identity"><strong>{user.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span>
              <span className="sc-topbar-avatar">{user.name.slice(0,2).toUpperCase()}</span><ChevronDown size={16}/>
            </button>
@@ -309,7 +318,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
        </div>
      </header>
      <div className="sc-breadcrumb-bar">
-       <nav className="sc-crumbs" aria-label="Ruta de navegación">
+       <nav ref={breadcrumbRef} className="sc-crumbs" aria-label={translateUiText(locale,"Ruta de navegación")}>
          <button type="button" onClick={()=>navigate('dashboard')}>{translateUiText(locale,portalLabels[portal])}</button>
          {trail.length?trail.map((item,index)=><span className="sc-crumb-step" key={item.key}>
    <ChevronRight size={14}/>
