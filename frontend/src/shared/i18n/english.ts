@@ -780,6 +780,44 @@ Object.assign(englishByText,{
  'Las siguientes actividades del calendario escolar aparecerán en este espacio.':'Upcoming school calendar activities will appear here.',
  'Calendario institucional':'School calendar'
 });
+Object.assign(englishByText,{
+ "Periodo de análisis": "Analysis period",
+ "Últimos 30 días": "Last 30 days",
+ "Últimos 90 días": "Last 90 days",
+ "Últimos 180 días": "Last 180 days",
+ "Últimos 365 días": "Last 365 days",
+ "Ciclo escolar": "School year",
+ "Todos los ciclos autorizados": "All authorized school years",
+ "Filtros de estadísticas": "Statistics filters",
+ "Estadísticas del hijo seleccionado": "Statistics for the selected child",
+ "Estadísticas de tus hijos vinculados": "Statistics for your linked children",
+ "Estadísticas de tus grupos autorizados": "Statistics for your assigned groups",
+ "Resultados de los registros autorizados": "Results from authorized records",
+ "Actualizando gráficas…": "Updating charts…",
+ "Sin datos para el periodo seleccionado": "No data for this period",
+ "Cuando existan registros autorizados, aparecerá la gráfica aquí.": "This chart will display when authorized records are available.",
+ "Datos reales del periodo seleccionado": "Real data for the selected period",
+ "categoría": "category",
+ "categorías": "categories",
+ "Faltas": "Absences",
+ "Retardos": "Late arrivals",
+ "Asistencias": "Attendance",
+ "Entregadas": "Submitted",
+ "Pendientes": "Pending",
+ "Enviadas": "Submitted applications",
+ "Aprobadas": "Approved",
+ "Rechazadas": "Rejected",
+ "Matrícula por ciclo": "Enrollment by school year",
+ "Alumnos por grado": "Students by grade",
+ "Distribución de asistencia": "Attendance distribution",
+ "Estado de admisiones": "Admission statuses",
+ "Evolución de asistencia": "Attendance trend",
+ "Promedio por materia": "Average by subject",
+ "Rendimiento por periodo": "Academic performance by term",
+ "Distribución de calificaciones": "Grade distribution",
+ "Faltas y retardos por mes": "Monthly absences and lateness",
+ "Entregas de tareas": "Assignment submissions"
+});
 export function translateUiText(locale:string,text:string):string{
  if(!locale.toLowerCase().startsWith('en'))return text;
  return englishByText[text]||text;

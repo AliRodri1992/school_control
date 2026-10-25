@@ -6,7 +6,8 @@ import {Responsive, WidthProvider} from 'react-grid-layout/legacy';
 import {BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer} from 'recharts';
 import {api} from './api';
 import {notify} from './notifications';
-import {appendWidget, removeWidget, defaultConfig, widgetKinds, isMetricKind, mergeGridLayouts, upgradeLegacyDashboardConfig, columns, type Config, type Kind, type DashboardRole} from './dashboardConfig';
+import {appendWidget, removeWidget, defaultConfig, widgetKinds, isMetricKind, isAnalyticChartKind, allowedChartKinds, mergeGridLayouts, upgradeLegacyDashboardConfig, upgradeRoleCharts, columns, type Config, type Kind, type DashboardRole} from './dashboardConfig';
+import DashboardChart from './DashboardChart';
 import DashboardMetricCard from './DashboardMetricCard';
 import DashboardEmptyState from './DashboardEmptyState';
 import type {Row} from './modules';
@@ -14,9 +15,11 @@ import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 const Grid = WidthProvider(Responsive);
 const statusLabels: Record<string,string> = {present:'Presente',absent:'Ausente',late:'Retardo',excused:'Justificada',submitted:'Enviada',approved:'Aprobada',rejected:'Rechazada'};
-export default function Dashboard({summary,data,role='admin',userId=0}:{summary:Row;data:Record<string,Row[]>;role?:DashboardRole;userId?:number}) {
+export default function Dashboard({summary,data,role='admin',userId=0,selectedChildId=''}:{summary:Row;data:Record<string,Row[]>;role?:DashboardRole;userId?:number;selectedChildId?:string}) {
  const {ui,locale}=useSchoolLocale();
  const [filterGroup,setFilterGroup]=useState('');
+ const [period,setPeriod]=useState('180'),[academicYear,setAcademicYear]=useState('');
+ const [chartLoading,setChartLoading]=useState(false);
  const [visibleSummary,setVisibleSummary]=useState<Row>(summary);
  const [config,setConfig] = useState<Config>(()=>defaultConfig(role));
  const [version,setVersion] = useState<number|null>(null);
@@ -25,11 +28,22 @@ export default function Dashboard({summary,data,role='admin',userId=0}:{summary:
  const [restored,setRestored]=useState(false),[gridRevision,setGridRevision]=useState(0);
  const preventProgrammaticLayoutChange=useRef(false);
  useEffect(()=>{let active=true;setVisibleSummary(summary);return()=>{active=false;};},[summary]);
- useEffect(()=>{let active=true;if(!filterGroup){setVisibleSummary(summary);return;}
-   void api('dashboard?group_id='+encodeURIComponent(filterGroup)).then(result=>{if(active)setVisibleSummary(result);}).catch(e=>{if(active)setError(e.message);});
-   return()=>{active=false;};
- },[filterGroup,summary,userId]);
- useEffect(()=>{let active=true;api('dashboard_preference').then(result=>{if(active){setConfig(result.configuration?upgradeLegacyDashboardConfig(result.configuration,role):defaultConfig(role));setVersion(result.lock_version);setReady(true);}}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[]);
+ useEffect(()=>{
+  let active=true;
+  const end=new Date(),start=new Date(end);
+  start.setDate(end.getDate()-Number(period)+1);
+  const iso=(date:Date)=>[date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');
+  const search=new URLSearchParams({from:iso(start),to:iso(end)});
+  if(filterGroup)search.set('group_id',filterGroup);
+  if(academicYear)search.set('academic_year_id',academicYear);
+  if(selectedChildId)search.set('student_id',selectedChildId);
+  setChartLoading(true);
+  void api('dashboard?'+search.toString()).then(result=>{
+   if(active){setVisibleSummary(result);setError('');}
+  }).catch(e=>{if(active)setError(e.message);}).finally(()=>{if(active)setChartLoading(false);});
+  return()=>{active=false;};
+ },[filterGroup,academicYear,period,selectedChildId,role,userId]);
+ useEffect(()=>{let active=true;api('dashboard_preference').then(result=>{if(active){setConfig(result.configuration?upgradeRoleCharts(upgradeLegacyDashboardConfig(result.configuration,role),role):defaultConfig(role));setVersion(result.lock_version);setReady(true);}}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[]);
  async function save(){
   setSaving(true);setError('');
   try{
@@ -57,6 +71,8 @@ export default function Dashboard({summary,data,role='admin',userId=0}:{summary:
   setConfig(next);
  }
  function content(widget: Config['widgets'][number]) {
+  if(isAnalyticChartKind(widget.kind))return <DashboardChart kind={widget.kind}
+   data={visibleSummary[widget.kind]} title={ui(widget.title)} translate={ui}/>;
   if(widget.kind.endsWith('_chart')) {
    const values=visibleSummary[widget.kind];
    const entries=Object.entries(values&&typeof values==='object'&&!Array.isArray(values)?values:{}).map(([name,value])=>{
@@ -120,6 +136,28 @@ export default function Dashboard({summary,data,role='admin',userId=0}:{summary:
   {editing&&restored&&<p className="dashboard-reset-notice" role="status">
    {ui("Plantilla original restaurada. Pulsa Guardar dashboard para conservar los cambios.")}
   </p>}
+  <div className="sc-analytics-date-filters" role="group" aria-label={ui('Filtros de estadísticas')}>
+   <label>{ui('Periodo de análisis')}
+    <select value={period} onChange={e=>setPeriod(e.target.value)}>
+     <option value="30">{ui('Últimos 30 días')}</option>
+     <option value="90">{ui('Últimos 90 días')}</option>
+     <option value="180">{ui('Últimos 180 días')}</option>
+     <option value="365">{ui('Últimos 365 días')}</option>
+    </select>
+   </label>
+   {(data.academic_years||[]).length>0&&
+    <label>{ui('Ciclo escolar')}
+     <select value={academicYear} onChange={e=>setAcademicYear(e.target.value)}>
+      <option value="">{ui('Todos los ciclos autorizados')}</option>
+      {(data.academic_years||[]).map(year=><option value={String(year.id)} key={year.id}>{year.name}</option>)}
+     </select>
+    </label>}
+   <span className="sc-analytics-filter-note">
+    {role==='guardian'?(selectedChildId?ui('Estadísticas del hijo seleccionado'):ui('Estadísticas de tus hijos vinculados')):
+     role==='teacher'?ui('Estadísticas de tus grupos autorizados'):ui('Resultados de los registros autorizados')}
+   </span>
+   {chartLoading&&<span className="sc-analytics-filter-loading" role="status">{ui('Actualizando gráficas…')}</span>}
+  </div>
   {(['admin','teacher'].includes(role))&&(data.groups||[]).length>0&&
    <div className="dashboard-context-filter">
     <div className="sc-dashboard-select">
@@ -141,7 +179,7 @@ export default function Dashboard({summary,data,role='admin',userId=0}:{summary:
    <div className="sc-dashboard-select">
     <label>{ui("Contenido")}</label>
     <Combobox label="Tipo de widget" value={kind} onChange={value=>setKind(value as Kind)}
-     options={Object.entries(widgetKinds).map(([value,label])=>({value,label:ui(label)}))}/>
+     options={Object.entries(widgetKinds).filter(([value])=>!isAnalyticChartKind(value as Kind)||allowedChartKinds[role].includes(value as Kind)).map(([value,label])=>({value,label:ui(label)}))}/>
    </div>
    <label>{ui("Título del widget")}
     <input value={title} maxLength={80} placeholder={ui(widgetKinds[kind])}

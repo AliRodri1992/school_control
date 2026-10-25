@@ -1,9 +1,20 @@
+export type DashboardRole='admin'|'teacher'|'guardian'|'student';
 export const widgetKinds = {
  students: 'Expedientes', enrollments: 'Inscripciones activas', pending_admissions: 'Solicitudes pendientes',
  groups: 'Grupos', today_classes: 'Clases de hoy', grade_drafts: 'Calificaciones por revisar', pending_documents: 'Documentos pendientes', attendance_chart: 'Asistencia · últimos 30 días', admission_chart: 'Estado de solicitudes',
+ enrollment_trend:'Matrícula por ciclo', students_by_grade:'Alumnos por grado', attendance_rate:'Distribución de asistencia', admission_status:'Estado de admisiones', attendance_trend:'Evolución de asistencia', grades_by_subject:'Promedio por materia', grades_by_term:'Rendimiento por periodo', grade_distribution:'Distribución de calificaciones', monthly_absences:'Faltas y retardos por mes', assignment_progress:'Entregas de tareas',
  alerts: 'Acompañamiento', calendar: 'Próximos eventos', announcements: 'Comunicados'
 };
 export type Kind = keyof typeof widgetKinds;
+export const analyticChartKinds=['enrollment_trend','students_by_grade','attendance_rate','admission_status','attendance_trend','grades_by_subject','grades_by_term','grade_distribution','monthly_absences','assignment_progress'] as const;
+export type AnalyticChartKind=(typeof analyticChartKinds)[number];
+export const isAnalyticChartKind=(kind:Kind):kind is AnalyticChartKind=>analyticChartKinds.some(chart=>chart===kind);
+export const allowedChartKinds:Record<DashboardRole,readonly Kind[]>={
+ admin:['enrollment_trend','students_by_grade','attendance_rate','admission_status','attendance_trend','grades_by_subject','grades_by_term','grade_distribution','monthly_absences'],
+ teacher:['attendance_rate','attendance_trend','grades_by_subject','grades_by_term','grade_distribution','monthly_absences'],
+ guardian:['attendance_rate','attendance_trend','grades_by_term','grade_distribution','monthly_absences','assignment_progress'],
+ student:['attendance_rate','attendance_trend','grades_by_term','monthly_absences','assignment_progress']
+};
 export const metricKinds=['students','enrollments','pending_admissions','groups','today_classes','grade_drafts','pending_documents'] as const;
 export type MetricKind=(typeof metricKinds)[number];
 export const isMetricKind=(kind:Kind):kind is MetricKind=>metricKinds.some(metric=>metric===kind);
@@ -28,11 +39,11 @@ export function appendWidget(config: Config, kind: Kind, title: string, id: stri
 export function removeWidget(config: Config, id: string): Config {
  return {widgets:config.widgets.filter(w=>w.id!==id), layouts:Object.fromEntries(Object.entries(config.layouts).map(([bp,items])=>[bp,items.filter(i=>i.i!==id)]))};
 }
-export type DashboardRole='admin'|'teacher'|'guardian'|'student';
+
 export const presets: Record<DashboardRole,Kind[]> = {
- admin:['students','enrollments','pending_admissions','pending_documents','attendance_chart','alerts','calendar'],
- teacher:['today_classes','grade_drafts','groups','attendance_chart','alerts','calendar','announcements'],
- guardian:['students','today_classes','pending_documents','attendance_chart','calendar','announcements'],
+ admin:['students','enrollments','pending_admissions','pending_documents','enrollment_trend','students_by_grade','attendance_rate','admission_status','attendance_chart','alerts','calendar'],
+ teacher:['today_classes','grade_drafts','groups','attendance_trend','grades_by_subject','grades_by_term','grade_distribution','attendance_chart','alerts','calendar','announcements'],
+ guardian:['students','today_classes','pending_documents','grades_by_term','attendance_rate','monthly_absences','assignment_progress','attendance_chart','calendar','announcements'],
  student:['today_classes','attendance_chart','calendar','announcements']
 };
 export function defaultConfig(role: DashboardRole='admin'): Config {
@@ -88,4 +99,18 @@ export function upgradeLegacyDashboardConfig(config:Config,role:DashboardRole):C
  const oldSix=matchesOld(6,6);
  const oldCompact=matchesOld(4,6);
  return oldSix||oldCompact?original:config;
+}
+
+/** Upgrade only previous factory presets; customised cards/positions remain unchanged. */
+export function upgradeRoleCharts(config:Config,role:DashboardRole):Config{
+ const old:Record<DashboardRole,Kind[]>={
+  admin:['students','enrollments','pending_admissions','pending_documents','attendance_chart','alerts','calendar'],
+  teacher:['today_classes','grade_drafts','groups','attendance_chart','alerts','calendar','announcements'],
+  guardian:['students','today_classes','pending_documents','attendance_chart','calendar','announcements'],
+  student:['today_classes','attendance_chart','calendar','announcements']
+ };
+ const previous=old[role];
+ const untouched=previous.length===config.widgets.length&&previous.every((kind,index)=>
+  config.widgets[index].id===kind&&config.widgets[index].kind===kind&&config.widgets[index].title===widgetKinds[kind]);
+ return untouched?defaultConfig(role):config;
 }

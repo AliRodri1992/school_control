@@ -1,6 +1,6 @@
 class DashboardPreference < ApplicationRecord
   belongs_to :user
-  KINDS = %w[students enrollments pending_admissions groups today_classes grade_drafts pending_documents attendance_chart admission_chart alerts calendar announcements].freeze
+  KINDS = %w[students enrollments pending_admissions groups today_classes grade_drafts pending_documents attendance_chart admission_chart enrollment_trend students_by_grade attendance_rate admission_status attendance_trend grades_by_subject grades_by_term grade_distribution monthly_absences assignment_progress alerts calendar announcements].freeze
   COLUMNS = { "lg" => 12, "md" => 8, "sm" => 4, "xs" => 1 }.freeze
   validate :valid_configuration
 
@@ -18,6 +18,15 @@ class DashboardPreference < ApplicationRecord
         KINDS.include?(widget["kind"]) && widget["title"].is_a?(String) && widget["title"].length.between?(1, 80)
     end
     return errors.add(:configuration, "widgets inválidos") unless valid_widgets
+    role_charts = {
+      "admin" => %w[enrollment_trend students_by_grade attendance_rate admission_status attendance_trend grades_by_subject grades_by_term grade_distribution monthly_absences],
+      "teacher" => %w[attendance_rate attendance_trend grades_by_subject grades_by_term grade_distribution monthly_absences],
+      "guardian" => %w[attendance_rate attendance_trend grades_by_term grade_distribution monthly_absences assignment_progress],
+      "student" => %w[attendance_rate attendance_trend grades_by_term monthly_absences assignment_progress]
+    }
+    chart_kinds = %w[enrollment_trend students_by_grade attendance_rate admission_status attendance_trend grades_by_subject grades_by_term grade_distribution monthly_absences assignment_progress]
+    errors.add(:configuration, "contiene una gráfica no autorizada para el portal") if
+      widgets.any? { |widget| chart_kinds.include?(widget["kind"]) && !role_charts.fetch(user.role, []).include?(widget["kind"]) }
     ids = widgets.pluck("id")
     errors.add(:configuration, "widgets duplicados") unless ids.uniq == ids
     errors.add(:configuration, "rejilla inválida") unless layouts.keys.sort == COLUMNS.keys.sort && layouts.all? { |key, items| valid_layout?(items, ids, COLUMNS[key]) }

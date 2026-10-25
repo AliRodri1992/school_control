@@ -62,4 +62,16 @@ RSpec.describe "Personal dashboard", type: :request do
     put "/api/dashboard_preference", params: { configuration: configuration, lock_version: version }, as: :json
     expect(response).to have_http_status(:conflict)
   end
+  it "persists allowed role-based analytics and blocks unrelated portal charts" do
+    login(user)
+    configuration[:widgets][0][:kind] = "grades_by_term"
+    put "/api/dashboard_preference", params: { configuration: configuration }, as: :json
+    expect(response).to have_http_status(:ok)
+
+    current_version = response.parsed_body.fetch("lock_version")
+    configuration[:widgets][0][:kind] = "enrollment_trend"
+    put "/api/dashboard_preference",
+      params: { configuration: configuration, lock_version: current_version }, as: :json
+    expect(response).to have_http_status(:unprocessable_content)
+  end
 end

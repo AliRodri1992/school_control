@@ -10,6 +10,7 @@ import {appendWidget,defaultConfig} from './dashboardConfig';
 
 vi.mock('./api',()=>({api:vi.fn()}));
 vi.mock('./notifications',()=>({notify:vi.fn()}));
+vi.mock('./DashboardChart',()=>({default:({title}:{title:string})=><div data-testid="analytics-chart">{title}</div>}));
 vi.mock('./shared/i18n/LocaleContext',()=>({
  useSchoolLocale:()=>({ui:(text:string)=>text,locale:'es'})
 }));
@@ -140,7 +141,7 @@ it('mounts each KPI inside a real grid item so the grid reserves space above the
   'students','enrollments','pending_admissions','pending_documents'
  ]);
  expect(wrappers.every(item=>item.children.length===1&&item.firstElementChild?.classList.contains('sc-kpi-card'))).toBe(true);
- expect(grid.querySelectorAll(':scope > article.dashboard-widget')).toHaveLength(3);
+ expect(grid.querySelectorAll(':scope > article.dashboard-widget')).toHaveLength(defaultConfig('admin').widgets.length-4);
 });
 
 it('restores widget builder fields alongside the default layout',async()=>{
@@ -211,4 +212,27 @@ it('shows the attendance empty state with a learner-specific explanation',async(
  await waitFor(()=>expect(container.querySelector('[data-empty-kind="attendance"]')).toBeTruthy());
  expect(screen.getByText('Tu resumen de asistencias aparecerá aquí cuando haya registros.')).toBeTruthy();
  expect(container.querySelector('[data-empty-kind="calendar"]')).toBeTruthy();
+});
+
+it('shows role-specific analytics and preserves them in the default reset',async()=>{
+ vi.mocked(api).mockImplementation(async resource=>resource==='dashboard_preference'?
+  {configuration:null,lock_version:null}:{attendance_rate:[{label:'Asistencias',value:12},{label:'Faltas',value:3}]});
+ const {container}=render(<Dashboard role="guardian" userId={8} summary={{}} data={{}} selectedChildId="9"/>);
+ await waitFor(()=>expect(container.querySelectorAll('[data-testid="analytics-chart"]').length).toBeGreaterThan(2));
+ expect(screen.getAllByText('Entregas de tareas').length).toBeGreaterThan(0);
+ expect(screen.queryByText('Matrícula por ciclo')).toBeNull();
+ await personalize();
+ await userEvent.click(screen.getByRole('button',{name:'Restablecer plantilla'}));
+ expect(screen.getAllByText('Distribución de asistencia').length).toBeGreaterThan(0);
+});
+
+it('requests guardian statistics only for the selected child and chosen period',async()=>{
+ vi.mocked(api).mockImplementation(async resource=>resource==='dashboard_preference'?
+  {configuration:null,lock_version:null}:{});
+ const {rerender}=render(<Dashboard role="guardian" userId={8} summary={{}} data={{}} selectedChildId="9"/>);
+ await waitFor(()=>expect(vi.mocked(api).mock.calls.some(call=>String(call[0]).includes('student_id=9'))).toBe(true));
+ rerender(<Dashboard role="guardian" userId={8} summary={{}} data={{}} selectedChildId="10"/>);
+ await waitFor(()=>expect(vi.mocked(api).mock.calls.some(call=>String(call[0]).includes('student_id=10'))).toBe(true));
+ await userEvent.selectOptions(screen.getByRole('combobox',{name:'Periodo de análisis'}),'30');
+ await waitFor(()=>expect(vi.mocked(api).mock.calls.some(call=>String(call[0]).includes('student_id=10')&&String(call[0]).includes('from='))).toBe(true));
 });

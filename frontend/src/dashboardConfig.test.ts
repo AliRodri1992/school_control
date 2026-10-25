@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {defaultConfig,appendWidget,removeWidget,columns,isMetricKind,widgetHeight,metricKinds,mergeGridLayouts,upgradeLegacyDashboardConfig,type DashboardRole} from './dashboardConfig';
+import {defaultConfig,appendWidget,removeWidget,columns,isMetricKind,widgetHeight,metricKinds,mergeGridLayouts,upgradeLegacyDashboardConfig,upgradeRoleCharts,allowedChartKinds,type DashboardRole} from './dashboardConfig';
 describe('dashboard configuration',()=>{
  it('provides layouts bounded to each screen including a single mobile column',()=>{
   const config=defaultConfig();
@@ -146,4 +146,32 @@ describe('dashboard rows and overflow regression',()=>{
   const custom={...legacy,layouts:{...legacy.layouts,lg:legacy.layouts.lg.map((item,index)=>index===0?{...item,x:1}:item)}};
   expect(upgradeLegacyDashboardConfig(custom,'admin')).toBe(custom);
  });
+});
+
+it('ships dedicated role-specific analytics without removing the prior attendance widget',()=>{
+ const admin=defaultConfig('admin').widgets.map(w=>w.kind);
+ const teacher=defaultConfig('teacher').widgets.map(w=>w.kind);
+ const guardian=defaultConfig('guardian').widgets.map(w=>w.kind);
+ expect(admin).toContain('enrollment_trend');
+ expect(admin).toContain('students_by_grade');
+ expect(admin).toContain('admission_status');
+ expect(teacher).toContain('grades_by_subject');
+ expect(teacher).toContain('attendance_trend');
+ expect(guardian).toContain('grades_by_term');
+ expect(guardian).toContain('assignment_progress');
+ expect(guardian).not.toContain('enrollment_trend');
+ expect(allowedChartKinds.student).not.toContain('admission_status');
+ for(const role of ['admin','teacher','guardian','student'] as DashboardRole[]){
+  expect(defaultConfig(role).widgets.map(w=>w.kind)).toContain('attendance_chart');
+ }
+});
+
+it('upgrades only untouched role defaults and retains saved custom positions',()=>{
+ const legacy=defaultConfig('student');
+ expect(upgradeRoleCharts(legacy,'student')).toEqual(defaultConfig('student'));
+ const previous=defaultConfig('student');
+ const edited={...previous,layouts:{...previous.layouts,lg:previous.layouts.lg.map((item,i)=>({...item,y:item.y+i}))}};
+ expect(upgradeRoleCharts(edited,'student')).toEqual(defaultConfig('student'));
+ const custom=appendWidget(defaultConfig('admin'),'announcements','Reuniones','my_announcements');
+ expect(upgradeRoleCharts(custom,'admin')).toBe(custom);
 });

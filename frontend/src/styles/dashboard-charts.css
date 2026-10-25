@@ -1,0 +1,25 @@
+/* Accessible, responsive chart surfaces shared across all school portals. */
+.sc-analytics-chart,.sc-analytics-donut{width:100%;height:100%;min-width:0}
+.sc-analytics-chart{display:flex;flex-direction:column;justify-content:center;gap:8px}
+.sc-analytics-canvas{height:clamp(155px,18vw,235px);width:100%;min-width:0;flex:1 1 auto}
+.sc-analytics-chart-caption{font-size:10px;line-height:1.5;color:#7186a3;text-align:right;flex:0 0 auto}
+.sc-analytics-donut{display:grid;grid-template-columns:minmax(120px,1.15fr) minmax(115px,1fr);gap:12px;align-items:center}
+.sc-analytics-plot{position:relative;height:220px;min-width:0}
+.sc-analytics-total{position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px}
+.sc-analytics-total strong{font:800 clamp(24px,2vw,34px)/1 'Plus Jakarta Sans',Inter,sans-serif;letter-spacing:-1.5px;color:#213f70}
+.sc-analytics-total small{font-size:10px;color:#7689a3;font-weight:650}
+.sc-analytics-legend{display:flex;flex-direction:column;gap:9px;min-width:0}
+.sc-analytics-legend-item{display:grid;grid-template-columns:9px minmax(0,1fr) auto;align-items:center;gap:8px;font-size:11px;line-height:1.35;color:#506785}
+.sc-analytics-legend-item strong{color:#1d3d65;font-size:12px;font-variant-numeric:tabular-nums}
+.sc-analytics-color{width:9px;height:9px;border-radius:50%}
+.sc-analytics-empty{height:100%;min-height:150px;display:flex;justify-content:center;align-items:center;flex-direction:column;gap:9px;border:1px dashed #c8d9ef;border-radius:12px;background:linear-gradient(140deg,#f7faff,#fff);text-align:center;padding:22px}
+.sc-analytics-empty strong{font-size:13px;color:#2c4b78}
+.sc-analytics-empty span{max-width:275px;font-size:11px;line-height:1.55;color:#8091aa}
+.sc-analytics-date-filters{display:flex;flex-wrap:wrap;gap:12px;align-items:end;padding:12px 16px;margin-bottom:16px;background:#f8fbff;border:1px solid #dfe8f5;border-radius:12px}
+.sc-analytics-date-filters label{display:flex;flex-direction:column;gap:6px;min-width:145px;font-size:11px;font-weight:700;color:#34577e}
+.sc-analytics-date-filters select{margin-top:0;width:100%;min-height:36px;border-color:#cddcf0;border-radius:8px;background:#fff}
+.sc-analytics-date-filters .sc-analytics-filter-note{font-size:11px;color:#627c9e;flex:1 1 190px;align-self:center}
+.sc-analytics-filter-loading{font-size:11px;color:#587bb0;display:flex;gap:6px;align-items:center}
+@media(max-width:900px){.sc-analytics-donut{grid-template-columns:1fr;gap:4px}.sc-analytics-plot{height:150px}.sc-analytics-legend{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}.sc-analytics-legend-item{font-size:10px}}
+@media(max-width:600px){.sc-analytics-date-filters label{flex:1 1 145px}.sc-analytics-donut{grid-template-columns:1fr}.sc-analytics-plot{height:170px}.sc-analytics-canvas{height:195px}.sc-analytics-legend{grid-template-columns:1fr 1fr}}
+@media(prefers-reduced-motion:reduce){.sc-analytics-chart *,.sc-analytics-donut *{animation:none!important}}

@@ -61,6 +61,6 @@ export default function PortalHome({user,summary,data,can,onNavigate,selectedChi
   <div className="sc-home-actions">{allowed.map(action=>{const Icon=action.icon;return <button key={action.key} onClick={()=>onNavigate(action.key)} className="sc-home-action">
    <span><Icon size={22}/></span><strong>{t('portal.'+role+'.quick.'+action.key+'.title',action.label)}</strong><small>{t('portal.'+role+'.quick.'+action.key+'.detail',action.detail)}</small><ArrowRight size={16} className="sc-home-arrow"/>
   </button>;})}</div>
-  <Dashboard summary={summary} data={data} role={role} userId={user.id}/>
+  <Dashboard summary={summary} data={data} role={role} userId={user.id} selectedChildId={selectedChildId}/>
  </section>;
 }
