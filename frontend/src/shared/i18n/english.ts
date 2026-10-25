@@ -763,6 +763,23 @@ Object.assign(englishByText,{
  'borradores':'drafts',
  'documentos':'documents'
 });
+Object.assign(englishByText,{
+ 'SEGUIMIENTO ESCOLAR':'SCHOOL SUPPORT',
+ 'Sin alertas por revisar':'No attendance alerts',
+ 'No se detectaron casos con tres o más inasistencias durante los últimos 30 días.':'No cases with three or more absences were detected in the past 30 days.',
+ 'Criterio: 3 faltas en 30 días':'Threshold: 3 absences in 30 days',
+ 'ÚLTIMOS 30 DÍAS':'LAST 30 DAYS',
+ 'Aún no hay registros de asistencia':'No attendance records yet',
+ 'Cuando se registren asistencias, verás aquí su distribución por estado.':'Once attendance is recorded, you will see the breakdown by status here.',
+ 'Las asistencias de tus grupos aparecerán aquí cuando se registren.':'Attendance for your groups will appear here once recorded.',
+ 'Las asistencias de tus hijos aparecerán aquí cuando se registren.':'Your children’s attendance will appear here once recorded.',
+ 'Tu resumen de asistencias aparecerá aquí cuando haya registros.':'Your attendance summary will appear here once records are available.',
+ 'El gráfico se actualiza con nuevos registros':'The chart updates as records are added',
+ 'AGENDA ESCOLAR':'SCHOOL CALENDAR',
+ 'No hay eventos próximos':'No upcoming events',
+ 'Las siguientes actividades del calendario escolar aparecerán en este espacio.':'Upcoming school calendar activities will appear here.',
+ 'Calendario institucional':'School calendar'
+});
 export function translateUiText(locale:string,text:string):string{
  if(!locale.toLowerCase().startsWith('en'))return text;
  return englishByText[text]||text;

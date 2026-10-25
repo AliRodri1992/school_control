@@ -70,3 +70,24 @@ it('localizes role-aware KPI categories, units, descriptions and pending statuse
   expect(translateUiText('es',phrase)).toBe(phrase);
  }
 });
+
+it('translates each purpose-built dashboard empty state into English',()=>{
+ const phrases=[
+  'SEGUIMIENTO ESCOLAR','Sin alertas por revisar',
+  'No se detectaron casos con tres o más inasistencias durante los últimos 30 días.',
+  'Criterio: 3 faltas en 30 días',
+  'ÚLTIMOS 30 DÍAS','Aún no hay registros de asistencia',
+  'Cuando se registren asistencias, verás aquí su distribución por estado.',
+  'Las asistencias de tus grupos aparecerán aquí cuando se registren.',
+  'Las asistencias de tus hijos aparecerán aquí cuando se registren.',
+  'Tu resumen de asistencias aparecerá aquí cuando haya registros.',
+  'El gráfico se actualiza con nuevos registros',
+  'AGENDA ESCOLAR','No hay eventos próximos',
+  'Las siguientes actividades del calendario escolar aparecerán en este espacio.',
+  'Calendario institucional'
+ ];
+ for(const phrase of phrases){
+  expect(translateUiText('en',phrase)).not.toBe(phrase);
+  expect(translateUiText('es',phrase)).toBe(phrase);
+ }
+});

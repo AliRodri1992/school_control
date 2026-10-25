@@ -8,6 +8,7 @@ import {api} from './api';
 import {notify} from './notifications';
 import {appendWidget, removeWidget, defaultConfig, widgetKinds, isMetricKind, mergeGridLayouts, upgradeLegacyDashboardConfig, columns, type Config, type Kind, type DashboardRole} from './dashboardConfig';
 import DashboardMetricCard from './DashboardMetricCard';
+import DashboardEmptyState from './DashboardEmptyState';
 import type {Row} from './modules';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -57,11 +58,18 @@ export default function Dashboard({summary,data,role='admin',userId=0}:{summary:
  }
  function content(widget: Config['widgets'][number]) {
   if(widget.kind.endsWith('_chart')) {
-   const entries=Object.entries(visibleSummary[widget.kind]||{}).map(([name,value])=>({name:ui(statusLabels[name]||name),value:Number(value)}));
+   const values=visibleSummary[widget.kind];
+   const entries=Object.entries(values&&typeof values==='object'&&!Array.isArray(values)?values:{}).map(([name,value])=>{
+    const number=Number(value);
+    return {name:ui(statusLabels[name]||name),value:Number.isFinite(number)&&number>=0?number:0};
+   });
+   if(widget.kind==='attendance_chart'&&!entries.some(entry=>entry.value>0)){
+    return <DashboardEmptyState kind="attendance" role={role} translate={ui}/>;
+   }
    return entries.length?<><div className="widget-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={entries}><XAxis dataKey="name"/><YAxis allowDecimals={false}/><Tooltip/><Bar dataKey="value" name={ui("Registros")} fill="#405CF5" radius={[6,6,0,0]}/></BarChart></ResponsiveContainer></div><p className="chart-description">{entries.map(e=>`${e.name}: ${e.value}`).join(' · ')}</p></>:<p>{ui("No hay registros para graficar.")}</p>;
   }
-  if(widget.kind==='alerts')return visibleSummary.alerts?.length?visibleSummary.alerts.map((a:Row,i:number)=><p key={i}><strong>{a.student_name}</strong><br/>{a.message}</p>):<p>{ui("Sin alertas de asistencia. Se señalan tres o más faltas en 30 días para revisión humana.")}</p>;
-  if(widget.kind==='calendar') {const events=(data.calendar_events||[]).filter(e=>new Date(e.ends_at)>=new Date()).sort((a,b)=>a.starts_at.localeCompare(b.starts_at));return events.length?events.slice(0,6).map(e=><p key={e.id}><strong>{e.title}</strong><br/>{new Date(e.starts_at).toLocaleString(locale==='en'?'en-US':'es-MX')}</p>):<p>{ui("No hay próximos eventos.")}</p>;}
+  if(widget.kind==='alerts')return visibleSummary.alerts?.length?visibleSummary.alerts.map((a:Row,i:number)=><p key={i}><strong>{a.student_name}</strong><br/>{a.message}</p>):<DashboardEmptyState kind="alerts" role={role} translate={ui}/>;
+  if(widget.kind==='calendar') {const events=(data.calendar_events||[]).filter(e=>new Date(e.ends_at)>=new Date()).sort((a,b)=>a.starts_at.localeCompare(b.starts_at));return events.length?events.slice(0,6).map(e=><p key={e.id}><strong>{e.title}</strong><br/>{new Date(e.starts_at).toLocaleString(locale==='en'?'en-US':'es-MX')}</p>):<DashboardEmptyState kind="calendar" role={role} translate={ui}/>;}
   if(widget.kind==='announcements')return data.announcements?.length?[...data.announcements].reverse().slice(0,5).map(a=><p key={a.id}><strong>{a.title}</strong><br/>{a.body}</p>):<p>{ui("No hay comunicados.")}</p>;
   return <strong className="widget-number">{visibleSummary[widget.kind]??0}</strong>;
  }

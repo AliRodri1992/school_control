@@ -157,3 +157,58 @@ it('restores widget builder fields alongside the default layout',async()=>{
  expect(title.value).toBe('');
  expect(screen.getByRole('status').textContent).toContain('Plantilla original restaurada');
 });
+
+it('shows three purpose-specific empty states in the administrative dashboard',async()=>{
+ vi.mocked(api).mockImplementation(async resource=>
+  resource==='dashboard_preference'?{configuration:defaultConfig('admin'),lock_version:1}:{}
+ );
+ const {container}=render(<Dashboard role="admin" userId={1}
+  summary={{attendance_chart:{},alerts:[]}} data={{calendar_events:[]}}/>);
+ await waitFor(()=>expect(container.querySelectorAll('.sc-dashboard-empty')).toHaveLength(3));
+ expect(container.querySelector('[data-empty-kind="attendance"]')).toBeTruthy();
+ expect(container.querySelector('[data-empty-kind="alerts"]')).toBeTruthy();
+ expect(container.querySelector('[data-empty-kind="calendar"]')).toBeTruthy();
+ expect(screen.getByText('Aún no hay registros de asistencia')).toBeTruthy();
+ expect(screen.getByText('Sin alertas por revisar')).toBeTruthy();
+ expect(screen.getByText('No hay eventos próximos')).toBeTruthy();
+ expect(container.querySelectorAll('.widget-body > .sc-dashboard-empty')).toHaveLength(3);
+ expect(container.querySelectorAll('.sc-kpi-grid-item')).toHaveLength(4);
+});
+
+it('does not render an empty attendance chart when only zero-count status buckets exist',async()=>{
+ vi.mocked(api).mockImplementation(async resource=>
+  resource==='dashboard_preference'?{configuration:defaultConfig('admin'),lock_version:1}:{}
+ );
+ const {container}=render(<Dashboard role="admin" userId={1}
+  summary={{attendance_chart:{present:0,absent:0},alerts:[]}} data={{calendar_events:[]}}/>);
+ await waitFor(()=>expect(container.querySelectorAll('.sc-dashboard-empty')).toHaveLength(3));
+ expect(container.querySelector('[data-empty-kind="attendance"]')).toBeTruthy();
+ expect(container.querySelector('.widget-chart')).toBeNull();
+});
+
+it('preserves charts, student alerts and future events when real data is present',async()=>{
+ vi.mocked(api).mockImplementation(async resource=>
+  resource==='dashboard_preference'?{configuration:defaultConfig('admin'),lock_version:1}:{}
+ );
+ const nextMonth=new Date(Date.now()+30*86400000).toISOString();
+ const {container}=render(<Dashboard role="admin" userId={1} summary={{
+  attendance_chart:{present:12,absent:1},
+  alerts:[{student_name:'María López',message:'3 inasistencias en 30 días'}]
+ }} data={{calendar_events:[{id:8,title:'Reunión de seguimiento',starts_at:nextMonth,ends_at:nextMonth}]}}/>);
+ await waitFor(()=>expect(container.querySelector('.widget-chart')).toBeTruthy());
+ expect(container.querySelectorAll('.sc-dashboard-empty')).toHaveLength(0);
+ expect(screen.getByText('María López')).toBeTruthy();
+ expect(screen.getByText('Reunión de seguimiento')).toBeTruthy();
+ expect(screen.getByText('Presente: 12 · Ausente: 1')).toBeTruthy();
+});
+
+it('shows the attendance empty state with a learner-specific explanation',async()=>{
+ vi.mocked(api).mockImplementation(async resource=>
+  resource==='dashboard_preference'?{configuration:defaultConfig('student'),lock_version:1}:{}
+ );
+ const {container}=render(<Dashboard role="student" userId={4}
+  summary={{attendance_chart:{}}} data={{calendar_events:[]}}/>);
+ await waitFor(()=>expect(container.querySelector('[data-empty-kind="attendance"]')).toBeTruthy());
+ expect(screen.getByText('Tu resumen de asistencias aparecerá aquí cuando haya registros.')).toBeTruthy();
+ expect(container.querySelector('[data-empty-kind="calendar"]')).toBeTruthy();
+});
