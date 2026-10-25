@@ -30,11 +30,21 @@ RSpec.describe "Configurable roles and permissions", type: :request do
   it "revokes an action on the next request, even for an admin profile" do
     login(admin)
     admin.access_roles.first.role_permissions.find_by!(key: "subjects.create").destroy!
+    expect(admin.reload.effective_permissions).not_to have_key("subjects.create")
+    expect(admin.can?("subjects.create")).to be(false)
     post "/api/subjects", params: { name: "Forged", code: "NO" }, as: :json
     expect(response).to have_http_status(:forbidden)
     expect(Subject.count).to eq(0)
     get "/api/subjects"
     expect(response).to have_http_status(:ok)
+  end
+
+  it "does not restore deliberately revoked admin grants on default assignment" do
+    role = admin.access_roles.first
+    role.role_permissions.find_by!(key: "subjects.create").destroy!
+    expect { AccessRole.assign_default!(admin) }.not_to change { role.role_permissions.where(key: "subjects.create").count }
+    expect(admin.reload.effective_permissions).not_to have_key("subjects.create")
+    expect(admin.can?("subjects.index")).to be(true)
   end
 
   it "allows a delegated non-admin to perform an explicitly granted action" do

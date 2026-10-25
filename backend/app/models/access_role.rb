@@ -14,16 +14,12 @@ class AccessRole < ApplicationRecord
         role = create!(name: { "admin" => "Dirección", "teacher" => "Docente", "guardian" => "Familia", "student" => "Alumno" }.fetch(user.role), default_profile: user.role)
       end
 
-      # The built-in administrator role must receive permissions added after
-      # the role was originally created, without changing custom roles.
-      if user.admin?
-        PermissionCatalog.defaults("admin").each do |key, scope|
-          grant = role.role_permissions.find_or_initialize_by(key: key)
-          grant.data_scope = scope
-          grant.save! if grant.new_record? || grant.changed?
+      # Seed grants when a default role is first created. Never recreate
+      # revoked permissions on an existing role during a login or seed run.
+      if new_role
+        PermissionCatalog.defaults(user.role).each do |key, scope|
+          role.role_permissions.create!(key: key, data_scope: scope)
         end
-      elsif new_role
-        PermissionCatalog.defaults(user.role).each { |key, scope| role.role_permissions.create!(key: key, data_scope: scope) }
       end
 
       AccessRoleAssignment.find_or_create_by!(user: user, access_role: role)

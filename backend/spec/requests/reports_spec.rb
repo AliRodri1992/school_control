@@ -65,11 +65,23 @@ RSpec.describe "Report previews and private exports", type: :request do
     ReportExportJob.perform_now(export.id)
     queued = create_export
     admin.access_roles.first.role_permissions.find_by!(key: "report_enrollments.xlsx").destroy!
+    expect(admin.reload.can?("report_enrollments.xlsx")).to be(false)
+    expect(admin.effective_permissions).not_to have_key("report_enrollments.xlsx")
     get "/api/reports/#{export.id}/download"
     expect(response).to have_http_status(:forbidden)
     ReportExportJob.perform_now(queued.id)
     expect(queued.reload.status).to eq("failed")
     expect(queued.file).not_to be_attached
+  end
+
+  it "cannot create another export after the format grant is revoked" do
+    login(admin)
+    admin.access_roles.first.role_permissions.find_by!(key: "report_enrollments.xlsx").destroy!
+    post "/api/reports", params: { kind: "enrollments", file_format: "xlsx" }, as: :json
+    expect(response).to have_http_status(:forbidden)
+    expect(ReportExport.where(user: admin)).to be_empty
+    get "/api/reports/preview", params: { kind: "enrollments" }
+    expect(response).to have_http_status(:ok)
   end
 
   it "denies other accounts and expired files even if they have the same permissions" do
