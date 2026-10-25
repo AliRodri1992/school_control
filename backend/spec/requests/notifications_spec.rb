@@ -22,6 +22,18 @@ RSpec.describe "Notification center and profile", type: :request do
     expect(response.parsed_body["unread_count"]).to eq(0)
   end
 
+  it "routes bulk notification updates to the JSON action with the correct method" do
+    recognition = Rails.application.routes.recognize_path("/api/notifications/read_all", method: :post)
+    expect(recognition).to include(controller: "api/notifications", action: "read_all")
+    login(user)
+
+    post "/api/notifications/read_all", params: {}, as: :json
+
+    expect(response).to have_http_status(:ok)
+    expect(response.media_type).to eq("application/json")
+    expect(response.parsed_body).to eq("unread_count" => 0)
+  end
+
   it "marks only the signed-in user's unread notifications as read in bulk" do
     other_user = create(:user)
     2.times { |index| ActivityNotifier.with(title: "Aviso #{index + 1}", page: "dashboard").deliver(user) }
@@ -51,6 +63,8 @@ RSpec.describe "Notification center and profile", type: :request do
   it "rejects unauthenticated bulk mark-read requests" do
     post "/api/notifications/read_all", as: :json
     expect(response).to have_http_status(:unauthorized)
+    expect(response.media_type).to eq("application/json")
+    expect(response.parsed_body).to include("error" => "Inicia sesión")
   end
 
   it "allows preferences but never role or account ownership changes" do

@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
 import {afterEach,expect,it,vi} from 'vitest';
+import {waitFor} from '@testing-library/react';
+import {api} from '../api';
 import {cleanup,render,screen} from '@testing-library/react';
 import * as React from 'react';
 import userEvent from '@testing-library/user-event';
@@ -131,6 +133,51 @@ it('shows the redesigned notification panel with filters and a helpful empty sta
  expect(screen.getByRole('tab',{name:'Sin leer 0'}).getAttribute('aria-selected')).toBe('true');
  expect(screen.getByText('Ya revisaste todas tus notificaciones')).toBeTruthy();
  expect(screen.queryByRole('button',{name:'Marcar todas como leídas'})).toBeNull();
+});
+
+
+it('marks all unread notifications through the POST endpoint and synchronizes the badge',async()=>{
+ const mocked=vi.mocked(api),original=mocked.getMockImplementation()!;
+ const rows=[
+  {id:11,title:'Primera notificación',page:'dashboard',read_at:null,created_at:'2026-10-25T10:00:00Z'},
+  {id:12,title:'Segunda notificación',page:'grades',read_at:null,created_at:'2026-10-25T10:01:00Z'}
+ ];
+ mocked.mockImplementation(async (path:string,method?:string)=>{
+  if(path==='notifications')return {unread_count:2,items:rows};
+  if(path==='notifications/read_all'&&method==='POST')return {unread_count:0};
+  return original(path,method);
+ });
+ try{
+  render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+  const bell=await screen.findByRole('button',{name:'Notificaciones: 2 sin leer'});
+  await userEvent.click(bell);
+  const mark=screen.getByRole('button',{name:'Marcar todas como leídas'});
+  await userEvent.click(mark);
+  await waitFor(()=>expect(mocked).toHaveBeenCalledWith('notifications/read_all','POST'));
+  await waitFor(()=>expect(screen.getByRole('button',{name:'Notificaciones: 0 sin leer'})).toBeTruthy());
+  expect(screen.queryByRole('button',{name:'Marcar todas como leídas'})).toBeNull();
+  expect(screen.getByRole('tab',{name:'Sin leer 0'})).toBeTruthy();
+  expect(screen.getAllByText('Leída')).toHaveLength(2);
+ }finally{mocked.mockImplementation(original);}
+});
+
+it('keeps unread state and displays a useful error when bulk marking fails',async()=>{
+ const mocked=vi.mocked(api),original=mocked.getMockImplementation()!;
+ mocked.mockImplementation(async (path:string,method?:string)=>{
+  if(path==='notifications')return {unread_count:1,items:[
+   {id:14,title:'Pendiente',page:'dashboard',read_at:null,created_at:'2026-10-25T10:00:00Z'}
+  ]};
+  if(path==='notifications/read_all'&&method==='POST')throw new Error('Debes reconstruir el backend');
+  return original(path,method);
+ });
+ try{
+  render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+  await userEvent.click(await screen.findByRole('button',{name:'Notificaciones: 1 sin leer'}));
+  await userEvent.click(screen.getByRole('button',{name:'Marcar todas como leídas'}));
+  expect((await screen.findByRole('alert')).textContent).toContain('Debes reconstruir el backend');
+  expect(screen.getByRole('button',{name:'Notificaciones: 1 sin leer'})).toBeTruthy();
+  expect(screen.getByRole('tab',{name:'Sin leer 1'})).toBeTruthy();
+ }finally{mocked.mockImplementation(original);}
 });
 
 it('opens the notification center from the panel footer',async()=>{

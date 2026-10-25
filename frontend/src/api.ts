@@ -7,6 +7,16 @@ function apiError(message:string,status?:number,fieldErrors?:Record<string,strin
 }
 
 function unexpectedResponse(path:string,status:number):ApiError {
+  if(path==='notifications/read_all'&&status===404){
+    return apiError(
+      'La API de School Control no reconoce la acción de marcar todas las notificaciones como leídas. '+
+      'Es posible que el backend esté ejecutando una imagen Docker anterior al frontend. '+
+      'Desde la carpeta school_control ejecuta: git pull --ff-only origin feature/smart-dashboard '+
+      'y docker compose up -d --build --force-recreate backend worker. '+
+      'No es necesario borrar los volúmenes ni reiniciar Delta POS.',
+      status
+    );
+  }
   return apiError(
     'El servidor no devolvió una respuesta JSON para /api/'+path+' (HTTP '+status+'). '+
     'Comprueba que abriste School Control en el puerto configurado (predeterminado http://localhost:5173). '+

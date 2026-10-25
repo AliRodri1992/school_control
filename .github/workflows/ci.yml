@@ -208,7 +208,18 @@ jobs:
               assert status == 200 and active_session.get("user", {}).get("role") == "admin", (origin, status)
               status, school = send("GET", "/api/school")
               assert status == 200 and school.get("name"), (origin, status)
-              print(origin, "JSON login, active session and school responses verified")
+              status, notifications = send("GET", "/api/notifications")
+              assert status == 200 and isinstance(notifications.get("unread_count"), int), (
+                  origin, status, notifications)
+              for _ in range(2):
+                  status, updated = send("POST", "/api/notifications/read_all", {},
+                                         active_session["csrf_token"])
+                  assert status == 200 and updated == {"unread_count": 0}, (
+                      origin, status, updated)
+              status, refreshed = send("GET", "/api/notifications")
+              assert status == 200 and refreshed.get("unread_count") == 0, (
+                  origin, status, refreshed)
+              print(origin, "JSON login, school and mark-all-notifications verified")
           PY
       - run: docker compose run --rm backend bundle exec rails runner script/verify_worker.rb
       - run: docker compose --project-name school-staging --env-file .env.staging -f compose.yml -f compose.staging.yml build

@@ -114,6 +114,43 @@ El `compose.staging.yml` utiliza los puertos independientes `3100` y `8180`, y u
 
 Si tu archivo `.env` ya contiene `SCHOOL_FRONTEND_PORT=5173`, cámbialo manualmente a `SCHOOL_FRONTEND_PORT=5173`; `bin/setup` nunca sobrescribe un `.env` existente.
 
+### Error 404 al marcar todas las notificaciones como leídas
+
+La acción del panel utiliza `POST /api/notifications/read_all`, que está registrada
+en Rails y devuelve JSON. Un 404 **HTML** generalmente indica que el navegador está
+conectado a un backend antiguo, a un servidor equivocado o a un proxy sin esa
+ruta. En el desarrollo con Docker, Vite monta `./frontend` directamente, pero Rails
+se copia en la imagen mediante `backend/Dockerfile` y requiere reconstrucción
+tras actualizar el repositorio. No dupliques la ruta ni la conviertas en GET.
+
+Desde la carpeta `school_control`, en la rama `feature/smart-dashboard`:
+
+```bash
+git switch feature/smart-dashboard
+git pull --ff-only origin feature/smart-dashboard
+docker compose up -d --build --force-recreate backend worker
+docker compose ps
+docker compose exec backend bundle exec rails routes -g read_all
+```
+
+Para comprobar que responda JSON aun sin sesión:
+
+```bash
+curl -i -X POST -H 'Accept: application/json' http://localhost:5173/api/notifications/read_all
+curl -i -X POST -H 'Accept: application/json' http://localhost:3200/api/notifications/read_all
+```
+
+Sin sesión, ambos deben responder `401` con JSON `{"error":"Inicia sesión"}`;
+esto confirma la ruta y el proxy, pero **no** sustituye la prueba autenticada.
+Una vez iniciada sesión en la aplicación, el botón debe devolver `200`, marcar
+las notificaciones del usuario como leídas y actualizar el contador.
+
+Si ves un error diferente, revisa `docker compose logs --tail=100 backend frontend`
+y los puertos `docker compose port backend 3000` y `docker compose port frontend 5173`.
+No uses `docker compose down -v`: no hace falta eliminar ningún dato ni detener
+los servicios de Delta POS. GitHub Actions verifica la ruta tanto a través de
+`localhost:5173` (proxy) como `localhost:3200` (Rails), con login y CSRF reales.
+
 ### Error HTML en el inicio de sesión
 
 Si la aplicación indica que recibió HTML en lugar de JSON, ingresa mediante **http://localhost:5173**. El puerto 3000 del equipo corresponde a Delta POS; la API de School Control se publica en el **3200**.

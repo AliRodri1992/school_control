@@ -64,3 +64,22 @@ it('accepts empty JSON arrays returned by list endpoints',async()=>{
  })));
  await expect(api('student_contacts')).resolves.toEqual([]);
 });
+
+it('explains an outdated Rails Docker image when bulk notification reading responds with HTML 404',async()=>{
+ vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response('<!DOCTYPE html><html>Not Found</html>',{
+  status:404,headers:{'Content-Type':'text/html'}
+ })));
+ await expect(api('notifications/read_all','POST')).rejects.toMatchObject({
+  status:404,message:expect.stringContaining('docker compose up -d --build --force-recreate backend worker')
+ });
+ await expect(api('notifications/read_all','POST')).rejects.not.toThrow(/Unexpected token|<!DOCTYPE/);
+});
+
+it('does not disguise Rails JSON errors from the bulk notification endpoint',async()=>{
+ vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(
+  JSON.stringify({error:'La sesión expiró'}),{status:422,headers:{'Content-Type':'application/json'}}
+ )));
+ await expect(api('notifications/read_all','POST')).rejects.toMatchObject({
+  status:422,message:'La sesión expiró'
+ });
+});
