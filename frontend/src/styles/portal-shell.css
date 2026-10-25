@@ -291,19 +291,22 @@
 /* Breadcrumbs · Design 1 — one compact layout, no horizontal scrollbars.
    On overflow (or on mobile), ancestor links move to the existing "…" menu. */
 .sc-main .sc-breadcrumb-bar.sc-breadcrumb-design-one{
- position:relative;z-index:2;display:flex;align-items:center;box-sizing:border-box;
- width:100%;min-width:0;min-height:43px;margin:0;padding:0 clamp(11px,1.4vw,20px);
+ position:relative;z-index:2;display:flex;align-items:center;justify-content:flex-start;
+ box-sizing:border-box;width:100%;min-width:0;min-height:43px;
+ margin:0;padding:0 clamp(11px,1.4vw,20px);
  background:linear-gradient(90deg,#f5f9ff,#eef6ff);
  border-bottom:1px solid #e3edfa;
 }
 .sc-main .sc-breadcrumb-design-one .sc-crumbs{
- display:flex;flex:1;align-items:center;gap:3px;width:100%;min-width:0;
- padding:4px 0;overflow:visible;white-space:nowrap;
+ display:flex;flex:1 1 0;align-items:center;justify-content:flex-start;
+ flex-wrap:nowrap;gap:3px;width:100%;min-width:0;max-width:100%;
+ margin:0;padding:4px 0;overflow:visible;white-space:nowrap;
  font-size:12px;color:#24476f;scrollbar-width:none;mask-image:none;
 }
-.sc-breadcrumb-design-one .sc-crumb-home{
- display:inline-flex;align-items:center;justify-content:center;flex:none;
- gap:4px;min-height:30px;padding:3px 4px;border-radius:7px;
+.sc-main .sc-breadcrumb-design-one .sc-crumbs > .sc-crumb-home{
+ display:inline-flex;align-items:center;justify-content:flex-start;
+ flex:0 0 auto;width:max-content;max-width:none;
+ margin:0;gap:4px;min-height:30px;padding:3px 4px;border-radius:7px;
  color:#1e467b;font-size:12px;font-weight:600;
 }
 .sc-breadcrumb-design-one .sc-crumb-home svg{flex:none;color:#174475}
@@ -312,9 +315,10 @@
  display:inline-flex;align-items:center;gap:2px;min-width:0;flex:none;
 }
 .sc-breadcrumb-design-one .sc-crumb-divider{width:12px;height:12px;flex:none;color:#8b9fb7}
-.sc-breadcrumb-design-one .sc-crumb-link{
- display:inline-flex;align-items:center;gap:4px;min-height:30px;
- max-width:185px;padding:3px 4px;border-radius:7px;
+.sc-main .sc-breadcrumb-design-one .sc-crumb-step > .sc-crumb-link{
+ display:inline-flex;align-items:center;justify-content:flex-start;
+ flex:0 1 auto;width:auto;gap:4px;min-height:30px;
+ max-width:185px;margin:0;padding:3px 4px;border-radius:7px;
  color:#31547b;font-size:12px;font-weight:550;
  text-align:start;overflow:hidden;white-space:nowrap;
 }
@@ -341,9 +345,10 @@
 .sc-breadcrumb-design-one .sc-crumb-more{
  display:none;align-items:center;gap:2px;position:relative;flex:none;
 }
-.sc-breadcrumb-design-one .sc-crumb-more-trigger{
+.sc-main .sc-breadcrumb-design-one .sc-crumb-more-trigger{
  display:inline-flex;align-items:center;justify-content:center;
- width:30px;height:30px;border-radius:7px;color:#42638a;
+ flex:0 0 30px;width:30px;height:30px;margin:0;padding:0;
+ gap:0;border-radius:7px;color:#42638a;
 }
 .sc-breadcrumb-design-one .sc-crumb-more-menu{
  position:absolute;top:calc(100% + 6px);inset-inline-start:0;z-index:60;
@@ -367,7 +372,7 @@
 @media(max-width:760px){
  .sc-main .sc-breadcrumb-bar.sc-breadcrumb-design-one{min-height:42px;padding-inline:10px}
  .sc-main .sc-breadcrumb-design-one .sc-crumbs{gap:2px;padding:3px 0}
- .sc-breadcrumb-design-one .sc-crumb-home{min-height:30px;gap:3px;padding-inline:3px}
+ .sc-main .sc-breadcrumb-design-one .sc-crumbs > .sc-crumb-home{min-height:30px;gap:3px;padding-inline:3px}
  .sc-breadcrumb-design-one .sc-crumb-home-label{max-width:52px;overflow:hidden;text-overflow:ellipsis}
  .sc-breadcrumb-design-one .sc-crumb-ancestor{display:none}
  .sc-breadcrumb-design-one .sc-crumb-more{display:inline-flex;order:1}
@@ -561,3 +566,14 @@
  width:0;height:0;display:none;
 }
 .sc-shell .sc-sidebar .sc-sidebar-nav{scroll-behavior:auto}
+
+/* Breadcrumb-specific contract: inherited legacy nav rules must never stretch a link. */
+.sc-main .sc-breadcrumb-design-one .sc-crumbs > .sc-crumb-step{
+ width:max-content;max-width:100%;margin:0;padding:0;
+}
+.sc-main .sc-breadcrumb-design-one .sc-crumbs > .sc-crumb-step.sc-crumb-current{
+ min-width:0;max-width:100%;
+}
+.sc-main .sc-breadcrumb-design-one .sc-crumbs > .sc-crumb-more{
+ margin:0;padding:0;
+}

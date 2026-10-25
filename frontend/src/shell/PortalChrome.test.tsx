@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import {afterEach,expect,it,vi} from 'vitest';
 import {cleanup,render,screen} from '@testing-library/react';
+import * as React from 'react';
 import userEvent from '@testing-library/user-event';
 import {PortalChrome} from './PortalChrome';
 
@@ -476,4 +477,42 @@ it('keeps navigation actions functional after scrolling without a visible scroll
  await userEvent.click(screen.getByRole('button',{name:'Configuración'}));
  expect(screen.getByRole('button',{name:'Usuarios'})).toBeTruthy();
  expect(nav.scrollTop).toBe(1060);
+});
+
+it('updates breadcrumb labels when the actual route changes without remounting PortalChrome',()=>{
+ const cases=[
+  ['dashboard','Resumen',1],
+  ['students','Alumnos y expedientes',1],
+  ['admissions','Admisiones',1],
+  ['groups','Grupos',2],
+  ['courses','Clases',3],
+  ['reports','Reportes',1],
+  ['email_templates','Plantillas de correo',1],
+  ['preferences','Preferencias',1],
+  ['student_details','Ficha del alumno',3]
+ ] as const;
+ const {rerender}=render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ for(const [route,title,levels] of cases){
+  rerender(<PortalChrome {...props} page={route}><div>Página</div></PortalChrome>);
+  const trail=screen.getByRole('navigation',{name:'Ruta de navegación'});
+  expect(trail.getAttribute('data-current-page')).toBe(route);
+  expect(trail.querySelectorAll('.sc-crumb-step')).toHaveLength(levels);
+  expect(trail.querySelector('[aria-current="page"]')?.textContent).toBe(title);
+  expect(trail.querySelector('.sc-crumb-home-label')?.textContent).toBe('Inicio');
+ }
+});
+
+it('navigates from the sidebar to a different module and updates the breadcrumb immediately',async()=>{
+ function PageFixture(){
+  const [current,setCurrent]=React.useState('dashboard');
+  return <PortalChrome {...props} page={current} onNavigate={setCurrent}><div>Página</div></PortalChrome>;
+ }
+ render(<PageFixture/>);
+ const trail=screen.getByRole('navigation',{name:'Ruta de navegación'});
+ expect(trail.querySelector('[aria-current="page"]')?.textContent).toBe('Resumen');
+ await userEvent.click(screen.getByRole('button',{name:'Alumnos y expedientes'}));
+ expect(trail.querySelector('[aria-current="page"]')?.textContent).toBe('Alumnos y expedientes');
+ expect(trail.getAttribute('data-current-page')).toBe('students');
+ await userEvent.click(screen.getByRole('button',{name:'Ir al inicio'}));
+ expect(trail.querySelector('[aria-current="page"]')?.textContent).toBe('Resumen');
 });

@@ -31,8 +31,8 @@ body{background:var(--sc-page)}
 .primary:active:not(:disabled){transform:translateY(1px)}
 .primary:disabled{opacity:.56;cursor:not-allowed;box-shadow:none}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid rgba(64,92,245,.42);outline-offset:3px}
-nav button.selected{background:#e9edff;color:#3049c8}
-nav button:hover:not(.selected){background:#f0f3ff}
+.sidebar nav button.selected{background:#e9edff;color:#3049c8}
+.sidebar nav button:hover:not(.selected){background:#f0f3ff}
 .panel{border-color:var(--sc-border)}
 .sidebar{border-right-color:var(--sc-border)}
 .topbar{border-bottom-color:var(--sc-border)}
@@ -117,7 +117,7 @@ body,.app{background:#f4f6fb;color:#17233f}
 .sc-pager-actions span{font-size:12px;color:#64748b}
 .sc-child-picker{width:min(205px,19vw);flex-shrink:0}
 .sc-child-picker .sc-combobox-trigger{font-size:12px;min-height:39px}
-@media(max-width:760px){.content{padding:20px 15px}.sc-child-picker{width:145px}.sc-crumbs{display:none}.sc-pagination{flex-direction:column;align-items:stretch}.sc-pager-actions{justify-content:center}}
+@media(max-width:760px){.content{padding:20px 15px}.sc-child-picker{width:145px}.sc-pagination{flex-direction:column;align-items:stretch}.sc-pager-actions{justify-content:center}}
 
 /* Auli: one consistent visual language for empty, help, warning and success states. */
 .sc-auli-guide{

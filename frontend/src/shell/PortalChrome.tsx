@@ -241,14 +241,16 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  // Measure the complete trail whenever the content or available space changes.
  // Collapsed ancestors remain accessible in the existing overflow menu.
  const crumbKey=trail.map(item=>item.key).join('|');
+ const displayedPage=page;
  useLayoutEffect(()=>{
   const nav=breadcrumbNavRef.current;
   if(!nav)return;
   const measure=()=>{
+   // Measure expanded content; never measure a hidden/condensed trail as the baseline.
    nav.classList.remove('sc-crumbs-condensed');
    const condensed=shouldCondenseBreadcrumbs(nav.scrollWidth,nav.clientWidth);
    nav.classList.toggle('sc-crumbs-condensed',condensed);
-   setBreadcrumbCondensed(condensed);
+   setBreadcrumbCondensed(previous=>previous===condensed?previous:condensed);
   };
   measure();
   window.addEventListener('resize',measure);
@@ -258,7 +260,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    observer?.disconnect();
    window.removeEventListener('resize',measure);
   };
- },[crumbKey,locale,translations,collapsed,mobile]);
+ },[crumbKey,displayedPage,locale,translations,collapsed,mobile]);
  const crumbIcon=(key:string):ReactNode=>{
   const special:Record<string,ReactNode>={
    students:<Users size={17}/>,student_records:<BookOpen size={17}/>,
@@ -382,7 +384,9 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
        </div>
      </header>
      <div className="sc-breadcrumb-bar sc-breadcrumb-design-one">
-       <nav ref={breadcrumbNavRef} className={'sc-crumbs'+(breadcrumbCondensed?' sc-crumbs-condensed':'')} aria-label={translateUiText(locale,"Ruta de navegación")}>
+       <nav ref={breadcrumbNavRef} className={'sc-crumbs'+(breadcrumbCondensed?' sc-crumbs-condensed':'')}
+         data-current-page={page} data-breadcrumb-trail={crumbKey}
+         aria-label={translateUiText(locale,"Ruta de navegación")}>
          <button className="sc-crumb-home" type="button" aria-label={translateUiText(locale,"Ir al inicio")}
            title={translateUiText(locale,"Ir al inicio")} onClick={()=>navigate('dashboard')}>
            <House size={18} strokeWidth={2.25} aria-hidden="true"/>

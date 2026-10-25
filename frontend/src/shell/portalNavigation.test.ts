@@ -55,3 +55,16 @@ it('collapses only when breadcrumb content genuinely exceeds available width',()
  expect(shouldCondenseBreadcrumbs(0,0)).toBe(false);
  expect(shouldCondenseBreadcrumbs(Number.NaN,480)).toBe(false);
 });
+
+it('returns the visible hierarchy for the common admin modules',()=>{
+ const groups=visibleGroups('admin',()=>true);
+ const expected:Record<string,string[]>={
+  dashboard:['dashboard'],students:['students'],admissions:['admissions'],
+  academic_years:['academic_years'],groups:['academic_years','groups'],
+  courses:['academic_years','groups','courses'],reports:['reports'],
+  email_templates:['email_templates'],messages:['messages']
+ };
+ for(const [page,keys] of Object.entries(expected)){
+  expect(breadcrumbPath(groups,page,'admin').map(item=>item.key)).toEqual(keys);
+ }
+});
