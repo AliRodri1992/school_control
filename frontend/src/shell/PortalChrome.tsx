@@ -1,7 +1,8 @@
 import {LocaleProvider} from '../shared/i18n/LocaleContext';
 import {translateUiText} from '../shared/i18n/english';
 import {useEffect,useRef,useState,type ReactNode} from 'react';
-import {Bell,BookOpen,CalendarClock,ChevronDown,ChevronRight,HelpCircle,Languages,LogOut,Menu,PanelLeftClose,PanelLeftOpen,UserRound,X,LayoutDashboard,Users,GraduationCap,BookOpenCheck,CalendarDays,MessageSquare,BarChart3,Settings,School,FolderOpen,ClipboardList} from 'lucide-react';
+import {createPortal} from 'react-dom';
+import {Bell,BookOpen,CalendarClock,ChevronDown,ChevronRight,HelpCircle,Languages,LogOut,Menu,PanelLeftClose,PanelLeftOpen,UserRound,X,LayoutDashboard,Users,GraduationCap,BookOpenCheck,CalendarDays,MessageSquare,BarChart3,Settings,School,FolderOpen,ClipboardList,UserRoundCheck,ClipboardCheck,ClipboardPenLine,BookMarked,FileSpreadsheet,ShieldCheck,Mail,Globe2,Code2,FileText,ContactRound,ChartNoAxesCombined,NotebookTabs,IdCard} from 'lucide-react';
 import {api} from '../api';
 import Combobox from '../shared/components/Combobox';
 import type {Row} from '../modules';
@@ -16,7 +17,10 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const [collapsed,setCollapsed]=useState(()=>localStorage.getItem('school-sidebar-collapsed')==='true');
  const [compactGroup,setCompactGroup]=useState<string|null>(null);
  const [languageOpen,setLanguageOpen]=useState(false);
- const [compactItem,setCompactItem]=useState<string|null>(null);
+ const compactGroupTrigger=useRef<HTMLButtonElement|null>(null);
+ const compactFlyoutRef=useRef<HTMLDivElement|null>(null);
+ const mobileTrigger=useRef<HTMLButtonElement|null>(null);
+ const [compactPosition,setCompactPosition]=useState<{left:number;top:number}|null>(null);
  const languageRef=useRef<HTMLDivElement>(null);
  useEffect(()=>{localStorage.setItem('school-sidebar-collapsed',String(collapsed));},[collapsed]);
  useEffect(()=>{const changed=()=>setLocale(localStorage.getItem('school-locale')||'es');window.addEventListener('school-locale-changed',changed);return()=>window.removeEventListener('school-locale-changed',changed);},[]);
@@ -29,7 +33,21 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const fallbackEn:Record<string,string>={'shell.portal':'Portal','shell.locale':'Language','shell.profile':'My profile and security','shell.help':'Help and user guide','shell.signout':'Sign out','shell.notifications':'Notifications','shell.no_notifications':'No recent notifications.','shell.view_all':'View all notifications','nav.dashboard':'Overview','nav.students':'Students and records','nav.student_contacts':'Family contacts','nav.documents':'Documents','nav.admissions':'Admissions','nav.enrollments':'Enrollment and history','nav.academic_years':'School years','nav.groups':'Groups','nav.courses':'Classes','nav.subjects':'Subjects','nav.schedule':'Schedules','nav.attendances':'Attendance','nav.grades':'Grades','nav.classroom':'Virtual classroom','nav.messages':'Messages','nav.announcements':'Announcements','nav.calendar_events':'Calendar','nav.reports':'Reports','nav.imports':'Imports','nav.users':'Users','nav.access_roles':'Roles and permissions','nav.school':'My school','nav.email_templates':'Email templates','nav.languages':'Languages and translations','nav.api_docs':'API documentation','group.Inicio':'Home','group.Gestión escolar':'School management','group.Gestión académica':'Academic management','group.Comunicación':'Communication','group.Análisis y sistema':'Analytics and system','group.Mi actividad':'My activity','group.Mi escuela':'My school','group.Mi familia':'My family','group.Comunidad':'Community','group.Seguimiento':'Progress'};
  const translate=(key:string,fallback:string)=>translations[key]||(locale==='en'?fallbackEn[key]:undefined)||translateUiText(locale,fallback);
  const sectionIcons:Record<string,ReactNode>={'Inicio':<LayoutDashboard size={21}/>, 'Gestión escolar':<Users size={21}/>, 'Gestión académica':<GraduationCap size={21}/>, 'Comunicación':<MessageSquare size={21}/>, 'Análisis y sistema':<BarChart3 size={21}/>, 'Mi actividad':<BookOpenCheck size={21}/>, 'Mi escuela':<School size={21}/>, 'Mi familia':<Users size={21}/>, 'Comunidad':<MessageSquare size={21}/>, 'Seguimiento':<ClipboardList size={21}/>};
- const moduleIcons:Record<string,ReactNode>={dashboard:<LayoutDashboard size={17}/>,students:<Users size={17}/>,academic_years:<CalendarDays size={17}/>,groups:<Users size={17}/>,courses:<BookOpenCheck size={17}/>,calendar_events:<CalendarDays size={17}/>,messages:<MessageSquare size={17}/>,reports:<BarChart3 size={17}/>,school:<School size={17}/>,documents:<FolderOpen size={17}/>,settings:<Settings size={17}/>};
+ const moduleIcons:Record<string,ReactNode>={
+  dashboard:<LayoutDashboard size={18}/>,students:<GraduationCap size={18}/>,
+  student_contacts:<ContactRound size={18}/>,documents:<FolderOpen size={18}/>,
+  admissions:<ClipboardCheck size={18}/>,enrollments:<IdCard size={18}/>,
+  academic_years:<CalendarDays size={18}/>,groups:<Users size={18}/>,
+  courses:<BookOpenCheck size={18}/>,subjects:<BookMarked size={18}/>,
+  schedule:<CalendarClock size={18}/>,attendances:<ClipboardPenLine size={18}/>,
+  grades:<GraduationCap size={18}/>,classroom:<NotebookTabs size={18}/>,
+  messages:<MessageSquare size={18}/>,announcements:<FileText size={18}/>,
+  calendar_events:<CalendarDays size={18}/>,reports:<ChartNoAxesCombined size={18}/>,
+  imports:<FileSpreadsheet size={18}/>,users:<UserRoundCheck size={18}/>,
+  access_roles:<ShieldCheck size={18}/>,school:<School size={18}/>,
+  email_templates:<Mail size={18}/>,languages:<Globe2 size={18}/>,
+  api_docs:<Code2 size={18}/>,settings:<Settings size={18}/>
+ };
  const [accountTarget,setAccountTarget]=useState<'sidebar'|'topbar'|null>(null);
  const sidebarAccountRef=useRef<HTMLDivElement>(null);
  const topbarAccountRef=useRef<HTMLDivElement>(null);
@@ -77,11 +95,73 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    void update();const interval=window.setInterval(()=>void update(),60000);
    return()=>{active=false;window.clearInterval(interval);}
  },[user.id]);
- useEffect(()=>{const path=findNavPath(groups,page).slice(0,-1).map(item=>item.key);setExpanded(current=>{
-   const next=[...new Set([...current,...path])];return next.length===current.length?current:next;
- });},[page]);
+ useEffect(()=>{
+   const selectedPage=page==='student_details'?'students':page;
+   const group=groups.find(item=>findNavPath([item],selectedPage).length>0);
+   const path=findNavPath(groups,selectedPage).slice(0,-1).map(item=>item.key);
+   setExpanded(current=>{
+     const next=[...new Set([...current,...(group?[group.title]:[]),...path])];
+     return next.length===current.length?current:next;
+   });
+ },[page,portal]);
  function toggle(key:string){setExpanded(v=>v.includes(key)?v.filter(x=>x!==key):[...v,key]);}
- function navigate(next:string){onNavigate(next);setAccountTarget(null);setNotificationsOpen(false);}
+ function navigate(next:string){
+   onNavigate(next);
+   setCompactGroup(null);
+   setAccountTarget(null);
+   setNotificationsOpen(false);
+ }
+ function positionCompactMenu(){
+   const trigger=compactGroupTrigger.current;
+   if(!trigger)return;
+   const rect=trigger.getBoundingClientRect();
+   const width=270;
+   const height=compactFlyoutRef.current?.offsetHeight||360;
+   const left=Math.max(12,Math.min(rect.right+10,window.innerWidth-width-12));
+   const top=Math.max(12,Math.min(rect.top-8,window.innerHeight-height-12));
+   setCompactPosition({left,top});
+ }
+ function toggleCompactGroup(title:string,element:HTMLButtonElement){
+   if(compactGroup===title){setCompactGroup(null);return;}
+   compactGroupTrigger.current=element;
+   const rect=element.getBoundingClientRect();
+   setCompactPosition({left:Math.max(12,Math.min(rect.right+10,window.innerWidth-282)),top:Math.max(12,Math.min(rect.top-8,window.innerHeight-372))});
+   setCompactGroup(title);
+ }
+ useEffect(()=>{
+   if(!compactGroup)return;
+   positionCompactMenu();
+   function outside(event:PointerEvent){
+     const node=event.target as Node;
+     if(!compactFlyoutRef.current?.contains(node)&&!compactGroupTrigger.current?.contains(node))setCompactGroup(null);
+   }
+   window.addEventListener('resize',positionCompactMenu);
+   window.addEventListener('scroll',positionCompactMenu,true);
+   document.addEventListener('pointerdown',outside);
+   return()=>{
+     window.removeEventListener('resize',positionCompactMenu);
+     window.removeEventListener('scroll',positionCompactMenu,true);
+     document.removeEventListener('pointerdown',outside);
+   };
+ },[compactGroup]);
+ useEffect(()=>{
+   if(!mobile)return;
+   const prior=document.body.style.overflow;
+   document.body.style.overflow='hidden';
+   return()=>{document.body.style.overflow=prior;};
+ },[mobile]);
+ useEffect(()=>{
+   function onKeydown(event:KeyboardEvent){
+     if(event.key!=='Escape')return;
+     if(mobile){onMobile(false);mobileTrigger.current?.focus();}
+     if(compactGroup){setCompactGroup(null);compactGroupTrigger.current?.focus();}
+     setAccountTarget(null);
+     setNotificationsOpen(false);
+     setLanguageOpen(false);
+   }
+   document.addEventListener('keydown',onKeydown);
+   return()=>document.removeEventListener('keydown',onKeydown);
+ },[mobile,onMobile,compactGroup]);
  async function read(item:Row){
    try{
      await api('notifications/'+item.id+'/read','POST');
@@ -90,23 +170,28 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
      if(item.page)navigate(item.page);
    }catch(e){setNoticeError((e as Error).message);}
  }
- function renderItem(item:NavItem,depth:number,compact=false):ReactNode{
-   const children=item.children||[],exact=(item.key==='students'&&page==='student_details')||item.key===page;
+ function renderItem(item:NavItem,depth:number):ReactNode{
+   const children=item.children||[];
+   const exact=(item.key==='students'&&page==='student_details')||item.key===page;
    const isAncestor=!exact&&findNavPath([{title:'',items:[item]}],page).length>0;
    const isOpen=expanded.includes(item.key);
-   const showChildren=compact?compactItem===item.key:isOpen;
+   const translated=translate('nav.'+item.key,item.title);
    return <div className="sc-nav-node" key={item.key+'-'+depth}>
-     <div className={'sc-nav-item'+(exact?' is-active':'')+(isAncestor?' is-ancestor':'')} style={{paddingLeft:compact?0:4+Math.min(depth,3)*13}}>
-       <button className="sc-nav-main" type="button" title={translate('nav.'+item.key,item.title)} aria-label={translate('nav.'+item.key,item.title)} aria-current={exact?'page':undefined} onClick={()=>{if(compact&&children.length){setCompactItem(v=>v===item.key?null:item.key);}else navigate(item.key);}}>
-         <span className="sc-nav-mark">{moduleIcons[item.key]||(depth?<span className="sc-nav-dot"/>:<FolderOpen size={17}/>)}</span>{!compact&&<span>{translate('nav.'+item.key,item.title)}</span>}
+     <div className={'sc-nav-item'+(exact?' is-active':'')+(isAncestor?' is-ancestor':'')}
+       style={{paddingLeft:Math.min(depth,3)*8}}>
+       <button className="sc-nav-main" type="button" title={translated} aria-label={translated}
+         aria-current={exact?'page':undefined} onClick={()=>navigate(item.key)}>
+         <span className="sc-nav-mark" aria-hidden="true">{moduleIcons[item.key]||(depth?<span className="sc-nav-dot"/>:<FolderOpen size={18}/>)}</span>
+         <span className="sc-nav-label">{translated}</span>
          {item.key==='admissions'&&pendingAdmissions>0&&<span className="sc-nav-count">{pendingAdmissions}</span>}
        </button>
-       {children.length>0&&!compact&&<button className="sc-nav-expand" type="button" aria-expanded={isOpen}
-         aria-label={(isOpen?'Contraer ':'Expandir ')+item.title} onClick={()=>toggle(item.key)}>
+       {children.length>0&&<button className="sc-nav-expand" type="button" aria-expanded={isOpen}
+         aria-label={(isOpen?(locale==='en'?'Collapse ':'Contraer '):(locale==='en'?'Expand ':'Expandir '))+translated}
+         onClick={()=>toggle(item.key)}>
          {isOpen?<ChevronDown size={16}/>:<ChevronRight size={16}/>}
        </button>}
      </div>
-     {children.length>0&&showChildren&&<div className="sc-nav-children">{children.map(child=>renderItem(child,depth+1,compact))}</div>}
+     {children.length>0&&isOpen&&<div className="sc-nav-children">{children.map(child=>renderItem(child,depth+1))}</div>}
    </div>;
  }
  const trail=page==='student_details'?[{key:'students',title:portal==='tutors'?'Mis hijos':'Alumnos'},{key:'student_details',title:'Expediente'}]:findNavPath(groups,page);
@@ -122,7 +207,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    void api('preferences','PATCH',{locale:language}).catch(e=>setNoticeError((e as Error).message));}
  function accountMenu(){
    return <section className="sc-flyout sc-account-menu" aria-label="Menú de cuenta">
-     <div className="sc-account-details"><strong>{user.name}</strong><small>{user.email}</small><small>{portalLabels[portal]}</small></div>
+     <div className="sc-account-details"><strong>{user.name}</strong><small>{user.email}</small><small>{translateUiText(locale,portalLabels[portal])}</small></div>
      <button className="sc-flyout-link" onClick={()=>navigate('profile')}><UserRound size={17}/>{translate("shell.profile","Mi perfil y seguridad")}</button>
      <button className="sc-flyout-link" onClick={()=>navigate('preferences')}><Languages size={17}/>{translate("shell.preferences","Preferencias")}</button>
      <button className="sc-flyout-link" onClick={()=>navigate('notifications')}><Bell size={17}/>{translate("shell.notification_center","Centro de notificaciones")}</button>
@@ -133,38 +218,48 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
      </button>
    </section>;
  }
- return <div className={'app sc-shell'+(compact?' sc-shell-collapsed':'')}>
-   <aside className={'sidebar sc-sidebar'+(mobile?' open':'')}>
+ return <div className={'app sc-shell'+(compact?' sc-shell-collapsed':'')+(mobile?' sc-shell-mobile-open':'')}>
+   {mobile&&<button type="button" className="sc-sidebar-backdrop" aria-label={locale==='en'?'Close side menu':'Cerrar menú lateral'} onClick={()=>onMobile(false)}/>}
+
+   <aside id="school-sidebar" className={'sidebar sc-sidebar'+(mobile?' open':'')} aria-label={locale==='en'?'Main sidebar':'Barra lateral principal'}>
      <div className="brand sc-shell-brand">
        {school.logo_url?<img src={school.logo_url} alt="Logotipo de la escuela"/>:<div className="brand-icon"><BookOpen/></div>}
        <div className="sc-sidebar-brand-text"><strong>{school.name}</strong><small>SCHOOL CONTROL</small></div>
-       <button className="mobile close" aria-label="Cerrar menú" onClick={()=>onMobile(false)}><X/></button>
+       <button className="mobile close" type="button" aria-label={locale==='en'?'Close menu':'Cerrar menú'} onClick={()=>onMobile(false)}><X/></button>
      </div>
-     <div className="workspace sc-workspace"><span className="status-dot"/>{portalLabels[portal]}<span className="tag">{translate('shell.portal','Portal')}</span></div>
-     <nav className="sc-sidebar-nav" aria-label="Navegación principal">
-       {groups.map(group=><section className="sc-nav-section" key={group.title}>
-         <button type="button" className="sc-nav-section-title" title={translate("group."+group.title,group.title)} aria-label={translate("group."+group.title,group.title)} aria-expanded={compact?compactGroup===group.title:expanded.includes(group.title)} onClick={()=>compact?(setCompactItem(null),setCompactGroup(v=>v===group.title?null:group.title)):toggle(group.title)}>
-           <span className="sc-section-icon" aria-hidden="true">{sectionIcons[group.title]||<FolderOpen size={21}/>}</span><span className="sc-section-label">{translate("group."+group.title,group.title).toUpperCase()}</span>{expanded.includes(group.title)?<ChevronDown className="sc-section-chevron" size={14}/>:<ChevronRight className="sc-section-chevron" size={14}/>} 
+     <div className="workspace sc-workspace"><span className="status-dot"/>{translateUiText(locale,portalLabels[portal])}<span className="tag">{translate('shell.portal','Portal')}</span></div>
+     <nav className="sc-sidebar-nav" aria-label={locale==='en'?'Main navigation':'Navegación principal'}>
+       {groups.map(group=><section className={'sc-nav-section'+(findNavPath([group],page==='student_details'?'students':page).length?' has-active-item':'')} key={group.title}>
+         <button type="button" className="sc-nav-section-title" title={translate("group."+group.title,group.title)} aria-label={translate("group."+group.title,group.title)} aria-expanded={compact?compactGroup===group.title:expanded.includes(group.title)}
+           onClick={event=>compact?toggleCompactGroup(group.title,event.currentTarget):toggle(group.title)}>
+           <span className="sc-section-icon" aria-hidden="true">{sectionIcons[group.title]||<FolderOpen size={21}/>}</span><span className="sc-section-label">{translate("group."+group.title,group.title).toUpperCase()}</span>{(compact?compactGroup===group.title:expanded.includes(group.title))?<ChevronDown className="sc-section-chevron" size={14}/>:<ChevronRight className="sc-section-chevron" size={14}/>} 
          </button>
-         {compact?<>{compactGroup===group.title&&<div className="sc-compact-flyout"><strong>{translate("group."+group.title,group.title)}</strong>{group.items.map(item=>renderItem(item,0,true))}</div>}</>:expanded.includes(group.title)&&group.items.map(item=>renderItem(item,0))}
+         {!compact&&expanded.includes(group.title)&&group.items.map(item=>renderItem(item,0))}
        </section>)}
      </nav>
      <div className="sidebar-bottom sc-sidebar-foot sc-flyout-holder" ref={sidebarAccountRef}>
        <button className="sc-sidebar-account" type="button" aria-label={'Opciones de cuenta de '+user.name}
          aria-expanded={accountTarget==='sidebar'} onClick={()=>{setAccountTarget(v=>v==='sidebar'?null:'sidebar');setNotificationsOpen(false);}}>
          <span className="sc-sidebar-avatar">{user.name.slice(0,2).toUpperCase()}</span>
-         <span className="sc-sidebar-user"><strong>{user.name}</strong><small>{portalLabels[portal]}</small></span><ChevronDown className="sc-sidebar-user-chevron" size={16}/>
+         <span className="sc-sidebar-user"><strong>{user.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span><ChevronDown className="sc-sidebar-user-chevron" size={16}/>
        </button>
        {accountTarget==='sidebar'&&accountMenu()}
      </div>
    </aside>
+   {compact&&compactGroup&&createPortal(
+     <div className="sc-compact-flyout" ref={compactFlyoutRef} role="region"
+       aria-label={translate('group.'+compactGroup,compactGroup)}
+       style={compactPosition?{top:compactPosition.top,left:compactPosition.left}:undefined}>
+       <strong>{translate('group.'+compactGroup,compactGroup)}</strong>
+       {groups.find(group=>group.title===compactGroup)?.items.map(item=>renderItem(item,0))}
+     </div>,document.body)}
    <main className="sc-main">
      <header className="topbar sc-topbar">
-       <button className="mobile" aria-label="Abrir menú" onClick={()=>onMobile(true)}><Menu/></button>
-       <button type="button" className="sc-collapse-toggle" aria-label={collapsed?'Expandir barra lateral':'Colapsar barra lateral'} aria-expanded={!collapsed} onClick={()=>{setCollapsed(v=>!v);setCompactGroup(null);setCompactItem(null);}}>{collapsed?<PanelLeftOpen size={21}/>:<PanelLeftClose size={21}/>}</button>
+       <button ref={mobileTrigger} type="button" className="mobile" aria-label={locale==='en'?'Open menu':'Abrir menú'} aria-controls="school-sidebar" aria-expanded={mobile} onClick={()=>onMobile(true)}><Menu/></button>
+       <button type="button" className="sc-collapse-toggle" aria-label={collapsed?'Expandir barra lateral':'Colapsar barra lateral'} aria-expanded={!collapsed} onClick={()=>{setCollapsed(v=>!v);setCompactGroup(null);}}>{collapsed?<PanelLeftOpen size={21}/>:<PanelLeftClose size={21}/>}</button>
        <button type="button" className="sc-topbar-brand" onClick={()=>navigate('dashboard')} aria-label={'Ir al inicio de '+school.name}>
          {school.logo_url?<img src={school.logo_url} alt=""/>:<span className="sc-topbar-mark"><BookOpen size={22}/></span>}
-         <span className="sc-topbar-brand-text"><strong>{school.name}</strong><small>{portalLabels[portal]}</small></span>
+         <span className="sc-topbar-brand-text"><strong>{school.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span>
        </button>
        {portal==='tutors'&&childrenList.length>0&&<div className="sc-child-picker">
          <Combobox value={selectedChildId} label="Seleccionar hijo" placeholder="Todos mis hijos" onChange={onSelectChild}
@@ -192,7 +287,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
          <div className="sc-flyout-holder" ref={topbarAccountRef}>
            <button className="sc-account-button" type="button" aria-label={'Opciones de cuenta de '+user.name}
              aria-expanded={accountTarget==='topbar'} onClick={()=>{setAccountTarget(v=>v==='topbar'?null:'topbar');setNotificationsOpen(false);}}>
-             <span className="sc-account-identity"><strong>{user.name}</strong><small>{portalLabels[portal]}</small></span>
+             <span className="sc-account-identity"><strong>{user.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span>
              <span className="sc-topbar-avatar">{user.name.slice(0,2).toUpperCase()}</span><ChevronDown size={16}/>
            </button>
            {accountTarget==='topbar'&&accountMenu()}
