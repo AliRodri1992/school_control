@@ -46,8 +46,9 @@ export const presets: Record<DashboardRole,Kind[]> = {
  guardian:['students','today_classes','pending_documents','grades_by_term','attendance_rate','monthly_absences','assignment_progress','attendance_chart','calendar','announcements'],
  student:['today_classes','attendance_chart','calendar','announcements']
 };
-export function defaultConfig(role: DashboardRole='admin'): Config {
- const config = presets[role]
+/** Build the grid for a precise widget catalog, including historical factory presets. */
+export function generateDashboardConfig(kinds:readonly Kind[]):Config{
+ const config = kinds
   .reduce((config,kind)=>appendWidget(config,kind,widgetKinds[kind],kind),{widgets:[],layouts:{}} as Config);
  for(const [bp,cols] of Object.entries(columns)){
   const layout:Item[]=[];
@@ -61,6 +62,9 @@ export function defaultConfig(role: DashboardRole='admin'): Config {
   config.layouts[bp]=layout;
  }
  return config;
+}
+export function defaultConfig(role: DashboardRole='admin'):Config{
+ return generateDashboardConfig(presets[role]);
 }
 
 /** Do not discard layouts for untouched breakpoints or widgets when the grid reflows. */
@@ -110,7 +114,18 @@ export function upgradeRoleCharts(config:Config,role:DashboardRole):Config{
   student:['today_classes','attendance_chart','calendar','announcements']
  };
  const previous=old[role];
- const untouched=previous.length===config.widgets.length&&previous.every((kind,index)=>
+ const untouchedWidgets=previous.length===config.widgets.length&&previous.every((kind,index)=>
   config.widgets[index].id===kind&&config.widgets[index].kind===kind&&config.widgets[index].title===widgetKinds[kind]);
- return untouched?defaultConfig(role):config;
+ if(!untouchedWidgets)return config;
+ // Matching widget IDs alone is not enough: reordering and resizing are personalisations.
+ const former=generateDashboardConfig(previous);
+ const untouchedLayout=Object.keys(columns).every(bp=>{
+  const saved=config.layouts?.[bp],expected=former.layouts[bp];
+  return Array.isArray(saved)&&saved.length===expected.length&&saved.every((item,index)=>{
+   const factory=expected[index];
+   return item.i===factory.i&&item.x===factory.x&&item.y===factory.y&&
+    item.w===factory.w&&item.h===factory.h;
+  });
+ });
+ return untouchedLayout?defaultConfig(role):config;
 }

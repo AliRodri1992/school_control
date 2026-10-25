@@ -48,7 +48,21 @@ export default function Dashboard({summary,data,role='admin',userId=0,selectedCh
   }).catch(e=>{if(active)setError(e.message);}).finally(()=>{if(active)setChartLoading(false);});
   return()=>{active=false;};
  },[filterGroup,academicYear,period,selectedChildId,role,userId]);
- useEffect(()=>{let active=true;api('dashboard_preference').then(result=>{if(active){setConfig(result.configuration?upgradeRoleCharts(upgradeLegacyDashboardConfig(result.configuration,role),role):defaultConfig(role));setVersion(result.lock_version);setReady(true);}}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[]);
+ useEffect(()=>{
+  let active=true;
+  setReady(false);
+  setEditing(false);
+  setRestored(false);
+  setError('');
+  void api('dashboard_preference').then(result=>{
+   if(!active)return;
+   const saved=result.configuration;
+   setConfig(saved?upgradeRoleCharts(upgradeLegacyDashboardConfig(saved,role),role):defaultConfig(role));
+   setVersion(result.lock_version);
+   setReady(true);
+  }).catch(e=>{if(active)setError((e as Error).message);});
+  return()=>{active=false;};
+ },[role,userId]);
  async function save(){
   setSaving(true);setError('');
   try{

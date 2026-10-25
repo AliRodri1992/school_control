@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {defaultConfig,appendWidget,removeWidget,columns,isMetricKind,widgetHeight,metricKinds,mergeGridLayouts,upgradeLegacyDashboardConfig,upgradeRoleCharts,allowedChartKinds,type DashboardRole} from './dashboardConfig';
+import {defaultConfig,appendWidget,removeWidget,columns,isMetricKind,widgetHeight,metricKinds,mergeGridLayouts,upgradeLegacyDashboardConfig,upgradeRoleCharts,generateDashboardConfig,allowedChartKinds,type DashboardRole} from './dashboardConfig';
 describe('dashboard configuration',()=>{
  it('provides layouts bounded to each screen including a single mobile column',()=>{
   const config=defaultConfig();
@@ -166,9 +166,25 @@ it('ships dedicated role-specific analytics without removing the prior attendanc
 it('upgrades only untouched role defaults and retains saved custom positions',()=>{
  const legacy=defaultConfig('student');
  expect(upgradeRoleCharts(legacy,'student')).toEqual(defaultConfig('student'));
- const previous=defaultConfig('student');
+ const previous=generateDashboardConfig(['students','enrollments','pending_admissions','pending_documents','attendance_chart','alerts','calendar']);
+ expect(upgradeRoleCharts(previous,'admin')).toEqual(defaultConfig('admin'));
  const edited={...previous,layouts:{...previous.layouts,lg:previous.layouts.lg.map((item,i)=>({...item,y:item.y+i}))}};
- expect(upgradeRoleCharts(edited,'student')).toEqual(defaultConfig('student'));
+ expect(upgradeRoleCharts(edited,'admin')).toBe(edited);
+ const mobileMoved={...previous,layouts:{...previous.layouts,xs:previous.layouts.xs.map((item,i)=>({...item,y:item.y+i}))}};
+ expect(upgradeRoleCharts(mobileMoved,'admin')).toBe(mobileMoved);
+ const resized={...previous,layouts:{...previous.layouts,md:previous.layouts.md.map((item,i)=>i===0?{...item,h:item.h+1}:item)}};
+ expect(upgradeRoleCharts(resized,'admin')).toBe(resized);
  const custom=appendWidget(defaultConfig('admin'),'announcements','Reuniones','my_announcements');
  expect(upgradeRoleCharts(custom,'admin')).toBe(custom);
+});
+
+
+it.each([
+ ['teacher',['today_classes','grade_drafts','groups','attendance_chart','alerts','calendar','announcements']],
+ ['guardian',['students','today_classes','pending_documents','attendance_chart','calendar','announcements']]
+] as const)('upgrades the original %s layout but respects previously resized cards', (role,kinds)=>{
+ const legacy=generateDashboardConfig(kinds);
+ expect(upgradeRoleCharts(legacy,role)).toEqual(defaultConfig(role));
+ const custom={...legacy,layouts:{...legacy.layouts,lg:legacy.layouts.lg.map((item,index)=>index===0?{...item,h:item.h+1}:item)}};
+ expect(upgradeRoleCharts(custom,role)).toBe(custom);
 });

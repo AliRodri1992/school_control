@@ -257,3 +257,15 @@ it('only offers school years returned by the authorized analytics scope',async()
  await userEvent.selectOptions(year,'7');
  await waitFor(()=>expect(vi.mocked(api).mock.calls.some(call=>String(call[0]).includes('academic_year_id=7'))).toBe(true));
 });
+
+
+it('reloads the correct portal template when a different user signs in without unmounting the shell',async()=>{
+ vi.mocked(api).mockImplementation(async resource=>
+  resource==='dashboard_preference'?{configuration:null,lock_version:null}:{});
+ const {rerender}=render(<Dashboard role="admin" userId={2} summary={{}} data={{}}/>);
+ await waitFor(()=>expect(screen.getAllByText('Matrícula por ciclo').length).toBeGreaterThan(0));
+ rerender(<Dashboard role="guardian" userId={3} summary={{}} data={{}}/>);
+ await waitFor(()=>expect(screen.getAllByText('Entregas de tareas').length).toBeGreaterThan(0));
+ expect(screen.queryByText('Matrícula por ciclo')).toBeNull();
+ expect(vi.mocked(api).mock.calls.filter(call=>call[0]==='dashboard_preference')).toHaveLength(2);
+});

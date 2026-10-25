@@ -11,7 +11,7 @@ School Control muestra gráficas con Recharts y utiliza React Grid Layout para o
 | Tutores | Calificaciones por periodo (líneas), asistencia (anillo), faltas/retardos mensuales (barras agrupadas) y entregas de tareas (anillo) |
 | Alumnos | Conserva la plantilla propia y puede agregar gráficos permitidos del progreso individual |
 
-Los portales también conservan el widget histórico de asistencia y los indicadores ya implementados. `Restablecer plantilla` prepara la versión predeterminada, que solo se persiste al pulsar `Guardar dashboard`. Las configuraciones personalizadas no se sobrescriben al desplegar nuevas gráficas.
+Los portales también conservan el widget histórico de asistencia y los indicadores ya implementados. `Restablecer plantilla` prepara la versión predeterminada, que solo se persiste al pulsar `Guardar dashboard`. Las configuraciones personalizadas no se sobrescriben al desplegar nuevas gráficas. La detección de una plantilla antigua compara **todos los widgets y sus posiciones, dimensiones y puntos de ruptura**, no solo sus nombres. Si el usuario ajustó una tarjeta incluso en móvil, se mantiene su distribución; solo una plantilla anterior intacta se actualiza automáticamente.
 
 ## Filtros y respuesta
 
