@@ -27,11 +27,13 @@ export function useSidebarScroll(ref:RefObject<HTMLElement|null>){
    event.preventDefault();
    nav.scrollTop=target;
   };
+  let cancelDrag:(()=>void)|null=null;
   const onPointerDown=(event:PointerEvent)=>{
    if(event.button!==0||(event.pointerType&&event.pointerType!=='mouse'))return;
    const target=event.target;
    if(!(target instanceof Element))return;
    if(target.closest('button,a,input,select,textarea,[role="button"],[contenteditable="true"]'))return;
+   cancelDrag?.();
    const originY=event.clientY,originTop=nav.scrollTop,id=event.pointerId;
    let dragging=false;
    const onMove=(move:PointerEvent)=>{
@@ -43,13 +45,18 @@ export function useSidebarScroll(ref:RefObject<HTMLElement|null>){
     nav.scrollTop=originTop-distance;
     if(move.cancelable)move.preventDefault();
    };
-   const finish=(up:PointerEvent)=>{
-    if(up.pointerId!==id)return;
+   const cleanup=()=>{
     nav.classList.remove('sc-sidebar-nav-dragging');
     document.removeEventListener('pointermove',onMove);
     document.removeEventListener('pointerup',finish);
     document.removeEventListener('pointercancel',finish);
+    cancelDrag=null;
    };
+   const finish=(up:PointerEvent)=>{
+    if(up.pointerId!==id)return;
+    cleanup();
+   };
+   cancelDrag=cleanup;
    document.addEventListener('pointermove',onMove);
    document.addEventListener('pointerup',finish);
    document.addEventListener('pointercancel',finish);
@@ -57,7 +64,7 @@ export function useSidebarScroll(ref:RefObject<HTMLElement|null>){
   nav.addEventListener('keydown',onKeyDown);
   nav.addEventListener('pointerdown',onPointerDown);
   return()=>{
-   nav.classList.remove('sc-sidebar-nav-dragging');
+   cancelDrag?.();
    nav.removeEventListener('keydown',onKeyDown);
    nav.removeEventListener('pointerdown',onPointerDown);
   };

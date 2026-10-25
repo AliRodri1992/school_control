@@ -32,6 +32,14 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const sidebarRef=useRef<HTMLElement|null>(null);
  const sidebarNavRef=useRef<HTMLElement|null>(null);
  useSidebarScroll(sidebarNavRef);
+ // Keep the selected destination visible in a scrollbar-free navigation rail.
+ useEffect(()=>{
+  const nav=sidebarNavRef.current;
+  const selected=nav?.querySelector<HTMLElement>('.sc-nav-item.is-active, .sc-nav-section.is-primary-active');
+  if(selected&&typeof selected.scrollIntoView==='function'){
+   selected.scrollIntoView({block:'nearest',inline:'nearest'});
+  }
+ },[page,collapsed,mobile,expanded.join('|')]);
  const [compactPosition,setCompactPosition]=useState<{left:number;top:number}|null>(null);
  const languageRef=useRef<HTMLDivElement>(null);
  const notificationRef=useRef<HTMLDivElement>(null);
@@ -298,7 +306,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    <aside id="school-sidebar" ref={sidebarRef} className={'sidebar sc-sidebar'+(mobile?' open':'')} aria-label={translateUiText(locale,'Barra lateral principal')}>
      <SidebarBrand schoolName={school.name} locale={locale} compact={compact} closeRef={mobileCloseTrigger}
        onClose={()=>{onMobile(false);mobileTrigger.current?.focus();}}/>
-          <nav ref={sidebarNavRef} className="sc-sidebar-nav" tabIndex={0} aria-label={translateUiText(locale,'Navegación principal')}>
+          <nav ref={sidebarNavRef} className="sc-sidebar-nav" tabIndex={0} aria-keyshortcuts="Home End PageUp PageDown ArrowUp ArrowDown" aria-label={translateUiText(locale,'Navegación principal')}>
        {sections.map(section=>{
          const current=page==='student_details'?'students':page;
          const active=section.items.some(item=>item.key===current||findNavPath([{title:'',items:[item]}],current).length>0);

@@ -542,3 +542,12 @@
  .sc-shell .sc-sidebar.open .sc-sidebar-nav{min-height:0;overflow-y:auto}
  .sc-shell .sc-sidebar .sc-sidebar-nav{cursor:auto}
 }
+
+/* Improve focus visibility and scroll targeting without rendering a scrollbar. */
+.sc-shell .sc-sidebar .sc-sidebar-nav{scroll-padding-block:14px}
+.sc-shell .sc-sidebar .sc-sidebar-nav .sc-nav-item,
+.sc-shell .sc-sidebar .sc-sidebar-nav .sc-nav-section{scroll-margin-block:10px}
+.sc-shell .sc-sidebar .sc-sidebar-nav button:focus-visible{scroll-margin-block:12px}
+@media(max-width:760px){
+ .sc-shell .sc-sidebar.open .sc-sidebar-nav{scroll-padding-block:10px}
+}

@@ -55,3 +55,31 @@ it('does not hijack clicks or drags from interactive menu items',()=>{
  expect(nav.scrollTop).toBe(0);
  fireEvent.pointerUp(document,{pointerId:2,clientY:30});
 });
+
+it('cleans up a pending pointer drag when the sidebar unmounts',()=>{
+ const {container,unmount}=render(<ScrollFixture/>);
+ const nav=container.querySelector('nav')!;
+ fireEvent.pointerDown(nav.querySelector('.blank-space')!,{button:0,pointerId:8,clientY:150});
+ fireEvent.pointerMove(document,{pointerId:8,clientY:110});
+ expect(nav.classList.contains('sc-sidebar-nav-dragging')).toBe(true);
+ const amount=nav.scrollTop;
+ unmount();
+ fireEvent.pointerMove(document,{pointerId:8,clientY:10});
+ expect(nav.scrollTop).toBe(amount);
+ expect(nav.classList.contains('sc-sidebar-nav-dragging')).toBe(false);
+});
+it('cancels an interrupted drag and allows another gesture afterward',()=>{
+ const {container}=render(<ScrollFixture/>);
+ const nav=container.querySelector('nav')!;
+ fireEvent.pointerDown(nav.querySelector('.blank-space')!,{button:0,pointerId:5,clientY:110});
+ fireEvent.pointerMove(document,{pointerId:5,clientY:90});
+ fireEvent.pointerCancel(document,{pointerId:5});
+ expect(nav.classList.contains('sc-sidebar-nav-dragging')).toBe(false);
+ const old=nav.scrollTop;
+ fireEvent.pointerMove(document,{pointerId:5,clientY:20});
+ expect(nav.scrollTop).toBe(old);
+ fireEvent.pointerDown(nav.querySelector('.blank-space')!,{button:0,pointerId:6,clientY:110});
+ fireEvent.pointerMove(document,{pointerId:6,clientY:60});
+ expect(nav.scrollTop).toBe(old+50);
+ fireEvent.pointerUp(document,{pointerId:6});
+});

@@ -423,10 +423,11 @@ it('keeps the aligned brand and mobile close control in the drawer',async()=>{
  expect(onMobile).toHaveBeenCalledWith(false);
 });
 
-it('keeps the main sidebar scrollable and keyboard-focusable without changing its role',()=>{
+it('keeps the main sidebar scrollable and keyboard-focusable without changing its role',async()=>{
  const {container}=render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
  const nav=screen.getByRole('navigation',{name:'Navegación principal'});
  expect(nav.getAttribute('tabindex')).toBe('0');
+ expect(nav.getAttribute('aria-keyshortcuts')).toContain('PageDown');
  expect(nav.classList.contains('sc-sidebar-nav')).toBe(true);
  const scrollable=container.querySelectorAll('.sc-sidebar-nav');
  expect(scrollable).toHaveLength(1);
@@ -447,4 +448,18 @@ it('preserves access to the lower navigation categories with keyboard scrolling'
  await userEvent.keyboard('{PageDown}');
  expect(nav.scrollTop).toBeGreaterThan(0);
  expect(container.querySelector('.sc-sidebar .sc-nav-section:last-child .sc-section-label')?.textContent).toBe('Configuración');
+});
+
+it('reveals the active navigation destination inside the scrollbar-free rail',async()=>{
+ const reveal=vi.fn();
+ const original=HTMLElement.prototype.scrollIntoView;
+ HTMLElement.prototype.scrollIntoView=reveal;
+ try{
+  render(<PortalChrome {...props} page="courses"><div>Página</div></PortalChrome>);
+  expect(reveal).toHaveBeenCalledWith({block:'nearest',inline:'nearest'});
+  expect(screen.getByRole('button',{name:'Clases'}).getAttribute('aria-current')).toBe('page');
+ }finally{
+  if(original)HTMLElement.prototype.scrollIntoView=original;
+  else delete (HTMLElement.prototype as {scrollIntoView?:typeof reveal}).scrollIntoView;
+ }
 });
