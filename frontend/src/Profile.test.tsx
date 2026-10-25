@@ -44,11 +44,12 @@ it('saves real data, trims the name and passes updated identity to the portal',a
  await userEvent.click(screen.getByRole('button',{name:'Guardar cambios'}));
  await waitFor(()=>expect(request).toHaveBeenCalledWith('profile','PATCH',
   {name:'Carmen Rivera',email_notifications:true}));
- expect(await screen.findByRole('status')).toHaveProperty('textContent','Cambios guardados correctamente.');
+ await waitFor(()=>expect(notify).toHaveBeenCalledWith('Perfil actualizado correctamente.'));
+ expect(screen.queryByText('Cambios guardados correctamente.')).toBeNull();
  expect(onChange).toHaveBeenCalledWith(expect.objectContaining({name:'Carmen Rivera',email:'maria@school.test'}));
  expect(container.querySelector('.sc-profile-avatar')?.textContent).toBe('CR');
  expect(screen.getByRole('button',{name:'Guardar cambios'})).toHaveProperty('disabled',true);
- expect(notify).toHaveBeenCalledWith('Perfil actualizado correctamente.');
+ expect(notify).toHaveBeenCalledTimes(1);
 });
 
 it('discards edits without issuing a request',async()=>{

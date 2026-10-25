@@ -1,5 +1,5 @@
 import {useEffect,useState,type FormEvent} from 'react';
-import {BellRing,CheckCircle2,ChevronRight,LockKeyhole,Mail,Save,ShieldCheck,UserRound,UsersRound} from 'lucide-react';
+import {BellRing,ChevronRight,LockKeyhole,Mail,Save,ShieldCheck,UserRound,UsersRound} from 'lucide-react';
 import {useSchoolLocale} from './shared/i18n/LocaleContext';
 import {userInitials} from './shell/userInitials';
 import AccountSecurity from './AccountSecurity';
@@ -19,7 +19,7 @@ export default function Profile({onChange,onSignedOut}:{onChange:(user:Row)=>voi
  const [name,setName]=useState(''),[emailNotices,setEmailNotices]=useState(false);
  const [loading,setLoading]=useState(true),[busy,setBusy]=useState(false);
  const [reloadKey,setReloadKey]=useState(0);
- const [error,setError]=useState(''),[saved,setSaved]=useState(false);
+ const [error,setError]=useState('');
  useEffect(()=>{
   let active=true;
   setLoading(true);setError('');
@@ -35,25 +35,24 @@ export default function Profile({onChange,onSignedOut}:{onChange:(user:Row)=>voi
  function discard(){
   if(!profile)return;
   setName(profile.name);setEmailNotices(Boolean(profile.email_notifications));
-  setError('');setSaved(false);
+  setError('');
  }
  async function save(event:FormEvent<HTMLFormElement>){
   event.preventDefault();
   const cleanName=name.trim();
-  if(!cleanName){setError(ui('Escribe tu nombre completo.'));setSaved(false);return;}
+  if(!cleanName){setError(ui('Escribe tu nombre completo.'));return;}
   if(!profile||busy||!dirty)return;
-  setBusy(true);setError('');setSaved(false);
+  setBusy(true);setError('');
   try{
    const result:ProfileRecord=await api('profile','PATCH',{name:cleanName,email_notifications:emailNotices});
    setProfile(result);setName(result.name);setEmailNotices(Boolean(result.email_notifications));
    onChange(result);
-   setSaved(true);
-   void notify('Perfil actualizado correctamente.');
+   void notify(ui('Perfil actualizado correctamente.'));
   }catch(cause){setError((cause as Error).message);}
   finally{setBusy(false);}
  }
- function changeName(value:string){setName(value);setSaved(false);setError('');}
- function changeNotices(checked:boolean){setEmailNotices(checked);setSaved(false);setError('');}
+ function changeName(value:string){setName(value);setError('');}
+ function changeNotices(checked:boolean){setEmailNotices(checked);setError('');}
  return <section className="sc-profile" aria-label={ui('Mi perfil')}>
   <div className="sc-profile-page-heading">
    <div>
@@ -130,7 +129,6 @@ export default function Profile({onChange,onSignedOut}:{onChange:(user:Row)=>voi
        </label>
       </div>
       {error&&<p className="sc-profile-form-error" role="alert">{error}</p>}
-      {saved&&<p className="sc-profile-form-success" role="status"><CheckCircle2 size={17} aria-hidden="true"/>{ui('Cambios guardados correctamente.')}</p>}
       <footer className="sc-profile-form-actions">
        <button type="button" className="sc-profile-discard" onClick={discard} disabled={!dirty||busy}>{ui('Descartar cambios')}</button>
        <button type="submit" className="primary sc-profile-save" disabled={!dirty||busy}>

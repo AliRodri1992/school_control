@@ -135,3 +135,8 @@ it('translates the notice explaining repaired multi-column dashboard rows',()=>{
   expect(translateUiText('es',phrase)).toBe(phrase);
  }
 });
+
+it('translates the single profile-save toast correctly',()=>{
+ expect(translateUiText('en','Perfil actualizado correctamente.')).toBe('Profile updated successfully.');
+ expect(translateUiText('es','Perfil actualizado correctamente.')).toBe('Perfil actualizado correctamente.');
+});

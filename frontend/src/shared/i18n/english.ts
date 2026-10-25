@@ -892,7 +892,8 @@ Object.assign(englishByText,{
 });
 Object.assign(englishByText,{
  'Organizamos las gráficas en filas, sin cambiar las posiciones de tus otras tarjetas.':'We arranged the charts into rows without moving your other cards.',
- 'Guardar distribución corregida':'Save corrected layout'
+ 'Guardar distribución corregida':'Save corrected layout',
+ 'Perfil actualizado correctamente.':'Profile updated successfully.'
 });
 export function translateUiText(locale:string,text:string):string{
  if(!locale.toLowerCase().startsWith('en'))return text;
