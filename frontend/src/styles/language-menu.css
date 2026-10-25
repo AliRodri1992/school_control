@@ -1,9 +1,8 @@
-/* Language selection: full-bleed rows, with clear hover versus active states. */
+/* Language selection: neutral hover versus distinctly blue selected row. */
 .sc-shell .sc-topbar .sc-language-menu{
- --sc-lang-hover:#edf4ff;
- --sc-lang-hover-text:#17458f;
+ --sc-lang-hover:#f1f4f8;
+ --sc-lang-hover-text:#263e61;
  --sc-lang-selected:#2451b9;
- --sc-lang-selected-hover:#183e98;
  box-sizing:border-box;
  padding:0;
  border-radius:14px;
@@ -52,10 +51,9 @@
  background:var(--sc-lang-selected);
  color:#fff;
  font-weight:750;
- box-shadow:inset 4px 0 0 #a9cbff;
 }
 .sc-shell .sc-topbar .sc-language-menu>.sc-language-option[aria-pressed=true]:hover{
- background:var(--sc-lang-selected-hover);
+ background:var(--sc-lang-selected);
  color:#fff;
 }
 .sc-shell .sc-topbar .sc-language-menu>.sc-language-option:focus-visible{
@@ -67,16 +65,10 @@
  overflow-wrap:anywhere;
  color:inherit;
 }
+/* The active language has a simple tick; no badge, ring or left accent. */
 .sc-shell .sc-topbar .sc-language-menu .sc-language-option-check{
  flex:none;
- display:grid;
- place-items:center;
- width:25px;
- height:25px;
- border-radius:50%;
- background:rgba(255,255,255,.18);
- border:1px solid rgba(255,255,255,.5);
- color:#fff;
+ color:currentColor;
 }
 @media(prefers-reduced-motion:reduce){
  .sc-shell .sc-topbar .sc-language-menu>.sc-language-option{transition:none}

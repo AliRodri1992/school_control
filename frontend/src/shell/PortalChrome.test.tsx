@@ -608,11 +608,19 @@ it('renders full-row language options and updates the selected state through the
  expect(spanish.classList.contains('sc-language-option')).toBe(true);
  expect(english.classList.contains('sc-language-option')).toBe(true);
  expect(spanish.getAttribute('aria-pressed')).toBe('true');
+ expect(spanish.classList.contains('is-selected')).toBe(true);
+ expect(spanish.querySelector('svg.sc-language-option-check')?.parentElement).toBe(spanish);
+ expect(english.classList.contains('is-selected')).toBe(false);
+ expect(english.querySelector('.sc-language-option-check')).toBeNull();
  await userEvent.click(english);
  expect(localStorage.getItem('school-locale')).toBe('en');
  expect(screen.queryByRole('group',{name:'Idiomas disponibles'})).toBeNull();
  await userEvent.click(screen.getByRole('button',{name:'Language'}));
- expect(screen.getByRole('button',{name:'English · EN'}).getAttribute('aria-pressed')).toBe('true');
+ const selectedEnglish=screen.getByRole('button',{name:'English · EN'});
+ expect(selectedEnglish.getAttribute('aria-pressed')).toBe('true');
+ expect(selectedEnglish.classList.contains('is-selected')).toBe(true);
+ expect(selectedEnglish.querySelector('svg.sc-language-option-check')?.parentElement).toBe(selectedEnglish);
+ expect(screen.getByRole('button',{name:'Español · ES'}).querySelector('.sc-language-option-check')).toBeNull();
 });
 
 it('shows a legible account panel outside the dark sidebar clipping context',async()=>{

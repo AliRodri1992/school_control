@@ -35,7 +35,10 @@ it('highlights the current locale and places its check mark inside the same clic
  const english=screen.getByRole('button',{name:'English · EN'});
  expect(spanish.getAttribute('aria-pressed')).toBe('true');
  expect(spanish.classList.contains('is-selected')).toBe(true);
- expect(spanish.querySelector('.sc-language-option-check svg')).toBeTruthy();
+ expect(spanish.querySelector('svg.sc-language-option-check')).toBeTruthy();
+ expect(spanish.querySelector('svg.sc-language-option-check')?.parentElement).toBe(spanish);
+ expect(spanish.querySelector('.sc-language-option-check circle')).toBeNull();
+ expect(spanish.querySelector('.sc-language-option-check rect')).toBeNull();
  expect(english.getAttribute('aria-pressed')).toBe('false');
  expect(english.classList.contains('is-selected')).toBe(false);
  expect(english.querySelector('.sc-language-option-check')).toBeNull();
@@ -47,7 +50,8 @@ it('highlights the current locale and places its check mark inside the same clic
  expect(spanish.querySelector('.sc-language-option-check')).toBeNull();
  expect(english.getAttribute('aria-pressed')).toBe('true');
  expect(english.classList.contains('is-selected')).toBe(true);
- expect(english.querySelector('.sc-language-option-check svg')).toBeTruthy();
+ expect(english.querySelector('svg.sc-language-option-check')).toBeTruthy();
+ expect(english.querySelector('svg.sc-language-option-check')?.parentElement).toBe(english);
 });
 
 it('keeps hover and selected hit areas on the complete button, not just the text',async()=>{
@@ -82,4 +86,16 @@ it('allows arrow and Home/End keyboard navigation through the full-width rows',a
  expect(document.activeElement).toBe(spanish);
  await userEvent.keyboard('{Enter}');
  expect(onSelect).toHaveBeenCalledWith('es');
+});
+
+it('never adds a decorative badge to the selected-language check',()=>{
+ const {container}=render(<LanguageMenu label="Idiomas disponibles" languages={languages}
+  currentLocale="ko" onSelect={vi.fn()}/>);
+ const chosen=screen.getByRole('button',{name:'한국어 · KO'});
+ const icon=chosen.querySelector('svg.sc-language-option-check');
+ expect(icon).toBeTruthy();
+ expect(icon?.parentElement).toBe(chosen);
+ expect(chosen.querySelector('span.sc-language-option-check')).toBeNull();
+ expect(chosen.classList.contains('is-selected')).toBe(true);
+ expect(container.querySelectorAll('svg.sc-language-option-check')).toHaveLength(1);
 });

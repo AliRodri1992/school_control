@@ -154,7 +154,7 @@
 .sc-topbar .sc-language{width:auto;min-width:0;display:block;padding:0;background:transparent;border:0}
 .sc-topbar .sc-language .sc-language-button{width:40px;height:40px;display:grid;place-items:center;color:#405cf5}
 .sc-topbar .sc-language .sc-language-menu{width:min(190px,calc(100vw - 24px));min-width:0}
-.sc-language-menu .sc-flyout-link[aria-pressed=true]{background:#eef2ff;color:#304dcf;font-weight:700}
+/* Selection and hover backgrounds live in language-menu.css, loaded last. */
 
 /* Compact mode is restricted to desktop, never to the mobile drawer. */
 @media(min-width:761px){
@@ -264,7 +264,6 @@
 
 /* Keep the compact account and notification actions aligned with their triggers. */
 .sc-topbar .sc-account-button{gap:9px}
-.sc-topbar .sc-language-menu .sc-flyout-link[aria-pressed=true]{font-weight:750}
 .sc-topbar .sc-flyout-title button:focus-visible,.sc-topbar .sc-flyout-link:focus-visible{outline:2px solid #6680d9;outline-offset:2px}
 .sc-topbar .sc-flyout p{overflow-wrap:anywhere}
 

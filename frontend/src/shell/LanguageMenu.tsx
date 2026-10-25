@@ -10,7 +10,7 @@ type Props={
  onSelect:(code:string)=>void;
 };
 
-/** Edge-to-edge rows with predictable Arrow/Home/End keyboard navigation. */
+/** Edge-to-edge rows, plain selected tick and Arrow/Home/End keyboard navigation. */
 export default function LanguageMenu({languages,currentLocale,label,onSelect}:Props){
  function moveFocus(event:KeyboardEvent<HTMLDivElement>){
   if(!['ArrowDown','ArrowUp','Home','End'].includes(event.key))return;
@@ -31,7 +31,7 @@ export default function LanguageMenu({languages,currentLocale,label,onSelect}:Pr
     aria-pressed={selected}
     onClick={()=>onSelect(language.code)}>
     <span className="sc-language-option-label">{language.native_name} · {language.code.toUpperCase()}</span>
-    {selected&&<span className="sc-language-option-check" aria-hidden="true"><Check size={15}/></span>}
+    {selected&&<Check className="sc-language-option-check" size={17} strokeWidth={2.6} aria-hidden="true"/>}
    </button>;
   })}
  </div>;
