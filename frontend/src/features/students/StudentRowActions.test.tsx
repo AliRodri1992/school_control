@@ -31,3 +31,16 @@ it('does not expose unauthorized student actions',()=>{
  expect(screen.getAllByRole('button')).toHaveLength(1);
  expect(screen.queryByRole('button',{name:/boleta|editar/i})).toBeNull();
 });
+
+it('keeps the read-only boleta action disabled while its request is loading',async()=>{
+ const onReport=vi.fn(),onView=vi.fn(),onEdit=vi.fn();
+ render(<StudentRowActions student={{id:42,full_name:'Alex Ejemplo'}} canView canReport canEdit reportLoading
+  onView={onView} onReport={onReport} onEdit={onEdit}/>);
+ const report=screen.getByRole('button',{name:'Cargando boleta de Alex Ejemplo'});
+ expect(report.hasAttribute('disabled')).toBe(true);
+ expect(report.getAttribute('title')).toBe('Cargando boleta…');
+ await userEvent.click(report);
+ expect(onReport).not.toHaveBeenCalled();
+ await userEvent.click(screen.getByRole('button',{name:'Ver expediente de Alex Ejemplo'}));
+ expect(onView).toHaveBeenCalledOnce();
+});
