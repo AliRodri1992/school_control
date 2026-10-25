@@ -6,13 +6,13 @@ import type {SidebarAccountPosition} from './sidebarAccountPlacement';
 
 type Labels={menu:string;profile:string;preferences:string;notifications:string;help:string;signout:string};
 type Props={
- user:Row;locale:string;role:string;labels:Labels;position:SidebarAccountPosition|null;
+ user:Row;locale:string;role:string;labels:Labels;position:SidebarAccountPosition|null;variant?:'sidebar'|'topbar';
  onNavigate:(destination:string)=>void;onSignOut:()=>void;
 };
 
 /** Readable account flyout independent of dark sidebar text and clipping. */
 export const SidebarAccountMenu=forwardRef<HTMLElement,Props>(function SidebarAccountMenu(
- {user,locale,role,labels,position,onNavigate,onSignOut},ref
+ {user,locale,role,labels,position,onNavigate,onSignOut,variant='sidebar'},ref
 ){
  const english=locale==='en';
  const actions=[
@@ -30,8 +30,19 @@ export const SidebarAccountMenu=forwardRef<HTMLElement,Props>(function SidebarAc
    <span className="sc-sam-action-copy"><strong>{label}</strong><small>{description}</small></span>
    <ChevronRight size={15} className="sc-sam-chevron" aria-hidden="true"/>
   </button>;
- return <section id="sc-sidebar-account-panel" ref={ref} className="sc-sidebar-account-panel"
-   role="group" aria-label={labels.menu} style={style}>
+ function navigateWithKeys(event:import('react').KeyboardEvent<HTMLElement>){
+  if(!['ArrowDown','ArrowUp','Home','End'].includes(event.key))return;
+  const options=Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'));
+  if(!options.length)return;
+  event.preventDefault();
+  const current=options.indexOf(document.activeElement as HTMLButtonElement);
+  const next=event.key==='Home'?0:event.key==='End'?options.length-1:
+   event.key==='ArrowDown'?(current+1)%options.length:current<=0?options.length-1:current-1;
+  options[next]?.focus();
+ }
+ return <section id={variant==='topbar'?'sc-topbar-account-panel':'sc-sidebar-account-panel'} ref={ref}
+   className={'sc-sidebar-account-panel'+(variant==='topbar'?' sc-navbar-account-panel':'')}
+   role="group" aria-label={labels.menu} style={style} onKeyDown={navigateWithKeys}>
   <header className="sc-sam-header">
    <span className="sc-sam-eyebrow">{english?'MY ACCOUNT':'MI CUENTA'}</span>
    <div className="sc-sam-identity">

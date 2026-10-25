@@ -689,3 +689,71 @@ it('closes the detached account panel when the mobile drawer is dismissed',async
  expect(onMobile).toHaveBeenCalledWith(false);
  expect(screen.queryByRole('group',{name:'Menú de cuenta'})).toBeNull();
 });
+
+it('uses the same professional account menu in navbar and sidebar, with one active menu',async()=>{
+ const onNavigate=vi.fn();
+ const {container}=render(<PortalChrome {...props} onNavigate={onNavigate}><div>Página</div></PortalChrome>);
+ const triggers=screen.getAllByRole('button',{name:'Opciones de cuenta de María González'});
+ await userEvent.click(triggers[0]);
+ expect(screen.getByRole('group',{name:'Menú de cuenta'}).id).toBe('sc-sidebar-account-panel');
+ await userEvent.click(triggers[1]);
+ const panel=screen.getByRole('group',{name:'Menú de cuenta'});
+ expect(panel.id).toBe('sc-topbar-account-panel');
+ expect(panel.classList.contains('sc-sidebar-account-panel')).toBe(true);
+ expect(panel.classList.contains('sc-navbar-account-panel')).toBe(true);
+ expect(panel.parentElement).toBe(document.body);
+ expect(panel.querySelectorAll('.sc-sam-action')).toHaveLength(5);
+ expect(panel.querySelector('.sc-sam-identity strong')?.textContent).toBe('María González');
+ expect(triggers[1].getAttribute('aria-controls')).toBe(panel.id);
+ expect(container.querySelector('.sc-topbar .sc-account-menu')).toBeNull();
+ await userEvent.click(screen.getByRole('button',{name:'Preferencias'}));
+ expect(onNavigate).toHaveBeenCalledWith('preferences');
+ expect(screen.queryByRole('group',{name:'Menú de cuenta'})).toBeNull();
+});
+it('keeps navbar avatar menu interactive and returns focus on Escape',async()=>{
+ const {container}=render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ const trigger=container.querySelector<HTMLButtonElement>('.sc-topbar .sc-account-button')!;
+ await userEvent.click(trigger);
+ const panel=screen.getByRole('group',{name:'Menú de cuenta'});
+ await userEvent.click(panel);
+ expect(screen.getByRole('button',{name:'Mi perfil y seguridad'})).toBeTruthy();
+ screen.getByRole('button',{name:'Mi perfil y seguridad'}).focus();
+ await userEvent.keyboard('{Escape}');
+ expect(screen.queryByRole('group',{name:'Menú de cuenta'})).toBeNull();
+ expect(document.activeElement).toBe(trigger);
+});
+it('supports arrow and Home/End keyboard navigation in navbar avatar options',async()=>{
+ const {container}=render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ const trigger=container.querySelector<HTMLButtonElement>('.sc-topbar .sc-account-button')!;
+ trigger.focus();
+ await userEvent.keyboard('{ArrowDown}');
+ const menu=screen.getByRole('group',{name:'Menú de cuenta'});
+ const actions=Array.from(menu.querySelectorAll<HTMLButtonElement>('button'));
+ expect(actions).toHaveLength(5);
+ expect(document.activeElement).toBe(actions[0]);
+ await userEvent.keyboard('{End}');
+ expect(document.activeElement).toBe(actions[4]);
+ await userEvent.keyboard('{ArrowDown}');
+ expect(document.activeElement).toBe(actions[0]);
+ await userEvent.keyboard('{ArrowUp}');
+ expect(document.activeElement).toBe(actions[4]);
+ await userEvent.keyboard('{Home}');
+ expect(document.activeElement).toBe(actions[0]);
+});
+it('keeps only the active topbar flyout when another menu opens',async()=>{
+ render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ const triggers=screen.getAllByRole('button',{name:'Opciones de cuenta de María González'});
+ await userEvent.click(triggers[1]);
+ expect(screen.getByRole('group',{name:'Menú de cuenta'}).id).toBe('sc-topbar-account-panel');
+ await userEvent.click(screen.getByRole('button',{name:'Notificaciones: 0 sin leer'}));
+ expect(screen.queryByRole('group',{name:'Menú de cuenta'})).toBeNull();
+});
+it('shows a compact photo-only avatar when the navbar has limited width',async()=>{
+ const {container}=render(<PortalChrome {...props} user={{...user,avatar_url:'/account-photo.jpg'}}><div>Página</div></PortalChrome>);
+ const trigger=container.querySelector<HTMLButtonElement>('.sc-topbar .sc-account-button')!;
+ expect(trigger.querySelector('.sc-topbar-avatar img')?.getAttribute('src')).toBe('/account-photo.jpg');
+ expect(trigger.getAttribute('aria-haspopup')).toBe('true');
+ await userEvent.click(trigger);
+ expect(screen.getByRole('button',{name:'Cerrar sesión'})).toBeTruthy();
+ expect(screen.getByRole('button',{name:'Ayuda y guía de uso'})).toBeTruthy();
+});

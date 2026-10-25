@@ -7,7 +7,8 @@ import {SidebarBrand} from './SidebarBrand';
 import LanguageMenu from './LanguageMenu';
 import {userInitials} from './userInitials';
 import {SidebarAccountMenu} from './SidebarAccountMenu';
-import {placeSidebarAccountMenu,type SidebarAccountPosition} from './sidebarAccountPlacement';
+import {TopbarAccountAvatar} from './TopbarAccountAvatar';
+import {placeSidebarAccountMenu,placeTopbarAccountMenu,type SidebarAccountPosition} from './sidebarAccountPlacement';
 import {PortalFooter} from './PortalFooter';
 import {translateUiText} from '../shared/i18n/english';
 import {useEffect,useLayoutEffect,useRef,useState,type ReactNode} from 'react';
@@ -79,6 +80,9 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const sidebarMenuRef=useRef<HTMLElement>(null);
  const [sidebarMenuPosition,setSidebarMenuPosition]=useState<SidebarAccountPosition|null>(null);
  const topbarAccountRef=useRef<HTMLDivElement>(null);
+ const topbarAccountMenuRef=useRef<HTMLElement>(null);
+ const [topbarAccountPosition,setTopbarAccountPosition]=useState<SidebarAccountPosition|null>(null);
+ const focusTopbarAccountMenu=useRef(false);
  useLayoutEffect(()=>{
   if(accountTarget!=='sidebar'){setSidebarMenuPosition(null);return;}
   const update=()=>{
@@ -95,11 +99,33 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
   window.addEventListener('scroll',update,true);
   return()=>{window.removeEventListener('resize',update);window.removeEventListener('scroll',update,true);};
  },[accountTarget,collapsed,mobile,locale,translations]);
+ useLayoutEffect(()=>{
+  if(accountTarget!=='topbar'){setTopbarAccountPosition(null);return;}
+  const position=()=>{
+   const trigger=topbarAccountRef.current?.querySelector<HTMLButtonElement>('.sc-account-button');
+   const panel=topbarAccountMenuRef.current;
+   if(!trigger||!panel)return;
+   setTopbarAccountPosition(placeTopbarAccountMenu(
+    trigger.getBoundingClientRect(),panel.getBoundingClientRect().height,
+    {width:window.innerWidth,height:window.innerHeight}
+   ));
+  };
+  position();
+  window.addEventListener('resize',position);
+  window.addEventListener('scroll',position,true);
+  return()=>{window.removeEventListener('resize',position);window.removeEventListener('scroll',position,true);};
+ },[accountTarget,locale,translations]);
+ useEffect(()=>{
+  if(accountTarget==='topbar'&&focusTopbarAccountMenu.current){
+   topbarAccountMenuRef.current?.querySelector<HTMLButtonElement>('button')?.focus();
+   focusTopbarAccountMenu.current=false;
+  }
+ },[accountTarget]);
  useEffect(()=>{
    function closeOnEscape(event:KeyboardEvent){if(event.key==='Escape')setAccountTarget(null);}
    function closeOutside(event:PointerEvent){
      const element=event.target as Node;
-     if(!sidebarAccountRef.current?.contains(element)&&!sidebarMenuRef.current?.contains(element)&&!topbarAccountRef.current?.contains(element))setAccountTarget(null);
+     if(!sidebarAccountRef.current?.contains(element)&&!sidebarMenuRef.current?.contains(element)&&!topbarAccountRef.current?.contains(element)&&!topbarAccountMenuRef.current?.contains(element))setAccountTarget(null);
    }
    document.addEventListener('keydown',closeOnEscape);
    document.addEventListener('pointerdown',closeOutside);
@@ -111,7 +137,6 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const [noticeError,setNoticeError]=useState('');
  useTopbarMenuPosition(languageOpen,languageRef,210);
  useTopbarMenuPosition(notificationsOpen,notificationRef,345);
- useTopbarMenuPosition(accountTarget==='topbar',topbarAccountRef,330);
  useEffect(()=>{let mounted=true;
    void api('languages').then(result=>{if(!mounted)return;
      setAvailableLocales(result.filter((row:{status:string})=>row.status==='active'));
@@ -317,19 +342,6 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  },[locale,availableLocales]);
  function setLanguage(language:string){setLanguageOpen(false);languageRef.current?.querySelector<HTMLButtonElement>('.sc-language-button')?.focus();if(language===locale||!availableLocales.some(item=>item.code===language))return;setLocale(language);localStorage.setItem('school-locale',language);window.dispatchEvent(new Event('school-locale-changed'));
    void api('preferences','PATCH',{locale:language}).catch(e=>setNoticeError((e as Error).message));}
- function accountMenu(){
-   return <section className="sc-flyout sc-account-menu" aria-label={translateUiText(locale,"Menú de cuenta")}>
-     <div className="sc-account-details"><strong>{user.name}</strong><small>{user.email}</small><small>{translateUiText(locale,portalLabels[portal])}</small></div>
-     <button className="sc-flyout-link" onClick={()=>navigate('profile')}><UserRound size={17}/>{translate("shell.profile","Mi perfil y seguridad")}</button>
-     <button className="sc-flyout-link" onClick={()=>navigate('preferences')}><Languages size={17}/>{translate("shell.preferences","Preferencias")}</button>
-     <button className="sc-flyout-link" onClick={()=>navigate('notifications')}><Bell size={17}/>{translate("shell.notification_center","Centro de notificaciones")}</button>
-     <button className="sc-flyout-link" onClick={()=>navigate('help')}><HelpCircle size={17}/>{translate("shell.help","Ayuda y guía de uso")}</button>
-     <div className="sc-account-menu-divider"/>
-     <button className="sc-flyout-link sc-logout" onClick={()=>{setAccountTarget(null);void onSignOut();}}>
-       <LogOut size={17}/>{translate("shell.signout","Cerrar sesión")}
-     </button>
-   </section>;
- }
  return <div className={'app sc-shell'+(compact?' sc-shell-collapsed':'')+(mobile?' sc-shell-mobile-open':'')}>
    {mobile&&<button type="button" className="sc-sidebar-backdrop" aria-label={translateUiText(locale,'Cerrar menú lateral')} onClick={()=>{setAccountTarget(null);onMobile(false);mobileTrigger.current?.focus();}}/>}
 
@@ -423,15 +435,33 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
          </div>
          <div className="sc-flyout-holder" ref={topbarAccountRef}>
            <button className="sc-account-button" type="button" aria-label={translateUiText(locale,'Opciones de cuenta de ')+user.name}
-             aria-haspopup="true" aria-expanded={accountTarget==='topbar'} onClick={()=>{setAccountTarget(v=>v==='topbar'?null:'topbar');setNotificationsOpen(false);setLanguageOpen(false);}}>
-             <span className="sc-topbar-avatar"><img src={user.avatar_url||'/images/default-account-avatar.svg'} alt="" loading="lazy"/></span>
+             aria-haspopup="true" aria-controls="sc-topbar-account-panel" aria-expanded={accountTarget==='topbar'}
+             onKeyDown={event=>{if(event.key==='ArrowDown'){event.preventDefault();focusTopbarAccountMenu.current=true;setAccountTarget('topbar');if(accountTarget==='topbar')topbarAccountMenuRef.current?.querySelector<HTMLButtonElement>('button')?.focus();}
+              else if(event.key==='Enter'||event.key===' ')focusTopbarAccountMenu.current=true;}}
+             onClick={()=>{setAccountTarget(v=>v==='topbar'?null:'topbar');setNotificationsOpen(false);setLanguageOpen(false);}}>
+             <span className="sc-topbar-avatar"><TopbarAccountAvatar name={user.name} avatarUrl={user.avatar_url}/></span>
              <span className="sc-account-identity"><strong>{user.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span><ChevronDown className="sc-account-chevron" size={16}/>
            </button>
-           {accountTarget==='topbar'&&accountMenu()}
+           
          </div>
        </div>
      </header>
-     <div className="sc-breadcrumb-bar sc-breadcrumb-design-one">
+     {accountTarget==='topbar'&&createPortal(
+       <SidebarAccountMenu ref={topbarAccountMenuRef} locale={locale} user={user}
+        role={translateUiText(locale,portalLabels[portal])} variant="topbar"
+        labels={{
+         menu:translateUiText(locale,'Menú de cuenta'),
+         profile:translate('shell.profile','Mi perfil y seguridad'),
+         preferences:translate('shell.preferences','Preferencias'),
+         notifications:translate('shell.notification_center','Centro de notificaciones'),
+         help:translate('shell.help','Ayuda y guía de uso'),
+         signout:translate('shell.signout','Cerrar sesión')
+        }}
+        position={topbarAccountPosition} onNavigate={navigate}
+        onSignOut={()=>{setAccountTarget(null);void onSignOut();}}/>,
+       document.body
+      )}
+      <div className="sc-breadcrumb-bar sc-breadcrumb-design-one">
        <nav ref={breadcrumbNavRef} className={'sc-crumbs'+(breadcrumbCondensed?' sc-crumbs-condensed':'')}
          data-current-page={displayedPage} data-breadcrumb-trail={crumbKey}
          aria-label={translateUiText(locale,"Ruta de navegación")}>

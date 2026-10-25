@@ -1,5 +1,5 @@
 import {expect,it} from 'vitest';
-import {placeSidebarAccountMenu} from './sidebarAccountPlacement';
+import {placeSidebarAccountMenu,placeTopbarAccountMenu} from './sidebarAccountPlacement';
 
 const avatar={left:12,right:274,top:710,bottom:770,width:262};
 it('aligns the expanded sidebar panel with the avatar and opens upward',()=>{
@@ -46,4 +46,27 @@ it('avoids horizontal overflow on very narrow mobile screens',()=>{
  );
  expect(result.width).toBeLessThanOrEqual(176);
  expect(result.left+result.width).toBeLessThanOrEqual(188);
+});
+
+it('anchors the navbar account menu beneath the avatar and aligned right',()=>{
+ const result=placeTopbarAccountMenu(
+  {left:1170,right:1220,top:18,bottom:60,width:50},370,{width:1280,height:900});
+ expect(result).toEqual({left:900,top:70,width:320});
+});
+it('keeps navbar options inside a 320px mobile viewport',()=>{
+ const result=placeTopbarAccountMenu(
+  {left:265,right:310,top:8,bottom:52,width:45},360,{width:320,height:760});
+ expect(result).toEqual({left:12,top:62,width:296});
+});
+it('opens the account menu above the avatar if there is insufficient space below',()=>{
+ const result=placeTopbarAccountMenu(
+  {left:540,right:585,top:460,bottom:502,width:45},330,{width:600,height:540});
+ expect(result).toEqual({left:265,top:120,width:320});
+});
+it('prevents overflow with tall content and short mobile viewports',()=>{
+ const result=placeTopbarAccountMenu(
+  {left:260,right:310,top:20,bottom:62,width:50},600,{width:320,height:270});
+ expect(result.left).toBeGreaterThanOrEqual(12);
+ expect(result.left+result.width).toBeLessThanOrEqual(308);
+ expect(result.top).toBeGreaterThanOrEqual(12);
 });

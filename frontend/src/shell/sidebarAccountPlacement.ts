@@ -22,3 +22,20 @@ export function placeSidebarAccountMenu(
  const top=above>=EDGE?above:(below+panelHeight<=viewport.height-EDGE?below:maxTop);
  return {left,top:Math.max(EDGE,Math.min(top,maxTop)),width};
 }
+
+/** Position the navbar menu by the avatar while keeping its content within the viewport. */
+export function placeTopbarAccountMenu(
+ anchor:Rect,panelHeight:number,viewport:Viewport
+):SidebarAccountPosition{
+ const width=Math.max(0,Math.min(320,viewport.width-EDGE*2));
+ const left=Math.max(EDGE,Math.min(anchor.right-width,viewport.width-width-EDGE));
+ const visibleHeight=Math.max(0,viewport.height-EDGE*2);
+ const menuHeight=Math.min(panelHeight||350,visibleHeight);
+ const below=viewport.height-anchor.bottom-GAP-EDGE;
+ const above=anchor.top-GAP-EDGE;
+ const openAbove=below<menuHeight&&above>below;
+ const preferredTop=openAbove?anchor.top-GAP-menuHeight:anchor.bottom+GAP;
+ const maxTop=Math.max(EDGE,viewport.height-EDGE-menuHeight);
+ const top=Math.max(EDGE,Math.min(preferredTop,maxTop));
+ return {left,top,width};
+}

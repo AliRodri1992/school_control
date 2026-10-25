@@ -68,3 +68,55 @@
 .sc-sidebar-account-panel .sc-sam-action-copy{overflow-wrap:anywhere}
 .sc-sidebar-account-panel .sc-sam-action-copy strong{max-width:100%}
 .sc-sidebar-account-panel .sc-sam-identity-copy{overflow:hidden}
+
+/* The navbar now opens the same branded and accessible account card as the sidebar. */
+.sc-navbar-account-panel{z-index:400;min-width:0}
+.sc-shell .sc-topbar .sc-account-button{
+ box-sizing:border-box;min-height:48px;max-width:245px;
+ border:1px solid transparent;border-radius:13px;
+ padding:5px 8px 5px 12px;gap:9px;
+ transition:background-color .16s ease,border-color .16s ease;
+}
+.sc-shell .sc-topbar .sc-account-button:hover,
+.sc-shell .sc-topbar .sc-account-button[aria-expanded=true]{
+ background:rgba(255,255,255,.14);
+ border-color:rgba(226,241,255,.24);
+}
+.sc-shell .sc-topbar .sc-account-button .sc-topbar-avatar{
+ display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;
+ border:2px solid rgba(248,252,255,.9);border-radius:50%;
+ box-shadow:0 2px 8px rgba(0,21,52,.2);
+ background:#e0efff;color:#1b4c7d;overflow:hidden;
+}
+.sc-shell .sc-topbar .sc-topbar-avatar .sc-topbar-avatar-img{
+ display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;
+}
+.sc-shell .sc-topbar .sc-topbar-avatar .sc-topbar-avatar-fallback{
+ width:100%;height:100%;display:grid;place-items:center;
+ color:#194f82;font-size:13px;font-weight:800;letter-spacing:.35px;
+}
+.sc-shell .sc-topbar .sc-account-button .sc-account-identity{
+ flex:1 1 auto;overflow:hidden;min-width:0;text-align:left;max-width:145px;
+}
+.sc-shell .sc-topbar .sc-account-button .sc-account-identity strong,
+.sc-shell .sc-topbar .sc-account-button .sc-account-identity small{
+ display:block;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+}
+.sc-shell .sc-topbar .sc-account-button .sc-account-chevron{
+ margin-left:0;color:#eaf4ff;transition:transform .16s ease;
+}
+.sc-shell .sc-topbar .sc-account-button[aria-expanded=true] .sc-account-chevron{transform:rotate(180deg)}
+@media(max-width:1190px){
+ .sc-shell .sc-topbar .sc-account-button{max-width:none;padding:4px 8px}
+ .sc-shell .sc-topbar .sc-account-button .sc-account-identity{display:none!important}
+}
+@media(max-width:760px){
+ .sc-shell .sc-topbar .sc-account-button{padding:3px;gap:0;min-width:44px;min-height:44px}
+ .sc-shell .sc-topbar .sc-account-button .sc-topbar-avatar{flex-basis:36px;width:36px;height:36px}
+ .sc-shell .sc-topbar .sc-account-button .sc-account-chevron{display:none}
+ .sc-navbar-account-panel{border-radius:15px}
+}
+@media(prefers-reduced-motion:reduce){
+ .sc-shell .sc-topbar .sc-account-button,
+ .sc-shell .sc-topbar .sc-account-button .sc-account-chevron{transition:none}
+}
