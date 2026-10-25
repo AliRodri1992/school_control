@@ -47,5 +47,14 @@ it('keeps Auli visible in the DOM without requesting an external illustration',(
  const svg=screen.getByRole('img',{name:/Auli the school parrot wearing a construction helmet/});
  expect(svg.querySelector('#builder-auli')).toBeTruthy();
  expect(container.querySelector('img')).toBeNull();
- expect(container.querySelector('.sc-school-boot-auli')).toContainElement(svg);
+ expect(container.querySelector('.sc-school-boot-auli')?.contains(svg)).toBe(true);
+ expect(container.querySelector('.sc-school-boot-auli')?.getAttribute('data-illustration')).toBe('inline-svg');
+});
+
+it('announces loading as busy and keeps the builder in front of decorative elements',()=>{
+ const {container}=render(<SchoolBootScreen locale="es" stage="modules"/>);
+ const view=container.querySelector('.sc-school-boot')!;
+ expect(view.getAttribute('aria-busy')).toBe('true');
+ expect(view.querySelector('.sc-school-boot-auli svg[role="img"]')).toBeTruthy();
+ expect(view.querySelector('img,aside,header,nav')).toBeNull();
 });

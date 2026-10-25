@@ -37,7 +37,7 @@ const copy={
 export default function SchoolBootScreen({locale,stage}:{locale:string;stage:BootStage}){
  const lang=locale==='en'?'en':'es',t=copy[lang],stages=steps[lang];
  const active=stage==='connecting'?0:1;
- return <main className="sc-school-boot" role="status" aria-live="polite" aria-label={t.busy}>
+ return <main className="sc-school-boot" role="status" aria-live="polite" aria-busy="true" aria-label={t.busy}>
   <section className="sc-school-boot-card" aria-labelledby="sc-school-boot-heading">
    <div className="sc-school-boot-scene">
     <div className="sc-school-boot-floating sc-school-boot-floating-left" aria-hidden="true">
@@ -50,7 +50,7 @@ export default function SchoolBootScreen({locale,stage}:{locale:string;stage:Boo
      <span className="sc-school-boot-widget-line"/><span className="sc-school-boot-widget-line short"/>
     </div>
     <div className="sc-school-boot-gear" aria-hidden="true"><Wrench size={50} strokeWidth={1.6}/></div>
-    <div className="sc-school-boot-auli"><AuliBuilderIllustration locale={lang}/></div>
+    <div className="sc-school-boot-auli" data-illustration="inline-svg"><AuliBuilderIllustration locale={lang}/></div>
     <div className="sc-school-boot-cubes" aria-hidden="true"><span/><span/><span/></div>
    </div>
      <div className="sc-school-boot-copy">

@@ -37,7 +37,7 @@
  animation:sc-boot-bob 3.5s ease-in-out infinite;
  filter:drop-shadow(0 14px 12px #1e4c8a24);
 }
-.sc-school-boot-auli svg{display:block;max-width:100%;height:100%;width:auto;overflow:visible;flex:none}
+.sc-school-boot-auli svg{display:block;inline-size:100%;block-size:100%;max-width:100%;max-height:100%;overflow:visible;flex:none;object-fit:contain}
 .sc-school-boot-floating{
  position:absolute;z-index:1;display:flex;flex-direction:column;gap:10px;
  width:165px;padding:15px;border:1px solid #d9e5fb;border-radius:14px;
@@ -108,7 +108,7 @@
 @media(max-width:430px){
  .sc-school-boot{padding:10px}
  .sc-school-boot-scene{height:clamp(205px,34vh,270px)}
- .sc-school-boot-floating{opacity:.5;scale:.75}
+ .sc-school-boot-floating{display:none}
  .sc-school-boot-floating-left{transform-origin:left center}
  .sc-school-boot-floating-right{transform-origin:right center}
  .sc-school-boot-copy h1{font-size:27px}
@@ -124,4 +124,11 @@
 @media(prefers-reduced-motion:reduce){
  .sc-school-boot *{animation:none!important;transition:none!important}
  .sc-school-boot-progress-motion{left:0;width:100%;opacity:.5}
+}
+
+/* Inline illustration has intrinsic dimensions even before fonts and page assets load. */
+.sc-school-boot-auli{min-height:180px;min-inline-size:0;aspect-ratio:11/12}
+.sc-school-boot-scene .sc-school-boot-auli{z-index:5}
+@media(max-width:430px){
+ .sc-school-boot-scene .sc-school-boot-auli{width:min(100%,285px)}
 }

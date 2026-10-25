@@ -18,3 +18,13 @@ it('makes the same SVG accessible in English and avoids remote image loading',()
  expect(screen.getByRole('img',{name:/Auli the school parrot wearing a construction helmet/})).toBeTruthy();
  expect(document.querySelector('img[src*="auli"]')).toBeNull();
 });
+
+it('updates the inline illustration title in English, without replacing the SVG',()=>{
+ const {rerender,container}=render(<AuliBuilderIllustration locale="es"/>);
+ const first=container.querySelector('svg')!;
+ expect(first.querySelector('title')?.textContent).toBe('Auli construye tu escuela');
+ rerender(<AuliBuilderIllustration locale="en"/>);
+ expect(container.querySelector('svg')).toBe(first);
+ expect(first.querySelector('title')?.textContent).toBe('Auli builds your school');
+ expect(first.querySelector('desc')?.textContent).toContain('yellow hard hat');
+});

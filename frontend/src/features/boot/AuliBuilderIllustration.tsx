@@ -3,7 +3,8 @@
 export default function AuliBuilderIllustration({locale}:{locale:string}){
  return (
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 480" role="img" aria-label={locale==='en'?'Auli the school parrot wearing a construction helmet, holding tools and a school blueprint':'Auli, el loro de School Control, con casco de trabajador, llave y plano de la escuela'}>
-<title id="title">Auli construye tu escuela</title><desc id="desc">Auli, el loro de School Control, lleva casco de seguridad amarillo, uniforme de obra, plano de escuela y llave de trabajo.</desc>
+<title id="title">{locale==='en'?'Auli builds your school':'Auli construye tu escuela'}</title>
+<desc id="desc">{locale==='en'?'School Control parrot wearing a yellow hard hat and uniform, holding a school blueprint and wrench.':'Auli, el loro de School Control, lleva casco de seguridad amarillo, uniforme de obra, plano de escuela y llave de trabajo.'}</desc>
 <defs><linearGradient id="body" x1="0" x2="1" y1="0" y2="1"><stop stopColor="#9DD7FB"/><stop offset=".52" stopColor="#6885F5"/><stop offset="1" stopColor="#7964E8"/></linearGradient><linearGradient id="wing" x1="0" x2="1" y1="0" y2="1"><stop stopColor="#6C69ED"/><stop offset="1" stopColor="#3D55D4"/></linearGradient><linearGradient id="belly" x1="0" x2=".6" y1="0" y2="1"><stop stopColor="#F5FBFF"/><stop offset="1" stopColor="#DBE8FF"/></linearGradient><filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="8"/></filter></defs>
 <ellipse cx="217" cy="447" rx="135" ry="19" fill="#070F32" opacity=".2" filter="url(#shadow)"/>
 <path d="M296 284c47-3 78 30 86 82-46-8-72-22-99-50" fill="#5968E5" stroke="#293FAD" strokeWidth="8" strokeLinejoin="round"/>
