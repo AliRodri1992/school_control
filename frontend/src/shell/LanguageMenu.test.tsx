@@ -35,21 +35,25 @@ it('highlights the current locale and places its check mark inside the same clic
  const english=screen.getByRole('button',{name:'English · EN'});
  expect(spanish.getAttribute('aria-pressed')).toBe('true');
  expect(spanish.classList.contains('is-selected')).toBe(true);
+ expect(spanish.getAttribute('data-state')).toBe('selected');
  expect(spanish.querySelector('svg.sc-language-option-check')).toBeTruthy();
  expect(spanish.querySelector('svg.sc-language-option-check')?.parentElement).toBe(spanish);
  expect(spanish.querySelector('.sc-language-option-check circle')).toBeNull();
  expect(spanish.querySelector('.sc-language-option-check rect')).toBeNull();
  expect(english.getAttribute('aria-pressed')).toBe('false');
  expect(english.classList.contains('is-selected')).toBe(false);
+ expect(english.getAttribute('data-state')).toBe('available');
  expect(english.querySelector('.sc-language-option-check')).toBeNull();
 
  rerender(<LanguageMenu label="Idiomas disponibles" languages={languages}
   currentLocale="en" onSelect={vi.fn()}/>);
  expect(spanish.getAttribute('aria-pressed')).toBe('false');
  expect(spanish.classList.contains('is-selected')).toBe(false);
+ expect(spanish.getAttribute('data-state')).toBe('available');
  expect(spanish.querySelector('.sc-language-option-check')).toBeNull();
  expect(english.getAttribute('aria-pressed')).toBe('true');
  expect(english.classList.contains('is-selected')).toBe(true);
+ expect(english.getAttribute('data-state')).toBe('selected');
  expect(english.querySelector('svg.sc-language-option-check')).toBeTruthy();
  expect(english.querySelector('svg.sc-language-option-check')?.parentElement).toBe(english);
 });
@@ -98,4 +102,21 @@ it('never adds a decorative badge to the selected-language check',()=>{
  expect(chosen.querySelector('span.sc-language-option-check')).toBeNull();
  expect(chosen.classList.contains('is-selected')).toBe(true);
  expect(container.querySelectorAll('svg.sc-language-option-check')).toHaveLength(1);
+});
+
+it('preserves an independent hoverable state on all non-selected language rows',async()=>{
+ const onSelect=vi.fn();
+ render(<LanguageMenu label="Idiomas disponibles" languages={languages}
+  currentLocale="es" onSelect={onSelect}/>);
+ const spanish=screen.getByRole('button',{name:'Español · ES'});
+ const english=screen.getByRole('button',{name:'English · EN'});
+ const korean=screen.getByRole('button',{name:'한국어 · KO'});
+ expect(spanish.dataset.state).toBe('selected');
+ expect(english.dataset.state).toBe('available');
+ expect(korean.dataset.state).toBe('available');
+ await userEvent.hover(english);
+ expect(english.dataset.state).toBe('available');
+ expect(spanish.dataset.state).toBe('selected');
+ await userEvent.click(english);
+ expect(onSelect).toHaveBeenCalledWith('en');
 });

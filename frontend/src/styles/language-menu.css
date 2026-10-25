@@ -1,7 +1,7 @@
-/* Language selection: neutral hover versus distinctly blue selected row. */
+/* Language selection: saturated blue hover on available rows, solid brand selection. */
 .sc-shell .sc-topbar .sc-language-menu{
- --sc-lang-hover:#f1f4f8;
- --sc-lang-hover-text:#263e61;
+ --sc-lang-hover:#abcaff;
+ --sc-lang-hover-text:#102f67;
  --sc-lang-selected:#2451b9;
  box-sizing:border-box;
  padding:0;
@@ -43,16 +43,16 @@
 .sc-shell .sc-topbar .sc-language-menu>.sc-language-option:not(:last-child){
  box-shadow:inset 0 -1px 0 rgba(208,221,244,.8);
 }
-.sc-shell .sc-topbar .sc-language-menu>.sc-language-option:hover:not([aria-pressed=true]){
+.sc-shell .sc-topbar .sc-language-menu>.sc-language-option[data-state=available]:hover{
  background:var(--sc-lang-hover);
  color:var(--sc-lang-hover-text);
 }
-.sc-shell .sc-topbar .sc-language-menu>.sc-language-option[aria-pressed=true]{
+.sc-shell .sc-topbar .sc-language-menu>.sc-language-option[data-state=selected]{
  background:var(--sc-lang-selected);
  color:#fff;
  font-weight:750;
 }
-.sc-shell .sc-topbar .sc-language-menu>.sc-language-option[aria-pressed=true]:hover{
+.sc-shell .sc-topbar .sc-language-menu>.sc-language-option[data-state=selected]:hover{
  background:var(--sc-lang-selected);
  color:#fff;
 }

@@ -28,6 +28,7 @@ export default function LanguageMenu({languages,currentLocale,label,onSelect}:Pr
    const selected=currentLocale===language.code;
    return <button key={language.code} type="button"
     className={'sc-flyout-link sc-language-option'+(selected?' is-selected':'')}
+    data-state={selected?'selected':'available'}
     aria-pressed={selected}
     onClick={()=>onSelect(language.code)}>
     <span className="sc-language-option-label">{language.native_name} · {language.code.toUpperCase()}</span>

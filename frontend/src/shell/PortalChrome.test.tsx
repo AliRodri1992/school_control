@@ -609,8 +609,10 @@ it('renders full-row language options and updates the selected state through the
  expect(english.classList.contains('sc-language-option')).toBe(true);
  expect(spanish.getAttribute('aria-pressed')).toBe('true');
  expect(spanish.classList.contains('is-selected')).toBe(true);
+ expect(spanish.dataset.state).toBe('selected');
  expect(spanish.querySelector('svg.sc-language-option-check')?.parentElement).toBe(spanish);
  expect(english.classList.contains('is-selected')).toBe(false);
+ expect(english.dataset.state).toBe('available');
  expect(english.querySelector('.sc-language-option-check')).toBeNull();
  await userEvent.click(english);
  expect(localStorage.getItem('school-locale')).toBe('en');
@@ -619,8 +621,10 @@ it('renders full-row language options and updates the selected state through the
  const selectedEnglish=screen.getByRole('button',{name:'English · EN'});
  expect(selectedEnglish.getAttribute('aria-pressed')).toBe('true');
  expect(selectedEnglish.classList.contains('is-selected')).toBe(true);
+ expect(selectedEnglish.dataset.state).toBe('selected');
  expect(selectedEnglish.querySelector('svg.sc-language-option-check')?.parentElement).toBe(selectedEnglish);
  expect(screen.getByRole('button',{name:'Español · ES'}).querySelector('.sc-language-option-check')).toBeNull();
+ expect(screen.getByRole('button',{name:'Español · ES'}).getAttribute('data-state')).toBe('available');
 });
 
 it('shows a legible account panel outside the dark sidebar clipping context',async()=>{

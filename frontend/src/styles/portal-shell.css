@@ -38,7 +38,8 @@
 .sc-account-details{display:flex;align-items:flex-start;flex-direction:column;gap:3px;margin-bottom:9px}
 .sc-account-details small{font-size:12px}
 .sc-flyout-link{padding:12px;width:100%;text-align:left;display:flex;justify-content:flex-start;gap:9px;border-radius:8px;font-size:13px;line-height:1.4}
-.sc-flyout-link:hover{background:#f3f5ff}
+/* Generic flyout hover must not override the language picker's distinct blue state. */
+.sc-flyout-link:not(.sc-language-option):hover{background:#f3f5ff}
 .sc-unread{width:7px;height:7px;background:#405cf5;border-radius:50%;flex:none}
 .sc-all{font-weight:650;color:#405cf5}
 .sc-logout{color:#bb304c}
