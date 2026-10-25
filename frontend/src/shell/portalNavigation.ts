@@ -73,7 +73,7 @@ export function breadcrumbPath(groups:NavGroup[],page:string,portal:PortalId):Na
  if(visible.length)return visible;
  const fallback=portalGroups[portal].flatMap(group=>group.items).find(item=>item.key===page);
  if(fallback)return [{key:fallback.key,title:fallback.title}];
- const standalone:Record<string,string>={profile:'Mi perfil',preferences:'Preferencias',help:'Ayuda',notifications:'Notificaciones'};
+ const standalone:Record<string,string>={profile:'Mi perfil',preferences:'Preferencias',help:'Ayuda',notifications:'Notificaciones',privacy:'Aviso de privacidad',terms:'Términos de uso'};
  return [{key:page,title:standalone[page]||page.replaceAll('_',' ')}];
 }
 /** Keep breadcrumb-specific labels separate from shared module headings. */
@@ -108,6 +108,6 @@ export function resolvePortalLocation(path:string,role:string,permissions:Row={}
  if(path===base||path===base+'/')return 'dashboard';
  if(!path.startsWith(base+'/'))return 'dashboard';
  const page=decodeURIComponent(path.slice(base.length+1)).replaceAll('-','_');
- if(['profile','preferences','help','notifications','messages'].includes(page))return page;
+ if(['profile','preferences','help','notifications','messages','privacy','terms'].includes(page))return page;
  return (page==='imports'?canImportFromPermissions(permissions):permissions?.[permissionFor(page)]?.length)?page:'dashboard';
 }

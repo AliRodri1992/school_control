@@ -539,3 +539,30 @@ it('keeps the breadcrumb left-to-right hierarchy after navigation in the teacher
  expect(nav.querySelector('[aria-current=page]')?.textContent).toBe('Mis grupos');
  expect(nav.querySelector('.sc-crumb-home-label')?.textContent).toBe('Inicio');
 });
+
+it('renders the slim footer inside the main column and never inside the sidebar',()=>{
+ const {container}=render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ const main=container.querySelector('.sc-main')!;
+ const foot=main.querySelector('.sc-portal-footer')!;
+ expect(foot).toBeTruthy();
+ expect(container.querySelector('.sc-sidebar .sc-portal-footer')).toBeNull();
+ expect(main.lastElementChild).toBe(foot);
+ expect(foot.querySelector('.sc-portal-footer-version')?.textContent).toBe('v1.0.0');
+});
+it('navigates to actual support and legal screens from its footer buttons',async()=>{
+ const onNavigate=vi.fn();
+ render(<PortalChrome {...props} onNavigate={onNavigate}><div>Página</div></PortalChrome>);
+ await userEvent.click(screen.getByRole('button',{name:'Soporte'}));
+ await userEvent.click(screen.getByRole('button',{name:'Aviso de privacidad'}));
+ await userEvent.click(screen.getByRole('button',{name:'Términos de uso'}));
+ expect(onNavigate.mock.calls.map(call=>call[0])).toEqual(['help','privacy','terms']);
+});
+it('shows a readable compact footer with language switching',async()=>{
+ render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ await userEvent.click(screen.getByRole('button',{name:'Idioma'}));
+ await userEvent.click(screen.getByRole('button',{name:'English · EN'}));
+ const footer=screen.getByRole('contentinfo',{name:'Portal footer'});
+ expect(footer).toBeTruthy();
+ expect(screen.getByRole('button',{name:'Privacy notice'})).toBeTruthy();
+ expect(screen.getByRole('button',{name:'Terms of use'})).toBeTruthy();
+});

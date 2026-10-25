@@ -4,6 +4,7 @@ import {useTopbarMenuPosition} from './useTopbarMenuPosition';
 import {sidebarSections} from './sidebarPresentation';
 import {revealActiveSidebarItem,useSidebarScroll} from './useSidebarScroll';
 import {SidebarBrand} from './SidebarBrand';
+import {PortalFooter} from './PortalFooter';
 import {translateUiText} from '../shared/i18n/english';
 import {useEffect,useLayoutEffect,useRef,useState,type ReactNode} from 'react';
 import {createPortal} from 'react-dom';
@@ -420,7 +421,8 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
          </div>}
        </nav>
      </div>
-     <LocaleProvider locale={locale} translations={translations}>{children}</LocaleProvider>
+     <div className="sc-main-content"><LocaleProvider locale={locale} translations={translations}>{children}</LocaleProvider></div>
+     <PortalFooter locale={locale} onNavigate={navigate}/>
    </main>
  </div>;
 }

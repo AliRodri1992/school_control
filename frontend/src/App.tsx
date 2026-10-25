@@ -2,6 +2,7 @@ import TableEmptyState from './shared/components/TableEmptyState';
 import Combobox from './shared/components/Combobox';
 import TableAction from './shared/components/TableAction';
 const HelpCenter=lazy(()=>import('./features/help/HelpCenter'));
+const LegalInformation=lazy(()=>import('./features/legal/LegalInformation'));
 const PortalHome=lazy(()=>import('./features/portal/PortalHome'));
 const Preferences=lazy(()=>import('./features/preferences/Preferences'));
 const StudentDetails=lazy(()=>import('./features/students/StudentDetails'));
@@ -60,7 +61,7 @@ export default function App(){
  const portal=currentPortal(user?.role||'admin');
  function go(next:string) {
    if(next==='imports'&&!canImportFromPermissions(user?.permissions))return;
-   if(next!=='imports'&&next!=='profile'&&next!=='notifications'&&next!=='messages'&&next!=='preferences'&&next!=='help'&&!user?.permissions?.[pagePermission(next)]?.length)return;
+   if(next!=='imports'&&next!=='profile'&&next!=='notifications'&&next!=='messages'&&next!=='preferences'&&next!=='help'&&next!=='privacy'&&next!=='terms'&&!user?.permissions?.[pagePermission(next)]?.length)return;
    if(next!=='student_details')setDetailStudent(null);
    setPage(next);setQuery('');setNotice('');setMobile(false);setPageNumber(0);setStatusFilter('');setSorting('');
    const url=makePortalUrl(portal,next);
@@ -198,6 +199,7 @@ export default function App(){
  page==='email_templates'?<EmailTemplateDesigner schoolName={school.name}/>:
   page==='access_roles'?<AccessRoles can={can} onChanged={()=>refresh()}/>:
  page==='help'?<HelpCenter role={user.role} can={can} onNavigate={go}/>:
+  (page==='privacy'||page==='terms')?<LegalInformation kind={page} onHelp={()=>go('help')}/>:
   page==='preferences'?<Preferences onSaved={prefs=>setPageSize(prefs.rows_per_page)}/>:
   page==='profile'?<Profile onChange={setUser} onSignedOut={signedOut}/>:
  page==='notifications'?<Notifications navigate={target=>{if(target==='profile'||target==='notifications'||target==='messages'||modules[target]||['dashboard','reports','classroom','documents','schedule','school','access_roles'].includes(target))go(target);}}/>:
@@ -244,7 +246,7 @@ export default function App(){
     <span>{ui('Página')} {currentPage+1} {locale==='en'?'of':'de'} {pages}</span>
     <button className="secondary" disabled={currentPage===pages-1} onClick={()=>setPageNumber(n=>Math.min(pages-1,n+1))}>{ui('Siguiente')}</button></div>
   </div>}</section></>}
- <footer>{ui('Aula · Una comunidad que aprende junta.')}<span>{school.name}</span></footer></div>
+ </div>
 
   {dialog&&<div className="overlay"><section role="dialog" aria-modal="true" aria-labelledby="dialog-title" className="dialog"><header><div><span className="eyebrow">CONTROL ESCOLAR</span><h2 id="dialog-title">{dialog.title}</h2></div><button aria-label="Cerrar formulario" onClick={()=>setDialog(null)}><X/></button></header><RecordForm fields={dialog.fields} initial={dialog.values} busy={busy} options={options} optionName={optionName} error={error} fieldErrors={fieldErrors} onCancel={()=>setDialog(null)} onSubmit={values=>perform(()=>dialog.submit(values))}/></section></div>}
  {report&&<div className="overlay"><section role="dialog" aria-modal="true" aria-label="Boleta e historial" className="dialog report"><header><div><span className="eyebrow">{school.name}</span><h2>{report.student.full_name}</h2><p>Boleta de consulta · {report.student.curp}</p></div><div className="actions"><button onClick={()=>window.print()} aria-label="Imprimir boleta"><Printer/></button><button onClick={()=>setReport(null)} aria-label="Cerrar boleta"><X/></button></div></header>{report.years.map((year:Row)=><article key={year.enrollment.id}><h3>{year.enrollment.group_label}</h3><p>{display(year.enrollment.status)} · {display(year.enrollment.outcome)}</p><table><thead><tr><th>Materia</th><th>Trimestre</th><th>Calificación</th><th>Observación</th></tr></thead><tbody>{year.grades.map((g:Row)=><tr key={g.id}><td>{g.subject_name}</td><td>{g.term}</td><td>{g.score}</td><td>{g.feedback}</td></tr>)}</tbody></table><p>{ui('Promedio registrado: ')}<strong>{mean(year.grades.map((g:Row)=>Number(g.score)))}</strong></p><div className="actions">{Object.entries(year.attendance).map(([status,total])=><span className="badge" key={status}>{display(status)}: {String(total)}</span>)}</div></article>)}{!report.years.length&&<TableEmptyState canCreate={false}/>}<p className="footnote">Documento de consulta interna. No sustituye una certificación oficial.</p></section></div>}

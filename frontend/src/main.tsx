@@ -5,6 +5,7 @@ import {BrowserRouter,Route,Routes} from 'react-router-dom';
 import './styles.css';
 import './styles/design-system.css';
 import './styles/portal-shell.css';
+import './styles/portal-footer.css';
 import './styles/dialogs.css';
 import './styles/imports.css';
 import './styles/languages.css';

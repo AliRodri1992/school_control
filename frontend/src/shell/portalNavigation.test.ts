@@ -1,5 +1,5 @@
 import {expect,it} from 'vitest';
-import {currentPortal,findNavPath,visibleGroups,portalGroups,breadcrumbPath,breadcrumbDestination,breadcrumbTranslationKey,shouldCondenseBreadcrumbs} from './portalNavigation';
+import {currentPortal,findNavPath,visibleGroups,portalGroups,breadcrumbPath,breadcrumbDestination,breadcrumbTranslationKey,shouldCondenseBreadcrumbs,resolvePortalLocation} from './portalNavigation';
 
 it('provides distinct navigation group structures for each school portal',()=>{
  const portals=['admin','teachers','students','tutors'] as const;
@@ -88,4 +88,14 @@ it('uses the role-specific current title rather than the admin dashboard label',
  expect(breadcrumbPath(student,'dashboard','students').at(-1)?.title).toBe('Mi inicio');
  expect(breadcrumbPath(tutor,'dashboard','tutors').at(-1)?.title).toBe('Inicio familiar');
  expect(breadcrumbPath(teacher,'groups','teachers').at(-1)?.title).toBe('Mis grupos');
+});
+
+it('supports the real authenticated legal footer destinations without undocumented privileges',()=>{
+ const groups=visibleGroups('admin',()=>true);
+ expect(breadcrumbPath(groups,'privacy','admin').at(-1)?.title).toBe('Aviso de privacidad');
+ expect(breadcrumbPath(groups,'terms','admin').at(-1)?.title).toBe('Términos de uso');
+ expect(resolvePortalLocation('/admin/privacy','admin',{})).toBe('privacy');
+ expect(resolvePortalLocation('/admin/terms','admin',{})).toBe('terms');
+ expect(resolvePortalLocation('/teachers/privacy','teacher',{})).toBe('privacy');
+ expect(resolvePortalLocation('/tutors/terms','guardian',{})).toBe('terms');
 });

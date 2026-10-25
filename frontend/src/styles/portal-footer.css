@@ -1,0 +1,56 @@
+/* School Control · understated, brand-consistent authenticated application footer.
+   The footer is contained by .sc-main; it never spans the sidebar. */
+.sc-shell .sc-main{display:flex;flex-direction:column;min-height:100dvh;min-width:0}
+.sc-shell .sc-main-content{flex:1 0 auto;min-width:0;display:flow-root}
+.sc-shell .sc-main .sc-portal-footer{
+ display:flex;align-items:center;justify-content:space-between;gap:12px 18px;flex-wrap:wrap;
+ width:100%;max-width:none;min-height:62px;box-sizing:border-box;margin:0;
+ padding:13px clamp(16px,2.15vw,38px);
+ border-top:1px solid #dbe6f4;background:linear-gradient(180deg,#fff 0%,#f9fbff 100%);
+ color:#58739c;font-size:11px;line-height:1.4;text-align:start;
+}
+.sc-portal-footer-copy{flex:0 1 auto;white-space:normal;color:#536f99}
+.sc-shell .sc-main .sc-portal-footer-links{
+ display:flex;align-items:center;justify-content:center;gap:12px;flex:0 1 auto;
+ min-width:0;width:auto;margin:0;padding:0;overflow:visible;
+}
+.sc-shell .sc-main .sc-portal-footer-links button{
+ width:auto;min-height:28px;flex:0 0 auto;margin:0;padding:4px 2px;
+ border:0;border-radius:5px;background:transparent;color:#4e6d9c;
+ font-size:11px;font-weight:500;white-space:nowrap;text-align:start;
+}
+.sc-shell .sc-main .sc-portal-footer-links button:hover{color:#0866d7;background:#eaf3ff}
+.sc-portal-footer-separator{height:14px;width:1px;flex:none;background:#bdcde1}
+.sc-portal-footer-meta{display:flex;align-items:center;justify-content:flex-end;gap:14px;white-space:nowrap}
+.sc-portal-footer-health{display:inline-flex;align-items:center;gap:8px;color:#58739c}
+.sc-portal-footer-dot{width:9px;height:9px;flex:none;border-radius:50%;background:#a5b5cb}
+.sc-portal-footer-health-online .sc-portal-footer-dot{background:#16bb70}
+.sc-portal-footer-health-unavailable .sc-portal-footer-dot{background:#b8a56a}
+.sc-portal-footer-version{color:#637fa8;font-variant-numeric:tabular-nums}
+.sc-shell .sc-main .sc-portal-footer-links button:focus-visible{
+ outline:2px solid #0b64d8;outline-offset:2px;
+}
+.sc-legal-information{max-width:920px;margin:0 auto;padding:clamp(8px,2vw,24px) 0}
+.sc-legal-information-header{display:flex;align-items:center;gap:16px;margin-bottom:25px}
+.sc-legal-information-header h1{font-size:clamp(23px,2.2vw,31px);margin-bottom:7px}
+.sc-legal-information-header p{color:#64748b;font-size:13px}
+.sc-legal-information-icon{width:53px;height:53px;border-radius:14px;flex:none;display:grid;place-items:center;background:#e8f1ff;color:#126ad7}
+.sc-legal-information-card{padding:25px 28px;border:1px solid #dce6f4;background:#fff;border-radius:15px;box-shadow:0 10px 30px #173b6710}
+.sc-legal-information-card h2{font-size:17px;margin-bottom:11px}
+.sc-legal-information-card p{font-size:13px;line-height:1.8;max-width:75ch;color:#586984}
+.sc-legal-help{display:inline-flex;align-items:center;gap:8px;margin-top:22px;padding:10px 15px;border:1px solid #b9d5fb;border-radius:9px;color:#0866d7;background:#edf5ff;font-size:12px;font-weight:650}
+.sc-legal-help:hover{background:#dfedff}
+@media(max-width:1130px){
+ .sc-shell .sc-main .sc-portal-footer{justify-content:flex-start;gap:5px 16px}
+ .sc-portal-footer-copy{flex:1 1 100%}
+ .sc-shell .sc-main .sc-portal-footer-links{justify-content:flex-start}
+ .sc-portal-footer-meta{margin-left:auto}
+}
+@media(max-width:650px){
+ .sc-shell .sc-main .sc-portal-footer{min-height:0;gap:7px 10px;padding:13px 16px;font-size:10px}
+ .sc-portal-footer-copy{flex-basis:100%}
+ .sc-shell .sc-main .sc-portal-footer-links{flex-wrap:wrap;justify-content:flex-start;gap:5px 9px}
+ .sc-shell .sc-main .sc-portal-footer-links button{font-size:10px;min-height:27px}
+ .sc-portal-footer-meta{width:100%;justify-content:flex-start;gap:10px;font-size:10px;margin-left:0}
+ .sc-legal-information-card{padding:19px}
+}
