@@ -384,7 +384,7 @@
 }
 
 /* Modern branded School Control topbar, based on approved navy-blue proposal. */
-.sc-shell .sc-topbar{background:linear-gradient(105deg,#09274c 0%,#0965b9 55%,#082e61 100%);color:#fff;min-height:75px;gap:13px;padding:10px clamp(10px,1.5vw,24px);box-shadow:0 8px 22px rgba(9,36,75,.14)}
+.sc-shell .sc-topbar{background:linear-gradient(105deg,#09274c 0%,#0965b9 55%,#082e61 100%);color:#fff;height:var(--sc-shell-topbar-height);min-height:var(--sc-shell-topbar-height);gap:13px;padding:10px clamp(10px,1.5vw,24px);box-shadow:0 8px 22px rgba(9,36,75,.14)}
 .sc-shell .sc-topbar .sc-collapse-toggle{background:rgba(255,255,255,.09);color:#e7f3ff;border:1px solid rgba(219,237,255,.22);border-radius:50%;width:39px;height:39px}
 .sc-shell .sc-topbar .sc-collapse-toggle:hover{background:rgba(255,255,255,.2);color:#fff}
 .sc-shell .sc-topbar .sc-top-actions{gap:11px}
@@ -446,9 +446,11 @@
 @media(max-width:760px){.sc-shell .sc-topbar .sc-topbar-avatar{width:35px;height:35px}}
 
 /* Sidebar 3.1: reference-matched category navigation with deep navy gradient. */
+/* Shared header row aligns the sidebar brand with the topbar. */
+.sc-shell{--sc-shell-topbar-height:75px}
 .sc-shell:not(.sc-shell-collapsed)>.sc-sidebar{width:286px;flex-basis:286px;flex-shrink:0}
-.sc-shell .sc-sidebar{background:linear-gradient(180deg,#083363 0%,#052750 43%,#072849 100%);border-right:1px solid #164676;color:#ecf5ff}
-.sc-shell .sc-shell-brand{padding:20px 13px 22px;gap:12px;align-items:center;min-height:86px}
+.sc-shell .sc-sidebar{background:linear-gradient(180deg,#083363 0%,#052750 43%,#072849 100%);border-right:1px solid #164676;color:#ecf5ff;padding-top:0}
+.sc-shell .sc-shell-brand{box-sizing:border-box;height:var(--sc-shell-topbar-height);min-height:var(--sc-shell-topbar-height);flex:none;padding:0 13px;gap:12px;align-items:center}
 .sc-sidebar-system-mark{display:grid;place-items:center;flex:none;width:49px;height:49px;border-radius:12px;color:#e9f6ff;border:1px solid rgba(74,186,255,.38);background:linear-gradient(155deg,#0b86de,#0b4a89);box-shadow:0 5px 14px rgba(0,23,54,.25)}
 .sc-shell .sc-sidebar-brand-text strong{font-size:17px;letter-spacing:-.3px;line-height:1.25;color:#fff}
 .sc-shell .sc-sidebar-brand-text small{font-size:10px;letter-spacing:0;color:#bddbf8;line-height:1.4}
@@ -495,12 +497,15 @@
  .sc-global-search-trigger kbd{display:none}
 }
 @media(max-width:760px){
+ .sc-shell{--sc-shell-topbar-height:63px}
+ .sc-shell .sc-topbar{height:auto;min-height:var(--sc-shell-topbar-height)}
  .sc-shell:not(.sc-shell-collapsed)>.sc-sidebar{width:min(310px,88vw)!important;flex-basis:auto}
+ .sc-shell .sc-sidebar.open{padding-top:0}
  .sc-shell .sc-sidebar.open .sc-nav-section-title .sc-section-icon{display:grid}
  .sc-shell .sc-sidebar.open .sc-nav-section-title .sc-section-label{display:block}
  .sc-shell .sc-topbar .sc-account-button .sc-account-identity{display:none!important}
  .sc-shell .sc-topbar .sc-account-button{gap:3px;padding-left:6px}
- .sc-shell .sc-sidebar .sc-shell-brand{padding-top:8px}
+ .sc-shell .sc-sidebar .sc-shell-brand{padding-top:0}
 }
 @media(prefers-reduced-motion:reduce){.sc-shell .sc-sidebar .sc-nav-section-title{transition:none}}
 

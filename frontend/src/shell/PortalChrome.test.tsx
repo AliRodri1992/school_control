@@ -401,3 +401,22 @@ it('restores all breadcrumb ancestors when there is enough room',async()=>{
  act(()=>window.dispatchEvent(new Event('resize')));
  expect(crumbs.classList.contains('sc-crumbs-condensed')).toBe(false);
 });
+
+it('aligns the sidebar brand in a dedicated header row across desktop states',async()=>{
+ const {container}=render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ const sidebar=container.querySelector('#school-sidebar');
+ const brand=sidebar?.firstElementChild;
+ expect(brand?.tagName).toBe('HEADER');
+ expect(brand?.classList.contains('sc-shell-brand')).toBe(true);
+ expect(brand?.querySelector('.sc-sidebar-system-mark svg')).toBeTruthy();
+ await userEvent.click(screen.getByRole('button',{name:'Colapsar barra lateral'}));
+ expect(container.querySelector('.sc-shell-collapsed .sc-sidebar > .sc-shell-brand')).toBeTruthy();
+});
+
+it('keeps the aligned brand and mobile close control in the drawer',async()=>{
+ const onMobile=vi.fn();
+ const {container}=render(<PortalChrome {...props} mobile onMobile={onMobile}><div>Página</div></PortalChrome>);
+ expect(container.querySelector('.sc-sidebar.open > header.sc-shell-brand')).toBeTruthy();
+ await userEvent.click(screen.getByRole('button',{name:'Cerrar menú'}));
+ expect(onMobile).toHaveBeenCalledWith(false);
+});
