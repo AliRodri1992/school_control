@@ -118,7 +118,10 @@ it.each(['admin','teacher','guardian','student'] as const)('integrates real KPI 
  for(const widget of expected){
   expect(screen.getByRole('article',{name:widget.title+': 4'})).toBeTruthy();
  }
- if(role==='guardian')expect(screen.getByText('Hijos vinculados a tu cuenta')).toBeTruthy();
+ if(role==='guardian'){
+  expect(screen.getByText('Hijos vinculados a tu cuenta')).toBeTruthy();
+  expect(screen.getByText('Familia')).toBeTruthy();
+ }
  if(role==='student')expect(screen.getByText('Clases previstas en tu horario para hoy')).toBeTruthy();
  expect(container.querySelector('.sc-kpi-corner')).toBeNull();
  expect(screen.getByRole('heading',{name:'Asistencia · últimos 30 días'})).toBeTruthy();

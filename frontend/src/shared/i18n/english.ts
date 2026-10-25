@@ -736,6 +736,33 @@ Object.assign(englishByText,{
  'Clases programadas de tus grupos para hoy':'Classes scheduled for your groups today',
  'hijos':'children'
 });
+Object.assign(englishByText,{
+ 'Comunidad escolar':'School community',
+ 'Familia':'Family',
+ 'Matrícula':'Enrollment',
+ 'Admisiones':'Admissions',
+ 'Organización':'Organization',
+ 'Mi jornada':'My day',
+ 'Evaluación':'Assessment',
+ 'Documentación':'Documents',
+ 'Expedientes dentro de tu alcance':'Records within your access',
+ 'Inscripciones con estado activo':'Active enrollments',
+ 'Solicitudes que esperan revisión':'Applications awaiting review',
+ 'Grupos a los que tienes acceso':'Groups in your scope',
+ 'Clases programadas para hoy':'Classes scheduled for today',
+ 'Calificaciones en borrador':'Draft grades',
+ 'Documentos pendientes de revisión':'Documents awaiting review',
+ 'Información actual':'Current snapshot',
+ 'Requiere seguimiento':'Needs attention',
+ 'Sin pendientes':'No pending items',
+ 'alumnos':'students',
+ 'inscripciones':'enrollments',
+ 'solicitudes':'applications',
+ 'grupos':'groups',
+ 'clases':'classes',
+ 'borradores':'drafts',
+ 'documentos':'documents'
+});
 export function translateUiText(locale:string,text:string):string{
  if(!locale.toLowerCase().startsWith('en'))return text;
  return englishByText[text]||text;

@@ -17,7 +17,13 @@ it.each(['admin','teacher','guardian','student'] as DashboardRole[])('renders a 
  expect(card.classList.contains('sc-kpi-card')).toBe(true);
  expect(container.querySelector('.sc-kpi-icon svg')).toBeTruthy();
  expect(screen.getByText('Mi jornada')).toBeTruthy();
- expect(screen.getByText('Clases programadas para hoy')).toBeTruthy();
+ const description={
+  admin:'Clases programadas para hoy',
+  teacher:'Clases programadas de tus grupos para hoy',
+  guardian:'Clases de los grupos de tus hijos',
+  student:'Clases previstas en tu horario para hoy'
+ }[role];
+ expect(screen.getByText(description)).toBeTruthy();
  expect(screen.getByText('Información actual')).toBeTruthy();
  expect(screen.getByText('12')).toBeTruthy();
 });
@@ -83,6 +89,7 @@ it('uses accurate role-aware descriptions for family, learner and teacher counts
   value={2} role="guardian" locale="es" translate={identity}/>);
  expect(screen.getByText('hijos')).toBeTruthy();
  expect(screen.getByText('Hijos vinculados a tu cuenta')).toBeTruthy();
+ expect(screen.getByText('Familia')).toBeTruthy();
  rerender(<DashboardMetricCard kind="today_classes" title="Mis clases"
   value={4} role="student" locale="es" translate={identity}/>);
  expect(screen.getByText('Clases previstas en tu horario para hoy')).toBeTruthy();

@@ -28,6 +28,7 @@ export default function DashboardMetricCard({kind,title,value,role,locale,transl
  const count=asCount(value);
  const formatted=new Intl.NumberFormat(locale==='en'?'en-US':locale==='ko'?'ko-KR':'es-MX').format(count);
  const footer=meta.attention?(count>0?'Requiere seguimiento':'Sin pendientes'):'Información actual';
+ const category=role==='guardian'&&kind==='students'?'Familia':meta.category;
  const unit=role==='guardian'&&kind==='students'?'hijos':meta.unit;
  const detail=role==='guardian'&&kind==='students'?'Hijos vinculados a tu cuenta':
   kind==='today_classes'&&role==='student'?'Clases previstas en tu horario para hoy':
@@ -37,7 +38,7 @@ export default function DashboardMetricCard({kind,title,value,role,locale,transl
   data-metric={kind} data-portal={role} aria-label={title+': '+formatted}>
   <header className="sc-kpi-header">
    <div className={'sc-kpi-header-copy'+(editing?' widget-handle':'')}>
-    <span className="sc-kpi-category">{translate(meta.category)}</span>
+    <span className="sc-kpi-category">{translate(category)}</span>
     <h3>{title}</h3>
    </div>
    <span className="sc-kpi-icon" aria-hidden="true"><Icon size={22} strokeWidth={1.9}/></span>

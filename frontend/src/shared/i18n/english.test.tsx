@@ -4,6 +4,7 @@ import {cleanup,render,screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {LocaleProvider,useInterfaceLocale,useSchoolLocale} from './LocaleContext';
 import {localizedModules} from '../../modules';
+import {translateUiText} from './english';
 import TableAction from '../components/TableAction';
 
 afterEach(()=>{cleanup();localStorage.removeItem('school-locale');});
@@ -52,4 +53,20 @@ it('refreshes the interface when the user changes language without reloading',as
  expect(screen.getByText('es:Editar')).toBeTruthy();
  await userEvent.click(screen.getByRole('button',{name:'Switch language'}));
  expect(screen.getByText('en:Edit')).toBeTruthy();
+});
+
+it('localizes role-aware KPI categories, units, descriptions and pending statuses',()=>{
+ const phrases=[
+  'Familia','Comunidad escolar','Matrícula','Admisiones','Organización',
+  'Mi jornada','Evaluación','Documentación',
+  'Hijos vinculados a tu cuenta','Clases previstas en tu horario para hoy',
+  'Clases de los grupos de tus hijos','Clases programadas de tus grupos para hoy',
+  'Expedientes dentro de tu alcance','Inscripciones con estado activo',
+  'Solicitudes que esperan revisión','Clases programadas para hoy',
+  'Requiere seguimiento','Sin pendientes','Información actual','hijos'
+ ];
+ for(const phrase of phrases){
+  expect(translateUiText('en',phrase)).not.toBe(phrase);
+  expect(translateUiText('es',phrase)).toBe(phrase);
+ }
 });
