@@ -31,10 +31,30 @@ export type Widget = {id: string; kind: Kind; title: string};
 export type Item = {i: string; x: number; y: number; w: number; h: number};
 export type Config = {widgets: Widget[]; layouts: Record<string, Item[]>; schema_version?:number};
 export const columns: Record<string, number> = {lg:12, md:8, sm:4, xs:1};
+
+/** Place a new card in the next free space of the final row, never over existing content. */
+export function nextWidgetPosition(items:readonly Item[],kind:Kind,bp:string):Omit<Item,'i'>{
+ const w=widgetWidth(kind,bp),h=widgetHeight(kind),cols=columns[bp];
+ const lastRowStart=items.reduce((max,item)=>Math.max(max,item.y),0);
+ const lastEnd=items.reduce((max,item)=>Math.max(max,item.y+item.h),0);
+ for(const y of [...new Set([lastRowStart,lastEnd])]){
+  // Grid-aligned positions first; then accommodate previously customized widths.
+  const xs=[...new Set([
+   ...Array.from({length:Math.ceil(cols/w)},(_,index)=>index*w),
+   ...Array.from({length:cols-w+1},(_,index)=>index)
+  ])].filter(x=>x+w<=cols);
+  for(const x of xs){
+   const collision=items.some(item=>x<item.x+item.w&&x+w>item.x&&
+    y<item.y+item.h&&y+h>item.y);
+   if(!collision)return {x,y,w,h};
+  }
+ }
+ return {x:0,y:lastEnd,w,h};
+}
 export function appendWidget(config: Config, kind: Kind, title: string, id: string = crypto.randomUUID()): Config {
  const layouts = Object.fromEntries(Object.entries(columns).map(([bp, cols]) => {
   const items = config.layouts[bp] || [];
-  return [bp, [...items, {i:id, x:0, y:items.reduce((max,item)=>Math.max(max,item.y+item.h),0), w:widgetWidth(kind,bp), h:widgetHeight(kind)}]];
+  return [bp, [...items, {i:id,...nextWidgetPosition(items,kind,bp)}]];
  }));
  return {...config,widgets:[...config.widgets,{id,kind,title}],layouts};
 }
@@ -133,13 +153,70 @@ export function upgradeRoleCharts(config:Config,role:DashboardRole):Config{
 }
 
 /**
+ * Repair only the four-chart (or role-equivalent) stack produced by the
+ * pre-fix recovery routine. Every item must still have its generated ID,
+ * title, width, height and exact consecutive x=0/y=max-end coordinates.
+ * Manually moved/resized charts remain untouched, including versioned ones.
+ */
+export function compactAutoStackedAnalytics(config:Config,role:DashboardRole):Config{
+ const kinds=presets[role].filter(isAnalyticChartKind);
+ if(kinds.length<2)return config;
+ const start=config.widgets.findIndex(widget=>widget.kind===kinds[0]&&
+  widget.id===widget.kind&&widget.title===widgetKinds[widget.kind]);
+ if(start<0||start+kinds.length>config.widgets.length)return config;
+ const recovered=config.widgets.slice(start,start+kinds.length);
+ if(!recovered.every((widget,index)=>widget.kind===kinds[index]&&
+  widget.id===widget.kind&&widget.title===widgetKinds[widget.kind]))return config;
+ const beforeIds=new Set(config.widgets.slice(0,start).map(widget=>widget.id));
+ const nextLayouts:Config['layouts']={...config.layouts};
+ let changed=false;
+ for(const bp of Object.keys(columns)){
+  const items=config.layouts[bp];
+  if(!Array.isArray(items))continue;
+  const remaining=items.filter(item=>beforeIds.has(item.i));
+  let autoEnd=remaining.reduce((max,item)=>Math.max(max,item.y+item.h),0);
+  const generated=items.filter(item=>recovered.some(widget=>widget.id===item.i));
+  const isOriginalStack=generated.length===recovered.length&&
+   recovered.every((widget,index)=>{
+    const item=generated.find(item=>item.i===widget.id);
+    if(!item)return false;
+    const matches=item.x===0&&item.y===autoEnd&&
+     item.w===widgetWidth(widget.kind,bp)&&item.h===widgetHeight(widget.kind);
+    autoEnd+=widgetHeight(widget.kind);
+    return matches;
+   });
+  if(!isOriginalStack||columns[bp]<2*widgetWidth(kinds[0],bp))continue;
+  const recoveredIds=new Set(recovered.map(widget=>widget.id));
+  const laterItems=items.filter(item=>!recoveredIds.has(item.i)&&!beforeIds.has(item.i));
+  const laidOut=[...remaining];
+  const repositioned=recovered.map(widget=>{
+   const position={i:widget.id,...nextWidgetPosition(laidOut,widget.kind,bp)};
+   laidOut.push(position);
+   return position;
+  });
+  const overlapsLater=repositioned.some(position=>laterItems.some(item=>
+   position.x<item.x+item.w&&position.x+position.w>item.x&&
+   position.y<item.y+item.h&&position.y+position.h>item.y));
+  if(overlapsLater)continue;
+  const byId=new Map(repositioned.map(item=>[item.i,item]));
+  if(!items.some(item=>byId.has(item.i)&&
+   (byId.get(item.i)!.x!==item.x||byId.get(item.i)!.y!==item.y)))continue;
+  nextLayouts[bp]=items.map(item=>byId.get(item.i)||item);
+  changed=true;
+ }
+ return changed?{...config,layouts:nextLayouts}:config;
+}
+
+/**
  * Recover analytics introduced after users saved their layout.
  * Keep every existing widget, position, size and title. Only append missing
  * role-authorized analytics, and stamp the version on the next explicit save.
- * A versioned dashboard may intentionally omit charts and is never modified.
+ * Versioned dashboards keep intentional chart removals; only identifiable
+ * untouched auto-stacks are compacted into available row space.
  */
 export function upgradeSavedDashboardConfig(saved:Config,role:DashboardRole):Config{
- if(saved.schema_version!==undefined&&saved.schema_version>=DASHBOARD_CONFIG_VERSION)return saved;
+ if(saved.schema_version!==undefined&&saved.schema_version>=DASHBOARD_CONFIG_VERSION)
+  return compactAutoStackedAnalytics(saved,role);
  const legacy=upgradeRoleCharts(upgradeLegacyDashboardConfig(saved,role),role);
  const required=presets[role].filter(isAnalyticChartKind);
  let next=legacy;
@@ -150,5 +227,5 @@ export function upgradeSavedDashboardConfig(saved:Config,role:DashboardRole):Con
   while(next.widgets.some(widget=>widget.id===id))id=kind+'-restored-'+suffix++;
   next=appendWidget(next,kind,widgetKinds[kind],id);
  }
- return {...next,schema_version:DASHBOARD_CONFIG_VERSION};
+ return compactAutoStackedAnalytics({...next,schema_version:DASHBOARD_CONFIG_VERSION},role);
 }

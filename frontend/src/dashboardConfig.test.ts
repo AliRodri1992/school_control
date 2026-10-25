@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {defaultConfig,appendWidget,removeWidget,columns,isMetricKind,widgetHeight,metricKinds,mergeGridLayouts,upgradeLegacyDashboardConfig,upgradeRoleCharts,generateDashboardConfig,allowedChartKinds,upgradeSavedDashboardConfig,DASHBOARD_CONFIG_VERSION,type DashboardRole,type Config} from './dashboardConfig';
+import {defaultConfig,appendWidget,removeWidget,columns,isMetricKind,widgetHeight,metricKinds,mergeGridLayouts,upgradeLegacyDashboardConfig,upgradeRoleCharts,generateDashboardConfig,allowedChartKinds,upgradeSavedDashboardConfig,compactAutoStackedAnalytics,nextWidgetPosition,widgetWidth,widgetKinds,DASHBOARD_CONFIG_VERSION,type DashboardRole,type Config,type Kind} from './dashboardConfig';
 describe('dashboard configuration',()=>{
  it('provides layouts bounded to each screen including a single mobile column',()=>{
   const config=defaultConfig();
@@ -17,11 +17,19 @@ describe('dashboard configuration',()=>{
   expect(expanded.schema_version).toBe(DASHBOARD_CONFIG_VERSION);
   expect(removed.schema_version).toBe(DASHBOARD_CONFIG_VERSION);
  });
- it('places new widgets below existing content on every screen',()=>{
+ it('places new widgets beside the last row when there is room, otherwise below it',()=>{
   const initial=defaultConfig();const next=appendWidget(initial,'groups','Grupos','new');
   for(const [bp,items] of Object.entries(initial.layouts)){
-   expect(next.layouts[bp].at(-1)!.y).toBe(Math.max(...items.map(i=>i.y+i.h)));
+   const added=next.layouts[bp].at(-1)!;
+   expect(added.y).toBeGreaterThanOrEqual(Math.max(...items.map(i=>i.y)));
+   expect(added.x+added.w).toBeLessThanOrEqual(columns[bp]);
+   expect(items.every(item=>added.x>=item.x+item.w||
+    added.x+added.w<=item.x||added.y>=item.y+item.h||
+    added.y+added.h<=item.y)).toBe(true);
   }
+  expect(next.layouts.lg.at(-1)!.y).toBeLessThan(
+   Math.max(...initial.layouts.lg.map(item=>item.y+item.h)));
+  expect(next.layouts.xs.at(-1)!.x).toBe(0);
  });
 });
 
@@ -254,4 +262,108 @@ it('keeps the schema version intact through add, move, and delete flows',()=>{
  expect(deleted.schema_version).toBe(2);
  expect(upgradeSavedDashboardConfig(deleted,'admin')).toBe(deleted);
  expect(deleted.widgets.some(widget=>widget.kind==='admission_status')).toBe(false);
+});
+
+/** Simulates configurations saved by the old x=0/max-end append algorithm. */
+function formerlyStackedAnalytics(role:DashboardRole='admin',extra=false):Config{
+ const originals:Record<DashboardRole,Kind[]>={
+  admin:['students','enrollments','pending_admissions','pending_documents','attendance_chart','alerts','calendar'],
+  teacher:['today_classes','grade_drafts','groups','attendance_chart','alerts','calendar','announcements'],
+  guardian:['students','today_classes','pending_documents','attendance_chart','calendar','announcements'],
+  student:['today_classes','attendance_chart','calendar','announcements']
+ };
+ const base=generateDashboardConfig(originals[role]);
+ let config=extra?appendWidget(base,'announcements','Mi bloque','custom-block'):base;
+ const charts=defaultConfig(role).widgets.filter(widget=>!config.widgets.some(existing=>existing.kind===widget.kind));
+ for(const chart of charts){
+  const layouts=Object.fromEntries(Object.entries(columns).map(([bp])=>{
+   const original=config.layouts[bp];
+   const y=Math.max(0,...original.map(item=>item.y+item.h));
+   return [bp,[...original,{i:chart.id,x:0,y,w:widgetWidth(chart.kind,bp),h:widgetHeight(chart.kind)}]];
+  }));
+  config={...config,layouts,widgets:[...config.widgets,chart]};
+ }
+ return {...config,schema_version:DASHBOARD_CONFIG_VERSION};
+}
+describe('repairing recovered chart placement',()=>{
+ it('places three of the four administrator charts together in desktop rows',()=>{
+  const stacked=formerlyStackedAnalytics();
+  const repaired=upgradeSavedDashboardConfig(stacked,'admin');
+  const ids=['enrollment_trend','students_by_grade','attendance_rate','admission_status'];
+  const charts=ids.map(id=>repaired.layouts.lg.find(item=>item.i===id)!);
+  expect(charts.map(item=>item.x)).toEqual([0,4,8,0]);
+  expect(charts.map(item=>item.y)).toEqual([charts[0].y,charts[0].y,charts[0].y,charts[0].y+6]);
+  const mdCharts=repaired.layouts.md.filter(item=>ids.includes(item.i));
+  const parallel=mdCharts.some((first,index)=>mdCharts.slice(index+1).some(second=>
+   first.y===second.y&&first.x!==second.x));
+  expect(parallel).toBe(true);
+  expect(new Set(mdCharts.map(item=>item.y)).size).toBeLessThan(4);
+  for(const bp of ['sm','xs'])expect(repaired.layouts[bp]).toEqual(stacked.layouts[bp]);
+  const originalIds=stacked.widgets.slice(0,-4).map(widget=>widget.id);
+  for(const bp of Object.keys(columns)){
+   for(const id of originalIds){
+    expect(repaired.layouts[bp].find(item=>item.i===id)).toEqual(stacked.layouts[bp].find(item=>item.i===id));
+   }
+  }
+  expect(repaired.widgets).toEqual(stacked.widgets);
+  expect(repaired.schema_version).toBe(2);
+ });
+ it('does not touch manually resized or moved analytical charts',()=>{
+  const stacked=formerlyStackedAnalytics();
+  const moved={...stacked,layouts:{...stacked.layouts,
+   lg:stacked.layouts.lg.map(item=>item.i==='students_by_grade'?{...item,x:4}:item)}};
+  const repaired=compactAutoStackedAnalytics(moved,'admin');
+  expect(repaired.layouts.lg).toEqual(moved.layouts.lg);
+  expect(repaired.layouts.md).not.toEqual(moved.layouts.md); // still fix untouched tablet layout
+  const resized={...stacked,layouts:{...stacked.layouts,
+   lg:stacked.layouts.lg.map(item=>item.i==='enrollment_trend'?{...item,w:6}:item)}};
+  expect(compactAutoStackedAnalytics(resized,'admin').layouts.lg).toEqual(resized.layouts.lg);
+ });
+ it('restores vertical stacks saved with version 2 even when the user had other widgets',()=>{
+  const stacked=formerlyStackedAnalytics('admin',true);
+  const repaired=upgradeSavedDashboardConfig(stacked,'admin');
+  expect(repaired.widgets.map(widget=>widget.id)).toEqual(stacked.widgets.map(widget=>widget.id));
+  expect(repaired.layouts.lg.filter(item=>item.i==='custom-block')).toEqual(
+   stacked.layouts.lg.filter(item=>item.i==='custom-block'));
+  const chartPositions=repaired.layouts.lg.filter(item=>[
+   'enrollment_trend','students_by_grade','attendance_rate','admission_status'].includes(item.i));
+  expect(new Set(chartPositions.map(item=>item.y)).size).toBeLessThan(4);
+  for(const bp of Object.keys(columns)){
+   const items=repaired.layouts[bp];
+   for(let i=0;i<items.length;i++)for(let j=i+1;j<items.length;j++){
+    const a=items[i],b=items[j];
+    expect(a.x+a.w<=b.x||b.x+b.w<=a.x||a.y+a.h<=b.y||b.y+b.h<=a.y).toBe(true);
+   }
+  }
+ });
+ it('does not rewrite correctly arranged presets or intentionally removed charts',()=>{
+  const admin=defaultConfig('admin');
+  expect(upgradeSavedDashboardConfig(admin,'admin')).toBe(admin);
+  const revised=removeWidget(admin,'admission_status');
+  expect(upgradeSavedDashboardConfig(revised,'admin')).toBe(revised);
+  expect(revised.widgets.some(widget=>widget.kind==='admission_status')).toBe(false);
+ });
+ it('keeps all chart layouts within their breakpoints after recovering older presets',()=>{
+  for(const role of ['admin','teacher','guardian','student'] as DashboardRole[]){
+   const saved=formerlyStackedAnalytics(role);
+   const updated=upgradeSavedDashboardConfig(saved,role);
+   expect(updated.widgets).toEqual(saved.widgets);
+   for(const bp of Object.keys(columns)){
+    const items=updated.layouts[bp];
+    expect(items.every(item=>item.x>=0&&item.x+item.w<=columns[bp])).toBe(true);
+    expect(items.length).toBe(updated.widgets.length);
+   }
+  }
+ });
+ it('does not leave a trailing widget stacked if another card fits on the last row',()=>{
+  const old=generateDashboardConfig(['students','enrollments','pending_admissions','pending_documents',
+   'attendance_chart','alerts','calendar']);
+  const first=appendWidget(old,'enrollment_trend',widgetKinds.enrollment_trend,'trend');
+  const second=appendWidget(first,'students_by_grade',widgetKinds.students_by_grade,'grade');
+  const third=appendWidget(second,'attendance_rate',widgetKinds.attendance_rate,'rate');
+  const y=first.layouts.lg.find(item=>item.i==='trend')!.y;
+  expect(second.layouts.lg.find(item=>item.i==='grade')).toMatchObject({x:4,y});
+  expect(third.layouts.lg.find(item=>item.i==='rate')).toMatchObject({x:8,y});
+  expect(nextWidgetPosition(third.layouts.lg,'admission_status','lg')).toMatchObject({x:0,y:y+6});
+ });
 });

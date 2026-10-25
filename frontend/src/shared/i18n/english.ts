@@ -890,6 +890,10 @@ Object.assign(englishByText,{
  'Cerrando sesiones…':'Signing out…',
  'Las contraseñas no coinciden.':'Passwords do not match.'
 });
+Object.assign(englishByText,{
+ 'Organizamos las gráficas en filas, sin cambiar las posiciones de tus otras tarjetas.':'We arranged the charts into rows without moving your other cards.',
+ 'Guardar distribución corregida':'Save corrected layout'
+});
 export function translateUiText(locale:string,text:string):string{
  if(!locale.toLowerCase().startsWith('en'))return text;
  return englishByText[text]||text;

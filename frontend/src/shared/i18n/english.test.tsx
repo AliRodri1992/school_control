@@ -125,3 +125,13 @@ it('translates the restoration notice and its save action for customized dashboa
   expect(translateUiText('es',phrase)).toBe(phrase);
  }
 });
+
+it('translates the notice explaining repaired multi-column dashboard rows',()=>{
+ for(const phrase of [
+  'Organizamos las gráficas en filas, sin cambiar las posiciones de tus otras tarjetas.',
+  'Guardar distribución corregida'
+ ]){
+  expect(translateUiText('en',phrase)).not.toBe(phrase);
+  expect(translateUiText('es',phrase)).toBe(phrase);
+ }
+});

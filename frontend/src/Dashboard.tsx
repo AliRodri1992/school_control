@@ -28,6 +28,7 @@ export default function Dashboard({summary,data,role='admin',userId=0,selectedCh
  const [error,setError] = useState(''),[kind,setKind] = useState<Kind>('attendance_chart'),[title,setTitle] = useState('');
  const [restored,setRestored]=useState(false),[gridRevision,setGridRevision]=useState(0);
  const [analyticsRecovered,setAnalyticsRecovered]=useState(false);
+ const [stackedChartsRearranged,setStackedChartsRearranged]=useState(false);
  const preventProgrammaticLayoutChange=useRef(false);
  const initialSummaryLoaded=useRef(false);
  useEffect(()=>{let active=true;setVisibleSummary(summary);return()=>{active=false;};},[summary]);
@@ -55,6 +56,7 @@ export default function Dashboard({summary,data,role='admin',userId=0,selectedCh
   setEditing(false);
   setRestored(false);
   setAnalyticsRecovered(false);
+  setStackedChartsRearranged(false);
   setError('');
   void api('dashboard_preference').then(result=>{
    if(!active)return;
@@ -62,8 +64,11 @@ export default function Dashboard({summary,data,role='admin',userId=0,selectedCh
    const upgraded=saved?upgradeSavedDashboardConfig(saved,role):defaultConfig(role);
    const recovered=Boolean(saved&&upgraded.widgets.some(widget=>
     !saved.widgets.some(previous=>previous.kind===widget.kind)));
+   const rearranged=Boolean(saved&&upgraded.widgets.length===saved.widgets.length&&
+    JSON.stringify(upgraded.layouts)!==JSON.stringify(saved.layouts));
    setConfig(upgraded);
-   setAnalyticsRecovered(recovered);
+   setAnalyticsRecovered(recovered||rearranged);
+   setStackedChartsRearranged(rearranged);
    setVersion(result.lock_version);
    setReady(true);
   }).catch(e=>{if(active)setError((e as Error).message);});
@@ -78,6 +83,7 @@ export default function Dashboard({summary,data,role='admin',userId=0,selectedCh
    setEditing(false);
    setRestored(false);
    setAnalyticsRecovered(false);
+   setStackedChartsRearranged(false);
    void notify('Dashboard guardado correctamente.');
   }catch(e){setError((e as Error).message);}
   finally{setSaving(false);}
@@ -88,6 +94,7 @@ export default function Dashboard({summary,data,role='admin',userId=0,selectedCh
   setGridRevision(n=>n+1);
   setRestored(true);
   setAnalyticsRecovered(false);
+  setStackedChartsRearranged(false);
   setTitle('');
   setKind('attendance_chart');
   setError('');
@@ -161,9 +168,12 @@ export default function Dashboard({summary,data,role='admin',userId=0,selectedCh
    </div>
   </div>
   {analyticsRecovered&&!editing&&<div className="dashboard-analytics-recovery" role="status">
-   <p>{ui("Recuperamos las gráficas que faltaban sin modificar tus tarjetas personalizadas.")}</p>
+   <p>{ui(stackedChartsRearranged?
+    "Organizamos las gráficas en filas, sin cambiar las posiciones de tus otras tarjetas.":
+    "Recuperamos las gráficas que faltaban sin modificar tus tarjetas personalizadas.")}</p>
    <button type="button" disabled={saving} onClick={()=>void save()}>
-    <Save size={15} aria-hidden="true"/>{ui(saving?"Guardando…":"Guardar gráficas recuperadas")}
+    <Save size={15} aria-hidden="true"/>{ui(saving?"Guardando…":stackedChartsRearranged?
+     "Guardar distribución corregida":"Guardar gráficas recuperadas")}
    </button>
   </div>}
   {editing&&restored&&<p className="dashboard-reset-notice" role="status">

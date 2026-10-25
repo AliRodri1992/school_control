@@ -6,7 +6,7 @@ import type {ReactNode} from 'react';
 import Dashboard from './Dashboard';
 import {api} from './api';
 import {notify} from './notifications';
-import {appendWidget,defaultConfig,generateDashboardConfig,type Config} from './dashboardConfig';
+import {appendWidget,defaultConfig,generateDashboardConfig,columns,widgetWidth,widgetHeight,widgetKinds,type Kind,type Config} from './dashboardConfig';
 
 vi.mock('./api',()=>({api:vi.fn()}));
 vi.mock('./notifications',()=>({notify:vi.fn()}));
@@ -350,4 +350,45 @@ it('keeps recovered charts after a user adds and saves another widget',async()=>
   'enrollment_trend','students_by_grade','attendance_rate','admission_status'
  ].includes(widget.kind))).toHaveLength(4);
  expect(payload.configuration.widgets.some(widget=>widget.title==='Comunicados extra')).toBe(true);
+});
+
+it('places historical recovered chart stacks in rows without moving existing dashboard sections',async()=>{
+ const original=generateDashboardConfig([
+  'students','enrollments','pending_admissions','pending_documents',
+  'attendance_chart','alerts','calendar'
+ ]);
+ let saved:Config={...original,schema_version:2};
+ for(const kind of ['enrollment_trend','students_by_grade','attendance_rate','admission_status'] as Kind[]){
+  const layouts=Object.fromEntries(Object.keys(columns).map(bp=>{
+   const items=saved.layouts[bp];
+   const y=Math.max(...items.map(item=>item.y+item.h));
+   return [bp,[...items,{i:kind,x:0,y,w:widgetWidth(kind,bp),h:widgetHeight(kind)}]];
+  }));
+  saved={...saved,widgets:[...saved.widgets,{id:kind,kind,title:widgetKinds[kind]}],layouts};
+ }
+ vi.mocked(api).mockImplementation(async(resource:string,method?:string)=>{
+  if(resource==='dashboard_preference'&&method==='PUT')return {configuration:saved,lock_version:3};
+  if(resource==='dashboard_preference')return {configuration:saved,lock_version:2};
+  return {};
+ });
+ const {container}=render(<Dashboard role="admin" userId={44} summary={{}} data={{}}/>);
+ await waitFor(()=>expect(container.querySelectorAll('[data-testid="analytics-chart"]')).toHaveLength(4));
+ expect(screen.getByText('Organizamos las gráficas en filas, sin cambiar las posiciones de tus otras tarjetas.')).toBeTruthy();
+ const save=screen.getByRole('button',{name:'Guardar distribución corregida'});
+ await userEvent.click(save);
+ const calls=vi.mocked(api).mock.calls;
+ await waitFor(()=>expect(calls.some(call=>call[0]==='dashboard_preference'&&call[1]==='PUT')).toBe(true));
+ const payload=calls.find(call=>call[0]==='dashboard_preference'&&call[1]==='PUT')?.[2] as
+  {configuration:Config;lock_version:number};
+ const fixed=payload.configuration;
+ const restored=['enrollment_trend','students_by_grade','attendance_rate','admission_status'];
+ expect(restored.map(id=>fixed.layouts.lg.find(item=>item.i===id)?.x)).toEqual([0,4,8,0]);
+ expect(new Set(restored.slice(0,3).map(id=>fixed.layouts.lg.find(item=>item.i===id)?.y)).size).toBe(1);
+ expect(payload.lock_version).toBe(2);
+ expect(fixed.schema_version).toBe(2);
+ for(const item of original.layouts.lg){
+  expect(fixed.layouts.lg.find(savedItem=>savedItem.i===item.i)).toEqual(item);
+ }
+ expect(container.querySelectorAll('.sc-kpi-grid-item')).toHaveLength(4);
+ await waitFor(()=>expect(screen.queryByRole('button',{name:'Guardar distribución corregida'})).toBeNull());
 });
