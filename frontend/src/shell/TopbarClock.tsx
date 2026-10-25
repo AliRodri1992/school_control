@@ -7,5 +7,5 @@ export default function TopbarClock({locale,timeZone}:{locale:string;timeZone:st
  const date=new Intl.DateTimeFormat(lang,{dateStyle:'medium',timeZone}).format(now);
  const time=new Intl.DateTimeFormat(lang,{hour:'2-digit',minute:'2-digit',timeZone}).format(now);
  return <div className="sc-clock" title={(locale==='en'?'Time zone: ':'Zona horaria: ')+timeZone}>
-  <CalendarClock size={16} aria-hidden="true"/><time aria-live="off" dateTime={now.toISOString()}>{date} · {time}</time></div>;
+  <CalendarClock size={16} aria-hidden="true"/><time aria-live="off" aria-label={locale==='en'?'School date and time':'Fecha y hora institucional'} dateTime={now.toISOString()}>{date} · {time}</time></div>;
 }

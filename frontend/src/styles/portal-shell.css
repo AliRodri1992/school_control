@@ -298,3 +298,8 @@
 .sc-topbar .sc-flyout .sc-flyout-title{position:sticky;top:0;background:#fff;z-index:1}
 .sc-topbar .sc-flyout .sc-flyout-link{min-height:42px}
 .sc-topbar .sc-flyout .sc-flyout-link:focus-visible{outline:2px solid #7388de;outline-offset:-2px}
+
+/* Keep notices comfortably readable when the dropdown is near a viewport edge. */
+.sc-topbar .sc-flyout .sc-flyout-title{min-height:42px}
+.sc-topbar .sc-flyout .sc-flyout-title strong{font-size:13px;line-height:1.45}
+.sc-topbar .sc-flyout .sc-flyout-title button{flex:none}

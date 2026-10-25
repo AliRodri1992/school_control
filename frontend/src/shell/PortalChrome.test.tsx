@@ -127,10 +127,10 @@ it('dismisses notification popover on outside click and Escape, restoring focus'
 });
 it('translates current page context and notification labels',async()=>{
  render(<PortalChrome {...props} page="grades"><div>Página</div></PortalChrome>);
- expect(screen.getByLabelText('Página actual')).toHaveProperty('textContent','Calificaciones');
+ expect(screen.getByLabelText('Página actual').querySelector('strong')?.textContent).toBe('Calificaciones');
  await userEvent.click(screen.getByRole('button',{name:'Idioma'}));
  await userEvent.click(screen.getByRole('button',{name:'English · EN'}));
- expect(screen.getByLabelText('Current page')).toHaveProperty('textContent','Grades');
+ expect(screen.getByLabelText('Current page').querySelector('strong')?.textContent).toBe('Grades');
  expect(screen.getByRole('button',{name:'Notifications: 0 unread'})).toBeTruthy();
 });
 it('keeps the guardian child selector in the header',()=>{

@@ -19,3 +19,11 @@ it('avoids repeatedly announcing clock changes to screen readers',()=>{
  const {container}=render(<TopbarClock locale="es" timeZone="America/Mexico_City"/>);
  expect(container.querySelector('time')?.getAttribute('aria-live')).toBe('off');
 });
+
+it('gives the date and time an accessible localized name',()=>{
+ const first=render(<TopbarClock locale="es" timeZone="America/Mexico_City"/>);
+ expect(first.container.querySelector('time')?.getAttribute('aria-label')).toBe('Fecha y hora institucional');
+ first.unmount();
+ const second=render(<TopbarClock locale="en" timeZone="America/Mexico_City"/>);
+ expect(second.container.querySelector('time')?.getAttribute('aria-label')).toBe('School date and time');
+});

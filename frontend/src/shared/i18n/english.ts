@@ -710,6 +710,8 @@ Object.assign(englishByText,{"Página actual":"Current page","Idiomas disponible
 
 Object.assign(englishByText,{"Menú de cuenta":"Account menu","Opciones de cuenta de ":"Account options for "});
 
+Object.assign(englishByText,{"Fecha y hora institucional":"School date and time"});
+
 export function translateUiText(locale:string,text:string):string{
  if(!locale.toLowerCase().startsWith('en'))return text;
  return englishByText[text]||text;

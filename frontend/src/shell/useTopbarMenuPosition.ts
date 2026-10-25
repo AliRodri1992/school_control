@@ -9,7 +9,7 @@ export function useTopbarMenuPosition(open:boolean,holder:RefObject<HTMLDivEleme
    const r=anchor.getBoundingClientRect(),width=Math.min(preferredWidth,Math.max(160,window.innerWidth-24));
    const left=Math.max(12,Math.min(r.right-width,window.innerWidth-width-12));
    const below=Math.max(110,window.innerHeight-r.bottom-20),above=Math.max(110,r.top-20);
-   const required=menu.scrollHeight||280,flip=below<Math.min(required,200)&&above>below;
+   const required=Math.max(menu.scrollHeight,menu.offsetHeight,180),flip=below<Math.min(required,200)&&above>below;
    const maxHeight=Math.max(110,Math.min(required,flip?above:below));
    Object.assign(menu.style,{left:left+'px',right:'auto',top:(flip?Math.max(12,r.top-maxHeight-8):Math.max(12,r.bottom+9))+'px',width:width+'px',maxHeight:maxHeight+'px'});
   };
