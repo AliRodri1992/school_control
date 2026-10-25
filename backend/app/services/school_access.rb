@@ -4,7 +4,7 @@ class SchoolAccess
   end
 
   def scopes
-    return [] unless @user&.active?
+    return [] unless @user&.persisted? && @user.active?
     # Administrators use the same persisted grants as every other account.
     # A revoked grant must take effect on the very next request.
     RolePermission.joins(access_role: :access_role_assignments)

@@ -84,6 +84,20 @@ RSpec.describe "Report previews and private exports", type: :request do
     expect(response).to have_http_status(:ok)
   end
 
+  it "removes a revoked export format from the available report menu" do
+    login(admin)
+    get "/api/reports", as: :json
+    before = response.parsed_body.fetch("reports").find { |report| report["kind"] == "enrollments" }
+    expect(before.fetch("formats")).to include("xlsx")
+
+    admin.access_roles.first.role_permissions.find_by!(key: "report_enrollments.xlsx").destroy!
+
+    get "/api/reports", as: :json
+    after = response.parsed_body.fetch("reports").find { |report| report["kind"] == "enrollments" }
+    expect(after.fetch("formats")).not_to include("xlsx")
+    expect(after.fetch("formats")).to include("pdf", "preview")
+  end
+
   it "denies other accounts and expired files even if they have the same permissions" do
     login(admin)
     export = create_export

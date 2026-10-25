@@ -47,6 +47,18 @@ RSpec.describe "Configurable roles and permissions", type: :request do
     expect(admin.can?("subjects.index")).to be(true)
   end
 
+  it "propagates shared administrator-role revocations to every administrator" do
+    role = admin.access_roles.first
+    another_admin = create(:user, role: "admin")
+    expect(another_admin.access_roles).to include(role)
+    role.role_permissions.find_by!(key: "subjects.create").destroy!
+
+    login(another_admin)
+    post "/api/subjects", params: { name: "Sin permiso", code: "REVOKED" }, as: :json
+    expect(response).to have_http_status(:forbidden)
+    expect(Subject.where(code: "REVOKED")).not_to exist
+  end
+
   it "allows a delegated non-admin to perform an explicitly granted action" do
     admin
     coordinator = create(:user, role: "teacher")

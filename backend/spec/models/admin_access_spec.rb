@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe "Acceso de administración" do
-  let(:admin) { User.new(role: "admin", active: true) }
+  let(:admin) { create(:user, role: "admin") }
 
   it "expone todos los permisos efectivos del catálogo para un administrador activo" do
     expect(admin.effective_permissions.keys).to match_array(PermissionCatalog.keys)
@@ -28,15 +28,22 @@ RSpec.describe "Acceso de administración" do
     expect(StudentPolicy::Scope.new(admin, Student).resolve).to include(student)
   end
 
-  it "reconstruye permisos faltantes del rol administrador predeterminado" do
-    persisted_admin = User.create!(name: "Administrador de prueba",
-      email: "administrador.scope@example.test", role: "admin", password: "TestPassword123!")
-    role = AccessRole.find_by!(default_profile: "admin")
-    role.role_permissions.where(key: "students.index").delete_all
+  it "respeta permisos eliminados del rol administrador predeterminado" do
+    role = admin.access_roles.first
+    role.role_permissions.find_by!(key: "students.index").destroy!
 
-    AccessRole.assign_default!(persisted_admin)
+    AccessRole.assign_default!(admin)
 
-    expect(role.role_permissions.find_by!(key: "students.index").data_scope).to eq("institution")
+    expect(role.role_permissions.where(key: "students.index")).not_to exist
+    expect(admin.can?("students.index")).to be(false)
+    expect(admin.effective_permissions).not_to have_key("students.index")
+  end
+
+  it "no permite privilegios administrativos a un usuario todavía no guardado" do
+    unpersisted_admin = User.new(role: "admin", active: true)
+
+    expect(unpersisted_admin.effective_permissions).to eq({})
+    expect(SchoolAccess.new(unpersisted_admin, "students.index").allows?).to be(false)
   end
 
 end

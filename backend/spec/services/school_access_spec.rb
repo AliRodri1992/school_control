@@ -28,6 +28,20 @@ RSpec.describe SchoolAccess do
     expect(admin.can?("report_enrollments.preview")).to be(true)
   end
 
+  it "retains a permission granted by another active role until that role is deactivated" do
+    admin = create(:user, role: "admin")
+    primary = admin.access_roles.first
+    supplementary = AccessRole.create!(name: "Revisión académica")
+    supplementary.role_permissions.create!(key: "subjects.create", data_scope: "institution")
+    admin.access_roles << supplementary
+
+    primary.role_permissions.find_by!(key: "subjects.create").destroy!
+    expect(admin.can?("subjects.create")).to be(true)
+
+    supplementary.update!(active: false)
+    expect(admin.can?("subjects.create")).to be(false)
+  end
+
   it "ignores grants from inactive roles and inactive accounts" do
     admin = create(:user, role: "admin")
     role = admin.access_roles.first

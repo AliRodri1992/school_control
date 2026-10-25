@@ -30,7 +30,7 @@ class User < ApplicationRecord
   end
 
   def effective_permissions
-    return {} unless active?
+    return {} unless persisted? && active?
 
     # Effective permissions reflect active roles, including for administrators.
     RolePermission.joins(access_role: :access_role_assignments)
