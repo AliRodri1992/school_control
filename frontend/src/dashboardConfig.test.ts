@@ -14,6 +14,8 @@ describe('dashboard configuration',()=>{
   expect(expanded.widgets.filter(w=>w.kind==='attendance_chart')).toHaveLength(2);
   const removed=removeWidget(expanded,'custom-chart');
   expect(removed).toEqual(initial);
+  expect(expanded.schema_version).toBe(DASHBOARD_CONFIG_VERSION);
+  expect(removed.schema_version).toBe(DASHBOARD_CONFIG_VERSION);
  });
  it('places new widgets below existing content on every screen',()=>{
   const initial=defaultConfig();const next=appendWidget(initial,'groups','Grupos','new');
@@ -240,4 +242,16 @@ describe('restoring analytics hidden by older saved dashboards',()=>{
   expect(full.widgets).toHaveLength(24);
   expect(upgradeSavedDashboardConfig(full,'admin').widgets).toHaveLength(24);
  });
+});
+
+it('keeps the schema version intact through add, move, and delete flows',()=>{
+ const original=defaultConfig('admin');
+ const added=appendWidget(original,'announcements','Novedades','new-widget');
+ expect(added.schema_version).toBe(2);
+ const layout=mergeGridLayouts(added,{lg:added.layouts.lg.map(item=>({...item}))});
+ expect(layout.schema_version).toBe(2);
+ const deleted=removeWidget(layout,'admission_status');
+ expect(deleted.schema_version).toBe(2);
+ expect(upgradeSavedDashboardConfig(deleted,'admin')).toBe(deleted);
+ expect(deleted.widgets.some(widget=>widget.kind==='admission_status')).toBe(false);
 });

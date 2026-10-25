@@ -36,7 +36,7 @@ export function appendWidget(config: Config, kind: Kind, title: string, id: stri
   const items = config.layouts[bp] || [];
   return [bp, [...items, {i:id, x:0, y:items.reduce((max,item)=>Math.max(max,item.y+item.h),0), w:widgetWidth(kind,bp), h:widgetHeight(kind)}]];
  }));
- return {widgets:[...config.widgets,{id,kind,title}],layouts};
+ return {...config,widgets:[...config.widgets,{id,kind,title}],layouts};
 }
 export function removeWidget(config: Config, id: string): Config {
  return {...config,widgets:config.widgets.filter(w=>w.id!==id), layouts:Object.fromEntries(Object.entries(config.layouts).map(([bp,items])=>[bp,items.filter(i=>i.i!==id)]))};

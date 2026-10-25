@@ -54,6 +54,24 @@ RSpec.describe "Personal dashboard", type: :request do
     expect(response.parsed_body.fetch("configuration").key?("schema_version")).to be(false)
   end
 
+  it "retains the schema version when a user saves a deliberate widget removal" do
+    login(user)
+    configuration[:schema_version] = 2
+    put "/api/dashboard_preference", params: { configuration: configuration }, as: :json
+    expect(response).to have_http_status(:ok)
+    version = response.parsed_body.fetch("lock_version")
+
+    configuration[:widgets].clear
+    configuration[:layouts].each_value(&:clear)
+    put "/api/dashboard_preference",
+      params: { configuration: configuration, lock_version: version }, as: :json
+
+    expect(response).to have_http_status(:ok)
+    expect(response.parsed_body.dig("configuration", "schema_version")).to eq(2)
+    expect(response.parsed_body.dig("configuration", "widgets")).to be_empty
+    expect(response.parsed_body.dig("configuration", "layouts", "lg")).to be_empty
+  end
+
   it "rejects unsupported or invalid dashboard schema versions" do
     login(user)
     configuration[:schema_version] = 999

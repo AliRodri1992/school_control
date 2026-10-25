@@ -326,3 +326,28 @@ it('saves the recovered analytics without resetting previously arranged cards',a
  await waitFor(()=>expect(screen.queryByRole('button',{name:'Guardar gráficas recuperadas'})).toBeNull());
  expect(notify).toHaveBeenCalledWith('Dashboard guardado correctamente.');
 });
+
+it('keeps recovered charts after a user adds and saves another widget',async()=>{
+ const older=generateDashboardConfig([
+  'students','enrollments','pending_admissions','pending_documents','attendance_chart','alerts','calendar'
+ ]);
+ vi.mocked(api).mockImplementation(async (resource:string,method?:string)=>{
+  if(resource==='dashboard_preference'&&method==='PUT')return {lock_version:2};
+  if(resource==='dashboard_preference')return {configuration:older,lock_version:1};
+  return {};
+ });
+ const {container}=render(<Dashboard role="admin" userId={89} summary={{}} data={{}}/>);
+ await waitFor(()=>expect(container.querySelectorAll('[data-testid="analytics-chart"]')).toHaveLength(4));
+ await personalize();
+ await userEvent.selectOptions(screen.getByRole('combobox',{name:'Tipo de widget'}),'announcements');
+ await userEvent.type(screen.getByRole('textbox',{name:'Título del widget'}),'Comunicados extra');
+ await userEvent.click(screen.getByRole('button',{name:'Añadir widget'}));
+ await userEvent.click(screen.getByRole('button',{name:'Guardar dashboard'}));
+ const payload=vi.mocked(api).mock.calls.find(call=>
+  call[0]==='dashboard_preference'&&call[1]==='PUT')?.[2] as {configuration:Config};
+ expect(payload.configuration.schema_version).toBe(2);
+ expect(payload.configuration.widgets.filter(widget=>[
+  'enrollment_trend','students_by_grade','attendance_rate','admission_status'
+ ].includes(widget.kind))).toHaveLength(4);
+ expect(payload.configuration.widgets.some(widget=>widget.title==='Comunicados extra')).toBe(true);
+});

@@ -6,7 +6,7 @@ import {Responsive, WidthProvider} from 'react-grid-layout/legacy';
 import {BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer} from 'recharts';
 import {api} from './api';
 import {notify} from './notifications';
-import {appendWidget, removeWidget, defaultConfig, widgetKinds, isMetricKind, isAnalyticChartKind, allowedChartKinds, mergeGridLayouts, upgradeSavedDashboardConfig, columns, type Config, type Kind, type DashboardRole} from './dashboardConfig';
+import {appendWidget, removeWidget, defaultConfig, DASHBOARD_CONFIG_VERSION, widgetKinds, isMetricKind, isAnalyticChartKind, allowedChartKinds, mergeGridLayouts, upgradeSavedDashboardConfig, columns, type Config, type Kind, type DashboardRole} from './dashboardConfig';
 import DashboardChart from './DashboardChart';
 import DashboardMetricCard from './DashboardMetricCard';
 import DashboardEmptyState from './DashboardEmptyState';
@@ -72,7 +72,7 @@ export default function Dashboard({summary,data,role='admin',userId=0,selectedCh
  async function save(){
   setSaving(true);setError('');
   try{
-   const result=await api('dashboard_preference','PUT',{configuration:config,lock_version:version});
+   const result=await api('dashboard_preference','PUT',{configuration:{...config,schema_version:DASHBOARD_CONFIG_VERSION},lock_version:version});
    setVersion(result.lock_version);
    preventProgrammaticLayoutChange.current=false;
    setEditing(false);
