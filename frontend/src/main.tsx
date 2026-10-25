@@ -9,6 +9,7 @@ import './styles/design-system.css';
 import './styles/portal-shell.css';
 import './styles/portal-footer.css';
 import './styles/school-boot.css';
+import './styles/session-restore.css';
 import './styles/dialogs.css';
 import './styles/imports.css';
 import './styles/languages.css';

@@ -1,4 +1,5 @@
 import SchoolBootScreen,{type BootStage} from './features/boot/SchoolBootScreen';
+import SessionRestoreScreen from './features/boot/SessionRestoreScreen';
 import TableEmptyState from './shared/components/TableEmptyState';
 import Combobox from './shared/components/Combobox';
 import TableAction from './shared/components/TableAction';
@@ -33,7 +34,8 @@ import {notify} from './notifications';
 import {lazy,Suspense,useEffect, useState} from 'react';
 import {BookOpen, Plus, Search, X, Check, Printer, GraduationCap} from 'lucide-react';
 import {api,timeLabel,mean} from './api';
-import {loadPortalCollections,type ModuleLoadError} from './shared/data/loadPortalCollections';
+import type {ModuleLoadError} from './shared/data/loadPortalCollections';
+import {loadPortalSnapshot} from './shared/data/loadPortalSnapshot';
 import {modules,labels,localizedModules,type Row,type Field} from './modules';
 import {useInterfaceLocale} from './shared/i18n/LocaleContext';
 const pagePermission=(key:string)=>({schedule:'schedule_slots.index',school:'schools.update',documents:'student_documents.index',classroom:'assignments.index',dashboard:'dashboard.show',imports:'students.create',languages:'access_roles.update',api_docs:'access_roles.index'} as Record<string,string>)[key]||(key+'.index');
@@ -50,7 +52,9 @@ export default function App(){
 
  const [user,setUser] = useState<Row|null>(null),[school,setSchool] = useState<Row>({name:'Aula'});
  const [loadingStage,setLoadingStage]=useState<BootStage>('connecting');
- const [loading,setLoading] = useState(true),[page,setPage] = useState('dashboard'),[data,setData] = useState<Record<string,Row[]>>({}),[summary,setSummary] = useState<Row>({});
+ const [restoringSession,setRestoringSession]=useState(true);
+ const [preparingLogin,setPreparingLogin]=useState(false);
+ const [page,setPage] = useState('dashboard'),[data,setData] = useState<Record<string,Row[]>>({}),[summary,setSummary] = useState<Row>({});
  const [error,setError] = useState(''),[notice,setNotice] = useState(''),[query,setQuery] = useState(''),[mobile,setMobile] = useState(false),[busy,setBusy] = useState(false);
  const [detailStudent,setDetailStudent]=useState<Row|null>(null);
  const [studentRecordLoading,setStudentRecordLoading]=useState(false);
@@ -111,20 +115,34 @@ export default function App(){
  }
  function selectChild(id:string){setSelectedChild(id);setPageNumber(0);if(user)localStorage.setItem('school-child-'+user.id,id);
   void api('preferences','PATCH',{selected_child_id:id?Number(id):null}).catch(e=>setError((e as Error).message));}
- async function refresh(who = user){
-   if(!who) return;
-   const session=await api('session');who=session.user;setUser(who);if(!who)return;
-   const keys = Object.keys(modules).filter(k=>who.permissions?.[`${k}.index`]?.length);
-   if(who.permissions?.['schedule_slots.index']?.length)keys.push('schedule_slots');
-   const loaded=await loadPortalCollections(keys,api);
-   setData(loaded.data);
-   setModuleLoadErrors(loaded.errors);
-   if(who.permissions?.['dashboard.show']?.length){
-     try {setSummary(await api('dashboard'));}
-     catch(cause){setSummary({});setError('No se pudo cargar el resumen: '+(cause as Error).message);}
-   } else setSummary({});
+ async function hydratePortal(who:Row){
+   const snapshot=await loadPortalSnapshot(who,api,Object.keys(modules));
+   setData(snapshot.data);
+   setModuleLoadErrors(snapshot.errors);
+   setSummary(snapshot.summary);
+   if(snapshot.summaryError)setError(snapshot.summaryError);
  }
- useEffect(()=>{Promise.all([api('session'),api('school')]).then(async ([session,branding])=>{setSchool(branding);setUser(session.user);setLoadingStage('modules');await refresh(session.user);}).catch(e=>setError(e.message)).finally(()=>setLoading(false));},[]);
+ async function refresh(who = user){
+   if(!who)return;
+   const session=await api('session');
+   const current=session.user as Row|null;
+   setUser(current);
+   if(!current){signedOut();return;}
+   await hydratePortal(current);
+ }
+ useEffect(()=>{
+   let active=true;
+   void Promise.all([api('session'),api('school')])
+     .then(async ([session,branding])=>{
+       if(!active)return;
+       setSchool(branding);
+       setUser(session.user);
+       if(session.user)await hydratePortal(session.user);
+     })
+     .catch(cause=>{if(active)setError((cause as Error).message);})
+     .finally(()=>{if(active)setRestoringSession(false);});
+   return ()=>{active=false;};
+ },[]);
  async function perform(action:()=>Promise<void>){setError('');setFieldErrors({});setBusy(true);try{await action();void notify('Cambios guardados correctamente.');await refresh();}catch(e){setError((e as Error).message);setFieldErrors((e as Error & {fieldErrors?:Record<string,string[]>}).fieldErrors||{});}finally{setBusy(false);}}
  function options(source:string, values:Row = {}):Row[]{
    if(source==='guardians')return (data.users||[]).filter(x=>x.role==='guardian');
@@ -181,9 +199,25 @@ export default function App(){
  const shownRows=records.slice(currentPage*pageSize,(currentPage+1)*pageSize);
  function sortBy(key:string){if(sorting===key)setAscending(value=>!value);else{setSorting(key);setAscending(true);}setPageNumber(0);}
 
- if(loading)return <SchoolBootScreen locale={locale} stage={loadingStage}/>;
+ if(restoringSession)return <SessionRestoreScreen locale={locale}/>;
+ if(preparingLogin)return <SchoolBootScreen locale={locale} stage={loadingStage}/>;
  if(resetToken)return <Suspense fallback={<div className="boot" role="status">{ui('Cargando recuperación de contraseña…')}</div>}><PasswordRecovery schoolName={school.name} token={resetToken} onClose={signedOut}/></Suspense>;
- if(!user)return <Login school={school} initialError={error} onLogin={async account=>{setUser(account);setError('');await refresh(account);}}/>;
+ if(!user)return <Login school={school} initialError={error} onLogin={async account=>{
+   setError('');
+   setLoadingStage('connecting');
+   setPreparingLogin(true);
+   try{
+     const session=await api('session');
+     if(!session.user)throw new Error('No se pudo recuperar la sesión iniciada.');
+     setUser(session.user);
+     setLoadingStage('modules');
+     await hydratePortal(session.user);
+   }catch(cause){
+     setUser(null);
+     setError((cause as Error).message);
+     throw cause;
+   }finally{setPreparingLogin(false);}
+ }}/>;
  return <PortalChrome user={user} school={school} page={page} mobile={mobile} onMobile={setMobile}
  can={can} pendingAdmissions={Number(summary.pending_admissions||0)} onNavigate={go}
  onSearchNavigate={searchGo} onSearchStudent={openStudentRecord} searchCollections={data} 

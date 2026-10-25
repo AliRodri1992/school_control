@@ -1,0 +1,18 @@
+/* Lightweight session restoration for refreshes; not the post-login preparation scene. */
+.sc-session-restore{
+ display:grid;place-items:center;min-height:100svh;width:100%;
+ padding:24px;box-sizing:border-box;background:var(--sc-page,#f4f6fb);
+ color:var(--sc-ink,#17233f);font-family:Inter,ui-sans-serif,system-ui,sans-serif;
+}
+.sc-session-restore-content{
+ display:flex;align-items:center;justify-content:center;gap:12px;
+ color:var(--sc-muted,#64748b);font-size:13px;font-weight:500;
+}
+.sc-session-restore-content p{margin:0}
+.sc-session-restore-icon{
+ display:grid;place-items:center;width:43px;height:43px;
+ border-radius:13px;background:#e9edff;color:var(--sc-primary,#405cf5);
+}
+.sc-session-restore-spinner{color:var(--sc-primary,#405cf5);animation:sc-session-spin 1.2s linear infinite;flex:none}
+@keyframes sc-session-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.sc-session-restore-spinner{animation:none}}
