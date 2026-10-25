@@ -140,3 +140,24 @@ it('translates the single profile-save toast correctly',()=>{
  expect(translateUiText('en','Perfil actualizado correctamente.')).toBe('Profile updated successfully.');
  expect(translateUiText('es','Perfil actualizado correctamente.')).toBe('Perfil actualizado correctamente.');
 });
+
+
+it('localizes the full-width preference workspace, the single save toast, and selected settings',()=>{
+ const phrases=[
+  'PERSONALIZACIÓN',
+  'Adapta tu espacio de trabajo y configura cómo utilizas School Control cada día.',
+  'Cambios sin guardar','Configuración al día',
+  'TU ESPACIO, TUS REGLAS','Una experiencia hecha para ti',
+  'Idioma de la interfaz','Solo se muestran idiomas habilitados por la escuela. El cambio se aplicará cuando guardes.',
+  '02 · APARIENCIA','Se adapta a tu dispositivo','Espacios luminosos','Menos brillo en pantalla',
+  '03 · VISUALIZACIÓN','Decide cuántos registros se muestran en los listados del sistema.',
+  'Vista previa de preferencias','Representación ilustrativa del tema y la densidad seleccionados.',
+  'Vista ilustrativa · No representa información real de la escuela',
+  'Resumen de tu configuración','Los cambios se aplicarán a tu cuenta al guardarlos.',
+  'Tus ajustes están actualizados','Guardar preferencias','Preferencias actualizadas correctamente.'
+ ];
+ for(const text of phrases){
+  expect(translateUiText('en',text)).not.toBe(text);
+  expect(translateUiText('es',text)).toBe(text);
+ }
+});
