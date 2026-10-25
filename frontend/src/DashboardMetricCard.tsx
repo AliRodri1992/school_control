@@ -49,7 +49,7 @@ export default function DashboardMetricCard({kind,title,value,role,locale,transl
    <span className={'sc-kpi-indicator'+(meta.attention&&count>0?' needs-attention':'')}>
     <span className="sc-kpi-dot" aria-hidden="true"/>{translate(footer)}
    </span>
-   <span className="sc-kpi-corner" aria-hidden="true"><span/><span/><span/></span>
+   <span className="sc-kpi-accent" aria-hidden="true"/>
   </footer>
  </article>;
 }

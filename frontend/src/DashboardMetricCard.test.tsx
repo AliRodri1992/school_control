@@ -37,7 +37,8 @@ it('formats large totals using the preferred locale without invented percent cha
   new Intl.NumberFormat('es-MX').format(12500)
  );
  expect(container.textContent).not.toMatch(/\d+%/);
- expect(container.querySelector('.sc-kpi-corner')).toBeTruthy();
+ expect(container.querySelector('.sc-kpi-accent')).toBeTruthy();
+ expect(container.querySelector('.sc-kpi-corner')).toBeNull();
 });
 
 it('treats zero as a valid metric and distinguishes pending versus current work',()=>{

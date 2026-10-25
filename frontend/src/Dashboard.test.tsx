@@ -102,3 +102,21 @@ it('keeps editing enabled if saving the factory template fails',async()=>{
  expect(screen.getByRole('status')).toBeTruthy();
  expect(screen.getByRole('button',{name:'Guardar dashboard'})).toBeTruthy();
 });
+
+it.each(['admin','teacher','guardian','student'] as const)('integrates real KPI cards for the %s portal without changing chart widgets',async role=>{
+ vi.mocked(api).mockImplementation(async(resource:string)=>{
+  if(resource==='dashboard_preference')return {configuration:defaultConfig(role),lock_version:1};
+  return {};
+ });
+ const summary={students:4,enrollments:4,pending_admissions:4,pending_documents:4,
+  today_classes:4,grade_drafts:4,groups:4,attendance_chart:{}};
+ const {container}=render(<Dashboard summary={summary} data={{}} role={role} userId={9}/>);
+ const expected=defaultConfig(role).widgets.filter(widget=>!widget.kind.endsWith('_chart')&&
+  ['students','enrollments','pending_admissions','pending_documents','today_classes','grade_drafts','groups'].includes(widget.kind));
+ await waitFor(()=>expect(container.querySelectorAll('.sc-kpi-card')).toHaveLength(expected.length));
+ for(const widget of expected){
+  expect(screen.getByRole('article',{name:widget.title+': 4'})).toBeTruthy();
+ }
+ expect(container.querySelector('.sc-kpi-corner')).toBeNull();
+ expect(screen.getByRole('heading',{name:'Asistencia · últimos 30 días'})).toBeTruthy();
+});
