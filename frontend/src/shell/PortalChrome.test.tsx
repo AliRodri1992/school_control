@@ -149,3 +149,13 @@ it('constrains a language dropdown to the visible viewport',async()=>{
   expect(Number.parseFloat(popover.style.width)).toBeLessThanOrEqual(296);
  }finally{width.mockRestore();}
 });
+
+it('switches between account, language and notifications without stacking menus',async()=>{
+ render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ await userEvent.click(screen.getAllByRole('button',{name:'Opciones de cuenta de María González'})[1]);
+ expect(screen.getByRole('button',{name:'Cerrar sesión'})).toBeTruthy();
+ await userEvent.click(screen.getByRole('button',{name:'Idioma'}));
+ expect(screen.queryByRole('button',{name:'Cerrar sesión'})).toBeNull();
+ await userEvent.click(screen.getByRole('button',{name:'Notificaciones: 0 sin leer'}));
+ expect(screen.queryByRole('group',{name:'Idiomas disponibles'})).toBeNull();
+});

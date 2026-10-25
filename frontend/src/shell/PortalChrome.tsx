@@ -56,9 +56,6 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const [accountTarget,setAccountTarget]=useState<'sidebar'|'topbar'|null>(null);
  const sidebarAccountRef=useRef<HTMLDivElement>(null);
  const topbarAccountRef=useRef<HTMLDivElement>(null);
- useTopbarMenuPosition(languageOpen,languageRef,210);
- useTopbarMenuPosition(notificationsOpen,notificationRef,345);
- useTopbarMenuPosition(accountTarget==='topbar',topbarAccountRef,330);
  useEffect(()=>{
    function closeOnEscape(event:KeyboardEvent){if(event.key==='Escape')setAccountTarget(null);}
    function closeOutside(event:PointerEvent){
@@ -73,6 +70,9 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const [unread,setUnread]=useState(0);
  const [notificationItems,setNotificationItems]=useState<Row[]>([]);
  const [noticeError,setNoticeError]=useState('');
+ useTopbarMenuPosition(languageOpen,languageRef,210);
+ useTopbarMenuPosition(notificationsOpen,notificationRef,345);
+ useTopbarMenuPosition(accountTarget==='topbar',topbarAccountRef,330);
  useEffect(()=>{let mounted=true;
    void api('languages').then(result=>{if(!mounted)return;
      setAvailableLocales(result.filter((row:{status:string})=>row.status==='active'));

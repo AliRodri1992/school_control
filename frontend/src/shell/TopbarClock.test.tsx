@@ -14,3 +14,8 @@ it('localizes the timezone description for English',()=>{
  render(<TopbarClock locale="en" timeZone="America/Mexico_City"/>);
  expect(screen.getByTitle('Time zone: America/Mexico_City')).toBeTruthy();
 });
+
+it('avoids repeatedly announcing clock changes to screen readers',()=>{
+ const {container}=render(<TopbarClock locale="es" timeZone="America/Mexico_City"/>);
+ expect(container.querySelector('time')?.getAttribute('aria-live')).toBe('off');
+});
