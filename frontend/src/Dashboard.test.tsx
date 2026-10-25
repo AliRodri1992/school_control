@@ -402,3 +402,53 @@ it('places historical recovered chart stacks in rows without moving existing das
  expect(container.querySelectorAll('.sc-kpi-grid-item')).toHaveLength(4);
  await waitFor(()=>expect(screen.queryByRole('button',{name:'Guardar distribución corregida'})).toBeNull());
 });
+
+it('aligns only the three auto-restored charts beside an existing Matrícula chart',async()=>{
+ const previous=generateDashboardConfig([
+  'students','enrollments','pending_admissions','pending_documents',
+  'attendance_chart','alerts','calendar','enrollment_trend'
+ ]);
+ let saved:Config={...previous,schema_version:2};
+ for(const kind of ['students_by_grade','attendance_rate','admission_status'] as Kind[]){
+  const layouts=Object.fromEntries(Object.keys(columns).map(bp=>{
+   const items=saved.layouts[bp];
+   return [bp,[...items,{i:kind,x:0,y:Math.max(...items.map(item=>item.y+item.h)),
+    w:widgetWidth(kind,bp),h:widgetHeight(kind)}]];
+  }));
+  saved={...saved,widgets:[...saved.widgets,{id:kind,kind,title:widgetKinds[kind]}],layouts};
+ }
+ vi.mocked(api).mockImplementation(async(resource:string,method?:string)=>{
+  if(resource==='dashboard_preference'&&method==='PUT')return {lock_version:2};
+  if(resource==='dashboard_preference')return {configuration:saved,lock_version:1};
+  return {};
+ });
+ const {container}=render(<Dashboard role="admin" userId={71} summary={{}} data={{}}/>);
+ await waitFor(()=>expect(container.querySelectorAll('[data-testid="analytics-chart"]')).toHaveLength(4));
+ const save=screen.getByRole('button',{name:'Guardar distribución corregida'});
+ await userEvent.click(save);
+ await waitFor(()=>expect(vi.mocked(api).mock.calls.some(call=>call[0]==='dashboard_preference'&&call[1]==='PUT')).toBe(true));
+ const payload=vi.mocked(api).mock.calls.find(call=>
+  call[0]==='dashboard_preference'&&call[1]==='PUT')?.[2] as {configuration:Config};
+ const chartIds=['enrollment_trend','students_by_grade','attendance_rate','admission_status'];
+ expect(chartIds.slice(0,3).map(id=>payload.configuration.layouts.lg.find(item=>item.i===id)?.y))
+  .toEqual(Array(3).fill(payload.configuration.layouts.lg.find(item=>item.i==='enrollment_trend')?.y));
+ expect(chartIds.slice(0,3).map(id=>payload.configuration.layouts.lg.find(item=>item.i===id)?.x))
+  .toEqual([0,4,8]);
+ for(const bp of Object.keys(columns))for(const item of previous.layouts[bp]){
+  expect(payload.configuration.layouts[bp].find(savedItem=>savedItem.i===item.i)).toEqual(item);
+ }
+});
+it('does not offer layout recovery for a saved dashboard whose coordinates are unchanged',async()=>{
+ const config=defaultConfig('admin');
+ const sortedKeys={...config,layouts:Object.fromEntries(
+  Object.keys(config.layouts).reverse().map(bp=>[bp,config.layouts[bp].map(item=>({
+   h:item.h,w:item.w,y:item.y,x:item.x,i:item.i
+  }))])
+ )};
+ vi.mocked(api).mockImplementation(async resource=>resource==='dashboard_preference'?
+  {configuration:sortedKeys,lock_version:3}:{});
+ const {container}=render(<Dashboard role="admin" userId={72} summary={{}} data={{}}/>);
+ await waitFor(()=>expect(container.querySelectorAll('[data-testid="analytics-chart"]')).toHaveLength(4));
+ expect(screen.queryByRole('button',{name:'Guardar distribución corregida'})).toBeNull();
+ expect(screen.queryByRole('button',{name:'Guardar gráficas recuperadas'})).toBeNull();
+});

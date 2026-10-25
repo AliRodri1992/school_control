@@ -340,7 +340,7 @@ describe('repairing recovered chart placement',()=>{
  });
  it('does not touch manually resized or moved analytical charts',()=>{
   const stacked=formerlyStackedAnalytics();
-  const moved={...stacked,layouts:{...stacked.layouts,
+  const moved:Config={...stacked,layouts:{...stacked.layouts,
    lg:stacked.layouts.lg.map(item=>item.i==='students_by_grade'?{...item,x:4}:item)}};
   const repaired=compactAutoStackedAnalytics(moved,'admin');
   expect(repaired.layouts.lg).toEqual(moved.layouts.lg);
@@ -396,4 +396,33 @@ describe('repairing recovered chart placement',()=>{
   expect(third.layouts.lg.find(item=>item.i==='rate')).toMatchObject({x:8,y});
   expect(nextWidgetPosition(third.layouts.lg,'admission_status','lg')).toMatchObject({x:0,y:y+6});
  });
+});
+
+it('reflows only the auto-stacked missing graphs when Matrícula por ciclo was already present',()=>{
+ const base=generateDashboardConfig([
+  'students','enrollments','pending_admissions','pending_documents',
+  'attendance_chart','alerts','calendar','enrollment_trend'
+ ]);
+ let old:Config={...base,schema_version:2};
+ for(const kind of ['students_by_grade','attendance_rate','admission_status'] as Kind[]){
+  const layouts=Object.fromEntries(Object.keys(columns).map(bp=>{
+   const items=old.layouts[bp];
+   return [bp,[...items,{i:kind,x:0,y:Math.max(...items.map(item=>item.y+item.h)),
+    w:widgetWidth(kind,bp),h:widgetHeight(kind)}]];
+  }));
+  old={...old,widgets:[...old.widgets,{id:kind,kind,title:widgetKinds[kind]}],layouts};
+ }
+ const corrected=upgradeSavedDashboardConfig(old,'admin');
+ const ids=['students_by_grade','attendance_rate','admission_status'];
+ const lg=ids.map(id=>corrected.layouts.lg.find(item=>item.i===id)!);
+ expect(new Set(lg.map(item=>item.y)).size).toBe(1);
+ expect(lg.map(item=>item.x)).toEqual([0,4,8]);
+ for(const bp of Object.keys(columns)){
+  for(const item of base.layouts[bp])
+   expect(corrected.layouts[bp].find(entry=>entry.i===item.i)).toEqual(item);
+ }
+ expect(corrected.widgets).toEqual(old.widgets);
+ const manuallyMoved:Config={...old,layouts:{...old.layouts,
+  lg:old.layouts.lg.map(item=>item.i==='attendance_rate'?{...item,x:4}:item)}};
+ expect(upgradeSavedDashboardConfig(manuallyMoved,'admin').layouts.lg).toEqual(manuallyMoved.layouts.lg);
 });

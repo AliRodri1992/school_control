@@ -64,8 +64,17 @@ export default function Dashboard({summary,data,role='admin',userId=0,selectedCh
    const upgraded=saved?upgradeSavedDashboardConfig(saved,role):defaultConfig(role);
    const recovered=Boolean(saved&&upgraded.widgets.some(widget=>
     !saved.widgets.some(previous=>previous.kind===widget.kind)));
-   const rearranged=Boolean(saved&&upgraded.widgets.length===saved.widgets.length&&
-    JSON.stringify(upgraded.layouts)!==JSON.stringify(saved.layouts));
+   // Compare coordinates by widget ID, not JSON key ordering: the backend
+   // may serialize otherwise-identical layouts with different object keys.
+   const sameWidgets=Boolean(saved&&upgraded.widgets.length===saved.widgets.length&&
+    upgraded.widgets.every((widget,index)=>widget.id===saved.widgets[index].id));
+   const rearranged=Boolean(saved&&sameWidgets&&Object.keys(columns).some(bp=>{
+    const oldItems=saved.layouts?.[bp]||[],newItems=upgraded.layouts?.[bp]||[];
+    return oldItems.length!==newItems.length||oldItems.some(item=>{
+     const next=newItems.find(other=>other.i===item.i);
+     return !next||next.x!==item.x||next.y!==item.y||next.w!==item.w||next.h!==item.h;
+    });
+   }));
    setConfig(upgraded);
    setAnalyticsRecovered(recovered||rearranged);
    setStackedChartsRearranged(rearranged);

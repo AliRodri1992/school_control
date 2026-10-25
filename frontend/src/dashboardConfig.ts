@@ -166,48 +166,59 @@ export function upgradeRoleCharts(config:Config,role:DashboardRole):Config{
 export function compactAutoStackedAnalytics(config:Config,role:DashboardRole):Config{
  const kinds=presets[role].filter(isAnalyticChartKind);
  if(kinds.length<2)return config;
- const start=config.widgets.findIndex(widget=>widget.kind===kinds[0]&&
-  widget.id===widget.kind&&widget.title===widgetKinds[widget.kind]);
- if(start<0||start+kinds.length>config.widgets.length)return config;
- const recovered=config.widgets.slice(start,start+kinds.length);
- if(!recovered.every((widget,index)=>widget.kind===kinds[index]&&
-  widget.id===widget.kind&&widget.title===widgetKinds[widget.kind]))return config;
- const beforeIds=new Set(config.widgets.slice(0,start).map(widget=>widget.id));
  const nextLayouts:Config['layouts']={...config.layouts};
  let changed=false;
+ // Work with contiguous subsequences: a user may already have one of the
+ // graphs when the other three were auto-restored in a vertical stack.
+ const runs:Array<Widget[]>=[];
+ for(let start=0;start<config.widgets.length;start++){
+  const first=config.widgets[start];
+  const firstIndex=kinds.indexOf(first.kind as AnalyticChartKind);
+  if(firstIndex<0||first.id!==first.kind||first.title!==widgetKinds[first.kind])continue;
+  const run=[first];
+  let previousIndex=firstIndex;
+  for(let index=start+1;index<config.widgets.length;index++){
+   const widget=config.widgets[index],kindIndex=kinds.indexOf(widget.kind as AnalyticChartKind);
+   if(kindIndex<=previousIndex||widget.id!==widget.kind||widget.title!==widgetKinds[widget.kind])break;
+   run.push(widget);previousIndex=kindIndex;
+  }
+  if(run.length>=2)runs.push(run);
+ }
+ runs.sort((a,b)=>b.length-a.length);
  for(const bp of Object.keys(columns)){
   const items=config.layouts[bp];
   if(!Array.isArray(items))continue;
-  const remaining=items.filter(item=>beforeIds.has(item.i));
-  let autoEnd=remaining.reduce((max,item)=>Math.max(max,item.y+item.h),0);
-  const generated=items.filter(item=>recovered.some(widget=>widget.id===item.i));
-  const isOriginalStack=generated.length===recovered.length&&
-   recovered.every((widget,index)=>{
-    const item=generated.find(item=>item.i===widget.id);
-    if(!item)return false;
-    const matches=item.x===0&&item.y===autoEnd&&
-     item.w===widgetWidth(widget.kind,bp)&&item.h===widgetHeight(widget.kind);
-    autoEnd+=widgetHeight(widget.kind);
+  for(const run of runs){
+   const firstIndex=config.widgets.findIndex(widget=>widget.id===run[0].id);
+   if(columns[bp]<2*widgetWidth(run[0].kind,bp))continue;
+   const beforeIds=new Set(config.widgets.slice(0,firstIndex).map(widget=>widget.id));
+   const runIds=new Set(run.map(widget=>widget.id));
+   const before=items.filter(item=>beforeIds.has(item.i));
+   let expectedY=before.reduce((max,item)=>Math.max(max,item.y+item.h),0);
+   const autoStack=run.every(widget=>{
+    const item=items.find(item=>item.i===widget.id);
+    const matches=Boolean(item&&item.x===0&&item.y===expectedY&&
+     item.w===widgetWidth(widget.kind,bp)&&item.h===widgetHeight(widget.kind));
+    expectedY+=widgetHeight(widget.kind);
     return matches;
    });
-  if(!isOriginalStack||columns[bp]<2*widgetWidth(kinds[0],bp))continue;
-  const recoveredIds=new Set(recovered.map(widget=>widget.id));
-  const laterItems=items.filter(item=>!recoveredIds.has(item.i)&&!beforeIds.has(item.i));
-  const laidOut=[...remaining];
-  const repositioned=recovered.map(widget=>{
-   const position={i:widget.id,...nextWidgetPosition(laidOut,widget.kind,bp)};
-   laidOut.push(position);
-   return position;
-  });
-  const overlapsLater=repositioned.some(position=>laterItems.some(item=>
-   position.x<item.x+item.w&&position.x+position.w>item.x&&
-   position.y<item.y+item.h&&position.y+position.h>item.y));
-  if(overlapsLater)continue;
-  const byId=new Map(repositioned.map(item=>[item.i,item]));
-  if(!items.some(item=>byId.has(item.i)&&
-   (byId.get(item.i)!.x!==item.x||byId.get(item.i)!.y!==item.y)))continue;
-  nextLayouts[bp]=items.map(item=>byId.get(item.i)||item);
-  changed=true;
+   if(!autoStack)continue;
+   const placed=[...before];
+   const packed=run.map(widget=>{
+    const item={i:widget.id,...nextWidgetPosition(placed,widget.kind,bp)};
+    placed.push(item);return item;
+   });
+   const later=items.filter(item=>!beforeIds.has(item.i)&&!runIds.has(item.i));
+   if(packed.some(position=>later.some(item=>
+    position.x<item.x+item.w&&position.x+position.w>item.x&&
+    position.y<item.y+item.h&&position.y+position.h>item.y)))continue;
+   const replacements=new Map(packed.map(item=>[item.i,item]));
+   if(!items.some(item=>replacements.has(item.i)&&
+    (replacements.get(item.i)!.x!==item.x||replacements.get(item.i)!.y!==item.y)))continue;
+   nextLayouts[bp]=items.map(item=>replacements.get(item.i)||item);
+   changed=true;
+   break;
+  }
  }
  return changed?{...config,layouts:nextLayouts}:config;
 }
