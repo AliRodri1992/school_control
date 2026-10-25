@@ -28,6 +28,11 @@ export default function DashboardMetricCard({kind,title,value,role,locale,transl
  const count=asCount(value);
  const formatted=new Intl.NumberFormat(locale==='en'?'en-US':locale==='ko'?'ko-KR':'es-MX').format(count);
  const footer=meta.attention?(count>0?'Requiere seguimiento':'Sin pendientes'):'Información actual';
+ const unit=role==='guardian'&&kind==='students'?'hijos':meta.unit;
+ const detail=role==='guardian'&&kind==='students'?'Hijos vinculados a tu cuenta':
+  kind==='today_classes'&&role==='student'?'Clases previstas en tu horario para hoy':
+  kind==='today_classes'&&role==='guardian'?'Clases de los grupos de tus hijos':
+  kind==='today_classes'&&role==='teacher'?'Clases programadas de tus grupos para hoy':meta.detail;
  return <article className={'dashboard-widget sc-kpi-card sc-kpi-'+meta.tone}
   data-metric={kind} data-portal={role} aria-label={title+': '+formatted}>
   <header className="sc-kpi-header">
@@ -41,9 +46,9 @@ export default function DashboardMetricCard({kind,title,value,role,locale,transl
   <div className="sc-kpi-main">
    <div className="sc-kpi-value-line">
     <strong className="sc-kpi-number">{formatted}</strong>
-    <span className="sc-kpi-unit">{translate(meta.unit)}</span>
+    <span className="sc-kpi-unit">{translate(unit)}</span>
    </div>
-   <p className="sc-kpi-description">{translate(meta.detail)}</p>
+   <p className="sc-kpi-description">{translate(detail)}</p>
   </div>
   <footer className="sc-kpi-footer">
    <span className={'sc-kpi-indicator'+(meta.attention&&count>0?' needs-attention':'')}>

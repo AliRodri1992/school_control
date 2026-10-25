@@ -34,6 +34,8 @@
 .sc-home .sc-kpi-card.sc-kpi-coral{--sc-kpi-accent:#b66668;--sc-kpi-strong:#974e56;--sc-kpi-pale:#ffeced;--sc-kpi-tint:#fff9fa}
 .sc-home .sc-kpi-card[data-portal=student]{--sc-kpi-tint:#faf9ff}
 .sc-home .sc-kpi-card[data-portal=guardian]{--sc-kpi-tint:#fafcff}
+.sc-home .sc-kpi-card[data-portal=guardian] .sc-kpi-category{color:#6578a0}
+.sc-home .sc-kpi-card[data-portal=student] .sc-kpi-category{color:#70669c}
 
 .sc-kpi-header{
  display:flex;align-items:flex-start;justify-content:space-between;gap:10px;

@@ -77,3 +77,16 @@ it('includes compact KPI widgets in all four initial role presets',()=>{
   expect(config.widgets.some(widget=>metricKinds.some(kind=>kind===widget.kind))).toBe(true);
  }
 });
+
+it('uses accurate role-aware descriptions for family, learner and teacher counts',()=>{
+ const {rerender}=render(<DashboardMetricCard kind="students" title="Mis hijos"
+  value={2} role="guardian" locale="es" translate={identity}/>);
+ expect(screen.getByText('hijos')).toBeTruthy();
+ expect(screen.getByText('Hijos vinculados a tu cuenta')).toBeTruthy();
+ rerender(<DashboardMetricCard kind="today_classes" title="Mis clases"
+  value={4} role="student" locale="es" translate={identity}/>);
+ expect(screen.getByText('Clases previstas en tu horario para hoy')).toBeTruthy();
+ rerender(<DashboardMetricCard kind="today_classes" title="Clases de hoy"
+  value={7} role="teacher" locale="es" translate={identity}/>);
+ expect(screen.getByText('Clases programadas de tus grupos para hoy')).toBeTruthy();
+});

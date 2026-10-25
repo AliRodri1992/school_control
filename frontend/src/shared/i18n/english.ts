@@ -729,6 +729,13 @@ Object.assign(englishByText,{
  'Conectando con tu escuela':'Connecting to your school',
  'Verificando accesos y cargando módulos':'Checking access and loading modules'
 });
+Object.assign(englishByText,{
+ 'Hijos vinculados a tu cuenta':'Children linked to your account',
+ 'Clases previstas en tu horario para hoy':'Classes on your schedule today',
+ 'Clases de los grupos de tus hijos':'Classes scheduled for your children’s groups',
+ 'Clases programadas de tus grupos para hoy':'Classes scheduled for your groups today',
+ 'hijos':'children'
+});
 export function translateUiText(locale:string,text:string):string{
  if(!locale.toLowerCase().startsWith('en'))return text;
  return englishByText[text]||text;
