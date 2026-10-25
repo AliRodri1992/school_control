@@ -5,7 +5,7 @@ module Api
     before_action :require_admin, except: :index
 
     def index
-      render json: policy_scope(model).order(:id).map { |record| present(record) }
+      render json: policy_scope(model).order(*index_order).map { |record| present(record) }
     end
 
     def create
@@ -28,6 +28,7 @@ module Api
 
     private
 
+    def index_order = [ :id ]
     def collection = model.all
   end
 end
