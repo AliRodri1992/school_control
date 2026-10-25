@@ -408,15 +408,17 @@ it('aligns the sidebar brand in a dedicated header row across desktop states',as
  const brand=sidebar?.firstElementChild;
  expect(brand?.tagName).toBe('HEADER');
  expect(brand?.classList.contains('sc-shell-brand')).toBe(true);
+ expect(brand?.getAttribute('aria-label')).toBe('School Control · Primaria Hidalgo');
+ expect(brand?.getAttribute('data-compact')).toBe('false');
  expect(brand?.querySelector('.sc-sidebar-system-mark svg')).toBeTruthy();
  await userEvent.click(screen.getByRole('button',{name:'Colapsar barra lateral'}));
- expect(container.querySelector('.sc-shell-collapsed .sc-sidebar > .sc-shell-brand')).toBeTruthy();
+ expect(container.querySelector('.sc-shell-collapsed .sc-sidebar > .sc-shell-brand[data-compact="true"]')).toBeTruthy();
 });
 
 it('keeps the aligned brand and mobile close control in the drawer',async()=>{
  const onMobile=vi.fn();
  const {container}=render(<PortalChrome {...props} mobile onMobile={onMobile}><div>Página</div></PortalChrome>);
- expect(container.querySelector('.sc-sidebar.open > header.sc-shell-brand')).toBeTruthy();
+ expect(container.querySelector('.sc-sidebar.open > header.sc-shell-brand[data-compact="false"]')).toBeTruthy();
  await userEvent.click(screen.getByRole('button',{name:'Cerrar menú'}));
  expect(onMobile).toHaveBeenCalledWith(false);
 });

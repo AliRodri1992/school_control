@@ -293,7 +293,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    {mobile&&<button type="button" className="sc-sidebar-backdrop" aria-label={translateUiText(locale,'Cerrar menú lateral')} onClick={()=>{onMobile(false);mobileTrigger.current?.focus();}}/>}
 
    <aside id="school-sidebar" ref={sidebarRef} className={'sidebar sc-sidebar'+(mobile?' open':'')} aria-label={translateUiText(locale,'Barra lateral principal')}>
-     <SidebarBrand schoolName={school.name} locale={locale} closeRef={mobileCloseTrigger}
+     <SidebarBrand schoolName={school.name} locale={locale} compact={compact} closeRef={mobileCloseTrigger}
        onClose={()=>{onMobile(false);mobileTrigger.current?.focus();}}/>
           <nav className="sc-sidebar-nav" aria-label={translateUiText(locale,'Navegación principal')}>
        {sections.map(section=>{

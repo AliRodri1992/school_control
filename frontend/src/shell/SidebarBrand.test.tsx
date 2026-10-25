@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
 import {createRef} from 'react';
-import {expect,it,vi} from 'vitest';
-import {render,screen} from '@testing-library/react';
+import {afterEach,expect,it,vi} from 'vitest';
+import {cleanup,render,screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {SidebarBrand} from './SidebarBrand';
+
+afterEach(cleanup);
 
 it('renders system identity in an independent sidebar header',()=>{
  const {container}=render(<SidebarBrand schoolName="Primaria Hidalgo" locale="es"
@@ -30,4 +32,12 @@ it('translates the brand subtitle for English without changing its structure',()
    closeRef={createRef<HTMLButtonElement>()} onClose={()=>undefined}/>);
  expect(container.querySelector('.sc-sidebar-brand-text small')?.textContent).toBe('Smart school management');
  expect(container.querySelector('header.sc-shell-brand')).toBeTruthy();
+});
+
+it('labels compact branding without requiring a second logo',()=>{
+ const {container}=render(<SidebarBrand schoolName="Primaria Hidalgo" locale="es" compact
+   closeRef={createRef<HTMLButtonElement>()} onClose={()=>undefined}/>);
+ const brand=container.querySelector('.sc-shell-brand');
+ expect(brand?.getAttribute('data-compact')).toBe('true');
+ expect(brand?.querySelectorAll('.sc-sidebar-system-mark')).toHaveLength(1);
 });
