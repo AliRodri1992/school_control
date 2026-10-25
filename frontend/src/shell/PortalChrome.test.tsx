@@ -17,10 +17,10 @@ const user={id:15,name:'María González',email:'maria@example.test',role:'admin
 const props={user,school:{name:'Primaria Hidalgo',logo_url:'/logo.svg',timezone:'America/Mexico_City'},
  page:'dashboard',mobile:false,onMobile:vi.fn(),can:()=>true,pendingAdmissions:0,
  onNavigate:vi.fn(),onSignOut:vi.fn(async()=>undefined)};
-it('shows school branding and an icon-only language menu without search',async()=>{
+it('shows school branding, search and the language menu',async()=>{
  render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
  expect(screen.getByRole('button',{name:'Ir al inicio de Primaria Hidalgo'})).toBeTruthy();
- expect(screen.queryByRole('searchbox',{name:'Buscar módulos'})).toBeNull();
+ expect(screen.getByRole('button',{name:'Buscar en School Control'})).toBeTruthy();
  const language=screen.getByRole('button',{name:'Idioma'});
  expect(language.getAttribute('aria-expanded')).toBe('false');
  await userEvent.click(language);
@@ -233,4 +233,30 @@ it('identifies standalone account pages in the breadcrumb',()=>{
  render(<PortalChrome {...props} page="preferences"><div>Página</div></PortalChrome>);
  const crumbs=screen.getByRole('navigation',{name:'Ruta de navegación'});
  expect(crumbs.querySelector('[aria-current="page"]')?.textContent).toBe('Preferencias');
+});
+
+it('searches authorized school modules',async()=>{
+ const searchNavigate=vi.fn();
+ render(<PortalChrome {...props} onSearchNavigate={searchNavigate}><div>Página</div></PortalChrome>);
+ await userEvent.click(screen.getByRole('button',{name:'Buscar en School Control'}));
+ await userEvent.type(screen.getByRole('searchbox',{name:'Buscar en School Control'}),'Calificaciones');
+ await userEvent.click(screen.getByRole('option',{name:/Calificaciones/}));
+ expect(searchNavigate).toHaveBeenCalledWith('grades',undefined);
+});
+it('shows only authorized quick actions and dispatches the requested module',async()=>{
+ const quick=vi.fn();
+ render(<PortalChrome {...props} onQuickAction={quick} can={p=>['dashboard.show','students.index','students.create'].includes(p)}><div>Página</div></PortalChrome>);
+ await userEvent.click(screen.getByRole('button',{name:'Nuevo registro'}));
+ expect(screen.getByRole('button',{name:'Agregar alumno'})).toBeTruthy();
+ expect(screen.queryByRole('button',{name:'Crear grupo'})).toBeNull();
+ await userEvent.click(screen.getByRole('button',{name:'Agregar alumno'}));
+ expect(quick).toHaveBeenCalledWith(expect.objectContaining({page:'students',mode:'create'}));
+});
+it('offers Ctrl+K keyboard navigation for search',async()=>{
+ const navigate=vi.fn();
+ render(<PortalChrome {...props} onSearchNavigate={navigate}><div>Página</div></PortalChrome>);
+ await userEvent.keyboard('{Control>}k{/Control}');
+ await userEvent.type(screen.getByRole('searchbox',{name:'Buscar en School Control'}),'Alumnos');
+ await userEvent.keyboard('{Enter}');
+ expect(navigate).toHaveBeenCalledWith('students',undefined);
 });

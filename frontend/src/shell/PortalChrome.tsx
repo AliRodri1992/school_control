@@ -1,5 +1,5 @@
 import {LocaleProvider} from '../shared/i18n/LocaleContext';
-import TopbarClock from './TopbarClock';
+import TopbarCommands,type {QuickAction} from './TopbarCommands';
 import {useTopbarMenuPosition} from './useTopbarMenuPosition';
 import {translateUiText} from '../shared/i18n/english';
 import {useEffect,useRef,useState,type ReactNode} from 'react';
@@ -10,9 +10,11 @@ import Combobox from '../shared/components/Combobox';
 import type {Row} from '../modules';
 import {currentPortal,makePortalUrl,portalLabels,visibleGroups,findNavPath,breadcrumbPath,type NavItem} from './portalNavigation';
 
-export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmissions,onNavigate,onSignOut,children,childrenList=[],selectedChildId='',onSelectChild=()=>undefined}:{
+export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmissions,onNavigate,onQuickAction,onSearchNavigate,onSearchStudent,searchCollections={},onSignOut,children,childrenList=[],selectedChildId='',onSelectChild=()=>undefined}:{
  user:Row;school:Row;page:string;mobile:boolean;onMobile:(open:boolean)=>void;
- can:(permission:string)=>boolean;pendingAdmissions:number;onNavigate:(page:string)=>void;onSignOut:()=>Promise<void>;children:ReactNode;childrenList?:Row[];selectedChildId?:string;onSelectChild?:(id:string)=>void;
+ can:(permission:string)=>boolean;pendingAdmissions:number;onNavigate:(page:string)=>void;onSignOut:()=>Promise<void>;
+ onQuickAction?:(action:QuickAction)=>void;onSearchNavigate?:(page:string,query?:string)=>void;onSearchStudent?:(student:Row)=>void;searchCollections?:Record<string,Row[]>;
+ children:ReactNode;childrenList?:Row[];selectedChildId?:string;onSelectChild?:(id:string)=>void;
 }) {
  const portal=currentPortal(user.role),groups=visibleGroups(portal,can);
  const [expanded,setExpanded]=useState<string[]>(['Inicio','Mi actividad','Mi escuela','Mi familia','Gestión escolar']);
@@ -224,7 +226,6 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  }
  const trail=breadcrumbPath(groups,page,portal);
  const crumbLabel=(key:string,title:string)=>translate(key==='profile'?'shell.profile':key==='preferences'?'shell.preferences':key==='help'?'shell.help':key==='notifications'?'shell.notification_center':'nav.'+key,title);
- const tz=school.timezone||'America/Mexico_City';
  useEffect(()=>{setCrumbMenuOpen(false);},[page,locale]);
  useEffect(()=>{
   if(!crumbMenuOpen)return;
@@ -300,16 +301,20 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
          <Combobox value={selectedChildId} label={translateUiText(locale,'Seleccionar hijo')} placeholder={translateUiText(locale,'Todos mis hijos')} onChange={onSelectChild}
            options={childrenList.map(child=>({value:String(child.id),label:child.full_name||child.first_name}))}/>
        </div>}
+       <TopbarCommands groups={groups} records={searchCollections} can={can} locale={locale} translate={translate}
+        onNavigate={(target,search)=>onSearchNavigate?onSearchNavigate(target,search):navigate(target)}
+        onStudent={student=>onSearchStudent?onSearchStudent(student):navigate('students')}
+        onCreate={action=>onQuickAction?onQuickAction(action):navigate(action.page)}
+        onOpen={()=>{setAccountTarget(null);setNotificationsOpen(false);setLanguageOpen(false);}}/>
        <div className="sc-top-actions">
-         <TopbarClock locale={locale} timeZone={tz}/>
          <div className="sc-language sc-flyout-holder" ref={languageRef}>
-           <button type="button" className="sc-icon-button sc-language-button" aria-label={translate('shell.locale','Idioma')} title={translate('shell.locale','Idioma')} aria-expanded={languageOpen} onClick={()=>{setLanguageOpen(v=>!v);setNotificationsOpen(false);setAccountTarget(null);}}><Languages size={19}/></button>
+           <button type="button" className="sc-icon-button sc-language-button" aria-label={translate('shell.locale','Idioma')} title={translate('shell.locale','Idioma')} aria-expanded={languageOpen} onClick={()=>{setLanguageOpen(v=>!v);setNotificationsOpen(false);setAccountTarget(null);}}><Languages size={18}/><span className="sc-language-code">{locale.toUpperCase()}</span><ChevronDown className="sc-language-chevron" size={13}/></button>
            {languageOpen&&<div className="sc-flyout sc-language-menu" role="group" aria-label={translateUiText(locale,"Idiomas disponibles")}>
              {(availableLocales.length?availableLocales:[{id:0,code:'es',name:'Español',native_name:'Español',status:'active',text_direction:'ltr'},{id:1,code:'en',name:'English',native_name:'English',status:'active',text_direction:'ltr'}]).map(language=><button type="button" className="sc-flyout-link" key={language.code} aria-pressed={locale===language.code} onClick={()=>setLanguage(language.code)}>{language.native_name} · {language.code.toUpperCase()}{locale===language.code&&<Check size={16} aria-hidden="true"/>}</button>)}
            </div>}
          </div>
          <div className="sc-flyout-holder" ref={notificationRef}>
-           <button className="sc-icon-button" aria-label={(locale==='en'?'Notifications: ':'Notificaciones: ')+unread+(locale==='en'?' unread':' sin leer')} aria-expanded={notificationsOpen}
+           <button className="sc-icon-button sc-notification-button" aria-label={(locale==='en'?'Notifications: ':'Notificaciones: ')+unread+(locale==='en'?' unread':' sin leer')} aria-expanded={notificationsOpen}
              onClick={()=>{setNotificationsOpen(v=>!v);setAccountTarget(null);setLanguageOpen(false);}}><Bell size={19}/>{unread>0&&<b className="sc-notification-count">{unread>99?'99+':unread}</b>}</button>
            {notificationsOpen&&<section className="sc-flyout" aria-label="Notificaciones">
              <div className="sc-flyout-title"><strong>{translate("shell.notifications","Notificaciones")}</strong><button type="button" aria-label={translateUiText(locale,"Cerrar")} onClick={()=>{setNotificationsOpen(false);notificationRef.current?.querySelector("button")?.focus();}}><X size={16}/></button></div>

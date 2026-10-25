@@ -14,6 +14,7 @@ import {useLocation,useNavigate} from 'react-router-dom';
 const ImportWizard=lazy(()=>import('./features/imports/ImportWizard'));
 import {confirmDanger} from './notifications';
 import {PortalChrome} from './shell/PortalChrome';
+import type {QuickAction} from './shell/TopbarCommands';
 import {currentPortal,resolvePortalLocation,makePortalUrl,canImportFromPermissions,isStudentRecordUrl,studentRecordUrl} from './shell/portalNavigation';
 import Login from './auth/Login';
 const Reports=lazy(()=>import('./Reports'));
@@ -129,14 +130,14 @@ export default function App(){
    return data[source]||[];
  }
  const optionName = (row:Row) => row.label||row.full_name||row.name||row.title||String(row.id);
- function createOrEdit(record?:Row){
-   const module = translatedModules[page];
+ function createOrEdit(record?:Row,targetPage=page){
+   const module = translatedModules[targetPage];
    let fields = module.fields.filter(f=>!(f.key==='guardian_id'&&user?.role==='guardian'));
-   if(page==='student_contacts'&&record)fields=fields.filter(f=>f.key!=='student_id');
-   if(page==='users'&&record)fields=fields.filter(f=>['name','email'].includes(f.key));
+   if(targetPage==='student_contacts'&&record)fields=fields.filter(f=>f.key!=='student_id');
+   if(targetPage==='users'&&record)fields=fields.filter(f=>['name','email'].includes(f.key));
    setFieldErrors({});setDialog({title:`${ui(record?'Editar':'Registrar')} ${module.singular}`,fields,values:record||{},submit:async(values)=>{
-     const updateAsCreate=['attendances','grades'].includes(page);
-     await api(record&&!updateAsCreate?`${page}/${record.id}`:page,record&&!updateAsCreate?'PATCH':'POST',values);setDialog(null);
+     const updateAsCreate=['attendances','grades'].includes(targetPage);
+     await api(record&&!updateAsCreate?`${targetPage}/${record.id}`:targetPage,record&&!updateAsCreate?'PATCH':'POST',values);setDialog(null);
    }});
  }
  function approve(record:Row){
@@ -153,6 +154,14 @@ export default function App(){
    await api('schedule_slots','POST',{...values,starts_minute:minute(values.start),ends_minute:minute(values.end)});setDialog(null);
  }});}
  const can=(key:string)=>!!user?.permissions?.[key]?.length;
+ function quickAction(action:QuickAction){
+  if(!can(action.permission)||!can(action.index))return;
+  if(action.mode==='open'){go(action.page);return;}
+  if(!modules[action.page])return;
+  go(action.page);createOrEdit(undefined,action.page);
+ }
+ function searchGo(page:string,search?:string){go(page);if(search)setQuery(search);}
+
  const editable = can(`${page}.create`);
  const linkedEnrollments=new Set((data.enrollments||[]).filter(e=>String(e.student_id)===selectedChild).map(e=>String(e.id)));
  const records=(data[page]||[]).filter(row=>{
@@ -173,7 +182,8 @@ export default function App(){
  if(resetToken)return <Suspense fallback={<div className="boot" role="status">{ui('Cargando recuperación de contraseña…')}</div>}><PasswordRecovery schoolName={school.name} token={resetToken} onClose={signedOut}/></Suspense>;
  if(!user)return <Login school={school} initialError={error} onLogin={async account=>{setUser(account);setError('');await refresh(account);}}/>;
  return <PortalChrome user={user} school={school} page={page} mobile={mobile} onMobile={setMobile}
- can={can} pendingAdmissions={Number(summary.pending_admissions||0)} onNavigate={go} 
+ can={can} pendingAdmissions={Number(summary.pending_admissions||0)} onNavigate={go}
+ onQuickAction={quickAction} onSearchNavigate={searchGo} onSearchStudent={openStudentRecord} searchCollections={data} 
   childrenList={user.role==='guardian'?data.students||[]:[]} selectedChildId={selectedChild} onSelectChild={selectChild}
  onSignOut={async()=>{try{await api('session','DELETE');signedOut();void notify('Sesión cerrada correctamente.');}catch(e){setError((e as Error).message);}}}>
  <Suspense fallback={<div className="content" role="status"><p>{ui('Cargando módulo…')}</p></div>}><div className="content">{error&&<div className="error" role="alert">{error}<button aria-label={ui('Cerrar error')} onClick={()=>setError('')}><X size={16}/></button></div>}{notice&&<div className="success" role="status"><Check size={16}/>{notice}</div>}
