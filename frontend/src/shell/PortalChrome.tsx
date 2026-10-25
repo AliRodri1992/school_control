@@ -252,11 +252,14 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    nav.classList.toggle('sc-crumbs-condensed',condensed);
    setBreadcrumbCondensed(previous=>previous===condensed?previous:condensed);
   };
+  let active=true;
   measure();
+  if(document.fonts?.ready)void document.fonts.ready.then(()=>{if(active)measure();});
   window.addEventListener('resize',measure);
   const observer=typeof ResizeObserver!=='undefined'?new ResizeObserver(measure):null;
   if(observer&&nav.parentElement)observer.observe(nav.parentElement);
   return()=>{
+   active=false;
    observer?.disconnect();
    window.removeEventListener('resize',measure);
   };

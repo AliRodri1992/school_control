@@ -1,9 +1,7 @@
-import {readFileSync} from 'node:fs';
 import {expect,it} from 'vitest';
-
-const legacy=readFileSync(new URL('../styles.css',import.meta.url),'utf8');
-const foundation=readFileSync(new URL('../styles/design-system.css',import.meta.url),'utf8');
-const shell=readFileSync(new URL('../styles/portal-shell.css',import.meta.url),'utf8');
+import legacy from '../styles.css?raw';
+import foundation from '../styles/design-system.css?raw';
+import shell from '../styles/portal-shell.css?raw';
 
 it('does not apply sidebar-sized links to breadcrumbs through global nav selectors',()=>{
  expect(legacy).toContain('.sidebar nav button{display:flex;width:100%');
@@ -19,4 +17,11 @@ it('pins the breadcrumb home and ancestor buttons to natural widths at the left'
  expect(shell).toMatch(/\.sc-crumb-step\s*>\s*\.sc-crumb-link\s*\{[^}]*width:auto/);
  expect(shell).toContain('.sc-crumbs-condensed .sc-crumb-ancestor{display:none}');
  expect(shell).not.toContain('overflow-x:auto;overflow-y:hidden;white-space:nowrap;');
+});
+
+it('keeps the compact route left-aligned with clear current-page emphasis',()=>{
+ expect(shell).toMatch(/\.sc-breadcrumb-bar\.sc-breadcrumb-design-one\{[^}]*justify-content:flex-start/);
+ expect(shell).toMatch(/\.sc-breadcrumb-design-one \.sc-crumbs\{[^}]*justify-content:flex-start/);
+ expect(shell).toContain('.sc-crumb-current-label[aria-current=page]');
+ expect(shell).toContain('color:#075bd5');
 });

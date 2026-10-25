@@ -68,3 +68,14 @@ it('returns the visible hierarchy for the common admin modules',()=>{
   expect(breadcrumbPath(groups,page,'admin').map(item=>item.key)).toEqual(keys);
  }
 });
+
+it('does not preserve a stale route label when switching modules',()=>{
+ const groups=visibleGroups('admin',()=>true);
+ const pages=['dashboard','students','courses','reports','admissions','preferences'];
+ for(let i=0;i<pages.length-1;i++){
+  const a=breadcrumbPath(groups,pages[i],'admin'),b=breadcrumbPath(groups,pages[i+1],'admin');
+  expect(a.at(-1)?.key).toBe(pages[i]);
+  expect(b.at(-1)?.key).toBe(pages[i+1]);
+  expect(b.at(-1)?.title).not.toBe(a.at(-1)?.title);
+ }
+});

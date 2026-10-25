@@ -577,3 +577,14 @@
 .sc-main .sc-breadcrumb-design-one .sc-crumbs > .sc-crumb-more{
  margin:0;padding:0;
 }
+
+/* Compact current-page chip stays on the left instead of stretching like a legacy nav button. */
+.sc-main .sc-breadcrumb-design-one .sc-crumbs > .sc-crumb-current{
+ align-self:center;flex:0 1 auto;min-width:0;
+}
+.sc-main .sc-breadcrumb-design-one .sc-crumbs.sc-crumbs-condensed > .sc-crumb-current{
+ flex:1 1 0;
+}
+@media(max-width:760px){
+ .sc-main .sc-breadcrumb-design-one .sc-crumbs > .sc-crumb-current{flex:1 1 0}
+}

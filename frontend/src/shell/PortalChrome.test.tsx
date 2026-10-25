@@ -516,3 +516,16 @@ it('navigates from the sidebar to a different module and updates the breadcrumb 
  await userEvent.click(screen.getByRole('button',{name:'Ir al inicio'}));
  expect(trail.querySelector('[aria-current="page"]')?.textContent).toBe('Resumen');
 });
+
+it('updates breadcrumbs on mobile when changing between nested school modules',()=>{
+ const {rerender}=render(<PortalChrome {...props} mobile page="dashboard"><div>Página</div></PortalChrome>);
+ const breadcrumb=screen.getByRole('navigation',{name:'Ruta de navegación'});
+ expect(breadcrumb.querySelector('[aria-current=page]')?.textContent).toBe('Resumen');
+ rerender(<PortalChrome {...props} mobile page="courses"><div>Página</div></PortalChrome>);
+ expect(breadcrumb.querySelector('[aria-current=page]')?.textContent).toBe('Clases');
+ expect(breadcrumb.querySelectorAll('.sc-crumb-ancestor')).toHaveLength(2);
+ expect(screen.getByRole('button',{name:'Mostrar páginas anteriores'})).toBeTruthy();
+ rerender(<PortalChrome {...props} mobile page="reports"><div>Página</div></PortalChrome>);
+ expect(breadcrumb.querySelector('[aria-current=page]')?.textContent).toBe('Reportes');
+ expect(breadcrumb.querySelectorAll('.sc-crumb-ancestor')).toHaveLength(0);
+});
