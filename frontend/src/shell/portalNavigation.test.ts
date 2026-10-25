@@ -79,3 +79,13 @@ it('does not preserve a stale route label when switching modules',()=>{
   expect(b.at(-1)?.title).not.toBe(a.at(-1)?.title);
  }
 });
+
+it('uses the role-specific current title rather than the admin dashboard label',()=>{
+ const teacher=visibleGroups('teachers',()=>true);
+ const student=visibleGroups('students',()=>true);
+ const tutor=visibleGroups('tutors',()=>true);
+ expect(breadcrumbPath(teacher,'dashboard','teachers').at(-1)?.title).toBe('Mi día');
+ expect(breadcrumbPath(student,'dashboard','students').at(-1)?.title).toBe('Mi inicio');
+ expect(breadcrumbPath(tutor,'dashboard','tutors').at(-1)?.title).toBe('Inicio familiar');
+ expect(breadcrumbPath(teacher,'groups','teachers').at(-1)?.title).toBe('Mis grupos');
+});

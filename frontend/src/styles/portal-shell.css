@@ -588,3 +588,12 @@
 @media(max-width:760px){
  .sc-main .sc-breadcrumb-design-one .sc-crumbs > .sc-crumb-current{flex:1 1 0}
 }
+
+/* The breadcrumb cannot adopt the full-width sizing of sidebar navigation entries. */
+.sc-main .sc-breadcrumb-design-one .sc-crumbs > .sc-crumb-home,
+.sc-main .sc-breadcrumb-design-one .sc-crumbs > .sc-crumb-step > .sc-crumb-link{
+ box-sizing:border-box;align-self:center;margin-block:0;
+}
+.sc-main .sc-breadcrumb-design-one .sc-crumbs > .sc-crumb-step > .sc-crumb-link{
+ min-width:0;
+}

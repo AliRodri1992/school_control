@@ -1,7 +1,10 @@
 import {expect,it} from 'vitest';
-import legacy from '../styles.css?raw';
-import foundation from '../styles/design-system.css?raw';
-import shell from '../styles/portal-shell.css?raw';
+import {readFileSync} from 'node:fs';
+
+// Vitest intentionally mocks CSS imports; reading the source enforces the real layout contract.
+const legacy=readFileSync(new URL('../styles.css',import.meta.url),'utf8');
+const foundation=readFileSync(new URL('../styles/design-system.css',import.meta.url),'utf8');
+const shell=readFileSync(new URL('../styles/portal-shell.css',import.meta.url),'utf8');
 
 it('does not apply sidebar-sized links to breadcrumbs through global nav selectors',()=>{
  expect(legacy).toContain('.sidebar nav button{display:flex;width:100%');
@@ -24,4 +27,11 @@ it('keeps the compact route left-aligned with clear current-page emphasis',()=>{
  expect(shell).toMatch(/\.sc-breadcrumb-design-one \.sc-crumbs\{[^}]*justify-content:flex-start/);
  expect(shell).toContain('.sc-crumb-current-label[aria-current=page]');
  expect(shell).toContain('color:#075bd5');
+});
+
+it('does not reintroduce the original full-width legacy breadcrumb bug',()=>{
+ expect(legacy).not.toMatch(/(^|})nav\{overflow-y:auto;padding-bottom/);
+ expect(legacy).not.toMatch(/(^|})nav button\{display:flex;width:100%/);
+ expect(shell).toContain('width:max-content');
+ expect(shell).toContain('.sc-crumbs-condensed .sc-crumb-more{display:inline-flex}');
 });

@@ -242,6 +242,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  // Collapsed ancestors remain accessible in the existing overflow menu.
  const crumbKey=trail.map(item=>item.key).join('|');
  const displayedPage=page;
+ // Use the current route as the UI source of truth on every navigation change.
  useLayoutEffect(()=>{
   const nav=breadcrumbNavRef.current;
   if(!nav)return;
@@ -388,7 +389,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
      </header>
      <div className="sc-breadcrumb-bar sc-breadcrumb-design-one">
        <nav ref={breadcrumbNavRef} className={'sc-crumbs'+(breadcrumbCondensed?' sc-crumbs-condensed':'')}
-         data-current-page={page} data-breadcrumb-trail={crumbKey}
+         data-current-page={displayedPage} data-breadcrumb-trail={crumbKey}
          aria-label={translateUiText(locale,"Ruta de navegación")}>
          <button className="sc-crumb-home" type="button" aria-label={translateUiText(locale,"Ir al inicio")}
            title={translateUiText(locale,"Ir al inicio")} onClick={()=>navigate('dashboard')}>

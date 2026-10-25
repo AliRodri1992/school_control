@@ -529,3 +529,13 @@ it('updates breadcrumbs on mobile when changing between nested school modules',(
  expect(breadcrumb.querySelector('[aria-current=page]')?.textContent).toBe('Reportes');
  expect(breadcrumb.querySelectorAll('.sc-crumb-ancestor')).toHaveLength(0);
 });
+
+it('keeps the breadcrumb left-to-right hierarchy after navigation in the teacher portal',()=>{
+ const userAsTeacher={...user,role:'teacher'};
+ const {rerender}=render(<PortalChrome {...props} user={userAsTeacher} page="dashboard"><div>Página</div></PortalChrome>);
+ const nav=screen.getByRole('navigation',{name:'Ruta de navegación'});
+ expect(nav.querySelector('[aria-current=page]')?.textContent).toBe('Mi día');
+ rerender(<PortalChrome {...props} user={userAsTeacher} page="groups"><div>Página</div></PortalChrome>);
+ expect(nav.querySelector('[aria-current=page]')?.textContent).toBe('Mis grupos');
+ expect(nav.querySelector('.sc-crumb-home-label')?.textContent).toBe('Inicio');
+});
