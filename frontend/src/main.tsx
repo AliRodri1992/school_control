@@ -22,6 +22,8 @@ import './styles/dashboard-context.css';
 import './styles/preferences.css';
 import './styles/portal-home.css';
 import './styles/help.css';
+// Place interactive language-state styles last to avoid generic flyout overrides.
+import './styles/language-menu.css';
 const previewPath='/__preview/preparing';
 const preview=shouldShowBootPreview(import.meta.env.DEV,window.location.pathname);
 const previewStage=previewBootStage(window.location.search);

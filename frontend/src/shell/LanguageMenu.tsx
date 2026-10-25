@@ -24,12 +24,15 @@ export default function LanguageMenu({languages,currentLocale,label,onSelect}:Pr
   options[index].focus();
  }
  return <div className="sc-flyout sc-language-menu" role="group" aria-label={label} onKeyDown={moveFocus}>
-  {languages.map(language=><button key={language.code} type="button"
-   className="sc-flyout-link sc-language-option"
-   aria-pressed={currentLocale===language.code}
-   onClick={()=>onSelect(language.code)}>
-   <span className="sc-language-option-label">{language.native_name} · {language.code.toUpperCase()}</span>
-   {currentLocale===language.code&&<Check size={16} aria-hidden="true"/>}
-  </button>)}
+  {languages.map(language=>{
+   const selected=currentLocale===language.code;
+   return <button key={language.code} type="button"
+    className={'sc-flyout-link sc-language-option'+(selected?' is-selected':'')}
+    aria-pressed={selected}
+    onClick={()=>onSelect(language.code)}>
+    <span className="sc-language-option-label">{language.native_name} · {language.code.toUpperCase()}</span>
+    {selected&&<span className="sc-language-option-check" aria-hidden="true"><Check size={15}/></span>}
+   </button>;
+  })}
  </div>;
 }

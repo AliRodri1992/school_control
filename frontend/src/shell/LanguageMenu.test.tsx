@@ -34,15 +34,20 @@ it('highlights the current locale and places its check mark inside the same clic
  const spanish=screen.getByRole('button',{name:'Español · ES'});
  const english=screen.getByRole('button',{name:'English · EN'});
  expect(spanish.getAttribute('aria-pressed')).toBe('true');
- expect(spanish.querySelector('svg')).toBeTruthy();
+ expect(spanish.classList.contains('is-selected')).toBe(true);
+ expect(spanish.querySelector('.sc-language-option-check svg')).toBeTruthy();
  expect(english.getAttribute('aria-pressed')).toBe('false');
- expect(english.querySelector('svg')).toBeNull();
+ expect(english.classList.contains('is-selected')).toBe(false);
+ expect(english.querySelector('.sc-language-option-check')).toBeNull();
 
  rerender(<LanguageMenu label="Idiomas disponibles" languages={languages}
   currentLocale="en" onSelect={vi.fn()}/>);
  expect(spanish.getAttribute('aria-pressed')).toBe('false');
+ expect(spanish.classList.contains('is-selected')).toBe(false);
+ expect(spanish.querySelector('.sc-language-option-check')).toBeNull();
  expect(english.getAttribute('aria-pressed')).toBe('true');
- expect(english.querySelector('svg')).toBeTruthy();
+ expect(english.classList.contains('is-selected')).toBe(true);
+ expect(english.querySelector('.sc-language-option-check svg')).toBeTruthy();
 });
 
 it('keeps hover and selected hit areas on the complete button, not just the text',async()=>{
@@ -52,6 +57,7 @@ it('keeps hover and selected hit areas on the complete button, not just the text
  const selected=screen.getByRole('button',{name:'Español · ES'});
  expect(selected.classList.contains('sc-language-option')).toBe(true);
  expect(selected.querySelector('.sc-language-option-label')).toBeTruthy();
+ expect(selected.querySelector('.sc-language-option-check')).toBeTruthy();
  await userEvent.click(selected.querySelector('svg')!);
  expect(onSelect).toHaveBeenCalledWith('es');
 });
