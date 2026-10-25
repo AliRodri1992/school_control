@@ -138,3 +138,14 @@ it('keeps the guardian child selector in the header',()=>{
  <div>Página</div></PortalChrome>);
  expect(screen.getByRole('combobox',{name:'Seleccionar hijo'})).toBeTruthy();
 });
+
+it('constrains a language dropdown to the visible viewport',async()=>{
+ const width=vi.spyOn(window,'innerWidth','get').mockReturnValue(320);
+ try{
+  render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+  await userEvent.click(screen.getByRole('button',{name:'Idioma'}));
+  const popover=screen.getByRole('group',{name:'Idiomas disponibles'}) as HTMLElement;
+  expect(Number.parseFloat(popover.style.left)).toBeGreaterThanOrEqual(12);
+  expect(Number.parseFloat(popover.style.width)).toBeLessThanOrEqual(296);
+ }finally{width.mockRestore();}
+});

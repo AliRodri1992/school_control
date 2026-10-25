@@ -4,7 +4,7 @@ import {useTopbarMenuPosition} from './useTopbarMenuPosition';
 import {translateUiText} from '../shared/i18n/english';
 import {useEffect,useRef,useState,type ReactNode} from 'react';
 import {createPortal} from 'react-dom';
-import {Bell,BookOpen,Check,ChevronDown,ChevronRight,HelpCircle,Languages,LogOut,Menu,PanelLeftClose,PanelLeftOpen,UserRound,X,LayoutDashboard,Users,GraduationCap,BookOpenCheck,CalendarDays,MessageSquare,BarChart3,Settings,School,FolderOpen,ClipboardList,UserRoundCheck,ClipboardCheck,ClipboardPenLine,BookMarked,FileSpreadsheet,ShieldCheck,Mail,Globe2,Code2,FileText,ContactRound,ChartNoAxesCombined,NotebookTabs,IdCard} from 'lucide-react';
+import {Bell,BookOpen,CalendarClock,Check,ChevronDown,ChevronRight,HelpCircle,Languages,LogOut,Menu,PanelLeftClose,PanelLeftOpen,UserRound,X,LayoutDashboard,Users,GraduationCap,BookOpenCheck,CalendarDays,MessageSquare,BarChart3,Settings,School,FolderOpen,ClipboardList,UserRoundCheck,ClipboardCheck,ClipboardPenLine,BookMarked,FileSpreadsheet,ShieldCheck,Mail,Globe2,Code2,FileText,ContactRound,ChartNoAxesCombined,NotebookTabs,IdCard} from 'lucide-react';
 import {api} from '../api';
 import Combobox from '../shared/components/Combobox';
 import type {Row} from '../modules';
@@ -228,7 +228,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  function setLanguage(language:string){setLanguageOpen(false);if(language===locale||!availableLocales.some(item=>item.code===language))return;setLocale(language);localStorage.setItem('school-locale',language);window.dispatchEvent(new Event('school-locale-changed'));
    void api('preferences','PATCH',{locale:language}).catch(e=>setNoticeError((e as Error).message));}
  function accountMenu(){
-   return <section className="sc-flyout sc-account-menu" aria-label="Menú de cuenta">
+   return <section className="sc-flyout sc-account-menu" aria-label={translateUiText(locale,"Menú de cuenta")}>
      <div className="sc-account-details"><strong>{user.name}</strong><small>{user.email}</small><small>{translateUiText(locale,portalLabels[portal])}</small></div>
      <button className="sc-flyout-link" onClick={()=>navigate('profile')}><UserRound size={17}/>{translate("shell.profile","Mi perfil y seguridad")}</button>
      <button className="sc-flyout-link" onClick={()=>navigate('preferences')}><Languages size={17}/>{translate("shell.preferences","Preferencias")}</button>
@@ -260,7 +260,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
        </section>)}
      </nav>
      <div className="sidebar-bottom sc-sidebar-foot sc-flyout-holder" ref={sidebarAccountRef}>
-       <button className="sc-sidebar-account" type="button" aria-label={'Opciones de cuenta de '+user.name}
+       <button className="sc-sidebar-account" type="button" aria-label={translateUiText(locale,'Opciones de cuenta de ')+user.name}
          aria-expanded={accountTarget==='sidebar'} onClick={()=>{setAccountTarget(v=>v==='sidebar'?null:'sidebar');setNotificationsOpen(false);}}>
          <span className="sc-sidebar-avatar">{user.name.slice(0,2).toUpperCase()}</span>
          <span className="sc-sidebar-user"><strong>{user.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span><ChevronDown className="sc-sidebar-user-chevron" size={16}/>

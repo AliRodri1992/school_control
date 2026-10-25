@@ -287,3 +287,9 @@
 }
 @media(max-width:360px){.sc-topbar{padding:8px}.sc-topbar .sc-topbar-brand{max-width:35px}.sc-topbar .sc-top-actions{gap:3px}.sc-topbar .sc-account-button>svg{display:none}}
 @media(prefers-reduced-motion:reduce){.sc-main .sc-breadcrumb-bar .sc-crumbs{scroll-behavior:auto}}
+
+/* Keep the compact account and notification actions aligned with their triggers. */
+.sc-topbar .sc-account-button{gap:9px}
+.sc-topbar .sc-language-menu .sc-flyout-link[aria-pressed=true]{font-weight:750}
+.sc-topbar .sc-flyout-title button:focus-visible,.sc-topbar .sc-flyout-link:focus-visible{outline:2px solid #6680d9;outline-offset:2px}
+.sc-topbar .sc-flyout p{overflow-wrap:anywhere}
