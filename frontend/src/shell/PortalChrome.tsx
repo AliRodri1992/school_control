@@ -4,12 +4,13 @@ import {useTopbarMenuPosition} from './useTopbarMenuPosition';
 import {sidebarSections} from './sidebarPresentation';
 import {revealActiveSidebarItem,useSidebarScroll} from './useSidebarScroll';
 import {SidebarBrand} from './SidebarBrand';
+import LanguageMenu from './LanguageMenu';
 import {userInitials} from './userInitials';
 import {PortalFooter} from './PortalFooter';
 import {translateUiText} from '../shared/i18n/english';
 import {useEffect,useLayoutEffect,useRef,useState,type ReactNode} from 'react';
 import {createPortal} from 'react-dom';
-import {Bell,BookOpen,House,MoreHorizontal,CalendarClock,Check,ChevronDown,ChevronRight,HelpCircle,Languages,LogOut,Menu,PanelLeftClose,PanelLeftOpen,UserRound,X,LayoutDashboard,Users,GraduationCap,BookOpenCheck,CalendarDays,MessageSquare,BarChart3,Settings,School,FolderOpen,ClipboardList,UserRoundCheck,ClipboardCheck,ClipboardPenLine,BookMarked,FileSpreadsheet,ShieldCheck,Mail,Globe2,Code2,FileText,ContactRound,ChartNoAxesCombined,NotebookTabs,IdCard} from 'lucide-react';
+import {Bell,BookOpen,House,MoreHorizontal,CalendarClock,ChevronDown,ChevronRight,HelpCircle,Languages,LogOut,Menu,PanelLeftClose,PanelLeftOpen,UserRound,X,LayoutDashboard,Users,GraduationCap,BookOpenCheck,CalendarDays,MessageSquare,BarChart3,Settings,School,FolderOpen,ClipboardList,UserRoundCheck,ClipboardCheck,ClipboardPenLine,BookMarked,FileSpreadsheet,ShieldCheck,Mail,Globe2,Code2,FileText,ContactRound,ChartNoAxesCombined,NotebookTabs,IdCard} from 'lucide-react';
 import {api} from '../api';
 import Combobox from '../shared/components/Combobox';
 import type {Row} from '../modules';
@@ -364,9 +365,10 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
        <div className="sc-top-actions">
          <div className="sc-language sc-flyout-holder" ref={languageRef}>
            <button type="button" className="sc-icon-button sc-language-button" aria-label={translate('shell.locale','Idioma')} title={translate('shell.locale','Idioma')} aria-haspopup="true" aria-expanded={languageOpen} onClick={()=>{setLanguageOpen(v=>!v);setNotificationsOpen(false);setAccountTarget(null);}}><Languages size={18}/><span className="sc-language-code">{locale.toUpperCase()}</span><ChevronDown className="sc-language-chevron" size={13}/></button>
-           {languageOpen&&<div className="sc-flyout sc-language-menu" role="group" aria-label={translateUiText(locale,"Idiomas disponibles")}>
-             {(availableLocales.length?availableLocales:[{id:0,code:'es',name:'Español',native_name:'Español',status:'active',text_direction:'ltr'},{id:1,code:'en',name:'English',native_name:'English',status:'active',text_direction:'ltr'}]).map(language=><button type="button" className="sc-flyout-link" key={language.code} aria-pressed={locale===language.code} onClick={()=>setLanguage(language.code)}>{language.native_name} · {language.code.toUpperCase()}{locale===language.code&&<Check size={16} aria-hidden="true"/>}</button>)}
-           </div>}
+           {languageOpen&&<LanguageMenu label={translateUiText(locale,"Idiomas disponibles")}
+             currentLocale={locale} onSelect={setLanguage}
+             languages={availableLocales.length?availableLocales:[{code:'es',native_name:'Español'},{code:'en',native_name:'English'}]}/>}
+
          </div>
          <div className="sc-flyout-holder" ref={notificationRef}>
            <button className="sc-icon-button sc-notification-button" aria-label={(locale==='en'?'Notifications: ':'Notificaciones: ')+unread+(locale==='en'?' unread':' sin leer')} aria-haspopup="true" aria-expanded={notificationsOpen}

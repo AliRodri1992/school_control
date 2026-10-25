@@ -597,3 +597,20 @@ it('keeps the initials readable in the mobile sidebar profile area',()=>{
  const {container}=render(<PortalChrome {...props} mobile><div>Página</div></PortalChrome>);
  expect(container.querySelector('.sc-sidebar.open .sc-sidebar-avatar')?.textContent).toBe('MG');
 });
+
+it('renders full-row language options and updates the selected state through the dropdown',async()=>{
+ render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ await userEvent.click(screen.getByRole('button',{name:'Idioma'}));
+ const menu=screen.getByRole('group',{name:'Idiomas disponibles'});
+ expect(menu.classList.contains('sc-language-menu')).toBe(true);
+ const spanish=screen.getByRole('button',{name:'Español · ES'});
+ const english=screen.getByRole('button',{name:'English · EN'});
+ expect(spanish.classList.contains('sc-language-option')).toBe(true);
+ expect(english.classList.contains('sc-language-option')).toBe(true);
+ expect(spanish.getAttribute('aria-pressed')).toBe('true');
+ await userEvent.click(english);
+ expect(localStorage.getItem('school-locale')).toBe('en');
+ expect(screen.queryByRole('group',{name:'Idiomas disponibles'})).toBeNull();
+ await userEvent.click(screen.getByRole('button',{name:'Language'}));
+ expect(screen.getByRole('button',{name:'English · EN'}).getAttribute('aria-pressed')).toBe('true');
+});
