@@ -12,7 +12,7 @@ const copy={
  es:{title:'Notificaciones',subtitle:'Novedades de tu comunidad escolar',all:'Todas',unread:'Sin leer',pending:'pendientes',caughtUp:'Todo al día',markAll:'Marcar todas como leídas',close:'Cerrar notificaciones',emptyAll:'No tienes notificaciones recientes',emptyUnread:'Ya revisaste todas tus notificaciones',emptyHint:'Las novedades de tu escuela aparecerán aquí.',allLink:'Ir al centro de notificaciones',loading:'Cargando notificaciones',new:'Nueva',read:'Leída',open:'Abrir notificación'},
  en:{title:'Notifications',subtitle:'Updates from your school community',all:'All',unread:'Unread',pending:'unread',caughtUp:'All caught up',markAll:'Mark all as read',close:'Close notifications',emptyAll:'No recent notifications',emptyUnread:'You are all caught up',emptyHint:'School updates will appear here.',allLink:'Open notification center',loading:'Loading notifications',new:'New',read:'Read',open:'Open notification'}
 };
-function symbol(page?:string|null){
+export function symbol(page?:string|null){
  switch(page){
  case 'grades':case 'students':case 'enrollments':return GraduationCap;
  case 'attendances':case 'admissions':return ClipboardCheck;
