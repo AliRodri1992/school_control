@@ -54,7 +54,7 @@ export default function NotificationPopover({locale,items,unread,loading=false,b
   destination.focus();
  }
  const filtered=(filter==='unread'?items.filter(item=>!item.read_at):items).slice(0,6);
- return <section className="sc-flyout sc-notification-panel" aria-label={labels.title}>
+ return <section className="sc-flyout sc-borderless-flyout sc-notification-panel" aria-label={labels.title}>
   <header className="sc-np-header">
    <div className="sc-np-heading">
     <span className="sc-np-header-icon" aria-hidden="true"><Bell size={20}/></span>

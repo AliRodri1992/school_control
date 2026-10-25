@@ -23,6 +23,7 @@ it('makes each complete language row a clickable, accessible button',async()=>{
  expect(buttons.every(button=>button.classList.contains('sc-flyout-link'))).toBe(true);
  expect(container.querySelectorAll('.sc-language-option-label')).toHaveLength(3);
  expect(Array.from(menu.children)).toEqual(buttons);
+ expect(menu.classList.contains('sc-borderless-flyout')).toBe(true);
  await userEvent.click(screen.getByRole('button',{name:'한국어 · KO'}));
  expect(onSelect).toHaveBeenCalledTimes(1);
  expect(onSelect).toHaveBeenCalledWith('ko');

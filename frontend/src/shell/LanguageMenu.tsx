@@ -23,7 +23,7 @@ export default function LanguageMenu({languages,currentLocale,label,onSelect}:Pr
    (position<=0?options.length-1:position-1);
   options[index].focus();
  }
- return <div className="sc-flyout sc-language-menu" role="group" aria-label={label} onKeyDown={moveFocus}>
+ return <div className="sc-flyout sc-borderless-flyout sc-language-menu" role="group" aria-label={label} onKeyDown={moveFocus}>
   {languages.map(language=>{
    const selected=currentLocale===language.code;
    return <button key={language.code} type="button"

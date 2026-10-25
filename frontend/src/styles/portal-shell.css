@@ -34,6 +34,8 @@
 .sc-account-button{display:flex;align-items:center;gap:7px;border-radius:99px}
 .sc-account-button span{background:#e9edff;color:#2d49c7;border-radius:99px;display:grid;place-items:center;width:27px;height:27px;font-weight:750;font-size:10px}
 .sc-flyout{position:absolute;top:calc(100% + 12px);right:0;width:min(345px,calc(100vw - 24px));box-shadow:0 20px 60px rgba(17,29,66,.17);background:white;color:#17233f;border:1px solid #e2e8f1;border-radius:14px;z-index:35;padding:12px}
+/* Navbar language and notifications intentionally have no outer frame. */
+.sc-shell .sc-topbar .sc-flyout.sc-borderless-flyout{border:0}
 .sc-flyout-title,.sc-account-details{padding:8px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #edf0f5}
 .sc-account-details{display:flex;align-items:flex-start;flex-direction:column;gap:3px;margin-bottom:9px}
 .sc-account-details small{font-size:12px}

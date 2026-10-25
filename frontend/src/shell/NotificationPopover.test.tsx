@@ -19,6 +19,7 @@ function show(options:Partial<Parameters<typeof NotificationPopover>[0]>={}){
 it('shows a school-branded header, unread status and dated notice rows',()=>{
  show();
  const panel=screen.getByRole('region',{name:'Notificaciones'});
+ expect(panel.classList.contains('sc-borderless-flyout')).toBe(true);
  expect(within(panel).getByText('Novedades de tu comunidad escolar')).toBeTruthy();
  expect(panel.querySelector('.sc-np-status strong')?.textContent).toBe('2');
  expect(within(panel).getAllByRole('button',{name:/Abrir notificación:/})).toHaveLength(3);
