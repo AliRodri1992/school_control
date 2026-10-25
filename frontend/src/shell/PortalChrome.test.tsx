@@ -656,3 +656,15 @@ it('opens compact sidebar avatar options in a fixed viewport overlay',async()=>{
  expect(panel.style.visibility).not.toBe('hidden');
  expect(container.querySelector('.sc-sidebar .sc-sidebar-account-panel')).toBeNull();
 });
+
+it('returns keyboard focus to the language selector after an edge-to-edge option is chosen',async()=>{
+ render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ const trigger=screen.getByRole('button',{name:'Idioma'});
+ await userEvent.click(trigger);
+ const english=screen.getByRole('button',{name:'English · EN'});
+ expect(english.classList.contains('sc-language-option')).toBe(true);
+ await userEvent.click(english);
+ expect(document.activeElement).toBe(trigger);
+ expect(screen.queryByRole('group',{name:'Idiomas disponibles'})).toBeNull();
+ expect(localStorage.getItem('school-locale')).toBe('en');
+});

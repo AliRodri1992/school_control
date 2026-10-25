@@ -315,7 +315,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
   document.documentElement.lang=locale;
   document.documentElement.dir=availableLocales.find(item=>item.code===locale)?.text_direction==='rtl'?'rtl':'ltr';
  },[locale,availableLocales]);
- function setLanguage(language:string){setLanguageOpen(false);if(language===locale||!availableLocales.some(item=>item.code===language))return;setLocale(language);localStorage.setItem('school-locale',language);window.dispatchEvent(new Event('school-locale-changed'));
+ function setLanguage(language:string){setLanguageOpen(false);languageRef.current?.querySelector<HTMLButtonElement>('.sc-language-button')?.focus();if(language===locale||!availableLocales.some(item=>item.code===language))return;setLocale(language);localStorage.setItem('school-locale',language);window.dispatchEvent(new Event('school-locale-changed'));
    void api('preferences','PATCH',{locale:language}).catch(e=>setNoticeError((e as Error).message));}
  function accountMenu(){
    return <section className="sc-flyout sc-account-menu" aria-label={translateUiText(locale,"Menú de cuenta")}>
