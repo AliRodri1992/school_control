@@ -228,6 +228,16 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  }
  const trail=breadcrumbPath(groups,page,portal);
  const crumbLabel=(key:string,title:string)=>translate(key==='profile'?'shell.profile':key==='preferences'?'shell.preferences':key==='help'?'shell.help':key==='notifications'?'shell.notification_center':'nav.'+key,title);
+ const crumbDestination=(key:string)=>key==='student_records'?'students':key;
+ const crumbIcon=(key:string):ReactNode=>{
+  const special:Record<string,ReactNode>={
+   students:<Users size={17}/>,student_records:<BookOpen size={17}/>,
+   student_contacts:<Users size={17}/>,academic_years:<CalendarDays size={17}/>,
+   groups:<Users size={17}/>,courses:<BookOpenCheck size={17}/>,
+   student_details:<GraduationCap size={17}/>
+  };
+  return special[key]||moduleIcons[key]||<FolderOpen size={16}/>;
+ };
  useEffect(()=>{setCrumbMenuOpen(false);},[page,locale]);
  useEffect(()=>{
   if(!crumbMenuOpen)return;
@@ -344,23 +354,33 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
          </div>
        </div>
      </header>
-     <div className="sc-breadcrumb-bar">
+     <div className="sc-breadcrumb-bar sc-breadcrumb-design-one">
        <nav className="sc-crumbs" aria-label={translateUiText(locale,"Ruta de navegación")}>
-         <button className="sc-crumb-home" type="button" aria-label={translateUiText(locale,"Ir al inicio")} title={translateUiText(locale,"Ir al inicio")} onClick={()=>navigate('dashboard')}>
-           <House size={15} aria-hidden="true"/><span className="sc-crumb-home-label">{translateUiText(locale,portalLabels[portal])}</span>
+         <button className="sc-crumb-home" type="button" aria-label={translateUiText(locale,"Ir al inicio")}
+           title={translateUiText(locale,"Ir al inicio")} onClick={()=>navigate('dashboard')}>
+           <House size={18} strokeWidth={2.25} aria-hidden="true"/>
+           <span className="sc-crumb-home-label">{translate('group.Inicio','Inicio')}</span>
          </button>
          {trail.map((item,index)=><span className={'sc-crumb-step'+(index===trail.length-1?' sc-crumb-current':' sc-crumb-ancestor')} key={item.key}>
-           <ChevronRight className="sc-crumb-divider" size={14} aria-hidden="true"/>
-           {index===trail.length-1?<span aria-current="page" title={crumbLabel(item.key,item.title)}>{crumbLabel(item.key,item.title)}</span>:
-             <button type="button" title={crumbLabel(item.key,item.title)} onClick={()=>navigate(item.key)}>{crumbLabel(item.key,item.title)}</button>}
+           <ChevronRight className="sc-crumb-divider" size={15} strokeWidth={2} aria-hidden="true"/>
+           {index===trail.length-1?
+             <span className="sc-crumb-current-label" aria-current="page" title={crumbLabel(item.key,item.title)}>{crumbLabel(item.key,item.title)}</span>:
+             <button className="sc-crumb-link" type="button" title={crumbLabel(item.key,item.title)}
+               onClick={()=>navigate(crumbDestination(item.key))}>
+               <span className="sc-crumb-icon" aria-hidden="true">{crumbIcon(item.key)}</span>
+               <span className="sc-crumb-label">{crumbLabel(item.key,item.title)}</span>
+             </button>}
          </span>)}
          {trail.length>1&&<div className="sc-crumb-more" ref={crumbMenuRef}>
-           <ChevronRight className="sc-crumb-divider" size={14} aria-hidden="true"/>
+           <ChevronRight className="sc-crumb-divider" size={15} strokeWidth={2} aria-hidden="true"/>
            <button type="button" className="sc-crumb-more-trigger" ref={crumbMenuTrigger}
              aria-expanded={crumbMenuOpen} aria-label={translateUiText(locale,"Mostrar páginas anteriores")}
              onClick={()=>setCrumbMenuOpen(open=>!open)}><MoreHorizontal size={17} aria-hidden="true"/></button>
            {crumbMenuOpen&&<div className="sc-crumb-more-menu" role="group" aria-label={translateUiText(locale,"Páginas anteriores")}>
-             {trail.slice(0,-1).map(item=><button key={item.key} type="button" onClick={()=>navigate(item.key)}>{crumbLabel(item.key,item.title)}</button>)}
+             {trail.slice(0,-1).map(item=><button key={item.key} type="button" onClick={()=>navigate(crumbDestination(item.key))}>
+               <span className="sc-crumb-icon" aria-hidden="true">{crumbIcon(item.key)}</span>
+               <span>{crumbLabel(item.key,item.title)}</span>
+             </button>)}
            </div>}
          </div>}
        </nav>

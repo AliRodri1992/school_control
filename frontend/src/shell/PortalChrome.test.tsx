@@ -324,3 +324,36 @@ it('keeps the portrait first and profile details readable when an actual photo i
  expect(button.children[1].querySelector('small')?.textContent).toBe('Administración');
  expect(screen.queryByRole('button',{name:'Nuevo registro'})).toBeNull();
 });
+
+it('shows design one breadcrumbs with compact icons and a blue student-profile label',()=>{
+ const {container}=render(<PortalChrome {...props} page="student_details"><div>Página</div></PortalChrome>);
+ const crumbs=screen.getByRole('navigation',{name:'Ruta de navegación'});
+ expect(container.querySelector('.sc-breadcrumb-design-one')).toBeTruthy();
+ expect(crumbs.querySelector('.sc-crumb-home-label')?.textContent).toBe('Inicio');
+ expect(crumbs.querySelectorAll('.sc-crumb-link .sc-crumb-icon')).toHaveLength(2);
+ expect(crumbs.textContent).toContain('Alumnos');
+ expect(crumbs.textContent).toContain('Expedientes');
+ expect(crumbs.querySelector('.sc-crumb-current-label')?.textContent).toBe('Ficha del alumno');
+ expect(crumbs.querySelector('.sc-crumb-current-label')?.getAttribute('aria-current')).toBe('page');
+});
+it('navigates from the virtual records breadcrumb to its existing students route',async()=>{
+ const navigate=vi.fn();
+ render(<PortalChrome {...props} page="student_details" onNavigate={navigate}><div>Página</div></PortalChrome>);
+ await userEvent.click(screen.getByRole('button',{name:'Expedientes'}));
+ expect(navigate).toHaveBeenCalledWith('students');
+});
+it('translates the breadcrumb layout without losing navigation',async()=>{
+ render(<PortalChrome {...props} page="student_details"><div>Página</div></PortalChrome>);
+ await userEvent.click(screen.getByRole('button',{name:'Idioma'}));
+ await userEvent.click(screen.getByRole('button',{name:'English · EN'}));
+ const crumbs=screen.getByRole('navigation',{name:'Breadcrumbs'});
+ expect(crumbs.textContent).toContain('Home');
+ expect(crumbs.textContent).toContain('Records');
+ expect(crumbs.querySelector('[aria-current=page]')?.textContent).toBe('Student profile');
+});
+it('retains the accessible mobile ancestor menu for the design-one student record',async()=>{
+ render(<PortalChrome {...props} page="student_details"><div>Página</div></PortalChrome>);
+ await userEvent.click(screen.getByRole('button',{name:'Mostrar páginas anteriores'}));
+ const menu=screen.getByRole('group',{name:'Páginas anteriores'});
+ expect(Array.from(menu.querySelectorAll('button')).map(x=>x.textContent)).toEqual(['Alumnos','Expedientes']);
+});

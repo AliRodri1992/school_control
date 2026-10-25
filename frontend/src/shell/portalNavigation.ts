@@ -63,7 +63,11 @@ export function findNavPath(groups:NavGroup[],page:string):NavItem[]{
 /** Build a breadcrumb even for portal pages outside the sidebar. */
 export function breadcrumbPath(groups:NavGroup[],page:string,portal:PortalId):NavItem[]{
  if(page==='student_details'){
-  return [{key:'students',title:portal==='tutors'?'Mis hijos':'Alumnos'},{key:'student_details',title:'Expediente'}];
+  return [
+   {key:'students',title:portal==='tutors'?'Mis hijos':'Alumnos'},
+   {key:'student_records',title:'Expedientes'},
+   {key:'student_details',title:'Ficha del alumno'}
+  ];
  }
  const visible=findNavPath(groups,page);
  if(visible.length)return visible;

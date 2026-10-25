@@ -26,7 +26,9 @@ it('hides inaccessible modules rather than rendering disabled navigation entries
 it('builds a complete breadcrumb for nested modules and standalone screens',()=>{
  const groups=visibleGroups('admin',()=>true);
  expect(breadcrumbPath(groups,'courses','admin').map(item=>item.key)).toEqual(['academic_years','groups','courses']);
- expect(breadcrumbPath(groups,'student_details','admin').map(item=>item.key)).toEqual(['students','student_details']);
+ expect(breadcrumbPath(groups,'student_details','admin').map(item=>item.key)).toEqual(['students','student_records','student_details']);
+ expect(breadcrumbPath(groups,'student_details','admin').map(item=>item.title)).toEqual(['Alumnos','Expedientes','Ficha del alumno']);
+ expect(breadcrumbPath(groups,'student_details','tutors').map(item=>item.title)).toEqual(['Mis hijos','Expedientes','Ficha del alumno']);
  expect(breadcrumbPath(groups,'preferences','admin').map(item=>item.title)).toEqual(['Preferencias']);
  expect(breadcrumbPath(groups,'dashboard','admin').map(item=>item.title)).toEqual(['Resumen']);
 });

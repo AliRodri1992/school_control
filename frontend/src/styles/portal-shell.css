@@ -486,3 +486,74 @@
 .sc-shell .sc-topbar .sc-account-button .sc-account-identity{flex:0 1 auto}
 .sc-shell .sc-topbar .sc-account-button .sc-account-identity strong{line-height:1.3}
 .sc-shell .sc-topbar .sc-account-button .sc-account-identity small{line-height:1.2}
+
+/* Breadcrumbs — design 1: condensed labels, illustrated ancestry and blue active chip.
+   Scoped to the breadcrumb bar so the sidebar/topbar retain their established styling. */
+.sc-main .sc-breadcrumb-design-one{
+ min-height:53px;
+ padding-inline:clamp(14px,1.65vw,28px);
+ background:linear-gradient(90deg,#f4f9ff 0%,#edf6ff 56%,#f5faff 100%);
+ border-bottom:1px solid #e5eefc;
+}
+.sc-main .sc-breadcrumb-design-one .sc-crumbs{
+ display:flex;align-items:center;gap:6px;min-width:0;
+ padding:7px 0;overflow-x:auto;overflow-y:hidden;white-space:nowrap;
+ font-size:13px;color:#193e78;scrollbar-width:thin;mask-image:none;
+}
+.sc-breadcrumb-design-one .sc-crumb-home{
+ flex:none;min-height:32px;display:inline-flex;align-items:center;justify-content:flex-start;
+ gap:8px;padding:4px 6px 4px 0;border-radius:8px;
+ color:#193d77;font-size:13px;font-weight:560;
+}
+.sc-breadcrumb-design-one .sc-crumb-home svg{flex:none;color:#0d356f}
+.sc-breadcrumb-design-one .sc-crumb-home-label{display:inline!important;font-weight:560}
+.sc-breadcrumb-design-one .sc-crumb-step{display:inline-flex;align-items:center;gap:6px;flex:none;min-width:0}
+.sc-breadcrumb-design-one .sc-crumb-divider{color:#143b7a;flex:none}
+.sc-breadcrumb-design-one .sc-crumb-step .sc-crumb-link{
+ display:inline-flex;align-items:center;gap:8px;min-height:32px;
+ padding:4px 6px;max-width:230px;border-radius:8px;
+ background:transparent;color:#193e79;font-size:13px;font-weight:550;
+}
+.sc-breadcrumb-design-one .sc-crumb-icon{flex:none;width:19px;height:19px;display:inline-flex;align-items:center;justify-content:center;color:#123b7e}
+.sc-breadcrumb-design-one .sc-crumb-label{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.sc-breadcrumb-design-one .sc-crumb-current-label[aria-current=page]{
+ display:inline-flex;align-items:center;justify-content:center;
+ min-height:32px;max-width:min(320px,35vw);
+ padding:5px 12px;border-radius:10px;
+ background:#e0edff;color:#0461e9;
+ font-size:13px;line-height:1.4;font-weight:750;
+ overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+}
+.sc-breadcrumb-design-one .sc-crumb-home:hover,
+.sc-breadcrumb-design-one .sc-crumb-step .sc-crumb-link:hover{
+ background:#dfecff;color:#075ed3
+}
+.sc-breadcrumb-design-one .sc-crumb-home:focus-visible,
+.sc-breadcrumb-design-one .sc-crumb-step .sc-crumb-link:focus-visible,
+.sc-breadcrumb-design-one .sc-crumb-more-trigger:focus-visible,
+.sc-breadcrumb-design-one .sc-crumb-more-menu button:focus-visible{
+ outline:2px solid #1268e6;outline-offset:2px;
+}
+@media(max-width:760px){
+ .sc-main .sc-breadcrumb-design-one{min-height:46px;padding-inline:12px}
+ .sc-main .sc-breadcrumb-design-one .sc-crumbs{gap:4px;overflow:visible;padding:5px 0}
+ .sc-breadcrumb-design-one .sc-crumb-home{width:auto;height:34px;gap:5px;padding:2px 4px}
+ .sc-breadcrumb-design-one .sc-crumb-home-label{display:inline!important;max-width:65px;overflow:hidden;text-overflow:ellipsis}
+ .sc-breadcrumb-design-one .sc-crumb-ancestor{display:none}
+ .sc-breadcrumb-design-one .sc-crumb-more{display:inline-flex;order:1;gap:4px;align-items:center}
+ .sc-breadcrumb-design-one .sc-crumb-current{order:2;gap:4px;min-width:0;flex:1}
+ .sc-breadcrumb-design-one .sc-crumb-current-label[aria-current=page]{
+  max-width:calc(100vw - 164px);min-width:0;justify-content:flex-start;
+  font-size:12px;padding-inline:10px
+ }
+ .sc-breadcrumb-design-one .sc-crumb-more-menu button{
+  display:flex;align-items:center;gap:10px;text-align:start
+ }
+}
+@media(max-width:370px){
+ .sc-breadcrumb-design-one .sc-crumb-home-label{display:none!important}
+ .sc-breadcrumb-design-one .sc-crumb-current-label[aria-current=page]{max-width:calc(100vw - 125px)}
+}
+@media(prefers-reduced-motion:reduce){
+ .sc-main .sc-breadcrumb-design-one .sc-crumbs{scroll-behavior:auto}
+}
