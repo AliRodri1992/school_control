@@ -422,3 +422,29 @@ it('keeps the aligned brand and mobile close control in the drawer',async()=>{
  await userEvent.click(screen.getByRole('button',{name:'Cerrar menú'}));
  expect(onMobile).toHaveBeenCalledWith(false);
 });
+
+it('keeps the main sidebar scrollable and keyboard-focusable without changing its role',()=>{
+ const {container}=render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ const nav=screen.getByRole('navigation',{name:'Navegación principal'});
+ expect(nav.getAttribute('tabindex')).toBe('0');
+ expect(nav.classList.contains('sc-sidebar-nav')).toBe(true);
+ const scrollable=container.querySelectorAll('.sc-sidebar-nav');
+ expect(scrollable).toHaveLength(1);
+ Object.defineProperty(nav,'clientHeight',{configurable:true,value:200});
+ Object.defineProperty(nav,'scrollHeight',{configurable:true,value:1200});
+ nav.focus();
+ await userEvent.keyboard('{End}');
+ expect(nav.scrollTop).toBe(1000);
+ await userEvent.keyboard('{Home}');
+ expect(nav.scrollTop).toBe(0);
+});
+it('preserves access to the lower navigation categories with keyboard scrolling',async()=>{
+ const {container}=render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ const nav=screen.getByRole('navigation',{name:'Navegación principal'});
+ Object.defineProperty(nav,'clientHeight',{configurable:true,value:160});
+ Object.defineProperty(nav,'scrollHeight',{configurable:true,value:1100});
+ nav.focus();
+ await userEvent.keyboard('{PageDown}');
+ expect(nav.scrollTop).toBeGreaterThan(0);
+ expect(container.querySelector('.sc-sidebar .sc-nav-section:last-child .sc-section-label')?.textContent).toBe('Configuración');
+});

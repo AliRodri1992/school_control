@@ -107,7 +107,7 @@
 /* Sidebar states: desktop expanded, desktop icon rail and full-width mobile drawer.
    Keep these rules together so mobile never inherits icon-rail hiding. */
 .sc-shell .sc-sidebar{z-index:60;padding-bottom:8px;overflow:visible;transition:width .18s ease}
-.sc-shell .sc-sidebar-nav{overflow-y:auto;overflow-x:hidden;min-height:0;scrollbar-width:thin;scrollbar-color:#536ba3 transparent;overscroll-behavior:contain}
+.sc-shell .sc-sidebar-nav{overflow-y:auto;overflow-x:hidden;min-height:0;overscroll-behavior:contain}
 .sc-sidebar .sc-nav-section{margin-bottom:7px}
 .sc-sidebar .sc-nav-section-title{
   position:relative;display:flex;align-items:center;gap:8px;
@@ -454,7 +454,7 @@
 .sc-sidebar-system-mark{display:grid;place-items:center;flex:none;width:49px;height:49px;border-radius:12px;color:#e9f6ff;border:1px solid rgba(74,186,255,.38);background:linear-gradient(155deg,#0b86de,#0b4a89);box-shadow:0 5px 14px rgba(0,23,54,.25)}
 .sc-shell .sc-sidebar-brand-text strong{font-size:17px;letter-spacing:-.3px;line-height:1.25;color:#fff}
 .sc-shell .sc-sidebar-brand-text small{font-size:10px;letter-spacing:0;color:#bddbf8;line-height:1.4}
-.sc-shell .sc-sidebar .sc-sidebar-nav{margin-top:0;padding:0 4px;scrollbar-color:#3969a4 transparent}
+.sc-shell .sc-sidebar .sc-sidebar-nav{margin-top:0;padding:0 4px}
 .sc-shell .sc-sidebar .sc-nav-section{margin:0 0 3px;padding:0}
 .sc-shell .sc-sidebar .sc-nav-section-title{width:100%;min-height:54px;display:flex;align-items:center;justify-content:flex-start;gap:14px;margin:0;padding:12px 15px;border-radius:11px;text-align:left;font-size:14px;font-weight:620;letter-spacing:0;text-transform:none;color:#e2efff;transition:background .15s ease}
 .sc-shell .sc-sidebar .sc-nav-section-title .sc-section-icon{display:grid;place-items:center;flex:none;width:25px;height:25px;color:#d1e7ff}
@@ -517,3 +517,28 @@
 .sc-shell .sc-topbar .sc-account-button .sc-account-identity strong{line-height:1.3}
 .sc-shell .sc-topbar .sc-account-button .sc-account-identity small{line-height:1.2}
 
+
+/* Scrollbar-free navigation: wheel/trackpad, touch-pan, keyboard and blank-space mouse drag remain active. */
+.sc-shell .sc-sidebar .sc-sidebar-nav,
+.sc-compact-flyout{
+ overflow-y:auto;overflow-x:hidden;
+ scrollbar-width:none;            /* Firefox */
+ -ms-overflow-style:none;         /* Legacy Edge */
+ overscroll-behavior-y:contain;
+ -webkit-overflow-scrolling:touch; /* iOS momentum */
+ touch-action:pan-y;
+}
+.sc-shell .sc-sidebar .sc-sidebar-nav::-webkit-scrollbar,
+.sc-compact-flyout::-webkit-scrollbar{
+ width:0;height:0;display:none;  /* Chrome / Safari */
+}
+.sc-shell .sc-sidebar .sc-sidebar-nav{cursor:grab}
+.sc-shell .sc-sidebar .sc-sidebar-nav button{cursor:pointer}
+.sc-shell .sc-sidebar .sc-sidebar-nav.sc-sidebar-nav-dragging{cursor:grabbing;user-select:none}
+.sc-shell .sc-sidebar .sc-sidebar-nav:focus-visible{
+ outline:2px solid #8bbaff;outline-offset:-2px;border-radius:9px;
+}
+@media(max-width:760px){
+ .sc-shell .sc-sidebar.open .sc-sidebar-nav{min-height:0;overflow-y:auto}
+ .sc-shell .sc-sidebar .sc-sidebar-nav{cursor:auto}
+}

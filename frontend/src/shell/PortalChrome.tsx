@@ -2,6 +2,7 @@ import {LocaleProvider} from '../shared/i18n/LocaleContext';
 import TopbarCommands from './TopbarCommands';
 import {useTopbarMenuPosition} from './useTopbarMenuPosition';
 import {sidebarSections} from './sidebarPresentation';
+import {useSidebarScroll} from './useSidebarScroll';
 import {SidebarBrand} from './SidebarBrand';
 import {translateUiText} from '../shared/i18n/english';
 import {useEffect,useLayoutEffect,useRef,useState,type ReactNode} from 'react';
@@ -29,6 +30,8 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const mobileTrigger=useRef<HTMLButtonElement|null>(null);
  const mobileCloseTrigger=useRef<HTMLButtonElement|null>(null);
  const sidebarRef=useRef<HTMLElement|null>(null);
+ const sidebarNavRef=useRef<HTMLElement|null>(null);
+ useSidebarScroll(sidebarNavRef);
  const [compactPosition,setCompactPosition]=useState<{left:number;top:number}|null>(null);
  const languageRef=useRef<HTMLDivElement>(null);
  const notificationRef=useRef<HTMLDivElement>(null);
@@ -295,7 +298,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    <aside id="school-sidebar" ref={sidebarRef} className={'sidebar sc-sidebar'+(mobile?' open':'')} aria-label={translateUiText(locale,'Barra lateral principal')}>
      <SidebarBrand schoolName={school.name} locale={locale} compact={compact} closeRef={mobileCloseTrigger}
        onClose={()=>{onMobile(false);mobileTrigger.current?.focus();}}/>
-          <nav className="sc-sidebar-nav" aria-label={translateUiText(locale,'Navegación principal')}>
+          <nav ref={sidebarNavRef} className="sc-sidebar-nav" tabIndex={0} aria-label={translateUiText(locale,'Navegación principal')}>
        {sections.map(section=>{
          const current=page==='student_details'?'students':page;
          const active=section.items.some(item=>item.key===current||findNavPath([{title:'',items:[item]}],current).length>0);
