@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {defaultConfig,appendWidget,removeWidget,columns,isMetricKind,widgetHeight,metricKinds,mergeGridLayouts,type DashboardRole} from './dashboardConfig';
+import {defaultConfig,appendWidget,removeWidget,columns,isMetricKind,widgetHeight,metricKinds,mergeGridLayouts,upgradeLegacyDashboardConfig,type DashboardRole} from './dashboardConfig';
 describe('dashboard configuration',()=>{
  it('provides layouts bounded to each screen including a single mobile column',()=>{
   const config=defaultConfig();
@@ -48,8 +48,8 @@ describe('redesigned KPI layouts',()=>{
   }
  });
  it('uses compact dimensions for real counts, leaving room for charts and announcements',()=>{
-  expect(widgetHeight('students')).toBe(4);
-  expect(widgetHeight('pending_documents')).toBe(4);
+  expect(widgetHeight('students')).toBe(3);
+  expect(widgetHeight('pending_documents')).toBe(3);
   expect(widgetHeight('attendance_chart')).toBe(6);
   expect(widgetHeight('calendar')).toBe(6);
   expect(metricKinds).toHaveLength(7);
@@ -97,4 +97,53 @@ it('accepts readonly layouts from react-grid-layout without mutating frozen item
  const next=mergeGridLayouts(factory,{lg:readonlyItems});
  expect(next).toEqual(factory);
  expect(readonlyItems).toBeTruthy();
+});
+
+describe('dashboard rows and overflow regression',()=>{
+ it('places exactly four administrative KPI widgets in one compact desktop row',()=>{
+  const dashboard=defaultConfig('admin');
+  const expected=['students','enrollments','pending_admissions','pending_documents'];
+  for(const [index,kind] of expected.entries()){
+   const item=dashboard.layouts.lg.find(item=>item.i===kind);
+   expect(item).toEqual({i:kind,x:index*3,y:0,w:3,h:3});
+  }
+  expect(dashboard.layouts.lg.filter(item=>item.y===0)).toHaveLength(4);
+  const content=['attendance_chart','alerts','calendar'];
+  for(const [index,kind] of content.entries()){
+   expect(dashboard.layouts.lg.find(item=>item.i===kind)).toEqual({
+    i:kind,x:index*4,y:3,w:4,h:6
+   });
+  }
+  const finalY=Math.max(...dashboard.layouts.lg.map(item=>item.y+item.h));
+  expect(finalY).toBe(9);
+ });
+ it('lays out cards responsively as four, two, two or one per row',()=>{
+  const config=defaultConfig('admin');
+  for(const [breakpoint,columnsPerRow] of [['lg',4],['md',2],['sm',2],['xs',1]] as const){
+   const kpis=config.layouts[breakpoint].filter(item=>
+    ['students','enrollments','pending_admissions','pending_documents'].includes(item.i));
+   expect(kpis.filter(item=>item.y===0)).toHaveLength(columnsPerRow);
+  }
+ });
+ it('upgrades the untouched old templates while preserving custom-positioned widgets',()=>{
+  const current=defaultConfig('admin');
+  const legacy={...current,layouts:Object.fromEntries(Object.entries(columns).map(([bp,cols])=>{
+   const perRow=Math.max(1,Math.floor(cols/Math.min(4,cols)));
+   let y=0;
+   const layout=current.widgets.map((widget,index)=>({
+    i:widget.id,x:(index%perRow)*Math.min(cols,4),y:Math.floor(index/perRow)*6,
+    w:Math.min(cols,4),h:6
+   }));
+   return [bp,layout];
+  }))};
+  expect(upgradeLegacyDashboardConfig(legacy,'admin')).toEqual(current);
+  const compact={...legacy,layouts:{...legacy.layouts,lg:[
+   ...legacy.layouts.lg.slice(0,3).map(item=>({...item,h:4})),
+   ...legacy.layouts.lg.slice(3,6).map((item,index)=>({...item,y:4,h:index===0?4:6})),
+   {...legacy.layouts.lg[6],y:10}
+  ]}};
+  expect(upgradeLegacyDashboardConfig(compact,'admin')).toEqual(current);
+  const custom={...legacy,layouts:{...legacy.layouts,lg:legacy.layouts.lg.map((item,index)=>index===0?{...item,x:1}:item)}};
+  expect(upgradeLegacyDashboardConfig(custom,'admin')).toBe(custom);
+ });
 });

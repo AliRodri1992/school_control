@@ -6,7 +6,7 @@ import {Responsive, WidthProvider} from 'react-grid-layout/legacy';
 import {BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer} from 'recharts';
 import {api} from './api';
 import {notify} from './notifications';
-import {appendWidget, removeWidget, defaultConfig, widgetKinds, isMetricKind, mergeGridLayouts, columns, type Config, type Kind, type DashboardRole} from './dashboardConfig';
+import {appendWidget, removeWidget, defaultConfig, widgetKinds, isMetricKind, mergeGridLayouts, upgradeLegacyDashboardConfig, columns, type Config, type Kind, type DashboardRole} from './dashboardConfig';
 import DashboardMetricCard from './DashboardMetricCard';
 import type {Row} from './modules';
 import 'react-grid-layout/css/styles.css';
@@ -28,7 +28,7 @@ export default function Dashboard({summary,data,role='admin',userId=0}:{summary:
    void api('dashboard?group_id='+encodeURIComponent(filterGroup)).then(result=>{if(active)setVisibleSummary(result);}).catch(e=>{if(active)setError(e.message);});
    return()=>{active=false;};
  },[filterGroup,summary,userId]);
- useEffect(()=>{let active=true;api('dashboard_preference').then(result=>{if(active){setConfig(result.configuration||defaultConfig(role));setVersion(result.lock_version);setReady(true);}}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[]);
+ useEffect(()=>{let active=true;api('dashboard_preference').then(result=>{if(active){setConfig(result.configuration?upgradeLegacyDashboardConfig(result.configuration,role):defaultConfig(role));setVersion(result.lock_version);setReady(true);}}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[]);
  async function save(){
   setSaving(true);setError('');
   try{
@@ -144,7 +144,7 @@ export default function Dashboard({summary,data,role='admin',userId=0}:{summary:
   </form>}
   {ready&&<Grid key={gridRevision}
    layouts={Object.fromEntries(Object.entries(config.layouts).map(([bp,items])=>[bp,items.map(item=>({...item,minH:2,maxH:20}))]))}
-   breakpoints={{lg:1200,md:800,sm:480,xs:0}} cols={columns} rowHeight={48} margin={[16,16]}
+   breakpoints={{lg:1200,md:800,sm:480,xs:0}} cols={columns} rowHeight={52} margin={[14,14]}
    isDraggable={editing&&!saving} isResizable={editing&&!saving} draggableHandle=".widget-handle"
    onDragStart={()=>{preventProgrammaticLayoutChange.current=false;setRestored(false);}}
    onResizeStart={()=>{preventProgrammaticLayoutChange.current=false;setRestored(false);}}
@@ -153,9 +153,11 @@ export default function Dashboard({summary,data,role='admin',userId=0}:{summary:
     setConfig(current=>mergeGridLayouts(current,layouts));
    }}>
    {config.widgets.map((widget,index)=>isMetricKind(widget.kind)?
-    <DashboardMetricCard key={widget.id} kind={widget.kind} title={ui(widget.title)}
-     value={visibleSummary[widget.kind]} role={role} locale={locale} translate={ui}
-     editing={editing} actions={editing?widgetActions(widget,index):undefined}/>:
+    <div key={widget.id} className="sc-kpi-grid-item" data-widget={widget.kind}>
+     <DashboardMetricCard kind={widget.kind} title={ui(widget.title)}
+      value={visibleSummary[widget.kind]} role={role} locale={locale} translate={ui}
+      editing={editing} actions={editing?widgetActions(widget,index):undefined}/>
+    </div>:
     <article className="dashboard-widget" key={widget.id}>
      <div className="widget-header">
       <h3 className={editing?'widget-handle':''}>{ui(widget.title)}</h3>

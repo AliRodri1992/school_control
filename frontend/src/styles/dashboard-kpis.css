@@ -1,6 +1,11 @@
 /* Shared KPI design for administration, educators, families and students.
    The cards use real server totals: no inferred trends or fabricated targets. */
-.sc-home .react-grid-layout{min-width:0}
+/* KPI DOM wrappers receive the positioning and computed height from react-grid-layout. */
+.sc-home .react-grid-layout{position:relative;min-width:0;max-width:100%;margin-bottom:24px}
+.sc-home .react-grid-layout>.react-grid-item{min-width:0;min-height:0}
+.sc-home .react-grid-layout>.sc-kpi-grid-item>.sc-kpi-card{box-sizing:border-box;width:100%;height:100%;min-height:0}
+.sc-home .react-grid-layout>.react-grid-item.dashboard-widget:not(.sc-kpi-grid-item){border-radius:18px;border:1px solid #dee7f4;background:#fff;box-shadow:0 5px 22px rgba(19,41,78,.045)}
+.sc-home .react-grid-layout>.react-grid-item.dashboard-widget:not(.sc-kpi-grid-item)>.widget-body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}
 .sc-home .react-grid-item>.sc-kpi-card{
  --sc-kpi-accent:#315fbe;
  --sc-kpi-strong:#193e83;
@@ -39,7 +44,7 @@
 
 .sc-kpi-header{
  display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
- flex:0 0 auto;padding:19px 20px 0;border:0;min-width:0;
+ flex:0 0 auto;padding:12px 14px 0;border:0;min-width:0;
 }
 .sc-kpi-header-copy{display:flex;flex:1;flex-direction:column;min-width:0;gap:5px}
 .sc-kpi-header-copy.widget-handle{cursor:grab;touch-action:none}
@@ -53,28 +58,28 @@
  overflow-wrap:anywhere;
 }
 .sc-kpi-icon{
- display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;
+ display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;
  border:1px solid color-mix(in srgb,var(--sc-kpi-accent),white 78%);
- border-radius:13px;background:var(--sc-kpi-pale);color:var(--sc-kpi-accent);
+ border-radius:10px;background:var(--sc-kpi-pale);color:var(--sc-kpi-accent);
 }
 .sc-kpi-actions{position:absolute;right:17px;bottom:14px;z-index:2;gap:3px}
 .sc-kpi-actions button{min-width:30px;min-height:30px;border:1px solid #d8e3f0;border-radius:8px;background:#fff;color:#415675}
 
 .sc-kpi-main{
  display:flex;flex:1;flex-direction:column;justify-content:center;
- min-height:0;gap:7px;padding:9px 20px 12px;
+ min-height:0;gap:5px;padding:3px 14px 8px;
 }
 .sc-kpi-value-line{display:flex;align-items:baseline;gap:9px;min-width:0;flex-wrap:wrap}
 .sc-kpi-number{
  color:#142f54;font-family:'Plus Jakarta Sans',Inter,ui-sans-serif,sans-serif;
- font-size:clamp(33px,2.8vw,46px);font-weight:800;line-height:1.05;
+ font-size:clamp(28px,2.5vw,36px);font-weight:800;line-height:1.05;
  letter-spacing:-2px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;
 }
 .sc-kpi-unit{font-size:11px;font-weight:700;line-height:1.3;color:var(--sc-kpi-strong)}
 .sc-kpi-description{font-size:11px;line-height:1.5;color:#71829a;overflow-wrap:anywhere}
 .sc-kpi-footer{
  position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;
- flex:0 0 auto;min-height:38px;margin:0 20px;padding:9px 0 13px;
+ flex:0 0 auto;min-height:29px;margin:0 14px;padding:6px 0 8px;
  border-top:1px solid #e8eef6;font-size:10px;color:#7587a0;
 }
 .sc-kpi-indicator{display:inline-flex;align-items:center;gap:7px;font-size:10px;font-weight:650;color:#6d8097}
@@ -99,22 +104,27 @@
 .sc-home .dashboard-widget:not(.sc-kpi-card)>.widget-body{padding:18px 19px}
 .sc-home .widget-chart{height:190px}
 @media(max-width:1000px){
- .sc-kpi-header{padding:16px 16px 0}
- .sc-kpi-main{padding-inline:16px}
- .sc-kpi-footer{margin-inline:16px}
- .sc-kpi-icon{width:39px;height:39px;flex-basis:39px}
- .sc-kpi-number{font-size:37px}
+ .sc-kpi-header{padding:11px 12px 0}
+ .sc-kpi-main{padding-inline:12px}
+ .sc-kpi-footer{margin-inline:12px}
+ .sc-kpi-icon{width:34px;height:34px;flex-basis:34px}
+ .sc-kpi-number{font-size:32px}
 }
 @media(max-width:650px){
  .sc-home .react-grid-item>.sc-kpi-card{border-radius:15px}
- .sc-kpi-header{padding:13px 15px 0}
- .sc-kpi-main{padding:7px 15px 9px}
- .sc-kpi-number{font-size:clamp(29px,9vw,40px)}
- .sc-kpi-footer{margin-inline:15px;padding-bottom:10px;min-height:31px}
- .sc-kpi-icon{width:36px;height:36px;flex-basis:36px;border-radius:11px}
+ .sc-kpi-header{padding:11px 12px 0}
+ .sc-kpi-main{padding:5px 12px 9px}
+ .sc-kpi-number{font-size:clamp(29px,9vw,36px)}
+ .sc-kpi-footer{margin-inline:12px;padding-bottom:7px;min-height:27px}
+ .sc-kpi-icon{width:34px;height:34px;flex-basis:34px;border-radius:10px}
  .sc-home .sc-kpi-card .sc-kpi-header h3{font-size:12px}
  .sc-kpi-category{font-size:8px;letter-spacing:1px}
  .sc-kpi-description{font-size:10px}
  .sc-kpi-unit{font-size:10px}
 }
 @media(prefers-reduced-motion:reduce){.sc-home .sc-kpi-card{transition:none}}
+
+/* RGL's calculated container height reserves space above the application footer. */
+.sc-shell .sc-main-content .sc-home section[aria-label="Dashboard personalizable"]{min-width:0;padding-bottom:1px}
+.sc-home .react-grid-layout>.dashboard-widget .widget-body .widget-chart{max-width:100%}
+@media(max-width:1150px){.sc-home .sc-kpi-card .sc-kpi-header h3{font-size:12px}.sc-kpi-unit{font-size:10px}}

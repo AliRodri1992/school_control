@@ -127,6 +127,22 @@ it.each(['admin','teacher','guardian','student'] as const)('integrates real KPI 
  expect(screen.getByRole('heading',{name:'Asistencia · últimos 30 días'})).toBeTruthy();
 });
 
+it('mounts each KPI inside a real grid item so the grid reserves space above the footer',async()=>{
+ vi.mocked(api).mockImplementation(async resource=>
+  resource==='dashboard_preference'?{configuration:defaultConfig('admin'),lock_version:1}:{}
+ );
+ const {container}=render(<Dashboard summary={{students:10,enrollments:6,pending_admissions:2,pending_documents:1}}
+  data={{}} role="admin" userId={1}/>);
+ await waitFor(()=>expect(container.querySelectorAll('.sc-kpi-grid-item')).toHaveLength(4));
+ const grid=screen.getByTestId('grid');
+ const wrappers=Array.from(grid.querySelectorAll('.sc-kpi-grid-item'));
+ expect(wrappers.map(item=>item.getAttribute('data-widget'))).toEqual([
+  'students','enrollments','pending_admissions','pending_documents'
+ ]);
+ expect(wrappers.every(item=>item.children.length===1&&item.firstElementChild?.classList.contains('sc-kpi-card'))).toBe(true);
+ expect(grid.querySelectorAll(':scope > article.dashboard-widget')).toHaveLength(3);
+});
+
 it('restores widget builder fields alongside the default layout',async()=>{
  render(<Dashboard summary={{}} data={{}}/>);
  await personalize();
