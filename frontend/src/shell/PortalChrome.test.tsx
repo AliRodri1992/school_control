@@ -117,6 +117,28 @@ it('keeps the language icon, marks active language and closes sibling menus',asy
  expect(screen.queryByRole('group',{name:'Idiomas disponibles'})).toBeNull();
  expect(screen.getByRole('region',{name:'Notificaciones'})).toBeTruthy();
 });
+it('shows the redesigned notification panel with filters and a helpful empty state',async()=>{
+ render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ await userEvent.click(screen.getByRole('button',{name:'Notificaciones: 0 sin leer'}));
+ const panel=screen.getByRole('region',{name:'Notificaciones'});
+ expect(panel.classList.contains('sc-notification-panel')).toBe(true);
+ expect(panel.querySelector('.sc-np-header-icon svg')).toBeTruthy();
+ expect(screen.getByText('Novedades de tu comunidad escolar')).toBeTruthy();
+ expect(screen.getByRole('tab',{name:'Todas 0'})).toBeTruthy();
+ await userEvent.click(screen.getByRole('tab',{name:'Sin leer 0'}));
+ expect(screen.getByText('Ya revisaste todas tus notificaciones')).toBeTruthy();
+ expect(screen.queryByRole('button',{name:'Marcar todas como leídas'})).toBeNull();
+});
+
+it('opens the notification center from the panel footer',async()=>{
+ const navigate=vi.fn();
+ render(<PortalChrome {...props} onNavigate={navigate}><div>Página</div></PortalChrome>);
+ await userEvent.click(screen.getByRole('button',{name:'Notificaciones: 0 sin leer'}));
+ await userEvent.click(screen.getByRole('button',{name:'Ir al centro de notificaciones'}));
+ expect(navigate).toHaveBeenCalledWith('notifications');
+ expect(screen.queryByRole('region',{name:'Notificaciones'})).toBeNull();
+});
+
 it('dismisses notification popover on outside click and Escape, restoring focus',async()=>{
  render(<PortalChrome {...props}><button type="button">Outside</button></PortalChrome>);
  const bell=screen.getByRole('button',{name:'Notificaciones: 0 sin leer'});

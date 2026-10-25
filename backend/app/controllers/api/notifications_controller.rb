@@ -11,6 +11,11 @@ module Api
       render json: serialize(item)
     end
 
+    def read_all
+      current_user.notifications.unread.find_each(&:mark_as_read!)
+      render json: { unread_count: 0 }
+    end
+
     private
 
     def serialize(item)

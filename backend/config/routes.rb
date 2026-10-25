@@ -28,6 +28,7 @@ Rails.application.routes.draw do
     end
     resources :notifications, only: :index do
       post :read, on: :member
+      post :read_all, on: :collection
     end
     resources :assignments, only: %i[index create update] do
       get :submissions, on: :member

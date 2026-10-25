@@ -5,6 +5,7 @@ import {sidebarSections} from './sidebarPresentation';
 import {revealActiveSidebarItem,useSidebarScroll} from './useSidebarScroll';
 import {SidebarBrand} from './SidebarBrand';
 import LanguageMenu from './LanguageMenu';
+import NotificationPopover,{type NotificationPreview} from './NotificationPopover';
 import {userInitials} from './userInitials';
 import {SidebarAccountMenu} from './SidebarAccountMenu';
 import {TopbarAccountAvatar} from './TopbarAccountAvatar';
@@ -133,10 +134,12 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  },[]);
  const [notificationsOpen,setNotificationsOpen]=useState(false);
  const [unread,setUnread]=useState(0);
- const [notificationItems,setNotificationItems]=useState<Row[]>([]);
+ const [notificationItems,setNotificationItems]=useState<NotificationPreview[]>([]);
  const [noticeError,setNoticeError]=useState('');
+ const [notificationLoading,setNotificationLoading]=useState(true);
+ const [notificationBusy,setNotificationBusy]=useState(false);
  useTopbarMenuPosition(languageOpen,languageRef,210);
- useTopbarMenuPosition(notificationsOpen,notificationRef,345);
+ useTopbarMenuPosition(notificationsOpen,notificationRef,408);
  useEffect(()=>{let mounted=true;
    void api('languages').then(result=>{if(!mounted)return;
      setAvailableLocales(result.filter((row:{status:string})=>row.status==='active'));
@@ -162,8 +165,9 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    async function update(){try{
      const result=await api('notifications');
      if(active){setUnread(result.unread_count||0);setNotificationItems(result.items||[]);setNoticeError('');}
-   }catch(e){if(active)setNoticeError((e as Error).message);}}
-   void update();const interval=window.setInterval(()=>void update(),60000);
+   }catch(e){if(active)setNoticeError((e as Error).message);}
+   finally{if(active)setNotificationLoading(false);}}
+   setNotificationLoading(true);void update();const interval=window.setInterval(()=>void update(),60000);
    return()=>{active=false;window.clearInterval(interval);}
  },[user.id]);
  useEffect(()=>{
@@ -257,13 +261,29 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    document.addEventListener('keydown',onKeydown);
    return()=>document.removeEventListener('keydown',onKeydown);
  },[mobile,onMobile,compactGroup,languageOpen,notificationsOpen,accountTarget,crumbMenuOpen]);
- async function read(item:Row){
+ async function read(item:NotificationPreview){
+   if(notificationBusy)return;
+   setNotificationBusy(true);
    try{
      await api('notifications/'+item.id+'/read','POST');
      setUnread(v=>Math.max(0,v-(item.read_at?0:1)));
      setNotificationItems(v=>v.map(x=>x.id===item.id?{...x,read_at:new Date().toISOString()}:x));
+     setNoticeError('');
      if(item.page)navigate(item.page);
    }catch(e){setNoticeError((e as Error).message);}
+   finally{setNotificationBusy(false);}
+ }
+ async function readAllNotifications(){
+   if(notificationBusy)return;
+   setNotificationBusy(true);
+   try{
+     await api('notifications/read_all','POST');
+     const now=new Date().toISOString();
+     setNotificationItems(v=>v.map(x=>({...x,read_at:x.read_at||now})));
+     setUnread(0);
+     setNoticeError('');
+   }catch(e){setNoticeError((e as Error).message);}
+   finally{setNotificationBusy(false);}
  }
  function renderItem(item:NavItem,depth:number):ReactNode{
    const children=item.children||[];
@@ -425,13 +445,11 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
          <div className="sc-flyout-holder" ref={notificationRef}>
            <button className="sc-icon-button sc-notification-button" aria-label={(locale==='en'?'Notifications: ':'Notificaciones: ')+unread+(locale==='en'?' unread':' sin leer')} aria-haspopup="true" aria-expanded={notificationsOpen}
              onClick={()=>{setNotificationsOpen(v=>!v);setAccountTarget(null);setLanguageOpen(false);}}><Bell size={19}/>{unread>0&&<b className="sc-notification-count">{unread>99?'99+':unread}</b>}</button>
-           {notificationsOpen&&<section className="sc-flyout" aria-label="Notificaciones">
-             <div className="sc-flyout-title"><strong>{translate("shell.notifications","Notificaciones")}</strong><button type="button" aria-label={translateUiText(locale,"Cerrar")} onClick={()=>{setNotificationsOpen(false);notificationRef.current?.querySelector("button")?.focus();}}><X size={16}/></button></div>
-             {noticeError&&<p role="alert">{noticeError}</p>}
-             {notificationItems.slice(0,6).map(item=><button className="sc-flyout-link" key={item.id} onClick={()=>void read(item)}>{!item.read_at&&<span className="sc-unread"/>}{item.title}</button>)}
-             {!notificationItems.length&&<p>{translate("shell.no_notifications","No hay notificaciones recientes.")}</p>}
-             <button className="sc-flyout-link sc-all" onClick={()=>navigate('notifications')}>{translate("shell.view_all","Ver todas las notificaciones")}</button>
-           </section>}
+           {notificationsOpen&&<NotificationPopover locale={locale} items={notificationItems} unread={unread}
+             loading={notificationLoading} busy={notificationBusy} error={noticeError}
+             onRead={item=>void read(item)} onReadAll={()=>void readAllNotifications()}
+             onClose={()=>{setNotificationsOpen(false);notificationRef.current?.querySelector<HTMLButtonElement>('.sc-notification-button')?.focus();}}
+             onViewAll={()=>navigate('notifications')}/>}
          </div>
          <div className="sc-flyout-holder" ref={topbarAccountRef}>
            <button className="sc-account-button" type="button" aria-label={translateUiText(locale,'Opciones de cuenta de ')+user.name}
