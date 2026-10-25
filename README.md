@@ -36,6 +36,47 @@ Con `DEMO_SEEDS=true`, se crean datos ficticios y estos accesos, cuya contraseñ
 
 Las semillas son idempotentes: ejecutar `docker compose run --rm backend bundle exec rails db:seed` nuevamente conserva las cuentas, contraseñas y datos existentes. No usar datos demo en producción.
 
+## Vista previa y diagnóstico de la pantalla «Preparando tu escuela»
+
+La pantalla de preparación **no muestra el sidebar ni el navbar**: se presenta
+como una vista independiente antes de montar la sesión. Auli se dibuja con SVG
+integrado en React y no necesita una solicitud a otra imagen.
+
+Con el frontend de desarrollo levantado, prueba la pantalla sin depender del
+tiempo de respuesta de la API:
+
+- `http://localhost:5173/__preview/preparing` — conectando a la escuela.
+- `http://localhost:5173/__preview/preparing?stage=modules` — cargando módulos.
+
+Estas direcciones de vista previa existen únicamente en Vite **desarrollo**.
+No activan un login, no simulan accesos ni se publican como rutas de producto.
+
+Si todavía aparecen el sidebar y el navbar o falta Auli, comprueba que estás
+viendo el código nuevo del frontend y no otra instancia o un contenedor viejo:
+
+```bash
+git switch feature/smart-dashboard
+git pull --ff-only origin feature/smart-dashboard
+git rev-parse --short HEAD
+docker compose ps
+docker compose port frontend 5173
+docker compose exec frontend sh -lc 'grep -n "data-boot-screen" src/features/boot/SchoolBootScreen.tsx'
+docker compose exec frontend sh -lc 'grep -n "AuliBuilderIllustration" src/features/boot/SchoolBootScreen.tsx'
+```
+
+Si los archivos del contenedor no corresponden al repo, confirma que estás en
+el directorio `school_control`, y reconstruye **solo el frontend** (sin borrar
+los datos ni detener Delta POS):
+
+```bash
+docker compose up -d --build --force-recreate frontend
+docker compose logs --tail=60 frontend
+```
+
+Abre la vista previa directamente y luego prueba una recarga forzada
+(`Cmd + Shift + R`). Si tienes otro frontend publicado en otro puerto, utiliza
+el puerto reportado por `docker compose port frontend 5173`.
+
 ## Ejecutar junto con Delta POS (sin conflictos Docker)
 
 `sale_point` utiliza en el host los puertos `3000` (Rails), `5432` (PostgreSQL) y `6379` (Redis).

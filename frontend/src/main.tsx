@@ -1,6 +1,8 @@
 import React from 'react';
 import {createRoot} from 'react-dom/client';
 import App from './App';
+import SchoolBootScreen from './features/boot/SchoolBootScreen';
+import {previewBootStage,shouldShowBootPreview} from './features/boot/bootPreview';
 import {BrowserRouter,Route,Routes} from 'react-router-dom';
 import './styles.css';
 import './styles/design-system.css';
@@ -18,4 +20,17 @@ import './styles/dashboard-context.css';
 import './styles/preferences.css';
 import './styles/portal-home.css';
 import './styles/help.css';
-createRoot(document.getElementById('root')!).render(<React.StrictMode><BrowserRouter><Routes><Route path="*" element={<App/>}/></Routes></BrowserRouter></React.StrictMode>);
+const previewPath='/__preview/preparing';
+const preview=shouldShowBootPreview(import.meta.env.DEV,window.location.pathname);
+const previewStage=previewBootStage(window.location.search);
+const previewLocale=localStorage.getItem('school-locale')||'es';
+createRoot(document.getElementById('root')!).render(
+ <React.StrictMode>
+  <BrowserRouter>
+   <Routes>
+    {preview&&<Route path={previewPath} element={<SchoolBootScreen locale={previewLocale} stage={previewStage}/>}/>}
+    <Route path="*" element={<App/>}/>
+   </Routes>
+  </BrowserRouter>
+ </React.StrictMode>
+);

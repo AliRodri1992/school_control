@@ -58,3 +58,12 @@ it('announces loading as busy and keeps the builder in front of decorative eleme
  expect(view.querySelector('.sc-school-boot-auli svg[role="img"]')).toBeTruthy();
  expect(view.querySelector('img,aside,header,nav')).toBeNull();
 });
+
+it('identifies the standalone loading screen and never renders authenticated chrome',()=>{
+ const {container}=render(<SchoolBootScreen locale="es" stage="modules"/>);
+ const main=container.querySelector('[data-boot-screen="standalone"]')!;
+ expect(main.tagName).toBe('MAIN');
+ expect(main.querySelector('svg[role="img"] #builder-auli')).toBeTruthy();
+ expect(container.querySelector('.app,.sc-shell,.sc-sidebar,.sc-topbar,.sc-breadcrumb-bar')).toBeNull();
+ expect(container.querySelector('aside,header,nav')).toBeNull();
+});
