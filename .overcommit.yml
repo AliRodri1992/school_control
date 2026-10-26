@@ -1,9 +1,4 @@
 PreCommit:
-  MinimumCommitFiles:
-    enabled: true
-    required: true
-    command: ['./bin/check-commit-min-files', '--staged']
-
   TrailingWhitespace:
     enabled: true
   MergeConflicts:

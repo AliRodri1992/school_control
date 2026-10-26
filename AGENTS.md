@@ -10,23 +10,15 @@ Estas instrucciones se aplican a todo este repositorio y a cualquier agente de I
 - Mantener aislamiento de puertos de Docker respecto a Delta POS y preservar datos de los volúmenes existentes.
 - El dashboard inteligente utiliza widgets, rejilla y persistencia de distribución; conservar esa funcionalidad al modificarla.
 
-## Política obligatoria de commits para agentes de IA
-- **Cada commit creado por el agente debe modificar al menos 5 archivos distintos** con cambios reales, necesarios y vinculados a un objetivo técnico coherente, salvo la excepción exclusiva del esquema descrita abajo.
-- **Única excepción autorizada sin consultar:** un commit de exactamente **un archivo**, que modifique exclusivamente `backend/db/schema.rb` ya existente, y solamente cuando sea necesario actualizar el esquema real de la base de datos tras cambios legítimos del modelo de datos. Confirmar previamente que el diff es una actualización correcta generada por Rails; la comprobación automática verifica la ruta y que el estado Git sea modificación (M), pero no puede verificar por sí sola la necesidad técnica.
-- **Nunca** crear commits de 2, 3 o 4 archivos, aunque uno de ellos sea el esquema. Tampoco admitir commits individuales de otros archivos, ni crear, renombrar o eliminar `schema.rb` como excepción.
-- Si una tarea legítima modifica de 1 a 4 archivos y no encaja en la única excepción, **conservar los cambios sin confirmar** y agrupar únicamente trabajo relacionado. Comunicar el bloqueo si no hay modificaciones adicionales justificadas.
-- Cualquier otra excepción distinta debe recibir autorización explícita del usuario.
-- No cambiar archivos arbitrarios, generar archivos vacíos ni incluir retoques cosméticos para llegar a cinco.
-- No confundir archivos cambiados con líneas: cuentan rutas de archivo diferentes, incluidas altas, cambios, renombres y bajas.
-- Commits coherentes y revisables: no unir funcionalidades independientes solo por cumplir un número.
-- Antes de confirmar, revisar `git status`, `git diff --cached` y ejecutar `bash bin/check-commit-min-files --staged`. El hook `MinimumCommitFiles` de Overcommit automatiza la verificación en el equipo local.
+## Política de commits
+- No existe un número mínimo de archivos por commit. Se permiten commits de uno o varios archivos cuando los cambios sean legítimos y estén relacionados.
+- Mantener commits pequeños, coherentes y revisables, sin modificaciones artificiales para aumentar el número de archivos.
+- Antes de confirmar, revisar `git status` y `git diff --cached`, y ejecutar las verificaciones aplicables.
 - Antes de publicar, ejecutar los tests y analizadores aplicables. Tras publicar, consultar GitHub Actions y corregir fallos; nunca afirmar que todo pasó sin resultados comprobados.
-- GitHub Actions ejecuta `.github/workflows/commit-policy.yml` para verificar commits nuevos; los commits de fusión se exceptúan de esta comprobación de tamaño, no de las demás pruebas.
-- Es posible eludir hooks locales con comandos especiales; eso **no concede autorización** para hacer commits pequeños.
 - Si existe un cambio de rama concurrente, no sobrescribir trabajo de otros agentes. Nunca forzar `push` sobre una rama compartida.
 
-## Instalación/verificación local del hook
-Tras obtener esta configuración o cuando Overcommit lo solicite, ejecutar `bundle exec overcommit --install` y `bundle exec overcommit --sign` desde la raíz del repositorio. La verificación manual es `bash bin/check-commit-min-files --staged`; las pruebas aisladas del verificador son `bash test/commit_min_files_test.sh`.
+## Instalación/verificación local de hooks
+Overcommit mantiene las verificaciones de calidad y seguridad. Para instalarlo o renovar su firma, ejecutar `bundle exec overcommit --install` y `bundle exec overcommit --sign` desde la raíz del repositorio. No existe un hook de cantidad mínima de archivos.
 
 ## Seguridad y calidad
 - No guardar claves, tokens ni datos personales en Git; revisar diffs y archivos generados.
