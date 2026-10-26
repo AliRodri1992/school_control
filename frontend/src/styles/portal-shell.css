@@ -603,3 +603,31 @@
 .sc-main .sc-breadcrumb-design-one .sc-crumbs > .sc-crumb-step > .sc-crumb-link{
  min-width:0;
 }
+
+/* Sidebar UX refinement: consistent hierarchy, targets and disclosure affordances. */
+.sc-sidebar .sc-nav-section{margin-bottom:10px}
+.sc-sidebar .sc-nav-section-title{min-height:44px;padding:11px 12px;letter-spacing:.45px}
+.sc-sidebar .sc-nav-section.has-active-item>.sc-nav-section-title{
+ background:transparent;color:#dfe8ff
+}
+.sc-sidebar .sc-nav-section.has-active-item>.sc-nav-section-title::before{display:none}
+.sc-sidebar .sc-nav-section.is-primary-active>.sc-nav-section-title{
+ background:#405cf5;color:#fff
+}
+.sc-sidebar .sc-nav-section.is-primary-active>.sc-nav-section-title::before{display:none}
+.sc-sidebar .sc-nav-main{min-height:44px}
+.sc-sidebar .sc-nav-expand{
+ min-width:40px;min-height:44px;display:grid;place-items:center;
+ border-radius:9px
+}
+.sc-sidebar .sc-nav-expand:hover,.sc-sidebar .sc-nav-expand:focus-visible{
+ background:rgba(143,165,255,.17);color:#fff
+}
+.sc-sidebar .sc-nav-children{padding-left:5px;margin-left:11px}
+.sc-sidebar .sc-nav-item.is-ancestor:not(.is-active){background:rgba(143,165,255,.07)}
+.sc-sidebar .sc-nav-item.is-ancestor .sc-nav-main{color:#e6eeff}
+.sc-compact-flyout .sc-nav-expand{min-width:40px;min-height:44px;display:grid;place-items:center}
+@media(max-width:760px){
+ .sc-shell .sc-sidebar.open .sc-nav-section-title{min-height:46px}
+ .sc-shell .sc-sidebar.open .sc-nav-main{min-height:46px}
+}

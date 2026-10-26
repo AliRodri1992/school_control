@@ -22,3 +22,13 @@ it('preserves non-admin menus',()=>{
   expect(sidebarSections(role,groups).map(s=>s.id)).toEqual(groups.map(g=>g.title));
  }
 });
+
+it('persists only permitted disclosure sections for each portal',async()=>{
+ const {sidebarExpandedSections,sidebarExpandedStorageKey}=await import('./sidebarPresentation');
+ const sections=sidebarSections('admin',visibleGroups('admin',()=>true));
+ expect(sidebarExpandedStorageKey('admin')).toBe('school-sidebar-expanded-admin');
+ expect(sidebarExpandedStorageKey('teachers')).not.toBe(sidebarExpandedStorageKey('admin'));
+ expect(sidebarExpandedSections('admin',sections,JSON.stringify(['Alumnos','Configuración','fake','Inicio']))).toEqual(['Alumnos','Configuración']);
+ expect(sidebarExpandedSections('admin',sections,'broken')).toEqual([]);
+ expect(sidebarExpandedSections('admin',sections,null)).toEqual(['Alumnos']);
+});

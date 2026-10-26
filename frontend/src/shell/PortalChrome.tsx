@@ -1,7 +1,7 @@
 import {LocaleProvider} from '../shared/i18n/LocaleContext';
 import TopbarCommands from './TopbarCommands';
 import {useTopbarMenuPosition} from './useTopbarMenuPosition';
-import {sidebarSections} from './sidebarPresentation';
+import {sidebarSections,sidebarExpandedSections,sidebarExpandedStorageKey} from './sidebarPresentation';
 import {revealActiveSidebarItem,useSidebarScroll} from './useSidebarScroll';
 import {SidebarBrand} from './SidebarBrand';
 import LanguageMenu from './LanguageMenu';
@@ -28,7 +28,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
 }) {
  const portal=currentPortal(user.role),groups=visibleGroups(portal,can);
  const sections=sidebarSections(portal,groups);
- const [expanded,setExpanded]=useState<string[]>(['Alumnos','Mi actividad','Mi escuela','Mi familia']);
+ const [expanded,setExpanded]=useState<string[]>(()=>sidebarExpandedSections(portal,sections,localStorage.getItem(sidebarExpandedStorageKey(portal))));
  const [collapsed,setCollapsed]=useState(()=>localStorage.getItem('school-sidebar-collapsed')==='true');
  const [compactGroup,setCompactGroup]=useState<string|null>(null);
  const [languageOpen,setLanguageOpen]=useState(false);
@@ -52,6 +52,8 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const breadcrumbNavRef=useRef<HTMLElement>(null);
  const [breadcrumbCondensed,setBreadcrumbCondensed]=useState(false);
  useEffect(()=>{localStorage.setItem('school-sidebar-collapsed',String(collapsed));},[collapsed]);
+ useEffect(()=>{setExpanded(sidebarExpandedSections(portal,sections,localStorage.getItem(sidebarExpandedStorageKey(portal))));},[portal]);
+ useEffect(()=>{localStorage.setItem(sidebarExpandedStorageKey(portal),JSON.stringify(expanded));},[expanded,portal]);
  useEffect(()=>{const changed=()=>setLocale(localStorage.getItem('school-locale')||'es');window.addEventListener('school-locale-changed',changed);return()=>window.removeEventListener('school-locale-changed',changed);},[]);
  useEffect(()=>{function close(event:PointerEvent){const node=event.target as Node;if(!languageRef.current?.contains(node))setLanguageOpen(false);if(!notificationRef.current?.contains(node))setNotificationsOpen(false);}document.addEventListener('pointerdown',close);return()=>document.removeEventListener('pointerdown',close);},[]);
  const compact=collapsed&&!mobile;
@@ -200,6 +202,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    setNotificationsOpen(false);
    setLanguageOpen(false);
    setCrumbMenuOpen(false);
+   if(mobile){onMobile(false);mobileTrigger.current?.focus();}
  }
  function positionCompactMenu(){
    const trigger=compactGroupTrigger.current;
@@ -313,7 +316,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
          <span className="sc-nav-label">{translated}</span>
          {item.key==='admissions'&&pendingAdmissions>0&&<span className="sc-nav-count">{pendingAdmissions}</span>}
        </button>
-       {children.length>0&&<button className="sc-nav-expand" type="button" aria-expanded={isOpen}
+       {children.length>0&&<button className="sc-nav-expand" type="button" title={(isOpen?(locale==='en'?'Collapse ':'Contraer '):(locale==='en'?'Expand ':'Expandir '))+translated} aria-expanded={isOpen}
          aria-label={(isOpen?(locale==='en'?'Collapse ':'Contraer '):(locale==='en'?'Expand ':'Expandir '))+translated}
          onClick={()=>toggle(item.key)}>
          {isOpen?<ChevronDown size={16}/>:<ChevronRight size={16}/>}

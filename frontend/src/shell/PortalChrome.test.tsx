@@ -15,7 +15,7 @@ vi.mock('../api',()=>({api:vi.fn(async(path:string)=>{
  if(path==='notifications')return {unread_count:0,items:[]};
  return {};
 })}));
-afterEach(()=>{cleanup();localStorage.removeItem('school-locale');localStorage.removeItem('school-sidebar-collapsed');document.body.style.overflow='';});
+afterEach(()=>{cleanup();localStorage.removeItem('school-locale');localStorage.removeItem('school-sidebar-collapsed');localStorage.removeItem('school-sidebar-expanded-admin');localStorage.removeItem('school-sidebar-expanded-teachers');localStorage.removeItem('school-sidebar-expanded-students');localStorage.removeItem('school-sidebar-expanded-tutors');document.body.style.overflow='';});
 const user={id:15,name:'María González',email:'maria@example.test',role:'admin'};
 const props={user,school:{name:'Primaria Hidalgo',logo_url:'/logo.svg',timezone:'America/Mexico_City'},
  page:'dashboard',mobile:false,onMobile:vi.fn(),can:()=>true,pendingAdmissions:0,
@@ -864,4 +864,19 @@ it('shows the uploaded photo in the sidebar account menu as well as the navbar',
  const {container}=render(<PortalChrome {...props} user={{...user,avatar_url:'/profile-avatar.png'}}><div>Página</div></PortalChrome>);
  await userEvent.click(container.querySelector<HTMLButtonElement>('.sc-sidebar-account')!);
  expect(screen.getByRole('group',{name:'Menú de cuenta'}).querySelector('.sc-sam-avatar img')?.getAttribute('src')).toBe('/profile-avatar.png');
+});
+
+it('closes the mobile navigation after choosing a sidebar destination',async()=>{
+ const onMobile=vi.fn(),onNavigate=vi.fn();
+ render(<PortalChrome {...props} mobile onMobile={onMobile} onNavigate={onNavigate}><div>Página</div></PortalChrome>);
+ const sidebar=screen.getByRole('dialog',{name:'Barra lateral principal'});
+ await userEvent.click(sidebar.querySelector<HTMLButtonElement>('.sc-nav-section-title[aria-label="Inicio"]')!);
+ expect(onNavigate).toHaveBeenCalledWith('dashboard');
+ expect(onMobile).toHaveBeenCalledWith(false);
+});
+it('restores expanded sidebar categories from portal-specific storage',()=>{
+ localStorage.setItem('school-sidebar-expanded-admin',JSON.stringify(['Configuración']));
+ const {container}=render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ expect(container.querySelector('.sc-nav-section-title[aria-label="Configuración"]')?.getAttribute('aria-expanded')).toBe('true');
+ expect(container.querySelector('.sc-nav-section-title[aria-label="Alumnos"]')?.getAttribute('aria-expanded')).toBe('false');
 });

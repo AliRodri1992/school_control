@@ -30,7 +30,6 @@ it('does not revoke a session when the user cancels the confirmation',async()=>{
   {id:1,name:'Chrome · macOS',current:true,last_seen_at:'2026-10-25T10:00:00Z'},
   {id:2,name:'Firefox · Windows',current:false,last_seen_at:'2026-10-25T09:00:00Z'}
  ]}:{signed_out:false,message:'Sesión cerrada'});
- vi.mocked(confirmDanger).mockReset();
  vi.mocked(confirmDanger).mockResolvedValue(false);
  const signOut=vi.fn();
  render(<ProfileDevices onSignedOut={signOut}/>);

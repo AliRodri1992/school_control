@@ -20,3 +20,14 @@ export function sidebarSections(portal:PortalId,groups:NavGroup[]):SidebarSectio
   const item=allowed.get(key);return item?[{...item,children:[]}]:[];
  })})).filter(section=>section.items.length>0);
 }
+
+/** Keep disclosure state scoped to the active portal and its permitted sections. */
+export function sidebarExpandedSections(portal:PortalId,sections:SidebarSection[],stored:string|null):string[]{
+ const allowed=new Set(sections.filter(section=>!section.directPage).map(section=>section.id));
+ if(stored===null)return sections.filter(section=>section.id==='Alumnos'||section.id==='Mi actividad'||section.id==='Mi escuela'||section.id==='Mi familia').map(section=>section.id);
+ try {
+  const parsed:unknown=JSON.parse(stored);
+  return Array.isArray(parsed)?parsed.filter((id):id is string=>typeof id==='string'&&allowed.has(id)):[];
+ }catch{return [];}
+}
+export const sidebarExpandedStorageKey=(portal:PortalId)=>'school-sidebar-expanded-'+portal;

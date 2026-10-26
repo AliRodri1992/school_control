@@ -51,7 +51,7 @@ export default function TopbarCommands({groups,records,can,locale,translate,onNa
    <button type="button" ref={searchButton} className="sc-global-search-trigger" aria-label={searchLabel} aria-keyshortcuts="Control+K Meta+K" aria-haspopup="true" aria-expanded={searchOpen}
     onClick={()=>{setSearchOpen(true);onOpen();}}><Search size={19} aria-hidden="true"/><span className="sc-global-search-placeholder">{en?'Search modules, students, groups…':'Buscar módulos, alumnos, grupos…'}</span><kbd>{typeof navigator!=='undefined'&&/Mac|iPhone|iPad/.test(navigator.platform)?'⌘K':'Ctrl+K'}</kbd></button>
    {searchOpen&&<div className="sc-flyout sc-global-search-menu" role="region" aria-label={en?'Quick search':'Búsqueda rápida'}>
-    <div className="sc-global-search-input"><Search size={18}/><input ref={field} type="search" aria-label={searchLabel} aria-expanded={searchOpen} aria-controls={resultsId} aria-autocomplete="list" aria-activedescendant={results[selected]?'sc-search-result-'+selected:undefined} autoComplete="off" value={query}
+    <div className="sc-global-search-input"><Search size={18}/><input ref={field} type="search" aria-label={searchLabel} role="combobox" aria-expanded={searchOpen} aria-controls={resultsId} aria-autocomplete="list" aria-activedescendant={results[selected]?'sc-search-result-'+selected:undefined} autoComplete="off" value={query}
      placeholder={en?'What are you looking for?':'¿Qué necesitas encontrar?'} onChange={e=>setQuery(e.target.value)}
      onKeyDown={e=>{if(e.key==='ArrowDown'){e.preventDefault();setSelected(v=>Math.min(v+1,results.length-1));}
       if(e.key==='ArrowUp'){e.preventDefault();setSelected(v=>Math.max(0,v-1));}
