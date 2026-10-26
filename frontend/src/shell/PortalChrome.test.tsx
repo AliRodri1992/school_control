@@ -312,7 +312,7 @@ it('searches authorized school modules',async()=>{
  const searchNavigate=vi.fn();
  render(<PortalChrome {...props} onSearchNavigate={searchNavigate}><div>Página</div></PortalChrome>);
  await userEvent.click(screen.getByRole('button',{name:'Buscar en School Control'}));
- await userEvent.type(screen.getByRole('searchbox',{name:'Buscar en School Control'}),'Calificaciones');
+ await userEvent.type(screen.getByRole('combobox',{name:'Buscar en School Control'}),'Calificaciones');
  await userEvent.click(screen.getByRole('option',{name:/Calificaciones/}));
  expect(searchNavigate).toHaveBeenCalledWith('grades',undefined);
 });
@@ -321,7 +321,7 @@ it('offers Ctrl+K keyboard navigation for search',async()=>{
  const navigate=vi.fn();
  render(<PortalChrome {...props} onSearchNavigate={navigate}><div>Página</div></PortalChrome>);
  await userEvent.keyboard('{Control>}k{/Control}');
- await userEvent.type(screen.getByRole('searchbox',{name:'Buscar en School Control'}),'Alumnos');
+ await userEvent.type(screen.getByRole('combobox',{name:'Buscar en School Control'}),'Alumnos');
  await userEvent.keyboard('{Enter}');
  expect(navigate).toHaveBeenCalledWith('students',undefined);
 });
@@ -331,7 +331,7 @@ it('does not reveal student records to a role without record access',async()=>{
  render(<PortalChrome {...props} searchCollections={records} can={p=>p==='dashboard.show'||p==='students.index'}>
   <div>Página</div></PortalChrome>);
  await userEvent.click(screen.getByRole('button',{name:'Buscar en School Control'}));
- await userEvent.type(screen.getByRole('searchbox',{name:'Buscar en School Control'}),'Registro Confidencial');
+ await userEvent.type(screen.getByRole('combobox',{name:'Buscar en School Control'}),'Registro Confidencial');
  expect(screen.queryByRole('option',{name:/Registro Confidencial/})).toBeNull();
 });
 
@@ -340,12 +340,12 @@ it('opens an authorized student from global search',async()=>{
  const selected=vi.fn();
  render(<PortalChrome {...props} onSearchStudent={selected} searchCollections={{students:[student]}}><div>Página</div></PortalChrome>);
  await userEvent.click(screen.getByRole('button',{name:'Buscar en School Control'}));
- await userEvent.type(screen.getByRole('searchbox',{name:'Buscar en School Control'}),'Alex Ejemplo');
+ await userEvent.type(screen.getByRole('combobox',{name:'Buscar en School Control'}),'Alex Ejemplo');
  await userEvent.click(screen.getByRole('option',{name:/Alex Ejemplo/}));
  expect(selected).toHaveBeenCalledWith(student);
 });
 
-it('preserves search while New is removed',async()=>{render(<PortalChrome {...props}><div>Página</div></PortalChrome>);await userEvent.click(screen.getByRole('button',{name:'Buscar en School Control'}));expect(screen.getByRole('searchbox',{name:'Buscar en School Control'})).toBeTruthy();expect(screen.queryByRole('button',{name:'Nuevo registro'})).toBeNull();});
+it('preserves search while New is removed',async()=>{render(<PortalChrome {...props}><div>Página</div></PortalChrome>);await userEvent.click(screen.getByRole('button',{name:'Buscar en School Control'}));expect(screen.getByRole('combobox',{name:'Buscar en School Control'})).toBeTruthy();expect(screen.queryByRole('button',{name:'Nuevo registro'})).toBeNull();});
 
 it('shows the uploaded account image in both navbar and sidebar',()=>{
  const {container}=render(<PortalChrome {...props} user={{...user,name:'Ana María López',avatar_url:'/school-avatar.png'}}><div>Página</div></PortalChrome>);
