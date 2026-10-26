@@ -246,3 +246,7 @@
 [data-school-theme=dark] .sc-profile-device-details strong{color:#edf4ff}
 [data-school-theme=dark] .sc-profile-twofactor-state{background:#233a69;color:#c8d5ff}
 @media(max-width:600px){.sc-profile-device{flex-wrap:wrap}.sc-profile-devices-body,.sc-profile-twofactor-body{padding:18px}.sc-profile-device>button{margin-left:auto}}
+
+/* Profile photo is reused at the sidebar and topbar, with initials on load failure. */
+.sc-sidebar-avatar .sc-topbar-avatar-initials,.sc-topbar-avatar .sc-topbar-avatar-initials{display:grid;place-items:center;width:100%;height:100%;overflow:hidden;border-radius:inherit}
+.sc-user-avatar-img{width:100%;height:100%;display:block;object-fit:cover;border-radius:inherit}

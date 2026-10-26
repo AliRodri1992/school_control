@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import {afterEach,expect,it} from 'vitest';
-import {cleanup,render} from '@testing-library/react';
+import {cleanup,fireEvent,render} from '@testing-library/react';
 import {TopbarAccountAvatar} from './TopbarAccountAvatar';
 
 afterEach(cleanup);
@@ -33,4 +33,11 @@ it('shows an uploaded account photo when supplied by the authenticated session',
  const photo=container.querySelector('img');
  expect(photo?.getAttribute('src')).toBe('/api/profile/avatar');
  expect(photo?.getAttribute('alt')).toBe('');
+});
+
+it('falls back to initials when a saved account photo cannot load',()=>{
+ const {container}=render(<TopbarAccountAvatar name="María González" avatarUrl="/api/profile/avatar"/>);
+ fireEvent.error(container.querySelector('img')!);
+ expect(container.querySelector('img')).toBeNull();
+ expect(container.querySelector('.sc-topbar-avatar-initials')?.textContent).toBe('MG');
 });

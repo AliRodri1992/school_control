@@ -347,13 +347,12 @@ it('opens an authorized student from global search',async()=>{
 
 it('preserves search while New is removed',async()=>{render(<PortalChrome {...props}><div>Página</div></PortalChrome>);await userEvent.click(screen.getByRole('button',{name:'Buscar en School Control'}));expect(screen.getByRole('searchbox',{name:'Buscar en School Control'})).toBeTruthy();expect(screen.queryByRole('button',{name:'Nuevo registro'})).toBeNull();});
 
-it('uses the exact same initials in navbar and sidebar even if a profile picture exists',()=>{
+it('shows the uploaded account image in both navbar and sidebar',()=>{
  const {container}=render(<PortalChrome {...props} user={{...user,name:'Ana María López',avatar_url:'/school-avatar.png'}}><div>Página</div></PortalChrome>);
  const topbar=container.querySelector('.sc-topbar-avatar');
  const sidebar=container.querySelector('.sc-sidebar-avatar');
- expect(topbar?.textContent).toBe('AL');
- expect(topbar?.textContent).toBe(sidebar?.textContent);
- expect(topbar?.querySelector('img')).toBeNull();
+ expect(topbar?.querySelector('img')?.getAttribute('src')).toBe('/school-avatar.png');
+ expect(sidebar?.querySelector('img')?.getAttribute('src')).toBe('/school-avatar.png');
 });
 
 it('closes the search panel when clicking outside and retains a visible trigger',async()=>{
@@ -395,8 +394,7 @@ it('keeps institution identity available without repeating it in the new brand h
 it('keeps the initials first and profile details readable when a photo is configured',()=>{
  const {container}=render(<PortalChrome {...props} user={{...user,avatar_url:'/real-avatar.jpg'}}><div>Página</div></PortalChrome>);
  const button=container.querySelector('.sc-topbar .sc-account-button')!;
- expect(button.children[0].querySelector('.sc-topbar-avatar-initials')?.textContent).toBe('MG');
- expect(button.children[0].querySelector('img')).toBeNull();
+ expect(button.children[0].querySelector('img')?.getAttribute('src')).toBe('/api/profile/avatar');
  expect(button.children[1].querySelector('strong')?.textContent).toBe('María González');
  expect(button.children[1].querySelector('small')?.textContent).toBe('Administración');
  expect(screen.queryByRole('button',{name:'Nuevo registro'})).toBeNull();
@@ -647,9 +645,8 @@ it('shows the signed-in user initials rather than an image in the sidebar accoun
  const {container}=render(<PortalChrome {...props} user={{...user,name:'Ana María López',avatar_url:'/real-avatar.jpg'}}><div>Página</div></PortalChrome>);
  const sidebarButton=container.querySelector<HTMLButtonElement>('.sc-sidebar .sc-sidebar-account')!;
  const avatar=sidebarButton.querySelector('.sc-sidebar-avatar')!;
- expect(avatar.textContent).toBe('AL');
+ expect(avatar.querySelector('img')?.getAttribute('src')).toBe('/api/profile/avatar');
  expect(avatar.getAttribute('aria-hidden')).toBe('true');
- expect(avatar.querySelector('img')).toBeNull();
  expect(sidebarButton.querySelector('.sc-sidebar-user strong')?.textContent).toBe('Ana María López');
  expect(container.querySelector('.sc-topbar-avatar-initials')?.textContent).toBe('AL');
  expect(container.querySelector('.sc-topbar-avatar img')).toBeNull();
@@ -840,8 +837,7 @@ it('keeps only the active topbar flyout when another menu opens',async()=>{
 it('shows compact initials in the navbar without rendering a photo',async()=>{
  const {container}=render(<PortalChrome {...props} user={{...user,avatar_url:'/account-photo.jpg'}}><div>Página</div></PortalChrome>);
  const trigger=container.querySelector<HTMLButtonElement>('.sc-topbar .sc-account-button')!;
- expect(trigger.querySelector('.sc-topbar-avatar-initials')?.textContent).toBe('MG');
- expect(trigger.querySelector('img')).toBeNull();
+ expect(trigger.querySelector('img')?.getAttribute('src')).toBe('/account-photo.jpg');
  expect(trigger.getAttribute('aria-haspopup')).toBe('true');
  await userEvent.click(trigger);
  expect(screen.getByRole('button',{name:'Cerrar sesión'})).toBeTruthy();
