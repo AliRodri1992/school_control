@@ -174,3 +174,6 @@ html[data-school-reduce-motion=true] *,html[data-school-reduce-motion=true] *::b
 html[data-school-table-density=compact] .sc-main td{padding-block:8px}
 html[data-school-table-density=spacious] .sc-main td{padding-block:22px}
 @media(max-width:650px){.sc-pref-extra-controls{grid-template-columns:1fr;padding:16px}.sc-pref-section-tabs button{flex:1 1 125px}}
+
+html[data-school-hide-sensitive=true] .sc-sensitive-value{filter:blur(6px);user-select:none}
+html[data-school-hide-sensitive=true] .sc-sensitive-value:focus-visible{filter:none}

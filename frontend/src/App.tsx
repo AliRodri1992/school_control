@@ -1,3 +1,12 @@
+function loadRememberedFilters(userId:unknown,page:string){
+ try{
+  const prefs=JSON.parse(localStorage.getItem('school-preferences')||'{}');
+  if(!prefs.remember_filters||!userId)return null;
+  const saved=JSON.parse(localStorage.getItem('school-filters-'+userId+'-'+page)||'null');
+  return saved&&typeof saved==='object'&&typeof saved.query==='string'&&
+   typeof saved.statusFilter==='string'&&typeof saved.sorting==='string'?saved:null;
+ }catch{return null;}
+}
 import SchoolBootScreen,{type BootStage} from './features/boot/SchoolBootScreen';
 import SessionRestoreScreen from './features/boot/SessionRestoreScreen';
 import {waitForMinimumBootVisibility} from './features/boot/bootVisibility';
@@ -76,7 +85,9 @@ export default function App(){
    if(next!=='imports'&&next!=='profile'&&next!=='notifications'&&next!=='messages'&&next!=='preferences'&&next!=='help'&&next!=='privacy'&&next!=='terms'&&!user?.permissions?.[pagePermission(next)]?.length)return;
    if(next!=='student_details')setDetailStudent(null);
    closeStudentReport();
-   setPage(next);setQuery('');setNotice('');setMobile(false);setPageNumber(0);setStatusFilter('');setSorting('');
+   const remembered=loadRememberedFilters(user?.id,next);
+   setPage(next);setQuery(remembered?.query||'');setNotice('');setMobile(false);setPageNumber(0);
+   setStatusFilter(remembered?.statusFilter||'');setSorting(remembered?.sorting||'');
    const url=makePortalUrl(portal,next);
    if(location.pathname!==url)navigate(url);
  }
@@ -200,6 +211,13 @@ export default function App(){
  const pages=Math.max(1,Math.ceil(records.length/pageSize));
  const currentPage=Math.min(pageNumber,pages-1);
  const shownRows=records.slice(currentPage*pageSize,(currentPage+1)*pageSize);
+ useEffect(()=>{
+  if(!user)return;
+  try{
+   const prefs=JSON.parse(localStorage.getItem('school-preferences')||'{}');
+   if(prefs.remember_filters)localStorage.setItem('school-filters-'+user.id+'-'+page,JSON.stringify({query,statusFilter,sorting}));
+  }catch{/* Storage may be disabled by browser policy. */}
+ },[user?.id,page,query,statusFilter,sorting]);
  function sortBy(key:string){if(sorting===key)setAscending(value=>!value);else{setSorting(key);setAscending(true);}setPageNumber(0);}
 
  if(restoringSession)return <SessionRestoreScreen locale={locale}/>;

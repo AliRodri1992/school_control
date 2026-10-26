@@ -53,6 +53,7 @@ export default function NotificationPopover({locale,items,unread,loading=false,b
   setFilter(destination.dataset.filter==='unread'?'unread':'all');
   destination.focus();
  }
+ const hidePreviews=(()=>{try{return JSON.parse(localStorage.getItem('school-preferences')||'{}').hide_notification_previews===true;}catch{return false;}})();
  const filtered=(filter==='unread'?items.filter(item=>!item.read_at):items).slice(0,6);
  return <section className="sc-flyout sc-borderless-flyout sc-notification-panel" aria-label={labels.title}>
   <header className="sc-np-header">
@@ -84,10 +85,10 @@ export default function NotificationPopover({locale,items,unread,loading=false,b
      const date=notificationTime(item.created_at,locale);
      return <button key={item.id} type="button" disabled={busy}
       className={'sc-np-item'+(unseen?' is-unread':'')} onClick={()=>onRead(item)}
-      aria-label={labels.open+': '+item.title}>
+      aria-label={labels.open+': '+(hidePreviews?(locale==='en'?'Hidden notification':'Notificación oculta'):item.title)}>
       <span className="sc-np-item-icon" aria-hidden="true"><Icon size={19}/></span>
       <span className="sc-np-item-main">
-       <span className="sc-np-item-title">{item.title}</span>
+       <span className="sc-np-item-title">{hidePreviews?(locale==='en'?'Notification preview hidden':'Vista previa oculta'):item.title}</span>
        <span className="sc-np-item-meta">{date&&<time dateTime={item.created_at||undefined}>{date}</time>}<span>{unseen?labels.new:labels.read}</span></span>
       </span>
       {unseen&&<span className="sc-np-unread-dot" aria-hidden="true"/>}
