@@ -5,6 +5,7 @@ import SchoolBootScreen from './features/boot/SchoolBootScreen';
 import {previewBootStage,shouldShowBootPreview} from './features/boot/bootPreview';
 import {BrowserRouter,Route,Routes} from 'react-router-dom';
 import './styles.css';
+import {applyDisplaySettings,readDisplaySettings} from './shared/displayPreferences';
 import './styles/design-system.css';
 import './styles/portal-shell.css';
 import './styles/sidebar-account-menu.css';
@@ -31,16 +32,7 @@ import './styles/help.css';
 import './styles/language-menu.css';
 import './styles/notification-panel.css';
 import './styles/notifications-center.css';
-try {
- const saved=JSON.parse(localStorage.getItem('school-preferences')||'null');
- if(saved&&typeof saved==='object'){
-  document.documentElement.dataset.schoolContrast=String(saved.high_contrast===true);
-  document.documentElement.dataset.schoolLargeText=String(saved.large_text===true);
-  document.documentElement.dataset.schoolReduceMotion=String(saved.reduce_motion===true);
-  document.documentElement.dataset.schoolTableDensity=saved.table_density||'comfortable';
-  document.documentElement.dataset.schoolHideSensitive=String(saved.hide_sensitive_data===true);
- }
-}catch{localStorage.removeItem('school-preferences');}
+applyDisplaySettings(readDisplaySettings());
 const previewPath='/__preview/preparing';
 const preview=shouldShowBootPreview(import.meta.env.DEV,window.location.pathname);
 const previewStage=previewBootStage(window.location.search);

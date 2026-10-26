@@ -4,6 +4,7 @@ import {useSchoolLocale} from '../../shared/i18n/LocaleContext';
 import Combobox from '../../shared/components/Combobox';
 import {api} from '../../api';
 import {notify} from '../../notifications';
+import {applyDisplaySettings} from '../../shared/displayPreferences';
 
 type Theme='system'|'light'|'dark';
 type Settings={locale:string;theme:Theme;rows_per_page:number;selected_child_id:number|null;
@@ -66,12 +67,7 @@ export default function Preferences({onSaved}:{onSaved?:(settings:Settings)=>voi
    localStorage.setItem('school-locale',result.locale);
    document.documentElement.dataset.schoolTheme=result.theme;
    window.dispatchEvent(new Event('school-locale-changed'));
-   const root=document.documentElement;
-   root.dataset.schoolContrast=String(result.high_contrast);
-   root.dataset.schoolLargeText=String(result.large_text);
-   root.dataset.schoolReduceMotion=String(result.reduce_motion);
-   root.dataset.schoolTableDensity=result.table_density;
-   root.dataset.schoolHideSensitive=String(result.hide_sensitive_data);
+   applyDisplaySettings(result);
    localStorage.setItem('school-preferences',JSON.stringify(result));
    window.dispatchEvent(new Event('school-preferences-changed'));
    onSaved?.(result);

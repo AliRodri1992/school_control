@@ -471,5 +471,5 @@ it('keeps analytics and the context cards in rows after reordering a dashboard w
  expect(new Set(['attendance_chart','alerts','calendar'].map(id=>lg.find(item=>item.i===id)?.y)).size).toBe(1);
  expect(payload.configuration.widgets.filter(widget=>widget.kind.endsWith('chart')).length).toBeGreaterThan(0);
  expect(payload.configuration.widgets.some(widget=>widget.id==='admission_status')).toBe(true);
- expect(container.querySelectorAll('.school-dashboard-grid .dashboard-widget')).toHaveLength(7);
+ expect(container.querySelectorAll('.school-dashboard-grid .dashboard-widget')).toHaveLength(11);
 });
