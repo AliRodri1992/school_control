@@ -39,7 +39,16 @@ class NotifySchoolActivity
       end
       recipients.concat([ student.guardian, student.user ]) if student
     end
-    recipients = recipients.compact.select(&:active?).uniq
+    recipients = recipients.compact.select(&:active?).uniq.select do |recipient|
+      preference = recipient.user_preference
+      next true unless preference
+      next false if !preference.notification_school && page != "grades" && page != "attendances"
+      next false if page == "grades" && !preference.notification_grades
+      next false if page == "attendances" && !preference.notification_attendance
+      next false if page == "calendar_events" && !preference.notification_events
+
+      true
+    end
     ActivityNotifier.with(title: title, page: page, audit_event_id: event.id).deliver(recipients) if recipients.any?
   end
 end

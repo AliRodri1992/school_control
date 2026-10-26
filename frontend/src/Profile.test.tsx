@@ -9,8 +9,9 @@ vi.mock('./api',()=>({api:vi.fn()}));
 vi.mock('./notifications',()=>({notify:vi.fn()}));
 vi.mock('./shared/i18n/LocaleContext',()=>({useSchoolLocale:()=>({ui:(value:string)=>value})}));
 vi.mock('./AccountSecurity',()=>({default:()=> <div data-testid="security-controls"/>}));
+vi.mock('./ProfileNotificationSettings',()=>({default:()=> <div data-testid="notification-settings"/>}));
 const request=vi.mocked(api);
-const initial={id:7,name:'María González',email:'maria@school.test',role:'teacher',email_notifications:false};
+const initial={id:7,name:'María González',email:'maria@school.test',role:'teacher',email_notifications:false,phone_e164:null,avatar_url:null,institution_name:'Mi Escuela',account_status:'active',assigned_context:{title:'Clases asignadas',count:2}};
 beforeEach(()=>{request.mockReset();vi.mocked(notify).mockReset();request.mockImplementation(async()=>({...initial}));});
 afterEach(cleanup);
 
@@ -96,4 +97,31 @@ it('retries loading the profile inside the page without resetting the whole port
  expect(await screen.findByRole('heading',{name:'María González'})).toBeTruthy();
  expect(request).toHaveBeenCalledTimes(2);
  expect(screen.queryByRole('alert')).toBeNull();
+});
+
+it('shows institution and role-specific account details and accepts international contact phones',async()=>{
+ const onChange=vi.fn();
+ request.mockImplementation(async(resource:string,method?:string,data?:any)=>{
+  if(resource==='profile'&&method==='PATCH')return {...initial,...data};
+  return {...initial};
+ });
+ render(<Profile onChange={onChange} onSignedOut={vi.fn()}/>);
+ expect(await screen.findByText('Mi Escuela')).toBeTruthy();
+ expect(screen.getByText('Clases asignadas')).toBeTruthy();
+ expect(screen.getByTestId('notification-settings')).toBeTruthy();
+ const phone=screen.getByRole('textbox',{name:'Teléfono de contacto'});
+ await userEvent.type(phone,'+525512345678');
+ await userEvent.click(screen.getByRole('button',{name:'Guardar cambios'}));
+ await waitFor(()=>expect(request).toHaveBeenCalledWith('profile','PATCH',
+  {name:'María González',email_notifications:false,phone_e164:'+525512345678'}));
+ expect(onChange).toHaveBeenCalledWith(expect.objectContaining({phone_e164:'+525512345678'}));
+});
+
+it('rejects malformed phone values without sending them to Rails',async()=>{
+ render(<Profile onChange={vi.fn()} onSignedOut={vi.fn()}/>);
+ await screen.findByRole('textbox',{name:'Teléfono de contacto'});
+ await userEvent.type(screen.getByRole('textbox',{name:'Teléfono de contacto'}),'12345');
+ await userEvent.click(screen.getByRole('button',{name:'Guardar cambios'}));
+ expect((await screen.findByRole('alert')).textContent).toContain('Introduce un teléfono internacional válido');
+ expect(request).toHaveBeenCalledTimes(1);
 });

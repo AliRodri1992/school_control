@@ -4,7 +4,9 @@ class ActivityNotifier < Noticed::Event
   deliver_by :email do |config|
     config.mailer = "SchoolMailer"
     config.method = :activity
-    config.if = -> { recipient.active? && recipient.email_notifications? && (Rails.env.development? || ENV["ENABLE_EMAIL_DELIVERY"] == "true") }
+    config.if = -> { recipient.active? && recipient.email_notifications? &&
+      recipient.user_preference&.notification_email != false &&
+      (Rails.env.development? || ENV["ENABLE_EMAIL_DELIVERY"] == "true") }
   end
 
   notification_methods do

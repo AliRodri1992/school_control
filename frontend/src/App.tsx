@@ -253,7 +253,7 @@ export default function App(){
  page==='help'?<HelpCenter role={user.role} can={can} onNavigate={go}/>:
   (page==='privacy'||page==='terms')?<LegalInformation kind={page} onHelp={()=>go('help')}/>:
   page==='preferences'?<Preferences onSaved={prefs=>setPageSize(prefs.rows_per_page)}/>:
-  page==='profile'?<Profile onChange={setUser} onSignedOut={signedOut}/>:
+  page==='profile'?<Profile onChange={setUser} onSignedOut={signedOut} onNavigate={go}/>:
  page==='notifications'?<Notifications navigate={target=>{if(target==='profile'||target==='notifications'||target==='messages'||modules[target]||['dashboard','reports','classroom','documents','schedule','school','access_roles'].includes(target))go(target);}}/>:
  page==='classroom'?<Classroom user={user} courses={data.courses||[]} enrollments={data.enrollments||[]}/>:
  page==='documents'?<Documents students={(data.students||[]).filter(s=>user.role!=='guardian'||!selectedChild||String(s.id)===selectedChild)} admin={can('student_documents.review')}/>:

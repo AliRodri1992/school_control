@@ -1,4 +1,5 @@
 class User < ApplicationRecord
+  has_one_attached :avatar
   has_one :user_preference, dependent: :destroy
   has_many :data_imports, dependent: :restrict_with_error
   has_many :import_mapping_templates, dependent: :destroy
@@ -24,6 +25,15 @@ class User < ApplicationRecord
   validates :email, uniqueness: { case_sensitive: false }, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :role, inclusion: { in: %w[admin teacher guardian student] }
   validates :password, length: { minimum: 12 }, allow_nil: true
+  validate :valid_avatar
+
+  def valid_avatar
+    return unless avatar.attached?
+    blob = avatar.blob
+    unless %w[image/png image/jpeg image/webp].include?(blob.content_type) && blob.byte_size <= 2.megabytes
+      errors.add(:avatar, "debe ser PNG, JPG o WebP de hasta 2 MB")
+    end
+  end
 
   def can?(permission, record = nil)
     SchoolAccess.new(self, permission).allows?(record)

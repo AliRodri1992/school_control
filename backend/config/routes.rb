@@ -15,6 +15,9 @@ Rails.application.routes.draw do
     resource :password_reset, only: %i[create update]
     resource :preferences, only: %i[show update]
     resource :profile, only: %i[show update] do
+      get :avatar, to: "profiles#avatar"
+      post :avatar, to: "profiles#upload_avatar"
+      delete :avatar, to: "profiles#remove_avatar"
       patch :password, to: "account_security#update"
       delete :sessions, to: "account_security#destroy"
     end

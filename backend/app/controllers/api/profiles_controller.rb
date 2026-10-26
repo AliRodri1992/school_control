@@ -1,14 +1,92 @@
 module Api
   class ProfilesController < ApplicationController
+    MAX_AVATAR_SIZE = 2.megabytes
+    AVATAR_TYPES = %w[image/png image/jpeg image/webp].freeze
+
     def show
-      render json: present(current_user).merge(email_notifications: current_user.email_notifications)
+      render json: profile_data
     end
 
     def update
       changes = params.permit(:name, :email_notifications)
       changes[:name] = changes[:name].to_s.strip if changes.key?(:name)
-      current_user.update!(changes)
+      current_user.with_lock do
+        current_user.update!(changes)
+        update_phone! if params.key?(:phone_e164)
+      end
       show
+    end
+
+    def avatar
+      return head :not_found unless current_user.avatar.attached?
+
+      response.headers["Cache-Control"] = "private, no-store"
+      response.headers["X-Content-Type-Options"] = "nosniff"
+      send_data current_user.avatar.download, type: current_user.avatar.blob.content_type,
+        disposition: "inline"
+    end
+
+    def upload_avatar
+      file = params.require(:avatar)
+      unless file.respond_to?(:tempfile) && file.size.positive? && file.size <= MAX_AVATAR_SIZE &&
+          AVATAR_TYPES.include?(Marcel::MimeType.for(file.tempfile))
+        return render json: { error: "Selecciona una foto PNG, JPG o WebP de hasta 2 MB." }, status: :unprocessable_content
+      end
+
+      current_user.avatar.attach(
+        io: file.tempfile, filename: file.original_filename,
+        content_type: Marcel::MimeType.for(file.tempfile), identify: false
+      )
+      audit(current_user, "user.avatar_updated")
+      show
+    end
+
+    def remove_avatar
+      current_user.avatar.purge if current_user.avatar.attached?
+      audit(current_user, "user.avatar_removed")
+      show
+    end
+
+    private
+
+    def personal_phone
+      current_user.phone_numbers.find_by(purpose: "mobile", primary: true)
+    end
+
+    def update_phone!
+      number = params[:phone_e164].to_s.strip
+      phone = personal_phone
+      if number.blank?
+        phone&.destroy!
+      elsif phone
+        phone.update!(number_e164: number)
+      else
+        current_user.phone_numbers.create!(purpose: "mobile", number_e164: number, primary: true)
+      end
+    end
+
+    def profile_data
+      present(current_user).merge(
+        email_notifications: current_user.email_notifications,
+        phone_e164: personal_phone&.number_e164,
+        avatar_url: (avatar_api_profile_path if current_user.avatar.attached?),
+        institution_name: School.first&.name,
+        account_created_at: current_user.created_at,
+        account_status: current_user.active? ? "active" : "inactive",
+        assigned_context: assigned_context
+      )
+    end
+
+    def assigned_context
+      if current_user.teacher?
+        { title: "Clases asignadas", count: current_user.courses.count }
+      elsif current_user.guardian?
+        { title: "Hijos vinculados", count: current_user.children.count }
+      elsif current_user.learner?
+        { title: "Inscripciones", count: current_user.student&.enrollments&.count.to_i }
+      else
+        { title: "Funciones asignadas", count: current_user.access_roles.count }
+      end
     end
   end
 end
