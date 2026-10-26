@@ -140,10 +140,7 @@ export default function Profile({onChange,onSignedOut,onNavigate}:{
      <div className="sc-profile-identity-orbit"><ShieldCheck size={49} strokeWidth={1.35}/></div>
      <span>{ui('Tu identidad, protegida en School Control')}</span>
     </div>
-    <div className="sc-profile-avatar-actions">
-     <small>{ui('PNG, JPG o WebP · Máximo 2 MB')}</small>
-     {avatarError&&<span role="alert">{avatarError}</span>}
-    </div>
+    {avatarError&&<div className="sc-profile-avatar-actions" role="alert">{avatarError}</div>}
    </header>
    <div className="sc-profile-columns">
     <div className="sc-profile-primary-column">
