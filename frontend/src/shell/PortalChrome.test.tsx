@@ -15,7 +15,7 @@ vi.mock('../api',()=>({api:vi.fn(async(path:string)=>{
  if(path==='notifications')return {unread_count:0,items:[]};
  return {};
 })}));
-afterEach(()=>{cleanup();localStorage.removeItem('school-locale');localStorage.removeItem('school-sidebar-collapsed');document.body.style.overflow='';});
+afterEach(()=>{cleanup();localStorage.removeItem('school-locale');localStorage.removeItem('school-sidebar-collapsed');localStorage.removeItem('school-sidebar-expanded-admin');localStorage.removeItem('school-sidebar-expanded-teachers');localStorage.removeItem('school-sidebar-expanded-students');localStorage.removeItem('school-sidebar-expanded-tutors');document.body.style.overflow='';});
 const user={id:15,name:'María González',email:'maria@example.test',role:'admin'};
 const props={user,school:{name:'Primaria Hidalgo',logo_url:'/logo.svg',timezone:'America/Mexico_City'},
  page:'dashboard',mobile:false,onMobile:vi.fn(),can:()=>true,pendingAdmissions:0,
@@ -312,7 +312,7 @@ it('searches authorized school modules',async()=>{
  const searchNavigate=vi.fn();
  render(<PortalChrome {...props} onSearchNavigate={searchNavigate}><div>Página</div></PortalChrome>);
  await userEvent.click(screen.getByRole('button',{name:'Buscar en School Control'}));
- await userEvent.type(screen.getByRole('searchbox',{name:'Buscar en School Control'}),'Calificaciones');
+ await userEvent.type(screen.getByRole('combobox',{name:'Buscar en School Control'}),'Calificaciones');
  await userEvent.click(screen.getByRole('option',{name:/Calificaciones/}));
  expect(searchNavigate).toHaveBeenCalledWith('grades',undefined);
 });
@@ -321,7 +321,7 @@ it('offers Ctrl+K keyboard navigation for search',async()=>{
  const navigate=vi.fn();
  render(<PortalChrome {...props} onSearchNavigate={navigate}><div>Página</div></PortalChrome>);
  await userEvent.keyboard('{Control>}k{/Control}');
- await userEvent.type(screen.getByRole('searchbox',{name:'Buscar en School Control'}),'Alumnos');
+ await userEvent.type(screen.getByRole('combobox',{name:'Buscar en School Control'}),'Alumnos');
  await userEvent.keyboard('{Enter}');
  expect(navigate).toHaveBeenCalledWith('students',undefined);
 });
@@ -331,7 +331,7 @@ it('does not reveal student records to a role without record access',async()=>{
  render(<PortalChrome {...props} searchCollections={records} can={p=>p==='dashboard.show'||p==='students.index'}>
   <div>Página</div></PortalChrome>);
  await userEvent.click(screen.getByRole('button',{name:'Buscar en School Control'}));
- await userEvent.type(screen.getByRole('searchbox',{name:'Buscar en School Control'}),'Registro Confidencial');
+ await userEvent.type(screen.getByRole('combobox',{name:'Buscar en School Control'}),'Registro Confidencial');
  expect(screen.queryByRole('option',{name:/Registro Confidencial/})).toBeNull();
 });
 
@@ -340,12 +340,12 @@ it('opens an authorized student from global search',async()=>{
  const selected=vi.fn();
  render(<PortalChrome {...props} onSearchStudent={selected} searchCollections={{students:[student]}}><div>Página</div></PortalChrome>);
  await userEvent.click(screen.getByRole('button',{name:'Buscar en School Control'}));
- await userEvent.type(screen.getByRole('searchbox',{name:'Buscar en School Control'}),'Alex Ejemplo');
+ await userEvent.type(screen.getByRole('combobox',{name:'Buscar en School Control'}),'Alex Ejemplo');
  await userEvent.click(screen.getByRole('option',{name:/Alex Ejemplo/}));
  expect(selected).toHaveBeenCalledWith(student);
 });
 
-it('preserves search while New is removed',async()=>{render(<PortalChrome {...props}><div>Página</div></PortalChrome>);await userEvent.click(screen.getByRole('button',{name:'Buscar en School Control'}));expect(screen.getByRole('searchbox',{name:'Buscar en School Control'})).toBeTruthy();expect(screen.queryByRole('button',{name:'Nuevo registro'})).toBeNull();});
+it('preserves search while New is removed',async()=>{render(<PortalChrome {...props}><div>Página</div></PortalChrome>);await userEvent.click(screen.getByRole('button',{name:'Buscar en School Control'}));expect(screen.getByRole('combobox',{name:'Buscar en School Control'})).toBeTruthy();expect(screen.queryByRole('button',{name:'Nuevo registro'})).toBeNull();});
 
 it('shows the uploaded account image in both navbar and sidebar',()=>{
  const {container}=render(<PortalChrome {...props} user={{...user,name:'Ana María López',avatar_url:'/school-avatar.png'}}><div>Página</div></PortalChrome>);
@@ -858,4 +858,33 @@ it('shows the profile image consistently inside the topbar account menu',async()
  await userEvent.click(container.querySelector<HTMLButtonElement>('.sc-topbar .sc-account-button')!);
  const menu=screen.getByRole('group',{name:'Menú de cuenta'});
  expect(menu.querySelector('.sc-sam-avatar img')?.getAttribute('src')).toBe('/profile-photo.png');
+});
+
+it('shows the uploaded photo in the sidebar account menu as well as the navbar',async()=>{
+ const {container}=render(<PortalChrome {...props} user={{...user,avatar_url:'/profile-avatar.png'}}><div>Página</div></PortalChrome>);
+ await userEvent.click(container.querySelector<HTMLButtonElement>('.sc-sidebar-account')!);
+ expect(screen.getByRole('group',{name:'Menú de cuenta'}).querySelector('.sc-sam-avatar img')?.getAttribute('src')).toBe('/profile-avatar.png');
+});
+
+it('closes the mobile navigation after choosing a sidebar destination',async()=>{
+ const onMobile=vi.fn(),onNavigate=vi.fn();
+ render(<PortalChrome {...props} mobile onMobile={onMobile} onNavigate={onNavigate}><div>Página</div></PortalChrome>);
+ const sidebar=screen.getByRole('dialog',{name:'Barra lateral principal'});
+ await userEvent.click(sidebar.querySelector<HTMLButtonElement>('.sc-nav-section-title[aria-label="Inicio"]')!);
+ expect(onNavigate).toHaveBeenCalledWith('dashboard');
+ expect(onMobile).toHaveBeenCalledWith(false);
+});
+it('restores expanded sidebar categories from portal-specific storage',()=>{
+ localStorage.setItem('school-sidebar-expanded-admin',JSON.stringify(['Configuración']));
+ const {container}=render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ expect(container.querySelector('.sc-nav-section-title[aria-label="Configuración"]')?.getAttribute('aria-expanded')).toBe('true');
+ expect(container.querySelector('.sc-nav-section-title[aria-label="Alumnos"]')?.getAttribute('aria-expanded')).toBe('false');
+});
+
+it('expands the nested category when opening its parent module',async()=>{
+ const {container}=render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ await userEvent.click(container.querySelector<HTMLButtonElement>('.sc-nav-section-title[aria-label="Académico"]')!);
+ const button=container.querySelector<HTMLButtonElement>('.sc-nav-main[aria-label="Ciclos escolares"]')!;
+ await userEvent.click(button);
+ expect(button.closest('.sc-nav-node')?.querySelector('.sc-nav-expand')?.getAttribute('aria-expanded')).toBe('true');
 });

@@ -1,4 +1,4 @@
-import {useEffect,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {Laptop2,RefreshCw,ShieldAlert,Smartphone} from 'lucide-react';
 import {api} from './api';
 import {confirmDanger,notify} from './notifications';
@@ -11,6 +11,7 @@ export default function ProfileDevices({onSignedOut}:{onSignedOut:()=>void}){
  const [loading,setLoading]=useState(true),[busy,setBusy]=useState<number|null>(null);
  const [error,setError]=useState(''),[password,setPassword]=useState('');
  const [refresh,setRefresh]=useState(0);
+ const confirmationPending=useRef(false);
  useEffect(()=>{
   let active=true;setLoading(true);setError('');
   void api('profile/devices').then((data:{devices:Device[]})=>{if(active)setDevices(data.devices);})
@@ -19,9 +20,13 @@ export default function ProfileDevices({onSignedOut}:{onSignedOut:()=>void}){
   return()=>{active=false;};
  },[refresh]);
  async function revoke(device:Device){
-  if(!password||busy!==null)return;
-  const confirmed=await confirmDanger(ui('Cerrar sesión del dispositivo'),
-   ui('Se solicitará nuevamente iniciar sesión en ese dispositivo.'),ui('Cerrar sesión'));
+  if(!password||busy!==null||confirmationPending.current)return;
+  confirmationPending.current=true;
+  let confirmed=false;
+  try{
+   confirmed=await confirmDanger(ui('Cerrar sesión del dispositivo'),
+    ui('Se solicitará nuevamente iniciar sesión en ese dispositivo.'),ui('Cerrar sesión'));
+  }finally{confirmationPending.current=false;}
   if(!confirmed)return;
   setBusy(device.id);setError('');
   try{

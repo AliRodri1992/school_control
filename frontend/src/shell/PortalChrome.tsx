@@ -1,7 +1,7 @@
 import {LocaleProvider} from '../shared/i18n/LocaleContext';
 import TopbarCommands from './TopbarCommands';
 import {useTopbarMenuPosition} from './useTopbarMenuPosition';
-import {sidebarSections} from './sidebarPresentation';
+import {sidebarSections,sidebarExpandedSections,sidebarExpandedStorageKey} from './sidebarPresentation';
 import {revealActiveSidebarItem,useSidebarScroll} from './useSidebarScroll';
 import {SidebarBrand} from './SidebarBrand';
 import LanguageMenu from './LanguageMenu';
@@ -9,7 +9,7 @@ import NotificationPopover,{type NotificationPreview} from './NotificationPopove
 import {userInitials} from './userInitials';
 import {SidebarAccountMenu} from './SidebarAccountMenu';
 import {TopbarAccountAvatar} from './TopbarAccountAvatar';
-import {placeSidebarAccountMenu,placeTopbarAccountMenu,type SidebarAccountPosition} from './sidebarAccountPlacement';
+import {placeSidebarAccountMenu,placeTopbarAccountMenu,placeCompactSidebarMenu,type SidebarAccountPosition} from './sidebarAccountPlacement';
 import {PortalFooter} from './PortalFooter';
 import {translateUiText} from '../shared/i18n/english';
 import {useEffect,useLayoutEffect,useRef,useState,type ReactNode} from 'react';
@@ -28,7 +28,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
 }) {
  const portal=currentPortal(user.role),groups=visibleGroups(portal,can);
  const sections=sidebarSections(portal,groups);
- const [expanded,setExpanded]=useState<string[]>(['Alumnos','Mi actividad','Mi escuela','Mi familia']);
+ const [expanded,setExpanded]=useState<string[]>(()=>sidebarExpandedSections(portal,sections,localStorage.getItem(sidebarExpandedStorageKey(portal))));
  const [collapsed,setCollapsed]=useState(()=>localStorage.getItem('school-sidebar-collapsed')==='true');
  const [compactGroup,setCompactGroup]=useState<string|null>(null);
  const [languageOpen,setLanguageOpen]=useState(false);
@@ -52,6 +52,8 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const breadcrumbNavRef=useRef<HTMLElement>(null);
  const [breadcrumbCondensed,setBreadcrumbCondensed]=useState(false);
  useEffect(()=>{localStorage.setItem('school-sidebar-collapsed',String(collapsed));},[collapsed]);
+ useEffect(()=>{setExpanded(sidebarExpandedSections(portal,sections,localStorage.getItem(sidebarExpandedStorageKey(portal))));},[portal]);
+ useEffect(()=>{localStorage.setItem(sidebarExpandedStorageKey(portal),JSON.stringify(expanded));},[expanded,portal]);
  useEffect(()=>{const changed=()=>setLocale(localStorage.getItem('school-locale')||'es');window.addEventListener('school-locale-changed',changed);return()=>window.removeEventListener('school-locale-changed',changed);},[]);
  useEffect(()=>{function close(event:PointerEvent){const node=event.target as Node;if(!languageRef.current?.contains(node))setLanguageOpen(false);if(!notificationRef.current?.contains(node))setNotificationsOpen(false);}document.addEventListener('pointerdown',close);return()=>document.removeEventListener('pointerdown',close);},[]);
  const compact=collapsed&&!mobile;
@@ -188,7 +190,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    const group=sections.find(section=>section.items.some(item=>item.key===selectedPage||findNavPath([{title:'',items:[item]}],selectedPage).length>0));
    const path=findNavPath(groups,selectedPage).slice(0,-1).map(item=>item.key);
    setExpanded(current=>{
-     const next=group||path.length?[...new Set([...(group?[group.id]:[]),...path])]:current;
+     const next=(group&&!group.directPage)||path.length?[...new Set([...(group?[group.id]:[]),...path])]:current;
      return next.length===current.length?current:next;
    });
  },[page,portal]);
@@ -200,22 +202,18 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    setNotificationsOpen(false);
    setLanguageOpen(false);
    setCrumbMenuOpen(false);
+   if(mobile)onMobile(false);
  }
  function positionCompactMenu(){
-   const trigger=compactGroupTrigger.current;
-   if(!trigger)return;
-   const rect=trigger.getBoundingClientRect();
-   const width=270;
-   const height=compactFlyoutRef.current?.offsetHeight||360;
-   const left=Math.max(12,Math.min(rect.right+10,window.innerWidth-width-12));
-   const top=Math.max(12,Math.min(rect.top-8,window.innerHeight-height-12));
-   setCompactPosition({left,top});
+   if(!compactGroupTrigger.current)return;
+   const placement=placeCompactSidebarMenu(compactGroupTrigger.current.getBoundingClientRect(),compactFlyoutRef.current?.offsetHeight||360,{width:window.innerWidth,height:window.innerHeight});
+   setCompactPosition({left:placement.left,top:placement.top});
  }
  function toggleCompactGroup(title:string,element:HTMLButtonElement){
    if(compactGroup===title){setCompactGroup(null);return;}
    compactGroupTrigger.current=element;
-   const rect=element.getBoundingClientRect();
-   setCompactPosition({left:Math.max(12,Math.min(rect.right+10,window.innerWidth-282)),top:Math.max(12,Math.min(rect.top-8,window.innerHeight-372))});
+   const placement=placeCompactSidebarMenu(element.getBoundingClientRect(),360,{width:window.innerWidth,height:window.innerHeight});
+   setCompactPosition({left:placement.left,top:placement.top});
    setCompactGroup(title);
  }
  useEffect(()=>{
@@ -308,12 +306,12 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
      <div className={'sc-nav-item'+(exact?' is-active':'')+(isAncestor?' is-ancestor':'')}
        style={{paddingLeft:Math.min(depth,3)*8}}>
        <button className="sc-nav-main" type="button" title={translated} aria-label={translated}
-         aria-current={exact?'page':undefined} onClick={()=>navigate(item.key)}>
+         aria-current={exact?'page':undefined} onClick={()=>{if(children.length&&!isOpen)setExpanded(v=>[...v,item.key]);navigate(item.key);}}>
          <span className="sc-nav-mark" aria-hidden="true">{moduleIcons[item.key]||(depth?<span className="sc-nav-dot"/>:<FolderOpen size={18}/>)}</span>
          <span className="sc-nav-label">{translated}</span>
          {item.key==='admissions'&&pendingAdmissions>0&&<span className="sc-nav-count">{pendingAdmissions}</span>}
        </button>
-       {children.length>0&&<button className="sc-nav-expand" type="button" aria-expanded={isOpen}
+       {children.length>0&&<button className="sc-nav-expand" type="button" title={(isOpen?(locale==='en'?'Collapse ':'Contraer '):(locale==='en'?'Expand ':'Expandir '))+translated} aria-expanded={isOpen}
          aria-label={(isOpen?(locale==='en'?'Collapse ':'Contraer '):(locale==='en'?'Expand ':'Expandir '))+translated}
          onClick={()=>toggle(item.key)}>
          {isOpen?<ChevronDown size={16}/>:<ChevronRight size={16}/>}
@@ -408,7 +406,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
           </span>
          <span className="sc-sidebar-user"><strong>{user.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span><ChevronDown className="sc-sidebar-user-chevron" size={16}/>
        </button>
-       
+
      </div>
    </aside>
    {accountTarget==='sidebar'&&createPortal(
@@ -427,7 +425,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
      document.body
    )}
    {compact&&compactGroup&&createPortal(
-     <div className="sc-compact-flyout" ref={compactFlyoutRef} role="region"
+     <div className="sc-compact-flyout" ref={compactFlyoutRef} role="region" tabIndex={-1}
        aria-label={(portal==='admin'?(locale==='en'?sections.find(section=>section.id===compactGroup)?.en:compactGroup):translate('group.'+compactGroup,compactGroup))}
        style={compactPosition?{top:compactPosition.top,left:compactPosition.left}:undefined}>
        <strong>{(portal==='admin'?(locale==='en'?sections.find(section=>section.id===compactGroup)?.en:compactGroup):translate('group.'+compactGroup,compactGroup))}</strong>
@@ -475,7 +473,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
              <span className="sc-topbar-avatar"><TopbarAccountAvatar name={user.name} avatarUrl={typeof user.avatar_url==='string'?user.avatar_url:undefined}/></span>
              <span className="sc-account-identity"><strong>{user.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span><ChevronDown className="sc-account-chevron" size={16}/>
            </button>
-           
+
          </div>
        </div>
      </header>

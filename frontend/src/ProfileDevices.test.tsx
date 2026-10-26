@@ -8,7 +8,7 @@ import {confirmDanger} from './notifications';
 vi.mock('./api',()=>({api:vi.fn()}));
 vi.mock('./notifications',()=>({confirmDanger:vi.fn(),notify:vi.fn()}));
 vi.mock('./shared/i18n/LocaleContext',()=>({useSchoolLocale:()=>({ui:(s:string)=>s})}));
-afterEach(cleanup);
+afterEach(()=>{cleanup();vi.mocked(confirmDanger).mockReset();});
 it('shows devices and revokes another session after password confirmation',async()=>{
  const request=vi.mocked(api);
  request.mockReset();

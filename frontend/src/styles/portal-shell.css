@@ -111,10 +111,10 @@
    Keep these rules together so mobile never inherits icon-rail hiding. */
 .sc-shell .sc-sidebar{z-index:60;padding-bottom:8px;overflow:visible;transition:width .18s ease}
 .sc-shell .sc-sidebar-nav{overflow-y:auto;overflow-x:hidden;min-height:0;overscroll-behavior:contain}
-.sc-sidebar .sc-nav-section{margin-bottom:7px}
+.sc-sidebar .sc-nav-section{margin-bottom:10px}
 .sc-sidebar .sc-nav-section-title{
   position:relative;display:flex;align-items:center;gap:8px;
-  min-height:41px;padding:10px 11px;margin:0;border-radius:9px;
+  min-height:44px;padding:11px 12px;margin:0;border-radius:9px;
   color:#b6c5e6;font-size:11.5px;letter-spacing:.65px;font-weight:750;
   line-height:1.35;text-align:left;justify-content:flex-start
 }
@@ -122,8 +122,9 @@
 .sc-sidebar .sc-nav-section-title .sc-section-label{flex:1;min-width:0;overflow-wrap:anywhere}
 .sc-nav-section-title .sc-section-chevron{flex:none}
 .sc-sidebar .sc-nav-section-title:hover,.sc-sidebar .sc-nav-section-title:focus-visible{background:#273c73;color:#fff}
-.sc-sidebar .sc-nav-section.has-active-item>.sc-nav-section-title{color:#f0f4ff;background:rgba(94,119,198,.16)}
-.sc-sidebar .sc-nav-section.has-active-item>.sc-nav-section-title::before{
+.sc-sidebar .sc-nav-section.has-active-item>.sc-nav-section-title{color:#dfe8ff;background:transparent}
+.sc-sidebar .sc-nav-section.is-primary-active>.sc-nav-section-title{background:#405cf5;color:#fff}
+.sc-sidebar .sc-nav-section.is-primary-active>.sc-nav-section-title::before{
   content:"";position:absolute;left:2px;top:11px;bottom:11px;width:3px;background:#8fa5ff;border-radius:4px
 }
 .sc-sidebar .sc-nav-node{min-width:0}
@@ -131,7 +132,7 @@
 .sc-sidebar .sc-nav-main{
   display:flex;flex:1;min-width:0;align-items:center;gap:10px;
   justify-content:flex-start;text-align:left;
-  min-height:43px;margin:0;padding:9px 8px;font-size:12.5px;
+  min-height:44px;margin:0;padding:9px 8px;font-size:12.5px;
   line-height:1.35;color:#d0dbf3;border-radius:9px
 }
 .sc-sidebar .sc-nav-main .sc-nav-label{min-width:0;flex:1;overflow-wrap:anywhere;white-space:normal}
@@ -141,10 +142,10 @@
 .sc-sidebar .sc-nav-item.is-active{background:#405cf5;box-shadow:0 4px 11px rgba(10,18,54,.2)}
 .sc-sidebar .sc-nav-item.is-active .sc-nav-main{color:#fff;font-weight:750}
 .sc-sidebar .sc-nav-item.is-active .sc-nav-mark{opacity:1;color:#fff}
-.sc-sidebar .sc-nav-item.is-ancestor:not(.is-active){background:#202f5b}
+.sc-sidebar .sc-nav-item.is-ancestor:not(.is-active){background:rgba(143,165,255,.07)}
 .sc-sidebar .sc-nav-item.is-ancestor .sc-nav-main{color:#eff3ff}
-.sc-sidebar .sc-nav-expand{width:32px;min-height:40px;flex:none;margin:0;padding:6px;color:#c0ccef}
-.sc-sidebar .sc-nav-children{margin-left:8px;border-left:1px solid #405587}
+.sc-sidebar .sc-nav-expand{width:40px;min-height:44px;flex:none;margin:0;padding:6px;color:#c0ccef;display:grid;place-items:center;border-radius:9px}
+.sc-sidebar .sc-nav-children{margin-left:11px;padding-left:5px;border-left:1px solid #405587}
 .sc-nav-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
 .sc-sidebar button:focus-visible,.sc-compact-flyout button:focus-visible{outline:2px solid #abbaff;outline-offset:2px}
 .sc-sidebar .sc-sidebar-foot{padding:8px 0 0;margin-top:auto;border-color:#34476c}
@@ -193,7 +194,7 @@
 .sc-compact-flyout .sc-nav-main{display:flex;flex:1;min-width:0;min-height:42px;justify-content:flex-start;align-items:center;text-align:left;gap:9px;padding:9px;color:#d6e1ff;font-size:12px}
 .sc-compact-flyout .sc-nav-label{min-width:0;flex:1;white-space:normal;overflow-wrap:anywhere}
 .sc-compact-flyout .sc-nav-mark{display:grid;place-items:center;flex:none;width:19px;color:#c4d2ff}
-.sc-compact-flyout .sc-nav-expand{width:32px;min-height:40px;flex:none;padding:6px;color:#c0ccef}
+.sc-compact-flyout .sc-nav-expand{width:40px;min-height:44px;flex:none;padding:6px;color:#c0ccef;display:grid;place-items:center}
 .sc-compact-flyout .sc-nav-children{margin-left:8px;border-left:1px solid #405587}
 .sc-compact-flyout .sc-nav-item:hover{background:#30467d}
 .sc-compact-flyout .sc-nav-item.is-active{background:#405cf5}
@@ -603,3 +604,4 @@
 .sc-main .sc-breadcrumb-design-one .sc-crumbs > .sc-crumb-step > .sc-crumb-link{
  min-width:0;
 }
+
