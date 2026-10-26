@@ -1,7 +1,7 @@
 import {forwardRef,type CSSProperties} from 'react';
 import {Bell,ChevronRight,HelpCircle,Languages,LogOut,ShieldCheck,UserRound} from 'lucide-react';
 import type {Row} from '../modules';
-import {userInitials} from './userInitials';
+import {TopbarAccountAvatar} from './TopbarAccountAvatar';
 import type {SidebarAccountPosition} from './sidebarAccountPlacement';
 
 type Labels={menu:string;profile:string;preferences:string;notifications:string;help:string;signout:string};
@@ -46,7 +46,7 @@ export const SidebarAccountMenu=forwardRef<HTMLElement,Props>(function SidebarAc
   <header className="sc-sam-header">
    <span className="sc-sam-eyebrow">{english?'MY ACCOUNT':'MI CUENTA'}</span>
    <div className="sc-sam-identity">
-    <span className="sc-sam-avatar" aria-hidden="true">{userInitials(user.name)}</span>
+    <span className="sc-sam-avatar" aria-hidden="true"><TopbarAccountAvatar name={user.name} avatarUrl={typeof user.avatar_url==='string'?user.avatar_url:undefined}/></span>
     <span className="sc-sam-identity-copy">
      <strong title={user.name}>{user.name}</strong>
      <small title={user.email}>{user.email}</small>

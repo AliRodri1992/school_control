@@ -188,11 +188,11 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    const group=sections.find(section=>section.items.some(item=>item.key===selectedPage||findNavPath([{title:'',items:[item]}],selectedPage).length>0));
    const path=findNavPath(groups,selectedPage).slice(0,-1).map(item=>item.key);
    setExpanded(current=>{
-     const next=[...new Set([...current,...(group?[group.id]:[]),...path])];
+     const next=[...new Set([...(group?[group.id]:[]),...path])];
      return next.length===current.length?current:next;
    });
  },[page,portal]);
- function toggle(key:string){setExpanded(v=>v.includes(key)?v.filter(x=>x!==key):[...v,key]);}
+ function toggle(key:string){setExpanded(v=>v.includes(key)?v.filter(x=>x!==key):[key]);}
  function navigate(next:string){
    onNavigate(next);
    setCompactGroup(null);
@@ -402,7 +402,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
      </nav>
      <div className="sidebar-bottom sc-sidebar-foot sc-flyout-holder" ref={sidebarAccountRef}>
        <button className="sc-sidebar-account" type="button" aria-label={translateUiText(locale,'Opciones de cuenta de ')+user.name}
-         aria-haspopup="true" aria-controls="sc-sidebar-account-panel" aria-expanded={accountTarget==='sidebar'} onClick={()=>{setAccountTarget(v=>v==='sidebar'?null:'sidebar');setNotificationsOpen(false);}}>
+         aria-haspopup="true" aria-controls="sc-sidebar-account-panel" aria-expanded={accountTarget==='sidebar'} onClick={()=>{setAccountTarget(v=>v==='sidebar'?null:'sidebar');setNotificationsOpen(false);setLanguageOpen(false);setCompactGroup(null);}}>
          <span className="sc-sidebar-avatar" aria-hidden="true">
            <TopbarAccountAvatar name={user.name} avatarUrl={typeof user.avatar_url==='string'?user.avatar_url:undefined}/>
           </span>
@@ -448,10 +448,10 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
        <TopbarCommands groups={groups} records={searchCollections} can={can} locale={locale} translate={translate}
         onNavigate={(target,search)=>onSearchNavigate?onSearchNavigate(target,search):navigate(target)}
         onStudent={student=>onSearchStudent?onSearchStudent(student):navigate('students')}
-                onOpen={()=>{setAccountTarget(null);setNotificationsOpen(false);setLanguageOpen(false);}}/>
+                onOpen={()=>{setAccountTarget(null);setNotificationsOpen(false);setLanguageOpen(false);setCompactGroup(null);}}/>
        <div className="sc-top-actions">
          <div className="sc-language sc-flyout-holder" ref={languageRef}>
-           <button type="button" className="sc-icon-button sc-language-button" aria-label={translate('shell.locale','Idioma')} title={translate('shell.locale','Idioma')} aria-haspopup="true" aria-expanded={languageOpen} onClick={()=>{setLanguageOpen(v=>!v);setNotificationsOpen(false);setAccountTarget(null);}}><Languages size={18}/><span className="sc-language-code">{locale.toUpperCase()}</span><ChevronDown className="sc-language-chevron" size={13}/></button>
+           <button type="button" className="sc-icon-button sc-language-button" aria-label={translate('shell.locale','Idioma')} title={translate('shell.locale','Idioma')} aria-haspopup="true" aria-expanded={languageOpen} onClick={()=>{setLanguageOpen(v=>!v);setNotificationsOpen(false);setAccountTarget(null);setCompactGroup(null);}}><Languages size={18}/><span className="sc-language-code">{locale.toUpperCase()}</span><ChevronDown className="sc-language-chevron" size={13}/></button>
            {languageOpen&&<LanguageMenu label={translateUiText(locale,"Idiomas disponibles")}
              currentLocale={locale} onSelect={setLanguage}
              languages={availableLocales.length?availableLocales:[{code:'es',native_name:'Español'},{code:'en',native_name:'English'}]}/>}
@@ -459,7 +459,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
          </div>
          <div className="sc-flyout-holder" ref={notificationRef}>
            <button className="sc-icon-button sc-notification-button" aria-label={(locale==='en'?'Notifications: ':'Notificaciones: ')+unread+(locale==='en'?' unread':' sin leer')} aria-haspopup="true" aria-expanded={notificationsOpen}
-             onClick={()=>{setNotificationsOpen(v=>!v);setAccountTarget(null);setLanguageOpen(false);}}><Bell size={19}/>{unread>0&&<b className="sc-notification-count">{unread>99?'99+':unread}</b>}</button>
+             onClick={()=>{setNotificationsOpen(v=>!v);setAccountTarget(null);setLanguageOpen(false);setCompactGroup(null);}}><Bell size={19}/>{unread>0&&<b className="sc-notification-count">{unread>99?'99+':unread}</b>}</button>
            {notificationsOpen&&<NotificationPopover locale={locale} items={notificationItems} unread={unread}
              loading={notificationLoading} busy={notificationBusy} error={noticeError}
              onRead={item=>void read(item)} onReadAll={()=>void readAllNotifications()}
@@ -471,7 +471,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
              aria-haspopup="true" aria-controls="sc-topbar-account-panel" aria-expanded={accountTarget==='topbar'}
              onKeyDown={event=>{if(event.key==='ArrowDown'){event.preventDefault();focusTopbarAccountMenu.current=true;setAccountTarget('topbar');if(accountTarget==='topbar')topbarAccountMenuRef.current?.querySelector<HTMLButtonElement>('button')?.focus();}
               else if(event.key==='Enter'||event.key===' ')focusTopbarAccountMenu.current=true;}}
-             onClick={()=>{setAccountTarget(v=>v==='topbar'?null:'topbar');setNotificationsOpen(false);setLanguageOpen(false);}}>
+             onClick={()=>{setAccountTarget(v=>v==='topbar'?null:'topbar');setNotificationsOpen(false);setLanguageOpen(false);setCompactGroup(null);}}>
              <span className="sc-topbar-avatar"><TopbarAccountAvatar name={user.name} avatarUrl={typeof user.avatar_url==='string'?user.avatar_url:undefined}/></span>
              <span className="sc-account-identity"><strong>{user.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span><ChevronDown className="sc-account-chevron" size={16}/>
            </button>

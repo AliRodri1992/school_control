@@ -21,6 +21,9 @@
  background:#e3f0ff;color:#125083;font-size:14px;font-weight:800;
  box-shadow:0 4px 12px rgba(0,23,48,.16);
 }
+.sc-sam-avatar .sc-topbar-avatar-initials{display:grid;place-items:center;width:100%;height:100%;font-size:14px;font-weight:800}
+.sc-sam-avatar .sc-user-avatar-img{width:100%;height:100%;object-fit:cover}
+.sc-sam-avatar{overflow:hidden}
 .sc-sam-identity-copy{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
 .sc-sam-identity-copy strong{display:block;min-width:0;color:#fff;font-size:13px;font-weight:750;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sc-sam-identity-copy small{display:block;min-width:0;color:#cce5ff;font-size:11px;line-height:1.45;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
