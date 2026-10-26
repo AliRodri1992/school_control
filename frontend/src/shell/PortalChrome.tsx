@@ -403,8 +403,9 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
      <div className="sidebar-bottom sc-sidebar-foot sc-flyout-holder" ref={sidebarAccountRef}>
        <button className="sc-sidebar-account" type="button" aria-label={translateUiText(locale,'Opciones de cuenta de ')+user.name}
          aria-haspopup="true" aria-controls="sc-sidebar-account-panel" aria-expanded={accountTarget==='sidebar'} onClick={()=>{setAccountTarget(v=>v==='sidebar'?null:'sidebar');setNotificationsOpen(false);}}>
-         <span className="sc-sidebar-avatar" aria-hidden="true">{user.avatar_url?
-          <img src={user.avatar_url} alt="" className="sc-profile-shell-photo"/>:userInitials(user.name)}</span>
+         <span className="sc-sidebar-avatar" aria-hidden="true">
+           {user.avatar_url?<img src={String(user.avatar_url)} alt="" onError={event=>{event.currentTarget.style.display='none';}}/>:userInitials(user.name)}
+          </span>
          <span className="sc-sidebar-user"><strong>{user.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span><ChevronDown className="sc-sidebar-user-chevron" size={16}/>
        </button>
        
@@ -471,7 +472,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
              onKeyDown={event=>{if(event.key==='ArrowDown'){event.preventDefault();focusTopbarAccountMenu.current=true;setAccountTarget('topbar');if(accountTarget==='topbar')topbarAccountMenuRef.current?.querySelector<HTMLButtonElement>('button')?.focus();}
               else if(event.key==='Enter'||event.key===' ')focusTopbarAccountMenu.current=true;}}
              onClick={()=>{setAccountTarget(v=>v==='topbar'?null:'topbar');setNotificationsOpen(false);setLanguageOpen(false);}}>
-             <span className="sc-topbar-avatar"><TopbarAccountAvatar name={user.name} avatarUrl={user.avatar_url}/></span>
+             <span className="sc-topbar-avatar"><TopbarAccountAvatar name={user.name} avatarUrl={typeof user.avatar_url==='string'?user.avatar_url:undefined}/></span>
              <span className="sc-account-identity"><strong>{user.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span><ChevronDown className="sc-account-chevron" size={16}/>
            </button>
            

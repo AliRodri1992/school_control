@@ -92,10 +92,10 @@ it('requires a second factor before calling onLogin when the Rails session reque
  await userEvent.type(screen.getByLabelText(/^Correo electrónico/),'teacher@school.test');
  await userEvent.type(screen.getByLabelText(/^Contraseña/),'School-password-26');
  await userEvent.click(screen.getByRole('button',{name:'Iniciar sesión'}));
- expect(await screen.findByRole('heading',{name:'Verificación en dos pasos'})).toBeTruthy();
+ expect(await screen.findByRole('heading',{name:'Verifica tu identidad'})).toBeTruthy();
  expect(onLogin).not.toHaveBeenCalled();
- await userEvent.type(screen.getByLabelText('Código de verificación'),'123456');
- await userEvent.click(screen.getByRole('button',{name:'Verificar e iniciar sesión'}));
+ await userEvent.type(screen.getByLabelText('Código de autenticación'),'123456');
+ await userEvent.click(screen.getByRole('button',{name:'Verificar y continuar'}));
  await waitFor(()=>expect(onLogin).toHaveBeenCalledWith({id:12,name:'Docente',role:'teacher'}));
  expect(request).toHaveBeenCalledWith('session/verify_otp','POST',{code:'123456'});
 });
@@ -107,8 +107,8 @@ it('keeps the user on MFA screen on an invalid verification code',async()=>{
  await userEvent.type(screen.getByLabelText(/^Correo electrónico/),'teacher@school.test');
  await userEvent.type(screen.getByLabelText(/^Contraseña/),'School-password-26');
  await userEvent.click(screen.getByRole('button',{name:'Iniciar sesión'}));
- await userEvent.type(await screen.findByLabelText('Código de verificación'),'000000');
- await userEvent.click(screen.getByRole('button',{name:'Verificar e iniciar sesión'}));
+ await userEvent.type(await screen.findByLabelText('Código de autenticación'),'000000');
+ await userEvent.click(screen.getByRole('button',{name:'Verificar y continuar'}));
  expect((await screen.findByRole('alert')).textContent).toContain('Código incorrecto');
  expect(onLogin).not.toHaveBeenCalled();
 });

@@ -16,8 +16,6 @@ const emptyValues:Values = {name:'',email:'',password:'',password_confirmation:'
 export default function Login({school,initialError,onLogin}:{school:Row;initialError:string;onLogin:(user:Row)=>Promise<void>}) {
  const {ui,locale}=useInterfaceLocale();
   const [recovering,setRecovering] = useState(false);
-  const [mfaRequired,setMfaRequired]=useState(false);
-  const [mfaCode,setMfaCode]=useState('');
   const [register,setRegister] = useState(false);
   const [values,setValues] = useState<Values>(emptyValues);
   const [errors,setErrors] = useState<Errors>({});
@@ -59,10 +57,6 @@ export default function Login({school,initialError,onLogin}:{school:Row;initialE
         ...(register?{name:values.name.trim(),password_confirmation:values.password_confirmation}:{})};
       const result=await api(register?'registration':'session','POST',payload);
       if(result.mfa_required){setMfaRequired(true);setOtpCode('');return;}
-      if(result.mfa_required){
-        setMfaRequired(true);setValues(emptyValues);
-        return;
-      }
       await onLogin(result.user);
       void notify(register?'Cuenta creada correctamente.':'Sesión iniciada correctamente.');
     } catch(cause) {
@@ -133,17 +127,6 @@ export default function Login({school,initialError,onLogin}:{school:Row;initialE
    </section>
   </div>;
 
-  async function verifyMfa(event:FormEvent<HTMLFormElement>){
-    event.preventDefault();if(busy||!mfaCode.trim())return;
-    setBusy(true);setError('');
-    try{
-      const result=await api('session/verify_otp','POST',{code:mfaCode.trim()});
-      await onLogin(result.user);
-      void notify(ui('Sesión iniciada correctamente.'));
-    }catch(cause){setError((cause as Error).message);}
-    finally{setBusy(false);}
-  }
-
   if(recovering)return <Suspense fallback={<div className="boot" role="status">{ui("Cargando recuperación de contraseña…")}</div>}><PasswordRecovery schoolName={school.name} onClose={()=>setRecovering(false)}/></Suspense>;
 
   function field(name:FieldName,label:string,type:string,placeholder:string,required=true) {
@@ -165,40 +148,6 @@ export default function Login({school,initialError,onLogin}:{school:Row;initialE
       {errors[name]&&<p id={'auth-'+name+'-error'} className="sc-field-error" role="alert">{errors[name]}</p>}
     </div>;
   }
-
-  if(mfaRequired)return <div className="login sc-auth sc-mfa-login">
-    <section className="login-story sc-login-story" aria-label={ui('Verificación de seguridad')}>
-      <div className="brand sc-login-brand"><BookOpen size={24}/><strong>{school.name}</strong></div>
-      <div className="sc-login-copy"><span className="sc-kicker">{ui('PROTECCIÓN DE TU CUENTA')}</span>
-       <h1>{ui('Un paso más para entrar.')}</h1>
-       <p>{ui('Tu escuela y tus datos personales merecen un acceso seguro.')}</p>
-      </div>
-      <img className="sc-auli-hero" src="/illustrations/auli-welcome.svg" alt={ui('Bienvenida de Auli')}/>
-    </section>
-    <section className="login-form sc-login-panel">
-      <div className="sc-auth-heading"><span className="sc-auth-mark"><LockKeyhole size={23}/></span>
-       <h2>{ui('Verificación en dos pasos')}</h2>
-       <p>{ui('Escribe el código temporal de tu aplicación autenticadora o un código de recuperación.')}</p>
-      </div>
-      <form className="sc-auth-form" onSubmit={event=>void verifyMfa(event)}>
-        <div className="sc-field"><label htmlFor="sc-mfa-login-code">{ui('Código de verificación')}</label>
-          <div className="sc-input-wrap"><LockKeyhole size={18}/>
-           <input id="sc-mfa-login-code" required autoFocus autoComplete="one-time-code"
-            value={mfaCode} onChange={event=>setMfaCode(event.target.value)}
-            placeholder={ui('Código de 6 dígitos o recuperación')}/>
-          </div>
-        </div>
-        {error&&<p className="sc-auth-error" role="alert">{error}</p>}
-        <button className="primary sc-auth-submit" type="submit" disabled={busy}>
-          {ui(busy?'Verificando…':'Verificar e iniciar sesión')}<ArrowRight size={18}/>
-        </button>
-        <button type="button" className="text-button" onClick={()=>{
-          setMfaRequired(false);setMfaCode('');setError('');
-          void api('session','DELETE').catch(()=>undefined);
-        }}>{ui('Volver al inicio de sesión')}</button>
-      </form>
-    </section>
-  </div>;
 
   return <div className="login sc-auth">
     <section className="login-story sc-login-story" aria-label={ui("Bienvenida")}>

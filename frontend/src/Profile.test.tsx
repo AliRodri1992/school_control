@@ -128,3 +128,11 @@ it('rejects malformed phone values without sending them to Rails',async()=>{
  expect((await screen.findByRole('alert')).textContent).toContain('Introduce un teléfono internacional válido');
  expect(request).toHaveBeenCalledTimes(1);
 });
+
+it('displays a real account photo inside Mi Perfil without changing the global account menu identity',async()=>{
+ request.mockImplementation(async()=>({...initial,avatar_url:'/api/profile/avatar'}));
+ const {container}=render(<Profile onChange={vi.fn()} onSignedOut={vi.fn()}/>);
+ await screen.findByRole('heading',{name:'María González'});
+ expect(container.querySelector('.sc-profile-avatar img')?.getAttribute('src')).toBe('/api/profile/avatar');
+ expect(screen.getByRole('button',{name:'Eliminar foto'})).toBeTruthy();
+});
