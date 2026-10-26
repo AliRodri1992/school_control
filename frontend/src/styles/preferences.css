@@ -157,3 +157,20 @@
 [data-school-theme=dark] .sc-pref-preview-area{background:#1b2d50}
 [data-school-theme=dark] .sc-pref-preview-edit-note{color:#bdccef}
 [data-school-theme=dark] .sc-pref-control-group>.sc-combobox .sc-combobox-trigger{background:#1b2f5a;border-color:#435880;color:#f4f7ff}
+
+.sc-pref-section-tabs{display:flex;flex-wrap:wrap;gap:7px;padding:9px;border:1px solid #dfe6f3;border-radius:14px;background:#fff}
+.sc-pref-section-tabs button{padding:11px 14px;border-radius:9px;color:#556c91;font-weight:700;font-size:12px}
+.sc-pref-section-tabs button.is-active{background:#eaf0ff;color:#304bc3}
+.sc-pref-extra-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;padding:24px}
+.sc-pref-extra-controls>label:not(.sc-pref-toggle){display:flex;flex-direction:column;gap:7px;font-size:12px;font-weight:650;color:#304468}
+.sc-pref-toggle{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:53px;padding:13px 15px;background:#f7f9fd;border:1px solid #e1e8f5;border-radius:11px;font-size:12px;font-weight:650;color:#304468}
+.sc-pref-toggle input{margin:0;min-height:20px;width:20px;flex:none;accent-color:#405cf5}
+.sc-pref-extra-controls .sc-pref-help-line{grid-column:1/-1;padding:0;margin:0}
+html[data-school-large-text=true] .sc-main{font-size:110%}
+html[data-school-large-text=true] .sc-main p,html[data-school-large-text=true] .sc-main label{font-size:1em}
+html[data-school-contrast=true] .sc-main{--muted:#344761;--line:#7989a2}
+html[data-school-contrast=true] .sc-main button:focus-visible{outline:3px solid #005ac8}
+html[data-school-reduce-motion=true] *,html[data-school-reduce-motion=true] *::before,html[data-school-reduce-motion=true] *::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+html[data-school-table-density=compact] .sc-main td{padding-block:8px}
+html[data-school-table-density=spacious] .sc-main td{padding-block:22px}
+@media(max-width:650px){.sc-pref-extra-controls{grid-template-columns:1fr;padding:16px}.sc-pref-section-tabs button{flex:1 1 125px}}

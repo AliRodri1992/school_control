@@ -6,9 +6,13 @@ import {api} from '../../api';
 import {notify} from '../../notifications';
 
 type Theme='system'|'light'|'dark';
-type Settings={locale:string;theme:Theme;rows_per_page:number;selected_child_id:number|null};
+type Settings={locale:string;theme:Theme;rows_per_page:number;selected_child_id:number|null;
+ time_format:string;date_format:string;week_start:string;table_density:string;
+ reduce_motion:boolean;high_contrast:boolean;large_text:boolean;hide_sensitive_data:boolean;hide_notification_previews:boolean;
+ remember_filters:boolean;notification_email:boolean;notification_school:boolean;notification_grades:boolean;notification_attendance:boolean;notification_events:boolean;
+ notification_digest:string;calendar_view:string;preferred_group_id:number|null;};
 type Language={code:string;native_name:string;status:string};
-const baseline:Settings={locale:'es',theme:'system',rows_per_page:15,selected_child_id:null};
+const baseline:Settings={locale:'es',theme:'system',rows_per_page:15,selected_child_id:null,time_format:'24h',date_format:'dd/mm/yyyy',week_start:'monday',table_density:'comfortable',reduce_motion:false,high_contrast:false,large_text:false,hide_sensitive_data:false,hide_notification_previews:false,remember_filters:false,notification_email:true,notification_school:true,notification_grades:true,notification_attendance:true,notification_events:true,notification_digest:'immediate',calendar_view:'month',preferred_group_id:null};
 const themes=[{value:'system',title:'Automático',description:'Se adapta a tu dispositivo',icon:Monitor},
  {value:'light',title:'Claro',description:'Espacios luminosos',icon:Sun},
  {value:'dark',title:'Oscuro',description:'Menos brillo en pantalla',icon:Moon}] as const;
@@ -17,6 +21,7 @@ const pageSizes=[10,15,25,50] as const;
 /** Wide account settings workspace with one explicit, server-persisted save. */
 export default function Preferences({onSaved}:{onSaved?:(settings:Settings)=>void}){
  const {ui}=useSchoolLocale();
+ const [section,setSection]=useState<'appearance'|'alerts'|'lists'|'calendar'|'accessibility'|'privacy'>('appearance');
  const [settings,setSettings]=useState<Settings>(baseline);
  const [persisted,setPersisted]=useState<Settings>(baseline);
  const [available,setAvailable]=useState<Language[]>([]);
@@ -28,7 +33,7 @@ export default function Preferences({onSaved}:{onSaved?:(settings:Settings)=>voi
   setLoading(true);setError('');
   void Promise.all([api('preferences'),api('languages')]).then(([prefs,langs]:[Settings,Language[]])=>{
    if(!active)return;
-   setSettings(prefs);setPersisted(prefs);
+   setSettings({...baseline,...prefs});setPersisted({...baseline,...prefs});
    setAvailable(langs.filter(language=>language.status==='active'));
    setLoaded(true);
   }).catch((cause:Error)=>{if(active){setError(cause.message);setLoaded(false);}})
@@ -36,7 +41,8 @@ export default function Preferences({onSaved}:{onSaved?:(settings:Settings)=>voi
   return()=>{active=false;};
  },[attempt]);
  const dirty=loaded&&(settings.locale!==persisted.locale||
-  settings.theme!==persisted.theme||settings.rows_per_page!==persisted.rows_per_page);
+  settings.theme!==persisted.theme||settings.rows_per_page!==persisted.rows_per_page||
+  (Object.keys(baseline) as (keyof Settings)[]).some(key=>settings[key]!==persisted[key]));
  const languages=available.length?available:[{code:'es',native_name:'Español',status:'active'},{code:'en',native_name:'English',status:'active'}];
  const languageOptions=languages.some(language=>language.code===settings.locale)?languages:
   [...languages,{code:settings.locale,native_name:settings.locale.toUpperCase(),status:'active'}];
@@ -46,17 +52,30 @@ export default function Preferences({onSaved}:{onSaved?:(settings:Settings)=>voi
   setSettings(previous=>({...previous,[key]:value}));
   setError('');
  }
+ function patch<K extends keyof Settings>(key:K,value:Settings[K]){
+  setSettings(previous=>({...previous,[key]:value}));setError('');
+ }
  function reset(){setSettings(persisted);setError('');}
  async function save(event:FormEvent<HTMLFormElement>){
   event.preventDefault();
   if(!dirty||busy)return;
   setBusy(true);setError('');
   try{
-   const result:Settings=await api('preferences','PATCH',settings);
+   const changed=Object.fromEntries((Object.keys(settings) as (keyof Settings)[])
+    .filter(key=>settings[key]!==persisted[key]).map(key=>[key,settings[key]]));
+   const result:Settings={...settings,...await api('preferences','PATCH',changed)};
    setSettings(result);setPersisted(result);
    localStorage.setItem('school-locale',result.locale);
    document.documentElement.dataset.schoolTheme=result.theme;
    window.dispatchEvent(new Event('school-locale-changed'));
+   const root=document.documentElement;
+   root.dataset.schoolContrast=String(result.high_contrast);
+   root.dataset.schoolLargeText=String(result.large_text);
+   root.dataset.schoolReduceMotion=String(result.reduce_motion);
+   root.dataset.schoolTableDensity=result.table_density;
+   root.dataset.schoolHideSensitive=String(result.hide_sensitive_data);
+   localStorage.setItem('school-preferences',JSON.stringify(result));
+   window.dispatchEvent(new Event('school-preferences-changed'));
    onSaved?.(result);
    void notify(ui('Preferencias actualizadas correctamente.'));
   }catch(cause){setError((cause as Error).message);}
@@ -99,6 +118,53 @@ export default function Preferences({onSaved}:{onSaved?:(settings:Settings)=>voi
     </div>
    </header>
    {error&&<p role="alert" className="sc-pref-error">{error}</p>}
+<nav className="sc-pref-section-tabs" aria-label={ui('Categorías de preferencias')}>
+   {([['appearance','Apariencia e idioma'],['alerts','Notificaciones'],['lists','Tablas y listados'],
+    ['calendar','Fecha y calendario'],['accessibility','Accesibilidad'],['privacy','Privacidad']] as const).map(([id,label])=>
+    <button type="button" key={id} className={section===id?'is-active':''} aria-current={section===id?'page':undefined}
+     onClick={()=>setSection(id)}>{ui(label)}</button>)}
+   </nav>
+   {section!=='appearance'&&<section className="sc-pref-card sc-pref-extra" aria-label={ui('Opciones personales')}>
+    <div className="sc-pref-card-heading"><div><h2>{ui(({alerts:'Notificaciones y avisos',lists:'Tablas y listados',calendar:'Fecha y calendario',accessibility:'Accesibilidad',privacy:'Privacidad y seguridad'} as Record<string,string>)[section])}</h2>
+     <p>{ui('Estos ajustes pertenecen a tu cuenta y se conservarán cuando guardes.')}</p></div></div>
+    <div className="sc-pref-extra-controls">
+     {section==='alerts'&&<>
+      {([['notification_school','Avisos de la escuela'],['notification_email','Canal de correo electrónico'],
+       ['notification_grades','Calificaciones'],['notification_attendance','Asistencias'],
+       ['notification_events','Eventos y actividades']] as const).map(([key,label])=>
+       <label className="sc-pref-toggle" key={key}><span>{ui(label)}</span><input type="checkbox" checked={settings[key]} onChange={event=>patch(key,event.target.checked)}/></label>)}
+      <label>{ui('Frecuencia de correo electrónico')}<select value={settings.notification_digest} onChange={event=>patch('notification_digest',event.target.value)}>
+       <option value="immediate">{ui('Inmediatamente')}</option><option value="daily">{ui('Resumen diario')}</option><option value="weekly">{ui('Resumen semanal')}</option></select></label>
+      <p className="sc-pref-help-line">{ui('Las notificaciones críticas de seguridad se mantienen activas. Las preferencias de correo requieren un servicio de envíos configurado.')}</p>
+     </>}
+     {section==='lists'&&<>
+      <label>{ui('Densidad de tablas')}<select value={settings.table_density} onChange={event=>patch('table_density',event.target.value)}>
+       <option value="comfortable">{ui('Cómoda')}</option><option value="compact">{ui('Compacta')}</option><option value="spacious">{ui('Amplia')}</option></select></label>
+      <label className="sc-pref-toggle">{ui('Recordar filtros de listados')}<input type="checkbox" checked={settings.remember_filters} onChange={event=>patch('remember_filters',event.target.checked)}/></label>
+      <p className="sc-pref-help-line">{ui('Puedes configurar los registros por página en Apariencia e idioma.')}</p>
+     </>}
+     {section==='calendar'&&<>
+      <label>{ui('Formato de hora')}<select value={settings.time_format} onChange={event=>patch('time_format',event.target.value)}>
+       <option value="24h">24 horas</option><option value="12h">12 horas</option></select></label>
+      <label>{ui('Formato de fecha')}<select value={settings.date_format} onChange={event=>patch('date_format',event.target.value)}>
+       <option value="dd/mm/yyyy">DD/MM/AAAA</option><option value="mm/dd/yyyy">MM/DD/AAAA</option><option value="yyyy-mm-dd">AAAA-MM-DD</option></select></label>
+      <label>{ui('Primer día de la semana')}<select value={settings.week_start} onChange={event=>patch('week_start',event.target.value)}>
+       <option value="monday">{ui('Lunes')}</option><option value="sunday">{ui('Domingo')}</option></select></label>
+      <label>{ui('Vista inicial del calendario')}<select value={settings.calendar_view} onChange={event=>patch('calendar_view',event.target.value)}>
+       <option value="month">{ui('Mes')}</option><option value="week">{ui('Semana')}</option><option value="day">{ui('Día')}</option></select></label>
+     </>}
+     {section==='accessibility'&&<>
+      {([['large_text','Texto ampliado'],['high_contrast','Contraste alto'],['reduce_motion','Reducir animaciones']] as const).map(([key,label])=>
+       <label className="sc-pref-toggle" key={key}>{ui(label)}<input type="checkbox" checked={settings[key]} onChange={event=>patch(key,event.target.checked)}/></label>)}
+     </>}
+     {section==='privacy'&&<>
+      {([['hide_sensitive_data','Ocultar datos sensibles de la cuenta'],['hide_notification_previews','Ocultar vista previa de notificaciones']] as const).map(([key,label])=>
+       <label className="sc-pref-toggle" key={key}>{ui(label)}<input type="checkbox" checked={settings[key]} onChange={event=>patch(key,event.target.checked)}/></label>)}
+      <p className="sc-pref-help-line">{ui('Para cerrar sesiones de otros dispositivos, utiliza Seguridad de la cuenta.')}</p>
+     </>}
+    </div>
+   </section>}
+   {section==='appearance'&&<>
    <div className="sc-pref-grid">
     <div className="sc-pref-primary">
      <section className="sc-pref-card" aria-labelledby="sc-pref-language-title">
@@ -212,6 +278,7 @@ export default function Preferences({onSaved}:{onSaved?:(settings:Settings)=>voi
      </section>
     </aside>
    </div>
+   </>}
    <footer className="sc-pref-actions">
     <div className="sc-pref-actions-copy"><ShieldCheck size={20} aria-hidden="true"/>
      <span><strong>{ui(dirty?'Tienes cambios pendientes':'Tus ajustes están actualizados')}</strong>
