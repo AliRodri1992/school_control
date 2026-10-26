@@ -141,10 +141,6 @@ export default function Profile({onChange,onSignedOut,onNavigate}:{
      <span>{ui('Tu identidad, protegida en School Control')}</span>
     </div>
     <div className="sc-profile-avatar-actions">
-     <button type="button" className="sc-profile-avatar-change" disabled={avatarBusy}
-      onClick={()=>avatarInput.current?.click()}><Camera size={15}/>{ui(avatarBusy?'Procesando fotografía…':'Cambiar foto')}</button>
-     {profile.avatar_url&&<button type="button" className="sc-profile-avatar-remove" disabled={avatarBusy}
-      onClick={()=>void removeAvatar()}><Trash2 size={15}/>{ui('Eliminar foto')}</button>}
      <small>{ui('PNG, JPG o WebP · Máximo 2 MB')}</small>
      {avatarError&&<span role="alert">{avatarError}</span>}
     </div>
