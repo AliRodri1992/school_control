@@ -39,3 +39,12 @@ export function placeTopbarAccountMenu(
  const top=Math.max(EDGE,Math.min(preferredTop,maxTop));
  return {left,top,width};
 }
+
+/** Viewport-safe placement for a collapsed sidebar category panel. */
+export function placeCompactSidebarMenu(anchor:Rect,panelHeight:number,viewport:Viewport):SidebarAccountPosition{
+ const width=Math.max(0,Math.min(270,viewport.width-2*EDGE));
+ const right=anchor.right+GAP;
+ const left=right+width<=viewport.width-EDGE?right:anchor.left-GAP-width>=EDGE?anchor.left-GAP-width:Math.max(EDGE,viewport.width-width-EDGE);
+ const height=Math.min(panelHeight||360,Math.max(0,viewport.height-2*EDGE));
+ return {left,top:Math.max(EDGE,Math.min(anchor.top-8,viewport.height-height-EDGE)),width};
+}

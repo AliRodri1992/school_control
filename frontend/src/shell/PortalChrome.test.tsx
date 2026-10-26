@@ -880,3 +880,11 @@ it('restores expanded sidebar categories from portal-specific storage',()=>{
  expect(container.querySelector('.sc-nav-section-title[aria-label="Configuración"]')?.getAttribute('aria-expanded')).toBe('true');
  expect(container.querySelector('.sc-nav-section-title[aria-label="Alumnos"]')?.getAttribute('aria-expanded')).toBe('false');
 });
+
+it('expands the nested category when opening its parent module',async()=>{
+ const {container}=render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+ await userEvent.click(container.querySelector<HTMLButtonElement>('.sc-nav-section-title[aria-label="Académico"]')!);
+ const button=container.querySelector<HTMLButtonElement>('.sc-nav-main[aria-label="Ciclos escolares"]')!;
+ await userEvent.click(button);
+ expect(button.closest('.sc-nav-node')?.querySelector('.sc-nav-expand')?.getAttribute('aria-expanded')).toBe('true');
+});

@@ -1,5 +1,5 @@
 import {expect,it} from 'vitest';
-import {placeSidebarAccountMenu,placeTopbarAccountMenu} from './sidebarAccountPlacement';
+import {placeSidebarAccountMenu,placeTopbarAccountMenu,placeCompactSidebarMenu} from './sidebarAccountPlacement';
 
 const avatar={left:12,right:274,top:710,bottom:770,width:262};
 it('aligns the expanded sidebar panel with the avatar and opens upward',()=>{
@@ -69,4 +69,13 @@ it('prevents overflow with tall content and short mobile viewports',()=>{
  expect(result.left).toBeGreaterThanOrEqual(12);
  expect(result.left+result.width).toBeLessThanOrEqual(308);
  expect(result.top).toBeGreaterThanOrEqual(12);
+});
+
+it('positions a compact category within a short viewport',()=>{
+ expect(placeCompactSidebarMenu({left:9,right:67,top:340,bottom:384,width:58},800,{width:360,height:400})).toEqual({left:77,top:12,width:270});
+});
+it('avoids horizontal overflow in a narrow viewport',()=>{
+ const result=placeCompactSidebarMenu({left:9,right:67,top:40,bottom:84,width:58},160,{width:300,height:270});
+ expect(result.left).toBeGreaterThanOrEqual(12);
+ expect(result.left+result.width).toBeLessThanOrEqual(288);
 });

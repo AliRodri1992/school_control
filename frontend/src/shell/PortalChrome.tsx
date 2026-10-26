@@ -9,7 +9,7 @@ import NotificationPopover,{type NotificationPreview} from './NotificationPopove
 import {userInitials} from './userInitials';
 import {SidebarAccountMenu} from './SidebarAccountMenu';
 import {TopbarAccountAvatar} from './TopbarAccountAvatar';
-import {placeSidebarAccountMenu,placeTopbarAccountMenu,type SidebarAccountPosition} from './sidebarAccountPlacement';
+import {placeSidebarAccountMenu,placeTopbarAccountMenu,placeCompactSidebarMenu,type SidebarAccountPosition} from './sidebarAccountPlacement';
 import {PortalFooter} from './PortalFooter';
 import {translateUiText} from '../shared/i18n/english';
 import {useEffect,useLayoutEffect,useRef,useState,type ReactNode} from 'react';
@@ -202,23 +202,18 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    setNotificationsOpen(false);
    setLanguageOpen(false);
    setCrumbMenuOpen(false);
-   if(mobile){onMobile(false);mobileTrigger.current?.focus();}
+   if(mobile)onMobile(false);
  }
  function positionCompactMenu(){
-   const trigger=compactGroupTrigger.current;
-   if(!trigger)return;
-   const rect=trigger.getBoundingClientRect();
-   const width=270;
-   const height=compactFlyoutRef.current?.offsetHeight||360;
-   const left=Math.max(12,Math.min(rect.right+10,window.innerWidth-width-12));
-   const top=Math.max(12,Math.min(rect.top-8,window.innerHeight-height-12));
-   setCompactPosition({left,top});
+   if(!compactGroupTrigger.current)return;
+   const placement=placeCompactSidebarMenu(compactGroupTrigger.current.getBoundingClientRect(),compactFlyoutRef.current?.offsetHeight||360,{width:window.innerWidth,height:window.innerHeight});
+   setCompactPosition({left:placement.left,top:placement.top});
  }
  function toggleCompactGroup(title:string,element:HTMLButtonElement){
    if(compactGroup===title){setCompactGroup(null);return;}
    compactGroupTrigger.current=element;
-   const rect=element.getBoundingClientRect();
-   setCompactPosition({left:Math.max(12,Math.min(rect.right+10,window.innerWidth-282)),top:Math.max(12,Math.min(rect.top-8,window.innerHeight-372))});
+   const placement=placeCompactSidebarMenu(element.getBoundingClientRect(),360,{width:window.innerWidth,height:window.innerHeight});
+   setCompactPosition({left:placement.left,top:placement.top});
    setCompactGroup(title);
  }
  useEffect(()=>{
@@ -311,7 +306,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
      <div className={'sc-nav-item'+(exact?' is-active':'')+(isAncestor?' is-ancestor':'')}
        style={{paddingLeft:Math.min(depth,3)*8}}>
        <button className="sc-nav-main" type="button" title={translated} aria-label={translated}
-         aria-current={exact?'page':undefined} onClick={()=>navigate(item.key)}>
+         aria-current={exact?'page':undefined} onClick={()=>{if(children.length&&!isOpen)setExpanded(v=>[...v,item.key]);navigate(item.key);}}>
          <span className="sc-nav-mark" aria-hidden="true">{moduleIcons[item.key]||(depth?<span className="sc-nav-dot"/>:<FolderOpen size={18}/>)}</span>
          <span className="sc-nav-label">{translated}</span>
          {item.key==='admissions'&&pendingAdmissions>0&&<span className="sc-nav-count">{pendingAdmissions}</span>}
@@ -430,7 +425,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
      document.body
    )}
    {compact&&compactGroup&&createPortal(
-     <div className="sc-compact-flyout" ref={compactFlyoutRef} role="region"
+     <div className="sc-compact-flyout" ref={compactFlyoutRef} role="region" tabIndex={-1}
        aria-label={(portal==='admin'?(locale==='en'?sections.find(section=>section.id===compactGroup)?.en:compactGroup):translate('group.'+compactGroup,compactGroup))}
        style={compactPosition?{top:compactPosition.top,left:compactPosition.left}:undefined}>
        <strong>{(portal==='admin'?(locale==='en'?sections.find(section=>section.id===compactGroup)?.en:compactGroup):translate('group.'+compactGroup,compactGroup))}</strong>
