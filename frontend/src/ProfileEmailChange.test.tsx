@@ -60,3 +60,13 @@ it('does not sign out when the verification token is invalid',async()=>{
  expect(window.location.search).not.toContain('verify_email');
  expect(onSignedOut).not.toHaveBeenCalled();
 });
+
+it('does not send a verification email when the proposed address matches the current one',async()=>{
+ const onSignedOut=vi.fn();
+ render(<ProfileEmailChange currentEmail="old@school.test" onSignedOut={onSignedOut}/>);
+ await userEvent.type(screen.getByLabelText('Nuevo correo electrónico'),'OLD@school.test');
+ await userEvent.type(screen.getByLabelText('Confirma tu contraseña actual'),'Correct-account-password');
+ expect(screen.getByRole('button',{name:'Enviar enlace de verificación'})).toHaveProperty('disabled',true);
+ expect(request).not.toHaveBeenCalled();
+ expect(onSignedOut).not.toHaveBeenCalled();
+});

@@ -25,3 +25,19 @@ it('shows an authenticator setup and one-time recovery codes only after server c
  await waitFor(()=>expect(request).toHaveBeenCalledWith('profile/two_factor/confirm','POST',{code:'123456'}));
  expect(await screen.findByText('ABCD1234')).toBeTruthy();
 });
+
+it('does not reveal setup keys when password verification fails',async()=>{
+ const request=vi.mocked(api);request.mockReset();
+ request.mockImplementation(async path=>{
+  if(path==='profile/two_factor')return {enabled:false};
+  throw new Error('La contraseña actual es incorrecta.');
+ });
+ const onSignedOut=vi.fn();
+ render(<ProfileTwoFactor onSignedOut={onSignedOut}/>);
+ await screen.findByText('Protección no activada');
+ await userEvent.type(screen.getByLabelText('Contraseña actual'),'Wrong-value');
+ await userEvent.click(screen.getByRole('button',{name:'Configurar autenticador'}));
+ expect((await screen.findByRole('alert')).textContent).toContain('La contraseña actual es incorrecta');
+ expect(screen.queryByText('ABCDEF234567')).toBeNull();
+ expect(onSignedOut).not.toHaveBeenCalled();
+});

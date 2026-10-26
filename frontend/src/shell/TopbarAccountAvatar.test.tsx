@@ -41,3 +41,11 @@ it('falls back to initials when a saved account photo cannot load',()=>{
  expect(container.querySelector('img')).toBeNull();
  expect(container.querySelector('.sc-topbar-avatar-initials')?.textContent).toBe('MG');
 });
+
+it('recovers when a replacement profile image is uploaded after the previous one failed',()=>{
+ const {container,rerender}=render(<TopbarAccountAvatar name="María González" avatarUrl="/first.png"/>);
+ fireEvent.error(container.querySelector('img')!);
+ expect(container.querySelector('.sc-topbar-avatar-initials')?.textContent).toBe('MG');
+ rerender(<TopbarAccountAvatar name="María González" avatarUrl="/second.png"/>);
+ expect(container.querySelector('img')?.getAttribute('src')).toBe('/second.png');
+});

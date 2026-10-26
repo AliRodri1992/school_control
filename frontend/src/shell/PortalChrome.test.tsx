@@ -641,7 +641,7 @@ it('shows a readable compact footer with language switching',async()=>{
  expect(screen.getByRole('button',{name:'Terms of use'})).toBeTruthy();
 });
 
-it('shows the signed-in user's uploaded photo in both account avatars',async()=>{
+it('shows the signed-in user initials rather than an image in the sidebar account circle',async()=>{
  const {container}=render(<PortalChrome {...props} user={{...user,name:'Ana María López',avatar_url:'/real-avatar.jpg'}}><div>Página</div></PortalChrome>);
  const sidebarButton=container.querySelector<HTMLButtonElement>('.sc-sidebar .sc-sidebar-account')!;
  const avatar=sidebarButton.querySelector('.sc-sidebar-avatar')!;
@@ -649,7 +649,7 @@ it('shows the signed-in user's uploaded photo in both account avatars',async()=>
  expect(avatar.getAttribute('aria-hidden')).toBe('true');
  expect(sidebarButton.querySelector('.sc-sidebar-user strong')?.textContent).toBe('Ana María López');
  expect(container.querySelector('.sc-topbar-avatar img')?.getAttribute('src')).toBe('/real-avatar.jpg');
- expect(container.querySelector('.sc-topbar-avatar-initials')?.getAttribute('aria-hidden')).toBe('true');
+ expect(container.querySelector('.sc-topbar-avatar img')).toBeTruthy();
  await userEvent.click(sidebarButton);
  expect(screen.getByRole('button',{name:'Mi perfil y seguridad'})).toBeTruthy();
  expect(screen.getByRole('button',{name:'Cerrar sesión'})).toBeTruthy();
