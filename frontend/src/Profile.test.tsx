@@ -10,6 +10,7 @@ vi.mock('./notifications',()=>({notify:vi.fn()}));
 vi.mock('./shared/i18n/LocaleContext',()=>({useSchoolLocale:()=>({ui:(value:string)=>value})}));
 vi.mock('./AccountSecurity',()=>({default:()=> <div data-testid="security-controls"/>}));
 vi.mock('./ProfileNotificationSettings',()=>({default:()=> <div data-testid="notification-settings"/>}));
+vi.mock('./ProfileEmailChange',()=>({default:()=> <div data-testid="email-change"/>}));
 const request=vi.mocked(api);
 const initial={id:7,name:'María González',email:'maria@school.test',role:'teacher',email_notifications:false,phone_e164:null,avatar_url:null,institution_name:'Mi Escuela',account_status:'active',assigned_context:{title:'Clases asignadas',count:2}};
 beforeEach(()=>{request.mockReset();vi.mocked(notify).mockReset();request.mockImplementation(async()=>({...initial}));});

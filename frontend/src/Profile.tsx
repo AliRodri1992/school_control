@@ -3,6 +3,7 @@ import {ArrowRight,BadgeCheck,BellRing,BookOpen,Building2,CalendarDays,Camera,Ch
 import {useSchoolLocale} from './shared/i18n/LocaleContext';
 import {userInitials} from './shell/userInitials';
 import AccountSecurity from './AccountSecurity';
+import ProfileEmailChange from './ProfileEmailChange';
 import ProfileNotificationSettings from './ProfileNotificationSettings';
 import {api} from './api';
 import {notify} from './notifications';
@@ -233,6 +234,7 @@ export default function Profile({onChange,onSignedOut,onNavigate}:{
     </div>
     <div className="sc-profile-security-column">
      <AccountSecurity onSignedOut={onSignedOut}/>
+     <ProfileEmailChange currentEmail={profile.email} onSignedOut={onSignedOut}/>
     </div>
    </div>
   </>}

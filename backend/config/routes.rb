@@ -18,6 +18,8 @@ Rails.application.routes.draw do
       get :avatar, to: "profiles#avatar"
       post :avatar, to: "profiles#upload_avatar"
       delete :avatar, to: "profiles#remove_avatar"
+      post :request_email_change, path: "email_change", to: "profiles#request_email_change"
+      post :confirm_email_change, path: "email_change/confirm", to: "profiles#confirm_email_change"
       patch :password, to: "account_security#update"
       delete :sessions, to: "account_security#destroy"
     end

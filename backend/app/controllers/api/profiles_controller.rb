@@ -1,5 +1,6 @@
 module Api
   class ProfilesController < ApplicationController
+    rate_limit to: 5, within: 15.minutes, only: %i[request_email_change confirm_email_change]
     MAX_AVATAR_SIZE = 2.megabytes
     AVATAR_TYPES = %w[image/png image/jpeg image/webp].freeze
 
@@ -47,7 +48,51 @@ module Api
       show
     end
 
+
+    def request_email_change
+      unless current_user.authenticate(params[:current_password].to_s)
+        return render json: { error: "La contraseña actual es incorrecta." }, status: :unprocessable_content
+      end
+
+      proposed = params.require(:email).to_s.strip.downcase
+      unless proposed.match?(URI::MailTo::EMAIL_REGEXP) && proposed != current_user.email &&
+          !User.where.not(id: current_user.id).exists?(email: proposed)
+        return render json: { error: "Selecciona un correo diferente y disponible." }, status: :unprocessable_content
+      end
+
+      token = email_verifier.generate(
+        { "user_id" => current_user.id, "old_email" => current_user.email,
+          "new_email" => proposed, "session_version" => current_user.session_version },
+        expires_in: 15.minutes
+      )
+      ProfileEmailMailer.with(recipient: current_user, new_email: proposed, token: token).verification.deliver_later
+      render json: { message: "Enviamos un enlace de verificación al nuevo correo. Caduca en 15 minutos." },
+        status: :accepted
+    end
+
+    def confirm_email_change
+      info = email_verifier.verified(params.require(:token).to_s)
+      unless info.is_a?(Hash) && info["user_id"] == current_user.id &&
+          info["old_email"] == current_user.email &&
+          info["session_version"] == current_user.session_version
+        return render json: { error: "El enlace es inválido o ha caducado." },
+          status: :unprocessable_content
+      end
+
+      current_user.with_lock do
+        current_user.update!(email: info.fetch("new_email"))
+        audit(current_user, "user.email_changed")
+      end
+      reset_session
+      render json: { message: "Correo verificado y actualizado. Vuelve a iniciar sesión.",
+        csrf_token: form_authenticity_token }
+    end
+
     private
+
+    def email_verifier
+      Rails.application.message_verifier(:profile_email_change)
+    end
 
     def personal_phone
       current_user.phone_numbers.find_by(purpose: "mobile", primary: true)

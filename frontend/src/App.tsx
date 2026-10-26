@@ -66,7 +66,7 @@ export default function App(){
  const [restoringSession,setRestoringSession]=useState(true);
  const [preparingLogin,setPreparingLogin]=useState(false);
  const bootReadyRef=useRef<(()=>void)|null>(null);
- const [page,setPage] = useState('dashboard'),[data,setData] = useState<Record<string,Row[]>>({}),[summary,setSummary] = useState<Row>({});
+ const [page,setPage] = useState(()=>new URLSearchParams(window.location.search).has('verify_email')?'profile':'dashboard'),[data,setData] = useState<Record<string,Row[]>>({}),[summary,setSummary] = useState<Row>({});
  const [error,setError] = useState(''),[notice,setNotice] = useState(''),[query,setQuery] = useState(''),[mobile,setMobile] = useState(false),[busy,setBusy] = useState(false);
  const [detailStudent,setDetailStudent]=useState<Row|null>(null);
  const [studentRecordLoading,setStudentRecordLoading]=useState(false);

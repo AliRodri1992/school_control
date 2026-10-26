@@ -1,13 +1,12 @@
 import {useEffect,useState} from 'react';
-import {Bell,BookOpen,CalendarDays,CheckCircle2,ClipboardCheck,Mail,Save,ShieldCheck} from 'lucide-react';
+import {Bell,BookOpen,CalendarDays,ClipboardCheck,Save,ShieldCheck} from 'lucide-react';
 import {useSchoolLocale} from './shared/i18n/LocaleContext';
 import {api} from './api';
 import {notify} from './notifications';
 
-type Category='notification_email'|'notification_school'|'notification_grades'|'notification_attendance'|'notification_events';
+type Category='notification_school'|'notification_grades'|'notification_attendance'|'notification_events';
 type Settings=Record<Category,boolean>&Record<string,unknown>;
 const categories=[
- {key:'notification_email',label:'Notificaciones por correo',help:'Permite enviar avisos por correo cuando el servicio esté habilitado.',icon:Mail},
  {key:'notification_school',label:'Comunicados escolares',help:'Información y actividad institucional relevante.',icon:Bell},
  {key:'notification_grades',label:'Calificaciones',help:'Publicación y actualizaciones de evaluaciones.',icon:BookOpen},
  {key:'notification_attendance',label:'Asistencia',help:'Cambios de asistencia y seguimiento.',icon:ClipboardCheck},

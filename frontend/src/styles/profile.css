@@ -157,3 +157,18 @@
 [data-school-theme=dark] .sc-profile-account-facts>div{background:#192b50}
 [data-school-theme=dark] .sc-profile-account-facts dd,[data-school-theme=dark] .sc-profile-notification-copy strong{color:#e8f0ff}
 [data-school-theme=dark] .sc-profile-notification-item{border-color:#31456b}
+
+.sc-profile-email-current{display:flex;gap:9px;align-items:center;padding:17px 24px;color:#607395;font-size:11px;border-bottom:1px solid #ebeff8;overflow-wrap:anywhere}
+.sc-profile-email-current strong{font-weight:780;color:#273f6b}
+.sc-profile-email-form{padding:22px 25px 26px;display:grid;gap:17px}
+.sc-profile-email-form .sc-profile-field input{min-height:45px;width:100%;border:1px solid #d5deed;border-radius:10px;padding:11px 13px;font-size:12px;color:#283d63}
+.sc-profile-email-warning{display:flex;gap:9px;align-items:flex-start;font-size:11px;line-height:1.55;color:#657da5}
+.sc-profile-email-warning svg{flex:none}
+.sc-profile-email-requested{padding:24px;display:flex;gap:12px;color:#247453}
+.sc-profile-email-requested>svg{flex:none}
+.sc-profile-email-requested strong{font-size:13px}
+.sc-profile-email-requested p{color:#667a99;font-size:11px;line-height:1.65;margin-top:7px}
+.sc-profile-email-requested button{color:#415bd4;text-decoration:underline;font-size:11px;margin-top:12px}
+[data-school-theme=dark] .sc-profile-email-current{border-color:#324575}
+[data-school-theme=dark] .sc-profile-email-current strong{color:#e8edff}
+@media(max-width:600px){.sc-profile-email-form{padding:19px}.sc-profile-email-current{padding:17px 19px}}
