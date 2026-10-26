@@ -1,13 +1,16 @@
 import type {ReactNode} from 'react';
+import type {Row} from './modules';
 import {CalendarDays,Clock3,ArrowUpRight} from 'lucide-react';
 
 type Event = {id:string|number;title:string;starts_at:string;ends_at:string};
-type Props = {events:Event[];locale:string;empty:ReactNode};
+type Props = {events:Row[];locale:string;empty:ReactNode};
 
 export default function DashboardUpcomingEvents({events,locale,empty}:Props){
  const language=locale==='en'?'en-US':'es-MX';
  const now=Date.now();
- const upcoming=events.filter(event=>{
+ const upcoming=events.filter((event):event is Row & Event=>{
+  if((typeof event.id!=='string'&&typeof event.id!=='number')||
+   typeof event.title!=='string'||typeof event.starts_at!=='string'||typeof event.ends_at!=='string')return false;
   const end=Date.parse(event.ends_at);
   return Number.isFinite(end)&&end>=now&&Number.isFinite(Date.parse(event.starts_at));
  }).sort((a,b)=>Date.parse(a.starts_at)-Date.parse(b.starts_at)).slice(0,6);

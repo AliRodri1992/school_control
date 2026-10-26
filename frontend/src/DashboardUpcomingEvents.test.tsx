@@ -26,3 +26,12 @@ it('sorts future events chronologically and ignores expired events',()=>{
   events={[item(2,4),item(1,2),item(3,-3)]}/>);
  expect([...container.querySelectorAll('.sc-event-title')].map(n=>n.textContent)).toEqual(['Evento 1','Evento 2']);
 });
+
+it('ignores malformed API rows safely',()=>{
+ const tomorrow=new Date(Date.now()+86400000).toISOString();
+ render(<DashboardUpcomingEvents locale="es" empty={<div>Sin eventos</div>}
+  events={[{id:5,title:'Sin fin',starts_at:tomorrow},
+   {id:6,title:'Sin inicio',ends_at:tomorrow},
+   {id:7,title:'Fecha inválida',starts_at:'invalid',ends_at:tomorrow}]}/>);
+ expect(screen.getByText('Sin eventos')).toBeTruthy();
+});

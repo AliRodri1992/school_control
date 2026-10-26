@@ -265,7 +265,7 @@ export function upgradeSavedDashboardConfig(saved:Config,role:DashboardRole):Con
   const sameWidgets=saved.widgets.length===factory.widgets.length&&
    saved.widgets.every((widget,index)=>JSON.stringify(widget)===JSON.stringify(factory.widgets[index]));
   const previousFactory=generateDashboardConfig(presets.admin);
-  const legacyLayouts={...previousFactory.layouts,lg:(()=>{
+  const legacyLayouts:Record<string,Item[]>={...previousFactory.layouts,lg:(()=>{
    let x=0,y=0,rowHeight=0;
    return previousFactory.widgets.map(widget=>{
     const w=widgetWidth(widget.kind,'lg'),h=widgetHeight(widget.kind);

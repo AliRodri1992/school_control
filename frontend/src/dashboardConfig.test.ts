@@ -454,3 +454,12 @@ it('moves a chart earlier without stacking all of the following desktop widgets'
  expect(next.layouts.xs.every(item=>item.x===0)).toBe(true);
  expect(moveWidgetEarlier(before,0)).toBe(before);
 });
+
+it('retains every configured breakpoint when migrating an existing dashboard',()=>{
+ const original=defaultConfig('admin');
+ const saved=JSON.parse(JSON.stringify(original)) as Config;
+ for(const breakpoint of Object.keys(columns)){
+  expect(saved.layouts[breakpoint]).toEqual(original.layouts[breakpoint]);
+ }
+ expect(upgradeSavedDashboardConfig(saved,'admin').layouts.lg.length).toBeGreaterThan(0);
+});

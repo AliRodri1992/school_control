@@ -394,7 +394,7 @@ it('keeps institution identity available without repeating it in the new brand h
 it('keeps the initials first and profile details readable when a photo is configured',()=>{
  const {container}=render(<PortalChrome {...props} user={{...user,avatar_url:'/real-avatar.jpg'}}><div>Página</div></PortalChrome>);
  const button=container.querySelector('.sc-topbar .sc-account-button')!;
- expect(button.children[0].querySelector('img')?.getAttribute('src')).toBe('/api/profile/avatar');
+ expect(button.children[0].querySelector('img')?.getAttribute('src')).toBe('/real-avatar.jpg');
  expect(button.children[1].querySelector('strong')?.textContent).toBe('María González');
  expect(button.children[1].querySelector('small')?.textContent).toBe('Administración');
  expect(screen.queryByRole('button',{name:'Nuevo registro'})).toBeNull();
@@ -645,7 +645,7 @@ it('shows the signed-in user initials rather than an image in the sidebar accoun
  const {container}=render(<PortalChrome {...props} user={{...user,name:'Ana María López',avatar_url:'/real-avatar.jpg'}}><div>Página</div></PortalChrome>);
  const sidebarButton=container.querySelector<HTMLButtonElement>('.sc-sidebar .sc-sidebar-account')!;
  const avatar=sidebarButton.querySelector('.sc-sidebar-avatar')!;
- expect(avatar.querySelector('img')?.getAttribute('src')).toBe('/api/profile/avatar');
+ expect(avatar.querySelector('img')?.getAttribute('src')).toBe('/real-avatar.jpg');
  expect(avatar.getAttribute('aria-hidden')).toBe('true');
  expect(sidebarButton.querySelector('.sc-sidebar-user strong')?.textContent).toBe('Ana María López');
  expect(container.querySelector('.sc-topbar-avatar-initials')?.textContent).toBe('AL');
