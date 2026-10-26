@@ -14,9 +14,9 @@ it('renders all, unread and read filters and searches notifications',async()=>{
  render(<Notifications navigate={vi.fn()}/>);
  await screen.findByText('Reunión de bienvenida');
  expect(screen.getByText('Calificaciones disponibles')).toBeTruthy();
- await userEvent.click(screen.getByRole('button',{name:'Sin leer 1'}));
+ await userEvent.click(screen.getByRole('button',{name:/Sin leer\s*1/}));
  expect(screen.queryByText('Calificaciones disponibles')).toBeNull();
- await userEvent.click(screen.getByRole('button',{name:'Leídas 1'}));
+ await userEvent.click(screen.getByRole('button',{name:/Leídas\s*1/}));
  expect(screen.getByText('Calificaciones disponibles')).toBeTruthy();
  await userEvent.type(screen.getByPlaceholderText('Buscar notificaciones...'),'nada');
  expect(screen.getByText('No encontramos coincidencias')).toBeTruthy();

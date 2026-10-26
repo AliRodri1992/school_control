@@ -219,7 +219,7 @@ it('keeps the administrator desktop context cards in a shared row',async()=>{
  vi.mocked(api).mockImplementation(async resource=>resource==='dashboard_preference'?
   {configuration:defaultConfig('admin'),lock_version:1}:{});
  const {container}=render(<Dashboard role="admin" userId={1} summary={{}} data={{}}/>);
- await waitFor(()=>expect(container.querySelectorAll('.school-dashboard-grid .dashboard-widget')).toHaveLength(7));
+ await waitFor(()=>expect(container.querySelectorAll('.school-dashboard-grid .dashboard-widget')).toHaveLength(11));
  const layout=defaultConfig('admin').layouts.lg;
  expect(['attendance_chart','alerts','calendar'].map(id=>layout.find(item=>item.i===id)?.y))
   .toEqual([15,15,15]);
