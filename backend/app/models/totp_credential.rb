@@ -26,17 +26,16 @@ class TotpCredential < ApplicationRecord
       step = TotpAuthenticator.valid_step(secret, code, after: last_used_step)
       if step
         update!(last_used_step: step)
-        true
-      else
-        digest = TotpAuthenticator.recovery_digest(code)
-        recovery = recovery_codes.where(code_digest: digest, used_at: nil).first
-        if recovery
-          recovery.update!(used_at: Time.current)
-          true
-        else
-          false
-        end
+        return true
       end
+
+      code_digest = TotpAuthenticator.recovery_digest(code)
+      recovery = recovery_codes.where(code_digest: code_digest, used_at: nil).first
+      if recovery
+        recovery.update!(used_at: Time.current)
+        return true
+      end
+      false
     end
   end
 

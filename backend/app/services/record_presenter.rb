@@ -2,7 +2,10 @@ class RecordPresenter
   def self.call(record)
     case record
     when User
-      record.as_json(only: %i[id name email role active]).merge(permissions: record.effective_permissions)
+      record.as_json(only: %i[id name email role active]).merge(
+        permissions: record.effective_permissions,
+        avatar_url: record.avatar.attached? ? "/api/profile/avatar" : nil
+      )
     when Student
       record.as_json(only: %i[id first_name last_name curp birth_date emergency_phone address guardian_id user_id]).merge(full_name: record.full_name)
     when School

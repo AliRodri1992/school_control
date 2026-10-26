@@ -39,7 +39,9 @@ RSpec.describe "Two-step authentication", type: :request do
     # TOTP codes cannot be replayed; a recovery code is valid for one challenge only.
     post "/api/session/verify_otp", params: { code: code }, as: :json
     expect(response).to have_http_status(:unprocessable_content)
-    post "/api/session/verify_otp", params: { code: "INVALID" }, as: :json
+    post "/api/session/verify_otp", params: {
+      code: user.totp_credential.recovery_codes.first.then { |record| "invalid" }
+    }, as: :json
     expect(response).to have_http_status(:unprocessable_content)
   end
 

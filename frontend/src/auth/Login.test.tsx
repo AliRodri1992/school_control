@@ -83,3 +83,32 @@ it('requires a second factor after password login and continues only after the c
  await waitFor(()=>expect(request).toHaveBeenCalledWith('session/verify_otp','POST',{code:'123456'}));
  await waitFor(()=>expect(onLogin).toHaveBeenCalledWith(user));
 });
+
+
+it('requires a second factor before calling onLogin when the Rails session requests MFA',async()=>{
+ const onLogin=vi.fn().mockResolvedValue(undefined);
+ request.mockResolvedValueOnce({mfa_required:true}).mockResolvedValueOnce({user:{id:12,name:'Docente',role:'teacher'}});
+ render(<Login school={school} initialError="" onLogin={onLogin}/>);
+ await userEvent.type(screen.getByLabelText(/^Correo electrónico/),'teacher@school.test');
+ await userEvent.type(screen.getByLabelText(/^Contraseña/),'School-password-26');
+ await userEvent.click(screen.getByRole('button',{name:'Iniciar sesión'}));
+ expect(await screen.findByRole('heading',{name:'Verificación en dos pasos'})).toBeTruthy();
+ expect(onLogin).not.toHaveBeenCalled();
+ await userEvent.type(screen.getByLabelText('Código de verificación'),'123456');
+ await userEvent.click(screen.getByRole('button',{name:'Verificar e iniciar sesión'}));
+ await waitFor(()=>expect(onLogin).toHaveBeenCalledWith({id:12,name:'Docente',role:'teacher'}));
+ expect(request).toHaveBeenCalledWith('session/verify_otp','POST',{code:'123456'});
+});
+
+it('keeps the user on MFA screen on an invalid verification code',async()=>{
+ const onLogin=vi.fn();
+ request.mockResolvedValueOnce({mfa_required:true}).mockRejectedValueOnce(new Error('Código incorrecto'));
+ render(<Login school={school} initialError="" onLogin={onLogin}/>);
+ await userEvent.type(screen.getByLabelText(/^Correo electrónico/),'teacher@school.test');
+ await userEvent.type(screen.getByLabelText(/^Contraseña/),'School-password-26');
+ await userEvent.click(screen.getByRole('button',{name:'Iniciar sesión'}));
+ await userEvent.type(await screen.findByLabelText('Código de verificación'),'000000');
+ await userEvent.click(screen.getByRole('button',{name:'Verificar e iniciar sesión'}));
+ expect((await screen.findByRole('alert')).textContent).toContain('Código incorrecto');
+ expect(onLogin).not.toHaveBeenCalled();
+});

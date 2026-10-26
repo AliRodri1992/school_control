@@ -228,7 +228,7 @@ export default function Profile({onChange,onSignedOut,onNavigate}:{
        <h2>{ui('Privacidad y ayuda de tu cuenta')}</h2>
        <p>{ui('Consulta cómo protegemos tu información y solicita cambios a tu expediente a través de Mensajes.')}</p>
        <div className="sc-profile-help-links">
-        {onNavigate&&<button type="button" onClick={()=>onNavigate('privacy')}>{ui('Aviso de privacidad')}<ArrowRight size={15}/></button>}
+        <span className="sc-profile-privacy-note">{ui('La institución escolar es responsable de informarte sobre el uso de tus datos personales.')}</span>
         {onNavigate&&<button type="button" onClick={()=>onNavigate('messages')}>{ui('Ir a Mensajes')}<ArrowRight size={15}/></button>}
        </div>
       </div>

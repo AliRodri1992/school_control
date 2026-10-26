@@ -1063,6 +1063,48 @@ Object.assign(englishByText,{
  "Verificar y continuar": "Verify and continue",
  "Usar otra cuenta": "Use another account"
 });
+Object.assign(englishByText,{
+ "Dispositivos con sesión activa": "Signed-in devices",
+ "Revisa y cierra accesos que ya no utilices.": "Review and sign out devices you no longer use.",
+ "Consultando sesiones…": "Checking sessions…",
+ "Actualizar dispositivos": "Refresh devices",
+ "No se encontraron otras sesiones abiertas.": "No other sessions were found.",
+ "Último acceso registrado": "Last recorded activity",
+ "Dispositivo actual": "This device",
+ "Cerrar sesión": "Sign out",
+ "Contraseña para cerrar un dispositivo": "Password to sign out a device",
+ "Si no reconoces un dispositivo, cambia tu contraseña y cierra todas las sesiones.": "If you do not recognize a device, change your password and sign out everywhere.",
+ "Cerrar sesión del dispositivo": "Sign out of this device",
+ "Se solicitará nuevamente iniciar sesión en ese dispositivo.": "The device will need to sign in again.",
+ "Verificación en dos pasos": "Two-step verification",
+ "Agrega un código temporal de una aplicación autenticadora para iniciar sesión.": "Use a temporary code from an authenticator app when signing in.",
+ "Consultando seguridad…": "Checking security…",
+ "Protección activada": "Protection enabled",
+ "Protección no activada": "Protection not enabled",
+ "Configurar autenticador": "Set up authenticator",
+ "Agrega esta clave en tu aplicación de autenticación. Después escribe el código de seis dígitos.": "Add this key to your authenticator app, then enter its six-digit code.",
+ "Abrir aplicación de autenticación": "Open authenticator app",
+ "Código de seis dígitos": "Six-digit code",
+ "Activar verificación en dos pasos": "Enable two-step verification",
+ "Para desactivar esta protección confirma tu contraseña y un código del autenticador o de recuperación.": "To disable this protection, confirm your password and an authenticator or recovery code.",
+ "Código de verificación": "Verification code",
+ "Desactivar verificación en dos pasos": "Disable two-step verification",
+ "Verificación en dos pasos activada.": "Two-step verification enabled.",
+ "Verificación en dos pasos desactivada.": "Two-step verification disabled.",
+ "Códigos de recuperación — se muestran una sola vez": "Recovery codes — shown once",
+ "Guárdalos en un lugar seguro. Cada código permite un único inicio de sesión.": "Keep them somewhere safe. Each code can be used once to sign in.",
+ "Copiar códigos": "Copy codes",
+ "Ya guardé mis códigos": "I have saved my codes",
+ "La institución escolar es responsable de informarte sobre el uso de tus datos personales.": "Your school is responsible for informing you how it uses your personal data.",
+ "PROTECCIÓN DE TU CUENTA": "ACCOUNT PROTECTION",
+ "Un paso más para entrar.": "One more step to sign in.",
+ "Tu escuela y tus datos personales merecen un acceso seguro.": "Your school and personal information deserve secure access.",
+ "Escribe el código temporal de tu aplicación autenticadora o un código de recuperación.": "Enter the temporary code from your authenticator app or a recovery code.",
+ "Código de 6 dígitos o recuperación": "Six-digit or recovery code",
+ "Verificar e iniciar sesión": "Verify and sign in",
+ "Volver al inicio de sesión": "Return to sign in",
+ "Verificando…": "Verifying…"
+});
 export function translateUiText(locale:string,text:string):string{
  if(!locale.toLowerCase().startsWith('en'))return text;
  return englishByText[text]||text;

@@ -4,9 +4,7 @@ module Api
     rate_limit to: 10, within: 3.minutes, only: %i[create register verify_otp], with: -> { render json: { error: "Demasiados intentos; espera unos minutos" }, status: :too_many_requests }
 
     def show
-      user = current_user
-      payload = user && present(user).merge(avatar_url: (avatar_api_profile_path if user.avatar.attached?))
-      render json: { user: payload, csrf_token: form_authenticity_token }
+      render json: { user: current_user && present(current_user), csrf_token: form_authenticity_token }
     end
 
     def create
@@ -49,7 +47,7 @@ module Api
     def destroy
       current_login_session&.update!(revoked_at: Time.current)
       reset_session
-      show
+      render json: { user: nil, csrf_token: form_authenticity_token }
     end
   end
 end
