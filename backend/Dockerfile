@@ -7,4 +7,6 @@ COPY . .
 RUN groupadd --system rails && useradd --system --gid rails --create-home rails && mkdir -p tmp/pids log storage && chown -R rails:rails /rails
 USER rails
 EXPOSE 3000
-CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
+# Remove a stale Rails server PID only when this container starts, then replace the shell with Puma.
+# This also handles a PID left by an interrupted prior run without touching storage volumes.
+CMD ["sh", "-c", "rm -f /rails/tmp/pids/server.pid && exec bundle exec rails server -b 0.0.0.0"]
