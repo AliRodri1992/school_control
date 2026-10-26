@@ -37,7 +37,7 @@ it('does not revoke a session when the user cancels the confirmation',async()=>{
  await userEvent.type(screen.getByLabelText('Contraseña para cerrar un dispositivo'),'Sample-passphrase');
  await userEvent.click(screen.getAllByRole('button',{name:'Cerrar sesión'})[1]);
  await waitFor(()=>expect(confirmDanger).toHaveBeenCalledOnce());
- expect(request).toHaveBeenCalledTimes(1);
+ expect(request.mock.calls.filter(([path])=>String(path).startsWith('profile/devices/') )).toHaveLength(0);
  expect(screen.getByText('Firefox · Windows')).toBeTruthy();
  expect(signOut).not.toHaveBeenCalled();
 });

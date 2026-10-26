@@ -48,7 +48,7 @@ export default function TopbarCommands({groups,records,can,locale,translate,onNa
  },[searchOpen]);
  const choose=(item:Hit)=>{setSearchOpen(false);if(item.student)onStudent(item.student);else onNavigate(item.page,item.id.startsWith('module:')?undefined:query.trim());};
  return <div className="sc-global-search sc-flyout-holder" ref={searchHost} role="search">
-   <button type="button" ref={searchButton} className="sc-global-search-trigger" aria-label={searchLabel} aria-haspopup="true" aria-expanded={searchOpen}
+   <button type="button" ref={searchButton} className="sc-global-search-trigger" aria-label={searchLabel} aria-keyshortcuts="Control+K Meta+K" aria-haspopup="true" aria-expanded={searchOpen}
     onClick={()=>{setSearchOpen(true);onOpen();}}><Search size={19} aria-hidden="true"/><span className="sc-global-search-placeholder">{en?'Search modules, students, groups…':'Buscar módulos, alumnos, grupos…'}</span><kbd>{typeof navigator!=='undefined'&&/Mac|iPhone|iPad/.test(navigator.platform)?'⌘K':'Ctrl+K'}</kbd></button>
    {searchOpen&&<div className="sc-flyout sc-global-search-menu" role="region" aria-label={en?'Quick search':'Búsqueda rápida'}>
     <div className="sc-global-search-input"><Search size={18}/><input ref={field} type="search" aria-label={searchLabel} role="combobox" aria-expanded={searchOpen} aria-controls={resultsId} aria-autocomplete="list" aria-activedescendant={results[selected]?'sc-search-result-'+selected:undefined} autoComplete="off" value={query}

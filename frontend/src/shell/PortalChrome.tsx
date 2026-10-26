@@ -188,7 +188,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    const group=sections.find(section=>section.items.some(item=>item.key===selectedPage||findNavPath([{title:'',items:[item]}],selectedPage).length>0));
    const path=findNavPath(groups,selectedPage).slice(0,-1).map(item=>item.key);
    setExpanded(current=>{
-     const next=[...new Set([...(group?[group.id]:[]),...path])];
+     const next=group||path.length?[...new Set([...(group?[group.id]:[]),...path])]:current;
      return next.length===current.length?current:next;
    });
  },[page,portal]);

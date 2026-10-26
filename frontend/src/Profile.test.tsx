@@ -134,5 +134,5 @@ it('displays a real account photo inside Mi Perfil without changing the global a
  const {container}=render(<Profile onChange={vi.fn()} onSignedOut={vi.fn()}/>);
  await screen.findByRole('heading',{name:'María González'});
  expect(container.querySelector('.sc-profile-avatar img')?.getAttribute('src')).toBe('/api/profile/avatar');
- expect(screen.getByRole('button',{name:'Eliminar foto'})).toBeTruthy();
+ expect(screen.getByRole('button',{name:'Eliminar fotografía de perfil'})).toBeTruthy();
 });
