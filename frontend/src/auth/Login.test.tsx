@@ -67,3 +67,19 @@ it('uses the existing Rails session and delegates success to the app',async()=>{
  await waitFor(()=>expect(onLogin).toHaveBeenCalledWith(user));
  expect(request).toHaveBeenCalledWith('session','POST',{email:'familia@school.test',password:'School-password-26'});
 });
+
+it('requires a second factor after password login and continues only after the code is accepted',async()=>{
+ const user={id:14,name:'Docente',role:'teacher'};
+ request.mockResolvedValueOnce({mfa_required:true}).mockResolvedValueOnce({user});
+ const onLogin=vi.fn().mockResolvedValue(undefined);
+ render(<Login school={school} initialError="" onLogin={onLogin}/>);
+ await userEvent.type(screen.getByLabelText(/^Correo electrónico/),'teacher@school.test');
+ await userEvent.type(screen.getByLabelText(/^Contraseña/),'School-password-26');
+ await userEvent.click(screen.getByRole('button',{name:'Iniciar sesión'}));
+ expect(await screen.findByRole('heading',{name:'Verifica tu identidad'})).toBeTruthy();
+ expect(onLogin).not.toHaveBeenCalled();
+ await userEvent.type(screen.getByLabelText('Código de autenticación'),'123456');
+ await userEvent.click(screen.getByRole('button',{name:'Verificar y continuar'}));
+ await waitFor(()=>expect(request).toHaveBeenCalledWith('session/verify_otp','POST',{code:'123456'}));
+ await waitFor(()=>expect(onLogin).toHaveBeenCalledWith(user));
+});

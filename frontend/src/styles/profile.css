@@ -172,3 +172,42 @@
 [data-school-theme=dark] .sc-profile-email-current{border-color:#324575}
 [data-school-theme=dark] .sc-profile-email-current strong{color:#e8edff}
 @media(max-width:600px){.sc-profile-email-form{padding:19px}.sc-profile-email-current{padding:17px 19px}}
+
+.sc-profile-device-list{padding:8px 23px}
+.sc-profile-device{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:12px;align-items:center;padding:15px 0;border-bottom:1px solid #edf0f8}
+.sc-profile-device:last-child{border-bottom:0}
+.sc-profile-device-icon{background:#eef2ff;color:#4563d7;width:42px;height:42px;border-radius:11px;display:grid;place-items:center}
+.sc-profile-device strong{display:block;font-size:12px;color:#273e69}
+.sc-profile-device small{display:block;font-size:10px;line-height:1.65;color:#798aa5;margin-top:4px}
+.sc-profile-device-current{display:inline-flex;align-items:center;gap:4px;color:#258061;font-size:10px;font-weight:750;margin-top:5px}
+.sc-profile-device>button{display:grid;place-items:center;width:34px;height:34px;border:1px solid #d8e1f3;border-radius:9px;color:#ad4a5d}
+.sc-profile-device>button:hover{background:#fff2f2}
+.sc-profile-device-confirm{padding:20px 23px;background:#f8faff;border-top:1px solid #e7ebf6;display:grid;gap:10px}
+.sc-profile-device-confirm label{color:#344b75;font-size:12px;font-weight:750}
+.sc-profile-device-confirm input,.sc-profile-mfa-form input{min-height:43px;padding:10px 12px;border:1px solid #d1ddeb;border-radius:10px;font-size:12px;width:100%}
+.sc-profile-device-confirm>div{display:flex;gap:10px;flex-wrap:wrap}
+.sc-profile-device-confirm>div button{padding:9px 15px}
+.sc-profile-devices-foot{display:flex;gap:8px;align-items:flex-start;padding:12px 23px 21px;line-height:1.5;font-size:10px;color:#7d8da8}
+.sc-profile-devices-foot svg{flex:none}
+.sc-profile-mfa-body{padding:21px 24px;display:grid;gap:19px}
+.sc-profile-mfa-status{display:inline-flex;align-items:center;gap:9px;background:#f8f1e6;border:1px solid #f1dfc0;color:#8f6d33;font-size:11px;font-weight:780;border-radius:9px;padding:11px 13px}
+.sc-profile-mfa-status.is-enabled{background:#edf9f3;color:#246b4f;border-color:#cbe4d5}
+.sc-profile-mfa-form{display:grid;gap:12px}
+.sc-profile-mfa-form p{font-size:11px;color:#7284a2;line-height:1.65}
+.sc-profile-mfa-form label{color:#344b74;font-size:12px;font-weight:730}
+.sc-profile-mfa-form button{min-height:43px;padding:11px 15px;justify-content:center;font-size:12px}
+.sc-profile-mfa-recovery{display:grid;gap:13px;color:#275d50}
+.sc-profile-mfa-recovery strong{font-size:12px}
+.sc-profile-mfa-recovery p{font-size:11px;color:#6c7f99;line-height:1.6}
+.sc-profile-recovery-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.sc-profile-recovery-grid code{padding:11px 7px;background:#f1f6ff;border:1px solid #dfebff;border-radius:9px;color:#2c4879;text-align:center;letter-spacing:1px;font-size:12px}
+.sc-profile-mfa-recovery>button{display:flex;gap:7px;align-items:center;justify-content:center;min-height:39px;font-size:12px;padding:10px}
+.sc-profile-mfa-finish{color:#315bd0;font-weight:750}
+.sc-profile-secret{display:flex;align-items:center;gap:10px;padding:12px;background:#f3f6ff;border-radius:10px;min-width:0}
+.sc-profile-secret code{overflow-wrap:anywhere;flex:1;min-width:0;font-size:12px;color:#364f83;letter-spacing:1px}
+.sc-profile-secret button{flex:none;padding:5px;color:#395aca}
+[data-school-theme=dark] .sc-profile-device{border-color:#34476e}
+[data-school-theme=dark] .sc-profile-device strong,[data-school-theme=dark] .sc-profile-mfa-form label{color:#e7efff}
+[data-school-theme=dark] .sc-profile-device-confirm,[data-school-theme=dark] .sc-profile-secret{background:#1e335d}
+[data-school-theme=dark] .sc-profile-mfa-status{background:#314268}
+@media(max-width:600px){.sc-profile-device-list{padding:7px 18px}.sc-profile-device-confirm,.sc-profile-mfa-body{padding:18px}}

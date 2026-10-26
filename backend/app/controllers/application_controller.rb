@@ -13,7 +13,21 @@ class ApplicationController < ActionController::Base
   private
 
   def current_user
-    @current_user ||= User.find_by(id: session[:user_id], session_version: session[:session_version], active: true)
+    return @current_user if defined?(@current_user)
+
+    user = User.find_by(id: session[:user_id], session_version: session[:session_version], active: true)
+    token_session = current_login_session
+    @current_user = token_session&.user_id == user&.id ? user : nil
+  end
+
+  def current_login_session
+    return @current_login_session if defined?(@current_login_session)
+
+    @current_login_session = UserLoginSession.for_token(session[:login_token])
+    if @current_login_session && @current_login_session.last_seen_at < 5.minutes.ago
+      @current_login_session.update_column(:last_seen_at, Time.current)
+    end
+    @current_login_session
   end
 
   def require_user
@@ -29,7 +43,7 @@ class ApplicationController < ActionController::Base
   def educator_access? = access.educator?
 
   def authorize_permission
-    return if %w[sessions password_resets profiles account_security messages notifications dashboard_preferences].include?(controller_name)
+    return if %w[sessions password_resets profiles account_security messages notifications dashboard_preferences two_factor].include?(controller_name)
     return if controller_name == "schools" && action_name == "show"
     render json: { error: "No tienes permiso para esta acción" }, status: :forbidden unless access.allows?
   end

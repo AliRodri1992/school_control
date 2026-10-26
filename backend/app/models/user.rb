@@ -1,5 +1,7 @@
 class User < ApplicationRecord
   has_one_attached :avatar
+  has_many :login_sessions, class_name: "UserLoginSession", dependent: :destroy
+  has_one :totp_credential, dependent: :destroy
   has_one :user_preference, dependent: :destroy
   has_many :data_imports, dependent: :restrict_with_error
   has_many :import_mapping_templates, dependent: :destroy
@@ -49,7 +51,10 @@ class User < ApplicationRecord
   end
 
   def revoke_sessions!
-    with_lock { increment!(:session_version) }
+    with_lock do
+      increment!(:session_version)
+      login_sessions.active.update_all(revoked_at: Time.current)
+    end
   end
 
   private

@@ -22,6 +22,12 @@ Rails.application.routes.draw do
       post :confirm_email_change, path: "email_change/confirm", to: "profiles#confirm_email_change"
       patch :password, to: "account_security#update"
       delete :sessions, to: "account_security#destroy"
+      get :devices, to: "account_security#devices"
+      delete "devices/:id", to: "account_security#revoke_device"
+      get :two_factor, to: "two_factor#show"
+      post "two_factor/setup", to: "two_factor#setup"
+      post "two_factor/confirm", to: "two_factor#confirm"
+      delete :two_factor, to: "two_factor#destroy"
     end
     resources :email_templates, only: %i[index create update]
     resources :import_mapping_templates, only: %i[index create destroy]

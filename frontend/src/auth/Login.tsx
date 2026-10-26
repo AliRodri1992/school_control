@@ -23,6 +23,8 @@ export default function Login({school,initialError,onLogin}:{school:Row;initialE
   const [busy,setBusy] = useState(false);
   const [showPassword,setShowPassword] = useState(false);
   const [showConfirmation,setShowConfirmation] = useState(false);
+  const [mfaRequired,setMfaRequired] = useState(false);
+  const [otpCode,setOtpCode] = useState('');
 
   function setField(name:FieldName,value:string) {
     setValues(current=>({...current,[name]:value}));
@@ -54,6 +56,7 @@ export default function Login({school,initialError,onLogin}:{school:Row;initialE
       const payload={email:values.email.trim().toLowerCase(),password:values.password,
         ...(register?{name:values.name.trim(),password_confirmation:values.password_confirmation}:{})};
       const result=await api(register?'registration':'session','POST',payload);
+      if(result.mfa_required){setMfaRequired(true);setOtpCode('');return;}
       await onLogin(result.user);
       void notify(register?'Cuenta creada correctamente.':'Sesión iniciada correctamente.');
     } catch(cause) {
@@ -72,6 +75,57 @@ export default function Login({school,initialError,onLogin}:{school:Row;initialE
       } else setError(failure.message);
     } finally {setBusy(false);}
   }
+
+  async function verifyOtp(event:FormEvent<HTMLFormElement>){
+    event.preventDefault();
+    if(busy||!otpCode.trim())return;
+    setBusy(true);setError('');
+    try{
+      const result=await api('session/verify_otp','POST',{code:otpCode.trim()});
+      await onLogin(result.user);
+      void notify('Sesión iniciada correctamente.');
+    }catch(cause){setError((cause as Error).message);}
+    finally{setBusy(false);}
+  }
+
+  if(mfaRequired)return <div className="login sc-auth sc-mfa-login">
+   <section className="login-story sc-login-story" aria-label={ui('Bienvenida')}>
+    <div className="brand sc-login-brand">
+     <span className="sc-brand-symbol"><BookOpen size={24}/></span>
+     <div><strong>{school.name}</strong><small>School Control</small></div>
+    </div>
+    <div className="sc-login-copy">
+     <span className="sc-kicker">{ui('PROTECCIÓN DE TU CUENTA')}</span>
+     <h1>{ui('Un acceso escolar')}<br/>{ui('más seguro.')}</h1>
+     <p>{ui('Protegemos tu información con una segunda verificación de identidad.')}</p>
+    </div>
+    <img className="sc-auli-hero" src="/illustrations/auli-welcome.svg" alt={ui('Auli acompaña el acceso seguro')}/>
+   </section>
+   <section className="login-form sc-login-panel">
+    <div className="sc-auth-top"><span className="sc-auth-eyebrow">{ui('SEGUNDO FACTOR')}</span></div>
+    <div className="sc-auth-heading"><span className="sc-auth-mark"><LockKeyhole size={22}/></span>
+     <h2>{ui('Verifica tu identidad')}</h2>
+     <p>{ui('Introduce el código de seis dígitos de tu aplicación autenticadora o un código de recuperación.')}</p>
+    </div>
+    <form className="sc-auth-form" onSubmit={event=>void verifyOtp(event)}>
+     <div className="sc-field">
+      <label htmlFor="sc-login-totp">{ui('Código de autenticación')}</label>
+      <div className="sc-input-wrap">
+       <LockKeyhole size={19} aria-hidden="true"/>
+       <input id="sc-login-totp" autoComplete="one-time-code" value={otpCode} required
+        onChange={event=>setOtpCode(event.target.value)} placeholder="000000"/>
+      </div>
+     </div>
+     {error&&<p role="alert" className="sc-auth-error">{error}</p>}
+     <button type="submit" className="primary sc-auth-submit" disabled={busy}>
+      {ui(busy?'Verificando…':'Verificar y continuar')}<ArrowRight size={19}/>
+     </button>
+    </form>
+    <button type="button" className="text-button sc-mfa-change-account" onClick={()=>{
+     void api('session','DELETE').finally(()=>{setMfaRequired(false);setOtpCode('');setError('');});
+    }}>{ui('Usar otra cuenta')}</button>
+   </section>
+  </div>;
 
   if(recovering)return <Suspense fallback={<div className="boot" role="status">{ui("Cargando recuperación de contraseña…")}</div>}><PasswordRecovery schoolName={school.name} onClose={()=>setRecovering(false)}/></Suspense>;
 
