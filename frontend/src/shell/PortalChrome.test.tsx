@@ -852,3 +852,10 @@ it('uses Dashboard consistently for the admin breadcrumb and navigation in both 
  await userEvent.click(screen.getByRole('button',{name:'English · EN'}));
  expect(screen.getByRole('navigation',{name:'Breadcrumbs'}).querySelector('[aria-current="page"]')?.textContent).toBe('Dashboard');
 });
+
+it('shows the profile image consistently inside the topbar account menu',async()=>{
+ const {container}=render(<PortalChrome {...props} user={{...user,avatar_url:'/profile-photo.png'}}><div>Página</div></PortalChrome>);
+ await userEvent.click(container.querySelector<HTMLButtonElement>('.sc-topbar .sc-account-button')!);
+ const menu=screen.getByRole('group',{name:'Menú de cuenta'});
+ expect(menu.querySelector('.sc-sam-avatar img')?.getAttribute('src')).toBe('/profile-photo.png');
+});

@@ -13,6 +13,7 @@ export default function TopbarCommands({groups,records,can,locale,translate,onNa
  onStudent:(student:Row)=>void;onOpen:()=>void;
 }){
  const [searchOpen,setSearchOpen]=useState(false),[query,setQuery]=useState(''),[selected,setSelected]=useState(0);
+ const resultsId='sc-global-search-results';
  const searchHost=useRef<HTMLDivElement>(null),field=useRef<HTMLInputElement>(null),searchButton=useRef<HTMLButtonElement>(null);
  const en=locale.toLowerCase().startsWith('en'),searchLabel=translate('topbar.search','Buscar en School Control');
  const modules=useMemo<Hit[]>(()=>{
@@ -50,7 +51,7 @@ export default function TopbarCommands({groups,records,can,locale,translate,onNa
    <button type="button" ref={searchButton} className="sc-global-search-trigger" aria-label={searchLabel} aria-haspopup="true" aria-expanded={searchOpen}
     onClick={()=>{setSearchOpen(true);onOpen();}}><Search size={19} aria-hidden="true"/><span className="sc-global-search-placeholder">{en?'Search modules, students, groups…':'Buscar módulos, alumnos, grupos…'}</span><kbd>{typeof navigator!=='undefined'&&/Mac|iPhone|iPad/.test(navigator.platform)?'⌘K':'Ctrl+K'}</kbd></button>
    {searchOpen&&<div className="sc-flyout sc-global-search-menu" role="region" aria-label={en?'Quick search':'Búsqueda rápida'}>
-    <div className="sc-global-search-input"><Search size={18}/><input ref={field} type="search" aria-label={searchLabel} autoComplete="off" value={query}
+    <div className="sc-global-search-input"><Search size={18}/><input ref={field} type="search" aria-label={searchLabel} role="combobox" aria-expanded={searchOpen} aria-controls={resultsId} aria-autocomplete="list" aria-activedescendant={results[selected]?'sc-search-result-'+selected:undefined} autoComplete="off" value={query}
      placeholder={en?'What are you looking for?':'¿Qué necesitas encontrar?'} onChange={e=>setQuery(e.target.value)}
      onKeyDown={e=>{if(e.key==='ArrowDown'){e.preventDefault();setSelected(v=>Math.min(v+1,results.length-1));}
       if(e.key==='ArrowUp'){e.preventDefault();setSelected(v=>Math.max(0,v-1));}
@@ -58,8 +59,8 @@ export default function TopbarCommands({groups,records,can,locale,translate,onNa
      <button type="button" aria-label={en?'Close search':'Cerrar búsqueda'} onClick={()=>{setSearchOpen(false);searchButton.current?.focus();}}><X size={17}/></button>
     </div>
     <div className="sc-global-search-caption">{query.trim()?(en?'Results':'Resultados'):(en?'Quick access':'Accesos rápidos')}</div>
-    <div className="sc-global-search-results" role="listbox" aria-label={en?'Search results':'Resultados de búsqueda'}>
-     {results.map((item,i)=><button type="button" role="option" aria-selected={i===selected} key={item.id} className={'sc-global-search-result'+(selected===i?' is-selected':'')}
+    <div id={resultsId} className="sc-global-search-results" role="listbox" aria-label={en?'Search results':'Resultados de búsqueda'}>
+     {results.map((item,i)=><button type="button" role="option" id={'sc-search-result-'+i} aria-selected={i===selected} key={item.id} className={'sc-global-search-result'+(selected===i?' is-selected':'')}
       onMouseEnter={()=>setSelected(i)} onClick={()=>choose(item)}><span className="sc-global-result-icon">{item.student?<GraduationCap size={18}/>:<FileText size={18}/>}</span>
       <span className="sc-global-result-text"><strong>{item.label}</strong><small>{item.detail}</small></span><ArrowRight size={16}/></button>)}
      {!results.length&&<p>{en?'No matching records.':'No hay coincidencias.'}</p>}

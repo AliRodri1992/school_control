@@ -245,7 +245,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    function onKeydown(event:KeyboardEvent){
      if(event.key==='Tab'&&mobile){
        const controls=[
-        ...sidebarRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')||[],
+        ...sidebarRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled),a[href],input:not(:disabled),[tabindex]:not([tabindex="-1"])')||[],
         ...(accountTarget==='sidebar'?[...sidebarMenuRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')||[]]:[])
        ];
        if(!controls.length)return;
@@ -378,7 +378,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  return <div className={'app sc-shell'+(compact?' sc-shell-collapsed':'')+(mobile?' sc-shell-mobile-open':'')}>
    {mobile&&<button type="button" className="sc-sidebar-backdrop" aria-label={translateUiText(locale,'Cerrar menú lateral')} onClick={()=>{setAccountTarget(null);onMobile(false);mobileTrigger.current?.focus();}}/>}
 
-   <aside id="school-sidebar" ref={sidebarRef} className={'sidebar sc-sidebar'+(mobile?' open':'')} aria-label={translateUiText(locale,'Barra lateral principal')}>
+   <aside id="school-sidebar" ref={sidebarRef} className={'sidebar sc-sidebar'+(mobile?' open':'')} role={mobile?'dialog':undefined} aria-modal={mobile?true:undefined} aria-label={translateUiText(locale,'Barra lateral principal')}>
      <SidebarBrand schoolName={school.name} locale={locale} compact={compact} closeRef={mobileCloseTrigger}
        onClose={()=>{setAccountTarget(null);onMobile(false);mobileTrigger.current?.focus();}}/>
           <nav ref={sidebarNavRef} className="sc-sidebar-nav" tabIndex={0} aria-keyshortcuts="Home End PageUp PageDown ArrowUp ArrowDown" aria-label={translateUiText(locale,'Navegación principal')}>
