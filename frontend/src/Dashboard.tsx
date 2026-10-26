@@ -232,7 +232,7 @@ export default function Dashboard({summary,data,role='admin',userId=0,selectedCh
   </form>}
   {ready&&<Grid className="school-dashboard-grid" key={gridRevision}
    layouts={Object.fromEntries(Object.entries(config.layouts).map(([bp,items])=>[bp,items.map(item=>({...item,minH:2,maxH:20}))]))}
-   breakpoints={{lg:1200,md:800,sm:480,xs:0}} cols={columns} rowHeight={52} margin={[14,14]}
+   breakpoints={{lg:920,md:700,sm:480,xs:0}} cols={columns} rowHeight={52} margin={[14,14]}
    isDraggable={editing&&!saving} isResizable={editing&&!saving} draggableHandle=".widget-handle"
    onDragStart={()=>{preventProgrammaticLayoutChange.current=false;setRestored(false);}}
    onResizeStart={()=>{preventProgrammaticLayoutChange.current=false;setRestored(false);}}
