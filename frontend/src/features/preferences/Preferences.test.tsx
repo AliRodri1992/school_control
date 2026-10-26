@@ -65,11 +65,11 @@ it('previews theme changes without applying them before saving, then persists th
  expect(onSaved).not.toHaveBeenCalled();
  await userEvent.click(screen.getByRole('button',{name:'Guardar preferencias'}));
  await waitFor(()=>expect(fetchApi).toHaveBeenCalledWith('preferences','PATCH',{
-  locale:'es',theme:'dark',rows_per_page:25,selected_child_id:24
+  theme:'dark',rows_per_page:25
  }));
- await waitFor(()=>expect(onSaved).toHaveBeenCalledWith({
+ await waitFor(()=>expect(onSaved).toHaveBeenCalledWith(expect.objectContaining({
   locale:'es',theme:'dark',rows_per_page:25,selected_child_id:24
- }));
+ })));
  expect(document.documentElement.dataset.schoolTheme).toBe('dark');
  expect(localStorage.getItem('school-locale')).toBe('es');
  expect(notify).toHaveBeenCalledExactlyOnceWith('Preferencias actualizadas correctamente.');
@@ -167,4 +167,26 @@ it('provides explicit accessible page-density choices for keyboard and screen-re
  await userEvent.keyboard('{Enter}');
  expect(choice.getAttribute('aria-pressed')).toBe('true');
  expect(screen.getByRole('button',{name:'10 registros por página'}).getAttribute('aria-pressed')).toBe('false');
+});
+
+it('saves accessibility and calendar preferences without changing the dashboard landing page',async()=>{
+ fetchApi.mockImplementation(async(resource:string,method?:string,data?:any)=>{
+  if(resource==='preferences'&&method==='PATCH')return {...initial,...data};
+  if(resource==='preferences')return {...initial};
+  if(resource==='languages')return languages;
+  return {};
+ });
+ render(<Preferences/>);
+ await screen.findByRole('heading',{name:'Tema visual'});
+ await userEvent.click(screen.getByRole('button',{name:'Accesibilidad'}));
+ await userEvent.click(screen.getByRole('checkbox',{name:'Contraste alto'}));
+ await userEvent.click(screen.getByRole('button',{name:'Guardar preferencias'}));
+ await waitFor(()=>expect(fetchApi).toHaveBeenCalledWith('preferences','PATCH',{high_contrast:true}));
+ expect(document.documentElement.dataset.schoolContrast).toBe('true');
+ expect(JSON.parse(localStorage.getItem('school-preferences')||'{}').high_contrast).toBe(true);
+ await userEvent.click(screen.getByRole('button',{name:'Fecha y calendario'}));
+ await userEvent.selectOptions(screen.getByLabelText('Formato de hora'),'12h');
+ await userEvent.click(screen.getByRole('button',{name:'Guardar preferencias'}));
+ await waitFor(()=>expect(fetchApi).toHaveBeenCalledWith('preferences','PATCH',{time_format:'12h'}));
+ expect(screen.queryByText('Página de inicio')).toBeNull();
 });

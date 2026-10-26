@@ -40,9 +40,7 @@ export default function Preferences({onSaved}:{onSaved?:(settings:Settings)=>voi
    .finally(()=>{if(active)setLoading(false);});
   return()=>{active=false;};
  },[attempt]);
- const dirty=loaded&&(settings.locale!==persisted.locale||
-  settings.theme!==persisted.theme||settings.rows_per_page!==persisted.rows_per_page||
-  (Object.keys(baseline) as (keyof Settings)[]).some(key=>settings[key]!==persisted[key]));
+ const dirty=loaded&&(Object.keys(baseline) as (keyof Settings)[]).some(key=>settings[key]!==persisted[key]);
  const languages=available.length?available:[{code:'es',native_name:'Español',status:'active'},{code:'en',native_name:'English',status:'active'}];
  const languageOptions=languages.some(language=>language.code===settings.locale)?languages:
   [...languages,{code:settings.locale,native_name:settings.locale.toUpperCase(),status:'active'}];

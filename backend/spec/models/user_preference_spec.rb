@@ -14,4 +14,16 @@ RSpec.describe UserPreference, type: :model do
     expect(pref).not_to be_valid
     expect(pref.errors[:selected_child]).to be_present
   end
+  it "validates personal display and notification preferences" do
+    pref = described_class.new(user: create(:user), time_format: "25h", notification_digest: "never")
+    expect(pref).not_to be_valid
+    expect(pref.errors[:time_format]).to be_present
+    expect(pref.errors[:notification_digest]).to be_present
+  end
+
+  it "persists accessibility, privacy and calendar options for the account" do
+    pref = described_class.create!(user: create(:user), high_contrast: true,
+      hide_notification_previews: true, week_start: "sunday")
+    expect(pref.reload).to have_attributes(high_contrast: true, hide_notification_previews: true, week_start: "sunday")
+  end
 end
