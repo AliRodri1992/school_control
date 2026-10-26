@@ -553,6 +553,9 @@
 
 /* Improve focus visibility and scroll targeting without rendering a scrollbar. */
 .sc-shell .sc-sidebar .sc-sidebar-nav{scroll-padding-block:14px}
+.sc-shell .sc-sidebar .sc-sidebar-nav:focus-visible{outline:2px solid #a4caff;outline-offset:-3px}
+.sc-shell .sc-global-search-result:focus-visible{outline:2px solid #357ce1;outline-offset:-2px}
+.sc-shell .sc-nav-section-title[aria-expanded=true] .sc-section-chevron{color:#fff}
 .sc-shell .sc-sidebar .sc-sidebar-nav .sc-nav-item,
 .sc-shell .sc-sidebar .sc-sidebar-nav .sc-nav-section{scroll-margin-block:10px}
 .sc-shell .sc-sidebar .sc-sidebar-nav button:focus-visible{scroll-margin-block:12px}

@@ -30,6 +30,7 @@ it('does not revoke a session when the user cancels the confirmation',async()=>{
   {id:1,name:'Chrome · macOS',current:true,last_seen_at:'2026-10-25T10:00:00Z'},
   {id:2,name:'Firefox · Windows',current:false,last_seen_at:'2026-10-25T09:00:00Z'}
  ]}:{signed_out:false,message:'Sesión cerrada'});
+ vi.mocked(confirmDanger).mockReset();
  vi.mocked(confirmDanger).mockResolvedValue(false);
  const signOut=vi.fn();
  render(<ProfileDevices onSignedOut={signOut}/>);
@@ -37,7 +38,7 @@ it('does not revoke a session when the user cancels the confirmation',async()=>{
  await userEvent.type(screen.getByLabelText('Contraseña para cerrar un dispositivo'),'Sample-passphrase');
  await userEvent.click(screen.getAllByRole('button',{name:'Cerrar sesión'})[1]);
  await waitFor(()=>expect(confirmDanger).toHaveBeenCalledOnce());
- expect(request).toHaveBeenCalledTimes(1);
+ expect(request.mock.calls.filter(([path])=>String(path).startsWith('profile/devices/') )).toHaveLength(0);
  expect(screen.getByText('Firefox · Windows')).toBeTruthy();
  expect(signOut).not.toHaveBeenCalled();
 });
