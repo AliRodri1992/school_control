@@ -122,6 +122,10 @@ export default function Profile({onChange,onSignedOut,onNavigate}:{
        onClick={()=>avatarInput.current?.click()} aria-label={ui('Cambiar fotografía de perfil')}>
        <Camera size={17} aria-hidden="true"/>
       </button>
+      {profile.avatar_url&&<button type="button" className="sc-profile-delete-button" disabled={avatarBusy}
+       onClick={()=>void removeAvatar()} aria-label={ui('Eliminar fotografía de perfil')} title={ui('Eliminar foto')}>
+       <Trash2 size={16} aria-hidden="true"/>
+      </button>}
       <input ref={avatarInput} className="sc-profile-hidden-file" type="file" accept="image/png,image/jpeg,image/webp"
        aria-label={ui('Seleccionar fotografía de perfil')} onChange={event=>void uploadAvatar(event)}/>
      </div>
