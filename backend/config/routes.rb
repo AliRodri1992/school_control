@@ -9,6 +9,7 @@ Rails.application.routes.draw do
     resources :translation_entries, only: %i[index create update]
     get "session", to: "sessions#show"
     post "session", to: "sessions#create"
+    post "session/verify_otp", to: "sessions#verify_otp"
     delete "session", to: "sessions#destroy"
     post "registration", to: "sessions#register"
     resource :school, only: %i[show update]

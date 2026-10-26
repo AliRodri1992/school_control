@@ -27,3 +27,10 @@ it('handles a single name or missing name consistently with the sidebar',()=>{
  rerender(<TopbarAccountAvatar name=""/>);
  expect(container.querySelector('.sc-topbar-avatar-initials')?.textContent).toBe('US');
 });
+
+it('shows an uploaded account photo when supplied by the authenticated session',()=>{
+ const {container}=render(<TopbarAccountAvatar name="María González" avatarUrl="/api/profile/avatar"/>);
+ const photo=container.querySelector('img');
+ expect(photo?.getAttribute('src')).toBe('/api/profile/avatar');
+ expect(photo?.getAttribute('alt')).toBe('');
+});

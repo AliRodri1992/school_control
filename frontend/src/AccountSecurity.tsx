@@ -2,7 +2,7 @@ import {useState,type FormEvent} from 'react';
 import {Eye,EyeOff,KeyRound,LockKeyhole,LogOut,ShieldCheck} from 'lucide-react';
 import {useSchoolLocale} from './shared/i18n/LocaleContext';
 import {api} from './api';
-import {notify} from './notifications';
+import {notify,confirmDanger} from './notifications';
 
 export default function AccountSecurity({onSignedOut}:{onSignedOut:()=>void}){
  const {ui}=useSchoolLocale();
@@ -13,6 +13,14 @@ export default function AccountSecurity({onSignedOut}:{onSignedOut:()=>void}){
  async function submit(event:FormEvent<HTMLFormElement>,action:'password'|'sessions'){
   event.preventDefault();
   if(busy)return;
+  if(action==='sessions'){
+   const confirmed=await confirmDanger(
+    ui('Cerrar todas las sesiones'),
+    ui('Esta acción cerrará tu cuenta en todos los dispositivos. Tendrás que iniciar sesión de nuevo.'),
+    ui('Sí, cerrar sesiones')
+   );
+   if(!confirmed)return;
+  }
   const fields=Object.fromEntries(new FormData(event.currentTarget));
   if(action==='password'&&fields.password!==fields.password_confirmation){
    setPasswordError(ui('Las contraseñas no coinciden.'));return;

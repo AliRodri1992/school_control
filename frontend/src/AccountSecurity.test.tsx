@@ -5,8 +5,9 @@ import userEvent from '@testing-library/user-event';
 import AccountSecurity from './AccountSecurity';
 import PasswordRecovery from './PasswordRecovery';
 import {api} from './api';
+import {confirmDanger} from './notifications';
 vi.mock('./api',()=>({api:vi.fn()}));
-vi.mock('./notifications',()=>({notify:vi.fn()}));
+vi.mock('./notifications',()=>({notify:vi.fn(),confirmDanger:vi.fn().mockResolvedValue(true)}));
 const request=vi.mocked(api);
 beforeEach(()=>{request.mockReset();request.mockResolvedValue({message:'Solicitud procesada.'});});
 afterEach(cleanup);
@@ -100,6 +101,17 @@ it('blocks password updates when confirmation differs and preserves the session'
  await userEvent.type(screen.getByLabelText('Confirmar nueva contraseña'),'Different-school-password-26');
  await userEvent.click(screen.getByRole('button',{name:'Actualizar contraseña y cerrar sesiones'}));
  expect(screen.getByRole('alert').textContent).toContain('Las contraseñas no coinciden.');
+ expect(request).not.toHaveBeenCalled();
+ expect(signedOut).not.toHaveBeenCalled();
+});
+
+it('preserves every session when the user cancels the global sign-out confirmation',async()=>{
+ vi.mocked(confirmDanger).mockResolvedValueOnce(false);
+ const signedOut=vi.fn();
+ render(<AccountSecurity onSignedOut={signedOut}/>);
+ await userEvent.type(screen.getByLabelText('Confirma tu contraseña actual'),'School-test-password-26');
+ await userEvent.click(screen.getByRole('button',{name:'Cerrar todas mis sesiones'}));
+ await waitFor(()=>expect(confirmDanger).toHaveBeenCalledOnce());
  expect(request).not.toHaveBeenCalled();
  expect(signedOut).not.toHaveBeenCalled();
 });
