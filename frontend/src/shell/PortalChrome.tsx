@@ -406,7 +406,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
           </span>
          <span className="sc-sidebar-user"><strong>{user.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span><ChevronDown className="sc-sidebar-user-chevron" size={16}/>
        </button>
-       
+
      </div>
    </aside>
    {accountTarget==='sidebar'&&createPortal(
@@ -473,7 +473,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
              <span className="sc-topbar-avatar"><TopbarAccountAvatar name={user.name} avatarUrl={typeof user.avatar_url==='string'?user.avatar_url:undefined}/></span>
              <span className="sc-account-identity"><strong>{user.name}</strong><small>{translateUiText(locale,portalLabels[portal])}</small></span><ChevronDown className="sc-account-chevron" size={16}/>
            </button>
-           
+
          </div>
        </div>
      </header>
