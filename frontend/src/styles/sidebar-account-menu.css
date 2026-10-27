@@ -107,9 +107,10 @@
  margin-left:0;color:#eaf4ff;transition:transform .16s ease;
 }
 .sc-shell .sc-topbar .sc-account-button[aria-expanded=true] .sc-account-chevron{transform:rotate(180deg)}
-@media(max-width:1190px){
+/* Keep the full account identity until the compact topbar layout is necessary. */
+@media(max-width:1050px) and (min-width:761px){
  .sc-shell .sc-topbar .sc-account-button{max-width:none;padding:4px 8px}
- .sc-shell .sc-topbar .sc-account-button .sc-account-identity{display:none!important}
+ .sc-shell .sc-topbar .sc-account-button .sc-account-identity{display:none}
 }
 @media(max-width:760px){
  .sc-shell .sc-topbar .sc-account-button{padding:3px;gap:0;min-width:44px;min-height:44px}

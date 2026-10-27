@@ -573,6 +573,11 @@
  width:0;height:0;display:none;
 }
 .sc-shell .sc-sidebar .sc-sidebar-nav{scroll-behavior:auto}
+/* A subtle edge cue reveals navigation below the fold without taking interactive space. */
+.sc-shell .sc-sidebar-scroll-hint{display:flex;justify-content:center;align-items:center;flex:none;height:20px;margin-top:-20px;position:relative;z-index:3;pointer-events:none;color:#d3e7ff;background:linear-gradient(0deg,#052750,rgba(5,39,80,0))}
+.sc-shell.sc-shell-collapsed .sc-nav-section-title:focus-visible{outline:2px solid #b4d5ff;outline-offset:-2px}
+.sc-shell .sc-compact-flyout .sc-nav-main:focus-visible{outline:2px solid #3478df;outline-offset:-2px}
+@media(forced-colors:active){.sc-shell .sc-sidebar-scroll-hint{background:Canvas;color:CanvasText}}
 
 /* Breadcrumb-specific contract: inherited legacy nav rules must never stretch a link. */
 .sc-main .sc-breadcrumb-design-one .sc-crumbs > .sc-crumb-step{

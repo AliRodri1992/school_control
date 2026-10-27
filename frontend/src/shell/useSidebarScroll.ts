@@ -23,6 +23,11 @@ export function revealActiveSidebarItem(nav:HTMLElement|null):boolean{
  return true;
 }
 
+/** Whether there are additional sidebar destinations below the visible rail. */
+export function sidebarHasMoreBelow(scrollTop:number,viewport:number,total:number):boolean{
+ return total>viewport+3&&scrollTop+viewport<total-3;
+}
+
 /** Native wheel and touch scrolling remain enabled; mouse drag starts only on blank areas. */
 export function useSidebarScroll(ref:RefObject<HTMLElement|null>){
  useEffect(()=>{

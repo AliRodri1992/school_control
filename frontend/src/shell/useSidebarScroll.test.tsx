@@ -2,7 +2,7 @@
 import {afterEach,expect,it,vi} from 'vitest';
 import {cleanup,fireEvent,render} from '@testing-library/react';
 import {useRef} from 'react';
-import {revealActiveSidebarItem,sidebarScrollPosition,useSidebarScroll} from './useSidebarScroll';
+import {revealActiveSidebarItem,sidebarScrollPosition,sidebarHasMoreBelow,useSidebarScroll} from './useSidebarScroll';
 
 afterEach(()=>cleanup());
 
@@ -98,4 +98,11 @@ it('reveals a selected menu item without moving the document or sidebar header',
 it('does not attempt to scroll an absent active menu item',()=>{
  const {container}=render(<ScrollFixture/>);
  expect(revealActiveSidebarItem(container.querySelector('nav'))).toBe(false);
+});
+
+it('indicates additional navigation only when there are unseen items below',()=>{
+ expect(sidebarHasMoreBelow(0,200,800)).toBe(true);
+ expect(sidebarHasMoreBelow(600,200,800)).toBe(false);
+ expect(sidebarHasMoreBelow(0,300,200)).toBe(false);
+ expect(sidebarHasMoreBelow(599,200,800)).toBe(false);
 });

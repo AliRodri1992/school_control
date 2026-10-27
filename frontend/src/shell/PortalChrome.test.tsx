@@ -892,3 +892,10 @@ it('navigates directly to academic modules without displaying a duplicate nested
  expect(container.querySelector('.sc-nav-main[aria-label="Grupos"]')).toBeTruthy();
  expect(container.querySelector('.sc-nav-main[aria-label="Clases"]')).toBeTruthy();
 });
+
+it('keeps the mobile drawer identifiable as a modal dialog for assistive technology',()=>{
+ const {container}=render(<PortalChrome {...props} mobile><div>Página</div></PortalChrome>);
+ const sidebar=container.querySelector('#school-sidebar');
+ expect(sidebar?.getAttribute('role')).toBe('dialog');
+ expect(sidebar?.getAttribute('aria-modal')).toBe('true');
+});

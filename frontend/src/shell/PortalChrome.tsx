@@ -2,7 +2,7 @@ import {LocaleProvider} from '../shared/i18n/LocaleContext';
 import TopbarCommands from './TopbarCommands';
 import {useTopbarMenuPosition} from './useTopbarMenuPosition';
 import {sidebarSections,sidebarExpandedSections,sidebarExpandedStorageKey} from './sidebarPresentation';
-import {revealActiveSidebarItem,useSidebarScroll} from './useSidebarScroll';
+import {revealActiveSidebarItem,sidebarHasMoreBelow,useSidebarScroll} from './useSidebarScroll';
 import {SidebarBrand} from './SidebarBrand';
 import LanguageMenu from './LanguageMenu';
 import NotificationPopover,{type NotificationPreview} from './NotificationPopover';
@@ -31,6 +31,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const [expanded,setExpanded]=useState<string[]>(()=>sidebarExpandedSections(portal,sections,localStorage.getItem(sidebarExpandedStorageKey(portal))));
  const [collapsed,setCollapsed]=useState(()=>localStorage.getItem('school-sidebar-collapsed')==='true');
  const [compactGroup,setCompactGroup]=useState<string|null>(null);
+ const [moreSidebarItems,setMoreSidebarItems]=useState(false);
  const [languageOpen,setLanguageOpen]=useState(false);
  const compactGroupTrigger=useRef<HTMLButtonElement|null>(null);
  const compactFlyoutRef=useRef<HTMLDivElement|null>(null);
@@ -39,6 +40,17 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
  const sidebarRef=useRef<HTMLElement|null>(null);
  const sidebarNavRef=useRef<HTMLElement|null>(null);
  useSidebarScroll(sidebarNavRef);
+ useEffect(()=>{
+  const nav=sidebarNavRef.current;
+  if(!nav)return;
+  const update=()=>setMoreSidebarItems(sidebarHasMoreBelow(nav.scrollTop,nav.clientHeight,nav.scrollHeight));
+  update();
+  nav.addEventListener('scroll',update,{passive:true});
+  window.addEventListener('resize',update);
+  const observer=typeof ResizeObserver!=='undefined'?new ResizeObserver(update):null;
+  observer?.observe(nav);
+  return()=>{nav.removeEventListener('scroll',update);window.removeEventListener('resize',update);observer?.disconnect();};
+ },[collapsed,mobile,expanded.join('|'),sections.length]);
  // Keep the selected destination visible in a scrollbar-free navigation rail.
  useEffect(()=>{
   revealActiveSidebarItem(sidebarNavRef.current);
@@ -398,6 +410,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
          </section>;
         })}
      </nav>
+     {moreSidebarItems&&<span className="sc-sidebar-scroll-hint" aria-hidden="true"><ChevronDown size={15}/></span>}
      <div className="sidebar-bottom sc-sidebar-foot sc-flyout-holder" ref={sidebarAccountRef}>
        <button className="sc-sidebar-account" type="button" aria-label={translateUiText(locale,'Opciones de cuenta de ')+user.name}
          aria-haspopup="true" aria-controls="sc-sidebar-account-panel" aria-expanded={accountTarget==='sidebar'} onClick={()=>{setAccountTarget(v=>v==='sidebar'?null:'sidebar');setNotificationsOpen(false);setLanguageOpen(false);setCompactGroup(null);}}>
