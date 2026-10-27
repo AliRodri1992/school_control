@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
-docker compose run --rm -e RAILS_ENV=test backend bundle exec rails db:prepare
+docker compose run --rm -e RAILS_ENV=test backend bundle exec rails db:prepare db:migrate
 docker compose run --rm -e RAILS_ENV=test -e COVERAGE=true backend bundle exec rspec
 docker compose run --rm backend bundle exec rubocop
 docker compose run --rm backend bundle exec brakeman --no-pager
