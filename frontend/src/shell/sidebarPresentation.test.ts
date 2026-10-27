@@ -32,3 +32,9 @@ it('persists only permitted disclosure sections for each portal',async()=>{
  expect(sidebarExpandedSections('admin',sections,'broken')).toEqual([]);
  expect(sidebarExpandedSections('admin',sections,null)).toEqual(['Alumnos']);
 });
+
+it('exposes separate academic links without duplicate expandable parents',()=>{
+ const section=sidebarSections('admin',visibleGroups('admin',()=>true)).find(s=>s.id==='Académico')!;
+ expect(section.items.filter(item=>['academic_years','groups','courses'].includes(item.key)).map(item=>item.key)).toEqual(['academic_years','groups','courses']);
+ expect(section.items.every(item=>!item.children?.length)).toBe(true);
+});

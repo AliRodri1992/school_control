@@ -12,12 +12,14 @@ const areas:{id:string;en:string;pages:string[];directPage?:string}[]=[
 {id:'Configuración',en:'Settings',pages:['users','access_roles','school','email_templates','languages','api_docs']}
 ];
 const flatten=(items:NavItem[]):NavItem[]=>items.flatMap(i=>[i,...flatten(i.children||[])]);
+/** The administrator sidebar uses flat categories; hierarchy remains in portalNavigation for breadcrumbs. */
+const asDirectLink=(item:NavItem):NavItem=>({key:item.key,title:item.title});
 /** Presentation only: cannot bypass the original permissions filter. */
 export function sidebarSections(portal:PortalId,groups:NavGroup[]):SidebarSection[]{
  if(portal!=='admin')return groups.map(g=>({id:g.title,es:g.title,en:g.title,items:g.items}));
  const allowed=new Map(flatten(groups.flatMap(g=>g.items)).map(i=>[i.key,i]));
  return areas.map(area=>({...area,es:area.id,items:area.pages.flatMap(key=>{
-  const item=allowed.get(key);return item?[{...item,children:[]}]:[];
+  const item=allowed.get(key);return item?[asDirectLink(item)]:[];
  })})).filter(section=>section.items.length>0);
 }
 
