@@ -109,3 +109,9 @@ it('keeps the admin Dashboard label even with an outdated published language bun
  expect(resolveNavigationLabel('students','dashboard','Mi inicio')).toBe('Mi inicio');
  expect(resolveNavigationLabel('tutors','dashboard','Inicio familiar')).toBe('Inicio familiar');
 });
+
+it('keeps academic breadcrumbs nested while the administrator sidebar uses direct links',()=>{
+ const groups=visibleGroups('admin',()=>true);
+ expect(findNavPath(groups,'courses').map(item=>item.key)).toEqual(['academic_years','groups','courses']);
+ expect(breadcrumbPath(groups,'groups','admin').map(item=>item.key)).toEqual(['academic_years','groups']);
+});

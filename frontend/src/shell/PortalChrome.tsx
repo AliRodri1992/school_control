@@ -306,7 +306,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
      <div className={'sc-nav-item'+(exact?' is-active':'')+(isAncestor?' is-ancestor':'')}
        style={{paddingLeft:Math.min(depth,3)*8}}>
        <button className="sc-nav-main" type="button" title={translated} aria-label={translated}
-         aria-current={exact?'page':undefined} onClick={()=>{if(children.length&&!isOpen)setExpanded(v=>[...v,item.key]);navigate(item.key);}}>
+         aria-current={exact?'page':undefined} onClick={()=>{if(children.length&&!isOpen)setExpanded(v=>[...new Set([...v,item.key])]);navigate(item.key);}}>
          <span className="sc-nav-mark" aria-hidden="true">{moduleIcons[item.key]||(depth?<span className="sc-nav-dot"/>:<FolderOpen size={18}/>)}</span>
          <span className="sc-nav-label">{translated}</span>
          {item.key==='admissions'&&pendingAdmissions>0&&<span className="sc-nav-count">{pendingAdmissions}</span>}

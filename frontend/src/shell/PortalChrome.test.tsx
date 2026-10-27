@@ -881,10 +881,14 @@ it('restores expanded sidebar categories from portal-specific storage',()=>{
  expect(container.querySelector('.sc-nav-section-title[aria-label="Alumnos"]')?.getAttribute('aria-expanded')).toBe('false');
 });
 
-it('expands the nested category when opening its parent module',async()=>{
- const {container}=render(<PortalChrome {...props}><div>Página</div></PortalChrome>);
+it('navigates directly to academic modules without displaying a duplicate nested menu',async()=>{
+ const navigate=vi.fn();
+ const {container}=render(<PortalChrome {...props} onNavigate={navigate}><div>Página</div></PortalChrome>);
  await userEvent.click(container.querySelector<HTMLButtonElement>('.sc-nav-section-title[aria-label="Académico"]')!);
  const button=container.querySelector<HTMLButtonElement>('.sc-nav-main[aria-label="Ciclos escolares"]')!;
+ expect(button.closest('.sc-nav-node')?.querySelector('.sc-nav-expand')).toBeNull();
  await userEvent.click(button);
- expect(button.closest('.sc-nav-node')?.querySelector('.sc-nav-expand')?.getAttribute('aria-expanded')).toBe('true');
+ expect(navigate).toHaveBeenCalledWith('academic_years');
+ expect(container.querySelector('.sc-nav-main[aria-label="Grupos"]')).toBeTruthy();
+ expect(container.querySelector('.sc-nav-main[aria-label="Clases"]')).toBeTruthy();
 });
