@@ -2,6 +2,7 @@ class Admission < ApplicationRecord
   belongs_to :student
   belongs_to :academic_year
   has_one :enrollment, dependent: :restrict_with_error
+  has_many :document_requirements, -> { order(:title) }, through: :academic_year, source: :admission_document_requirements
   before_validation :assign_folio, on: :create
   validates :student_id, uniqueness: { scope: :academic_year_id }
   validates :folio, presence: true, uniqueness: true
@@ -10,11 +11,27 @@ class Admission < ApplicationRecord
   validates :grade_level, inclusion: { in: 1..6 }
   validate :eligible, on: :create
 
-  def complete_for_submission?
-    student.present? && student.curp.present? && student.birth_date.present? &&
-      student.addresses.exists? && student.phone_numbers.exists? &&
-      student.contacts.exists? && student.guardian.present?
+  def missing_requirements(for_formalization: false)
+    return [ "Identidad y ciclo escolar" ] unless student && academic_year
+    missing = []
+    missing << "CURP y fecha de nacimiento" if student.curp.blank? || student.birth_date.blank?
+    missing << "Domicilio principal" unless student.addresses.exists?
+    missing << "Teléfono de contacto" unless student.phone_numbers.exists?
+    missing << "Contacto familiar" unless student.contacts.exists?
+    missing << "Tutor responsable" unless student.guardian.present?
+    AdmissionDocumentRequirement.where(academic_year: academic_year, grade_level: grade_level).find_each do |requirement|
+      needed = for_formalization ? requirement.required_for_formalization? : requirement.required_for_submission?
+      next unless needed
+
+      documents = student.student_documents.where(title: requirement.title)
+      documents = documents.where(status: for_formalization ? "approved" : %w[pending approved])
+      missing << "Documento: #{requirement.title}" unless documents.exists?
+    end
+    missing
   end
+
+  def complete_for_submission? = missing_requirements.empty?
+  def complete_for_enrollment? = missing_requirements(for_formalization: true).empty?
 
   def assign_folio
     self.folio ||= "ESC-#{SecureRandom.hex(6).upcase}"
@@ -22,7 +39,7 @@ class Admission < ApplicationRecord
 
   def eligible
     return unless academic_year && student
-    errors.add(:base, "El periodo de solicitudes está cerrado") unless academic_year.open_for?(kind)
+    errors.add(:base, "El periodo de solicitudes está cerrado") unless status == "draft" || academic_year.open_for?(kind)
     eligible_history
   end
 
