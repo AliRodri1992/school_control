@@ -71,6 +71,12 @@ it('localizes role-aware KPI categories, units, descriptions and pending statuse
  }
 });
 
+it('provides English copy for application registration and school enrollment',()=>{
+ for(const phrase of ['Mis aspirantes y solicitudes','Revisión y envío','Formalizar inscripción','Requisitos documentales']){
+  expect(translateUiText('en',phrase)).not.toBe(phrase);
+ }
+});
+
 it('translates each purpose-built dashboard empty state into English',()=>{
  const phrases=[
   'SEGUIMIENTO ESCOLAR','Sin alertas por revisar',

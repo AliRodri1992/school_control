@@ -117,6 +117,7 @@ end
   [ "shell.current", "Inicio", "Home" ],
   [ "nav.dashboard", "Dashboard", "Dashboard" ],
   [ "nav.students", "Alumnos y expedientes", "Students and records" ],
+  [ "nav.tutors.students", "Aspirantes y mis hijos", "Applicants and my children" ],
   [ "nav.student_contacts", "Contactos familiares", "Family contacts" ],
   [ "nav.documents", "Documentos", "Documents" ],
   [ "nav.admissions", "Admisiones", "Admissions" ],
