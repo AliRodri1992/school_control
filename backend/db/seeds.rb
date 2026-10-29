@@ -77,6 +77,8 @@ if ENV["DEMO_SEEDS"] == "true"
   end
   require_relative "demo_admissions"
   DemoAdmissions.seed!(year: year, guardian: guardian, admin: admin)
+  require_relative "demo_modules"
+  DemoModules.seed!(year: year, guardian: guardian, admin: admin, learner: learner, student: student)
   puts "Datos ficticios preparados sin duplicar registros."
 end
 
