@@ -32,7 +32,7 @@ RSpec.describe "Academic workflows" do
     admission = create(:admission)
     group = create(:group, academic_year: admission.academic_year)
     AdmitStudent.call(admission: ready!(admission), group: group, actor: admin)
-    expect { AdmitStudent.call(admission: ready!(admission), group: group, actor: admin) }.to raise_error(ArgumentError)
+    expect { AdmitStudent.call(admission: admission, group: group, actor: admin) }.to raise_error(ArgumentError)
     expect(Enrollment.count).to eq(1)
   end
 
