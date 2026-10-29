@@ -20,6 +20,7 @@ import './styles/api-docs.css';
 import './styles/mail-designer.css';
 import './styles/student-details.css';
 import './styles/enrollment-journey.css';
+import './styles/school-cycles.css';
 import './styles/dashboard-context.css';
 import './styles/dashboard-charts.css';
 import './styles/dashboard-kpis.css';
