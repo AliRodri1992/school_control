@@ -85,3 +85,31 @@
 .sc-student-stage-filter button:focus-visible{outline:2px solid #294ac6;outline-offset:2px}
 .sc-student-stage-label{font-size:10px;color:#3655c2;font-weight:750}
 .sc-applicant-notice{background:#f2f6ff;border:1px solid #cbd9ff;color:#30457b;border-radius:12px;padding:18px;font-size:13px;line-height:1.5}
+
+.sc-applicant-wizard{display:grid;gap:18px;min-width:0;max-width:1120px;margin:auto;width:100%}
+.sc-applicant-wizard-header{background:linear-gradient(120deg,#142349,#2b4a8f);padding:26px 30px;border-radius:18px;color:white}
+.sc-applicant-wizard-header h1{font-size:clamp(24px,3vw,32px);margin:16px 0 10px;color:white}
+.sc-applicant-wizard-header p{color:#d7e3ff;margin:0 0 10px}
+.sc-applicant-wizard-header .eyebrow{margin-top:20px;color:#c0d1ff}
+.sc-applicant-folio{font-size:12px;color:#d7e3ff}
+.sc-applicant-progress{margin:0;padding:15px;background:#fff;border:1px solid #e0e6f2;border-radius:14px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;list-style:none}
+.sc-applicant-progress li{display:grid;justify-items:center;text-align:center;gap:7px;color:#74809b;font-size:11px;min-width:0}
+.sc-applicant-progress li>span{width:28px;height:28px;border:1px solid #b8c3db;border-radius:100%;display:grid;place-items:center;font-weight:700}
+.sc-applicant-progress li[aria-current=step],.sc-applicant-progress li.is-done{color:#2d4bb7;font-weight:750}
+.sc-applicant-progress li[aria-current=step]>span,.sc-applicant-progress li.is-done>span{background:#3554ce;border-color:#3554ce;color:white}
+.sc-applicant-step{background:white;border:1px solid #e0e6f2;padding:clamp(20px,3vw,36px);border-radius:16px;min-height:350px}
+.sc-applicant-step-title span{font-size:11px;letter-spacing:1.5px;color:#405cc2;font-weight:800}
+.sc-applicant-step-title h2{margin:9px 0 26px}
+.sc-applicant-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}
+.sc-applicant-field{display:grid;gap:8px;min-width:0}
+.sc-applicant-field>span{font-size:12px;font-weight:700;color:#263750}
+.sc-applicant-field input,.sc-applicant-field select{min-height:46px;border:1px solid #bdcbe0;border-radius:10px;width:100%;padding:10px 12px;background:#fff;color:#172b48}
+.sc-applicant-field input:focus-visible,.sc-applicant-field select:focus-visible{outline:2px solid #3554ce;outline-offset:1px}
+.sc-applicant-hint{display:flex;gap:10px;align-items:flex-start;color:#64738b;font-size:12px;line-height:1.6}
+.sc-applicant-documents,.sc-applicant-review{display:grid;justify-items:start;gap:13px;padding:26px;border:1px dashed #b9c8e6;background:#f8faff;border-radius:12px}
+.sc-applicant-documents>svg,.sc-applicant-review>svg{color:#405cc2}
+.sc-applicant-error{color:#a52632;background:#fff0f0;padding:13px;border-radius:9px}
+.sc-applicant-step-actions{margin-top:28px;display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap}
+.sc-applicant-step-actions button{display:inline-flex;align-items:center;gap:9px;min-height:44px}
+.sc-applicant-resume{font-size:11px}
+@media(max-width:750px){.sc-applicant-grid{grid-template-columns:1fr}.sc-applicant-progress li small{font-size:9px}.sc-applicant-wizard-header{padding:22px}.sc-applicant-progress{padding:10px;gap:4px}.sc-applicant-step{padding:18px}.sc-applicant-step-actions button{flex:1;justify-content:center}}
