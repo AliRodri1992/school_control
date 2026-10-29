@@ -23,6 +23,7 @@ minimums = {
   "Assignments" => Assignment.count,
   "Classroom submissions" => AssignmentSubmission.count,
   "Student documents" => StudentDocument.count,
+  "Import batches" => DataImport.count,
   "Announcements" => Announcement.count,
   "Messages" => InstitutionalMessage.count,
   "Calendar events" => CalendarEvent.count
