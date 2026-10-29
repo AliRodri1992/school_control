@@ -19,6 +19,7 @@ const loadPortalHome=()=>import('./features/portal/PortalHome');
 const PortalHome=lazy(loadPortalHome);
 const Preferences=lazy(()=>import('./features/preferences/Preferences'));
 const StudentDetails=lazy(()=>import('./features/students/StudentDetails'));
+const FamilyContacts=lazy(()=>import('./features/contacts/FamilyContacts'));
 import StudentRowActions from './features/students/StudentRowActions';
 import {studentInitials,studentDirectoryStats} from './features/students/studentDirectory';
 import {useStudentReport} from './features/students/useStudentReport';
@@ -261,6 +262,12 @@ export default function App(){
     <section className="sc-record-loading" role="status">{studentRecordLoading?ui('Cargando expediente del alumno…'):ui('No fue posible consultar este expediente.')}
       <button className="secondary" onClick={()=>go('students')}>{ui('Volver a alumnos')}</button>
     </section>):
+  page==='student_contacts'?<FamilyContacts contacts={data.student_contacts||[]} students={data.students||[]}
+   canCreate={can('student_contacts.create')} canEdit={can('student_contacts.update')} canDelete={can('student_contacts.destroy')}
+   busy={busy} loading={data.student_contacts===undefined&&!moduleLoadErrors.student_contacts}
+   error={moduleLoadErrors.student_contacts?.message} onRetry={()=>void refresh()}
+   onCreate={()=>createOrEdit()} onEdit={createOrEdit}
+   onDelete={row=>{void confirmDanger('Eliminar contacto','Este contacto dejará de estar disponible para el alumno.').then(ok=>{if(ok)void perform(async()=>{await api('student_contacts/'+row.id,'DELETE');});});}}/>:
   page==='dashboard'?<PortalHome user={user} summary={summary} data={data} can={can}
   onNavigate={go} selectedChildId={selectedChild} onSelectChild={selectChild}/>:
   page==='reports'?<Reports data={data}/>:

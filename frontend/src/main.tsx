@@ -26,6 +26,7 @@ import './styles/dashboard-empty.css';
 import './styles/dashboard-events.css';
 import './styles/preferences.css';
 import './styles/profile.css';
+import './styles/family-contacts.css';
 import './styles/portal-home.css';
 import './styles/help.css';
 // Place interactive language-state styles last to avoid generic flyout overrides.
