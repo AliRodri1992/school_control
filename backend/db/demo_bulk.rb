@@ -213,5 +213,4 @@ module DemoBulk
       end
     end
   end
-
 end
