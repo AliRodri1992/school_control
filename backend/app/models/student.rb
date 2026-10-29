@@ -15,7 +15,10 @@ class Student < ApplicationRecord
   validates :user_id, uniqueness: true, allow_nil: true
   validate :valid_identity
 
-  def full_name = "#{first_name} #{last_name}"
+  def full_name = [ first_name, last_name, second_last_name ].compact_blank.join(" ")
+
+  validates :sex, inclusion: { in: %w[female male unspecified] }, allow_blank: true
+  validates :nationality, length: { maximum: 80 }, allow_blank: true
 
   # Enrollment, not application approval alone, determines student membership.
   def enrollment_stage

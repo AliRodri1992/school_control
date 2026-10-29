@@ -12,7 +12,8 @@ export default function ApplicantRegistration({years,existing,admissions,onClose
  const [admission,setAdmission]=useState<Row|null>(()=>admissions.find(a=>String(a.student_id)===String(existing?.id))||null);
  const [step,setStep]=useState(0),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const [form,setForm]=useState<Record<string,string>>({
-  first_name:existing?.first_name||'',last_name:existing?.last_name||'',curp:existing?.curp||'',
+  first_name:existing?.first_name||'',last_name:existing?.last_name||'',second_last_name:existing?.second_last_name||'',curp:existing?.curp||'',
+  birth_place:existing?.birth_place||'',birth_state:existing?.birth_state||'',nationality:existing?.nationality||'MX',sex:existing?.sex||'',
   birth_date:existing?.birth_date||'',academic_year_id:String(years[0]?.id||''),grade_level:'1',
   country_code:'MX',purpose:'home',line1:'',locality:'',region:'',postal_code:'',
   number_e164:'',phone_purpose:'emergency',contact_name:'',relationship:'',contact_phone:'',contact_email:''
@@ -29,9 +30,13 @@ export default function ApplicantRegistration({years,existing,admissions,onClose
    if(step===0){
     if(!form.first_name.trim()||!form.last_name.trim()||!form.curp.trim()||!form.birth_date||!form.academic_year_id)throw Error(ui('Completa la identidad, CURP, fecha y ciclo escolar.'));
     const record=student?await api('students/'+student.id,'PATCH',{
-     first_name:form.first_name,last_name:form.last_name,curp:form.curp,birth_date:form.birth_date
+     first_name:form.first_name,last_name:form.last_name,second_last_name:form.second_last_name,
+     birth_place:form.birth_place,birth_state:form.birth_state,nationality:form.nationality,sex:form.sex||null,
+     curp:form.curp,birth_date:form.birth_date
     }):await api('students','POST',{
-     first_name:form.first_name,last_name:form.last_name,curp:form.curp,birth_date:form.birth_date
+     first_name:form.first_name,last_name:form.last_name,second_last_name:form.second_last_name,
+     birth_place:form.birth_place,birth_state:form.birth_state,nationality:form.nationality,sex:form.sex||null,
+     curp:form.curp,birth_date:form.birth_date
     });
     setStudent(record);
     const draft=admission||await api('admissions','POST',{
@@ -76,8 +81,9 @@ export default function ApplicantRegistration({years,existing,admissions,onClose
   <ol className="sc-applicant-progress">{stages.map((name,index)=><li key={name} aria-current={step===index?'step':undefined} className={index<step?'is-done':''}>
    <span>{index<step?<CheckCircle2 size={16}/>:index+1}</span><small>{ui(name)}</small></li>)}</ol>
   <div className="sc-applicant-step"><div className="sc-applicant-step-title"><span>{ui('PASO')} {step+1} / 6</span><h2>{ui(stages[step])}</h2></div>
-   {step===0&&<div className="sc-applicant-grid">{field('first_name','Nombre(s)')}{field('last_name','Apellidos')}
-    {field('curp','CURP')}{field('birth_date','Fecha de nacimiento','date')}
+   {step===0&&<div className="sc-applicant-grid">{field('first_name','Nombre(s)')}{field('last_name','Primer apellido')}
+    {field('second_last_name','Segundo apellido','text',false)}{field('curp','CURP')}{field('birth_date','Fecha de nacimiento','date')}{field('birth_place','Lugar de nacimiento','text',false)}
+    {field('birth_state','Entidad de nacimiento','text',false)}{field('nationality','Nacionalidad','text',false)}
     <label className="sc-applicant-field"><span>{ui('Ciclo escolar')} *</span><select value={form.academic_year_id}
      onChange={e=>set('academic_year_id',e.target.value)}>{years.map(year=><option key={year.id} value={year.id}>{year.name}</option>)}</select></label>
     <label className="sc-applicant-field"><span>{ui('Grado solicitado')}</span><select value={form.grade_level} onChange={e=>set('grade_level',e.target.value)}><option value="1">{ui('Primero de primaria')}</option></select></label>

@@ -13,7 +13,7 @@ module Api
     end
 
     def create
-      attrs = params.permit(:first_name, :last_name, :curp, :birth_date, :emergency_phone, :address)
+      attrs = params.permit(:first_name, :last_name, :curp, :birth_date, :second_last_name, :birth_place, :birth_state, :nationality, :sex, :emergency_phone, :address)
       attrs[:guardian_id] = institution_access? ? params.require(:guardian_id) : current_user.id
       student = Student.new(attrs)
       authorize student, :create?
@@ -28,7 +28,7 @@ module Api
       student = students_scope.find(params[:id])
       authorize student, :update?
       fields = %i[emergency_phone address]
-      fields += %i[first_name last_name curp birth_date] if institution_access? || student.enrollments.empty?
+      fields += %i[first_name last_name second_last_name birth_place birth_state nationality sex curp birth_date] if institution_access? || student.enrollments.empty?
       student.with_lock do
         student.update!(params.permit(*fields))
         audit(student, "student.updated")
