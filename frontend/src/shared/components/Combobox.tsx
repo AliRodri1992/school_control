@@ -22,11 +22,12 @@ export default function Combobox({value,onChange,options,placeholder='Seleccione
  function select(next:string){onChange(next);setQuery('');setHighlighted(0);setOpen(false);}
  function onKeyDown(event:React.KeyboardEvent){
   const target=event.target as HTMLElement;
-  if(event.key==='Escape'){event.preventDefault();setOpen(false);return;}
+  if(event.key==='Escape'){event.preventDefault();setOpen(false);setQuery('');return;}
   if(event.key==='ArrowDown'||event.key==='ArrowUp'){
     event.preventDefault();
     if(!open){setOpen(true);setHighlighted(0);return;}
     const direction=event.key==='ArrowDown'?1:-1;
+    if(!filtered.length)return;
     for(let offset=1;offset<=filtered.length;offset++){
       const next=(highlighted+offset*direction+filtered.length*2)%filtered.length;
       if(filtered[next]&&!filtered[next].disabled){setHighlighted(next);break;}

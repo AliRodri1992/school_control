@@ -3,6 +3,7 @@ import {GraduationCap,Search,Users,School,BookOpenCheck,CalendarCheck} from 'luc
 import {useSchoolLocale} from '../../shared/i18n/LocaleContext';
 import TableEmptyState from '../../shared/components/TableEmptyState';
 import type {Row} from '../../modules';
+import Combobox from '../../shared/components/Combobox';
 export function journeyStats(items:Row[]){return {total:items.length,active:items.filter(x=>x.status==='active').length,completed:items.filter(x=>x.status==='completed').length,promoted:items.filter(x=>x.outcome==='promoted').length};}
 export default function EnrollmentJourney({items,groups,years,onComplete,canComplete,error}:{items:Row[];groups:Row[];years:Row[];onComplete:(row:Row)=>void;canComplete:boolean;error?:string}){
  const {ui}=useSchoolLocale();
@@ -17,9 +18,9 @@ export default function EnrollmentJourney({items,groups,years,onComplete,canComp
   <div className="sc-journey-kpis">{([{name:'Matrícula registrada',count:stats.total,icon:Users},{name:'Inscripciones activas',count:stats.active,icon:School},{name:'Ciclos concluidos',count:stats.completed,icon:CalendarCheck},{name:'Promociones',count:stats.promoted,icon:BookOpenCheck}]).map(k=>{const Icon=k.icon;return <article key={k.name}><div><Icon size={18}/>{ui(k.name)}</div><strong>{k.count}</strong></article>;})}</div>
   <div className="sc-journey-panel"><header><div><h3>{ui('Matrícula y trayectoria escolar')}</h3><p>{ui('Localiza alumnos y consulta su situación académica.')}</p></div><strong>{rows.length} {ui('Registros')}</strong></header>
    <div className="sc-journey-filters"><label><span>{ui('Buscar alumno')}</span><div className="sc-journey-search"><Search size={17}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder={ui('Nombre o grupo')}/></div></label>
-    <label><span>{ui('Ciclo escolar')}</span><select value={year} onChange={e=>setYear(e.target.value)}><option value="">{ui('Todos los ciclos')}</option>{years.map(y=><option key={y.id} value={y.id}>{y.name}</option>)}</select></label>
-    <label><span>{ui('Grado')}</span><select value={grade} onChange={e=>setGrade(e.target.value)}><option value="">{ui('Todos los grados')}</option>{[1,2,3,4,5,6].map(g=><option value={g} key={g}>{g}°</option>)}</select></label>
-    <label><span>{ui('Estado')}</span><select value={status} onChange={e=>setStatus(e.target.value)}><option value="">{ui('Todos los estados')}</option>{Object.entries(statuses).map(([key,label])=><option key={key} value={key}>{ui(label)}</option>)}</select></label>
+    <label><span>{ui('Ciclo escolar')}</span><Combobox label={ui('Ciclo escolar')} value={year} onChange={setYear} placeholder={ui('Todos los ciclos')} options={years.map(y=>({value:String(y.id),label:y.name}))}/></label>
+    <label><span>{ui('Grado')}</span><Combobox label={ui('Grado')} value={grade} onChange={setGrade} placeholder={ui('Todos los grados')} options={[1,2,3,4,5,6].map(g=>({value:String(g),label:g+'°'}))}/></label>
+    <label><span>{ui('Estado')}</span><Combobox label={ui('Estado')} value={status} onChange={setStatus} placeholder={ui('Todos los estados')} options={Object.entries(statuses).map(([key,label])=>({value:key,label:ui(label)}))}/></label>
     {(search||year||grade||status)&&<button type="button" className="secondary" onClick={()=>{setSearch('');setYear('');setGrade('');setStatus('');}}>{ui('Limpiar filtros')}</button>}
    </div>
    <div className="sc-journey-grades" aria-label={ui('Matrícula por grado')}>{[1,2,3,4,5,6].map(g=><div key={g}><span>{g}°</span><strong>{rows.filter(r=>Number(groupMap.get(String(r.group_id))?.grade_level)===g).length}</strong></div>)}</div>

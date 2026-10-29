@@ -1,6 +1,7 @@
 import {ClipboardCheck,ClipboardList,FileWarning,School,SlidersHorizontal} from 'lucide-react';
 import type {Row} from '../../modules';
 import {useSchoolLocale} from '../../shared/i18n/LocaleContext';
+import Combobox from '../../shared/components/Combobox';
 
 export function filterAdmissionRows(items:Row[],filters:{year:string;grade:string;date:string;status?:string;kind?:string}):Row[]{
  return items.filter(record=>(!filters.year||String(record.academic_year_id)===filters.year)&&
@@ -24,12 +25,10 @@ export default function AdmissionOverview({items,years,year,onYear,grade,onGrade
    <span className="sc-admission-overview-icon"><Icon size={20}/></span><div><small>{ui(metric.label)}</small>
     <strong>{metric.value}</strong></div></article>;})}</div>
   <div className="sc-admission-overview-filters"><div className="sc-admission-overview-filter-title"><SlidersHorizontal size={17}/><strong>{ui('Filtrar solicitudes')}</strong></div>
-   <label>{ui('Ciclo escolar')}<select value={year} onChange={e=>onYear(e.target.value)}><option value="">{ui('Todos los ciclos')}</option>
-     {years.map(y=><option value={String(y.id)} key={y.id}>{y.name}</option>)}</select></label>
-   <label>{ui('Grado')}<select value={grade} onChange={e=>onGrade(e.target.value)}><option value="">{ui('Todos')}</option>
-    {Array.from({length:6},(_,i)=><option key={i} value={String(i+1)}>{i+1}°</option>)}</select></label>
-   <label>{ui('Estado')}<select aria-label={ui('Filtrar por estado de solicitud')} value={status} onChange={e=>onStatus(e.target.value)}><option value="">{ui('Todos los estados')}</option>{[['draft','Borrador'],['submitted','En revisión'],['correction_requested','Correcciones solicitadas'],['approved','Aprobada'],['rejected','Rechazada'],['cancelled','Cancelada']].map(([value,label])=><option key={value} value={value}>{ui(label)}</option>)}</select></label>
-   <label>{ui('Tipo de solicitud')}<select aria-label={ui('Filtrar por tipo de solicitud')} value={kind} onChange={e=>onKind(e.target.value)}><option value="">{ui('Todos los tipos')}</option><option value="new">{ui('Nuevo ingreso')}</option><option value="reenrollment">{ui('Reinscripción')}</option></select></label>
+   <label>{ui('Ciclo escolar')}<Combobox label={ui('Ciclo escolar')} value={year} onChange={onYear} placeholder={ui('Todos los ciclos')} options={years.map(y=>({value:String(y.id),label:y.name}))}/></label>
+   <label>{ui('Grado')}<Combobox label={ui('Grado')} value={grade} onChange={onGrade} placeholder={ui('Todos')} options={Array.from({length:6},(_,i)=>({value:String(i+1),label:(i+1)+'°'}))}/></label>
+   <label>{ui('Estado')}<Combobox label={ui('Filtrar por estado de solicitud')} value={status} onChange={onStatus} placeholder={ui('Todos los estados')} options={([['draft','Borrador'],['submitted','En revisión'],['correction_requested','Correcciones solicitadas'],['approved','Aprobada'],['rejected','Rechazada'],['cancelled','Cancelada']] as [string,string][]).map(([value,label])=>({value,label:ui(label)}))}/></label>
+   <label>{ui('Tipo de solicitud')}<Combobox label={ui('Filtrar por tipo de solicitud')} value={kind} onChange={onKind} placeholder={ui('Todos los tipos')} options={[{value:'new',label:ui('Nuevo ingreso')},{value:'reenrollment',label:ui('Reinscripción')}]}/></label>
    <label>{ui('Fecha de solicitud')}<input type="date" value={date} onChange={e=>onDate(e.target.value)}/></label>
    <button type="button" className="secondary" onClick={onReset}>{ui('Limpiar filtros')}</button>
   </div>
