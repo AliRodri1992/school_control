@@ -5,9 +5,9 @@ module Api
     before_action :require_admin, only: %i[approve reject request_corrections formalize]
 
     def permission_key
-      { 'submit' => 'admissions.create', 'request_corrections' => 'admissions.reject',
-        'formalize' => 'admissions.approve', 'readiness' => 'admissions.index',
-        'cancel' => 'admissions.create', 'history' => 'admissions.index' }.fetch(action_name, super)
+      { "submit" => "admissions.create", "request_corrections" => "admissions.reject",
+        "formalize" => "admissions.approve", "readiness" => "admissions.index",
+        "cancel" => "admissions.create", "history" => "admissions.index" }.fetch(action_name, super)
     end
 
     def index
