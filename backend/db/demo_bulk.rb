@@ -38,6 +38,7 @@ module DemoBulk
     seed_calendar(year)
     seed_documents(students, guardians)
     seed_imports(admin)
+    seed_reports(year, admin)
     puts "Demo escolar: #{groups.size} grupos; matrícula mínima de #{TARGET_PER_GROUP} por grupo; #{students.size} alumnos adicionales."
   end
 
@@ -196,6 +197,20 @@ module DemoBulk
       batch = DataImport.new(user: admin, kind: "students", status: "uploaded")
       batch.file.attach(io: StringIO.new(contents), filename: filename, content_type: "text/csv")
       batch.save!
+    end
+  end
+
+  def self.seed_reports(year, admin)
+    groups = year.groups.where(grade_level: 1..6, section: %w[A B]).order(:grade_level, :section).limit(8)
+    %w[enrollments grades attendances schedules].each do |kind|
+      groups.each do |group|
+        filters = { "academic_year_id" => year.id.to_s, "group_id" => group.id.to_s }
+        export = ReportExport.find_or_create_by!(user: admin, kind: kind,
+          file_format: "xlsx", filters: filters) do |record|
+          record.assign_attributes(status: "queued", expires_at: 1.year.from_now)
+        end
+        ReportExportJob.perform_now(export.id) if export.status == "queued"
+      end
     end
   end
 
