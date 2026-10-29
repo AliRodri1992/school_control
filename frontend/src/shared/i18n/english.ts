@@ -1204,9 +1204,48 @@ Object.assign(englishByText, {
 "Documento:": "Document:",
 "Volver al directorio": "Back to directory"
 });
+Object.assign(englishByText, {
+ "Solicitud creada":"Application created",
+ "Solicitud enviada":"Application submitted",
+ "Correcciones solicitadas":"Corrections requested",
+ "Solicitud cancelada":"Application cancelled",
+ "Inscripción formalizada":"Enrollment finalized",
+ "Trimestre":"Term",
+ "Retroalimentación anterior:":"Previous feedback:",
+ "Retroalimentación corregida:":"Corrected feedback:",
+ "Sin retroalimentación":"No feedback",
+ "Grupo escolar":"School group",
+ "Sin asistencias registradas":"No attendance recorded",
+ "Aprobada":"Approved",
+ "Aprobado":"Approved",
+ "Nuevo ingreso":"New admission",
+ "Reinscripción":"Reenrollment",
+ "Concluido":"Completed",
+ "Promovido":"Promoted",
+ "Repite grado":"Repeats grade",
+ "Egresado":"Graduated",
+ "Ausente":"Absent",
+ "Justificada":"Excused",
+ "En revisión":"Under review"
+});
+export function admissionHistoryLabel(action:string):string {
+ const names:Record<string,string>={
+  'admission.created':'Solicitud creada',
+  'admission.submitted':'Solicitud enviada',
+  'admission.correction_requested':'Correcciones solicitadas',
+  'admission.approved':'Solicitud aprobada',
+  'admission.rejected':'Solicitud rechazada',
+  'admission.cancelled':'Solicitud cancelada',
+  'admission.formalized':'Inscripción formalizada'
+ };
+ return names[action]||action;
+}
 const statusTexts:Record<string,string>={
  approved:'Aprobada',submitted:'En revisión',correction_requested:'Correcciones solicitadas',
- rejected:'Rechazada',cancelled:'Cancelada',draft:'Borrador'
+ rejected:'Rechazada',cancelled:'Cancelada',draft:'Borrador',
+ published:'Publicada',reviewed:'Revisada',active:'Activo',completed:'Concluido',
+ present:'Presente',absent:'Ausente',late:'Retardo',justified:'Justificada',
+ promoted:'Promovido',repeat:'Repite grado',graduated:'Egresado',new:'Nuevo ingreso',reenrollment:'Reinscripción'
 };
 export function translateUiText(locale:string,text:string):string{
  const localized=statusTexts[text]||text;

@@ -1,6 +1,7 @@
 import {useEffect,useState} from 'react';
 import {ArrowLeft,BookOpenCheck,CalendarDays,ClipboardList,FileText,History,ShieldCheck,Users} from 'lucide-react';
 import {api} from '../../api';
+import {admissionHistoryLabel} from '../../shared/i18n/english';
 import type {Row} from '../../modules';
 import {useSchoolLocale} from '../../shared/i18n/LocaleContext';
 
@@ -54,7 +55,7 @@ export default function AdmissionDetail({admission,student,onClose,onContinue,on
   <article className="sc-admission-file-card"><div className="sc-admission-file-card-heading"><History size={20}/><div>
    <h2>{ui('Historial del trámite')}</h2><p>{ui('Registro de acciones y resoluciones institucionales.')}</p></div></div>
    <ol className="sc-admission-history">{history.map((event,i)=><li key={event.action+i}><CalendarDays size={15}/>
-    <span>{ui(event.action.replace('admission.','').replaceAll('_',' '))}</span>
+    <span>{ui(admissionHistoryLabel(event.action))}</span>
     <time dateTime={event.created_at}>{new Date(event.created_at).toLocaleString()}</time></li>)}
     {!history.length&&<li>{ui('Todavía no hay movimientos registrados.')}</li>}</ol></article>
   {error&&<p role="alert" className="sc-applicant-error">{error}</p>}

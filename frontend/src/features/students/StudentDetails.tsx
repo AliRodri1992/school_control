@@ -129,7 +129,7 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
       <div className="sc-record-history-heading"><BookOpen size={20}/><h3>{ui("Trayectoria académica")}</h3></div>
       {student.enrollment_stage!=='enrolled'?<div className="sc-applicant-notice" role="status">{ui('Este expediente corresponde a un aspirante. Se convertirá en alumno cuando se formalice su inscripción.')}</div>:report?.years?.length?report.years.map((year:Row)=><article className="sc-record-year" key={year.enrollment.id}>
         <div><strong>{year.enrollment.group_label||'Grupo escolar'}</strong><span >{ui(year.enrollment.status||'Inscripción')}</span></div>
-        <small>{year.grades?.length||0} calificaciones · {Object.entries(year.attendance||{}).map(([status,count])=>status+': '+count).join(' · ')||ui('Sin asistencias registradas')}</small>
+        <small>{year.grades?.length||0} calificaciones · {Object.entries(year.attendance||{}).map(([status,count])=>ui(status)+': '+count).join(' · ')||ui('Sin asistencias registradas')}</small>
        </article>):<TableEmptyState mode={canViewReport?'empty':'forbidden'} canCreate={false}/>}
     </>:<>
      <div className="sc-details-heading"><div><span className="eyebrow">{ui("EXPEDIENTE / INFORMACIÓN RELACIONADA")}</span>
