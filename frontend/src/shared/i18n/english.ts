@@ -1204,7 +1204,12 @@ Object.assign(englishByText, {
 "Documento:": "Document:",
 "Volver al directorio": "Back to directory"
 });
+const statusTexts:Record<string,string>={
+ approved:'Aprobada',submitted:'En revisión',correction_requested:'Correcciones solicitadas',
+ rejected:'Rechazada',cancelled:'Cancelada',draft:'Borrador'
+};
 export function translateUiText(locale:string,text:string):string{
- if(!locale.toLowerCase().startsWith('en'))return text;
- return englishByText[text]||text;
+ const localized=statusTexts[text]||text;
+ if(!locale.toLowerCase().startsWith('en'))return localized;
+ return englishByText[localized]||localized;
 }
