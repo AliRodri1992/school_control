@@ -21,7 +21,7 @@ module DemoAdmissions
     SCENARIOS.each_with_index do |(curp, first_name, status, complete), index|
       student = Student.find_or_create_by!(curp: curp) do |person|
         person.assign_attributes(first_name: first_name, last_name: "Demostración",
-          birth_date: Date.new(2020, 3 + index, 5), guardian: guardian, nationality: "MX")
+          birth_date: Date.new(2020, 3 + index, 5 + index), guardian: guardian, nationality: "MX")
       end
       if complete
         complete_record!(student)

@@ -23,7 +23,7 @@ const cards:Record<Role,{eyebrow:string;headline:string;intro:string;icon:Compon
   {key:'schedule',label:'Mi horario',detail:'Clases y actividades',permission:'schedule_slots.index',icon:CalendarDays},
   {key:'messages',label:'Mensajes',detail:'Comunícate con tu escuela',permission:'',icon:MessageCircle}]},
  guardian:{eyebrow:'FAMILIAS · SEGUIMIENTO',headline:'Más cerca de cada paso de tus hijos.',intro:'Acompaña su trayectoria escolar y realiza los trámites en un solo lugar.',icon:HeartHandshake,actions:[
-  {key:'students',label:'Mis hijos',detail:'Expedientes familiares',permission:'students.index',icon:Users},
+  {key:'students',label:'Mis aspirantes y solicitudes',detail:'Aspirantes y expedientes familiares',permission:'students.index',icon:Users},
   {key:'admissions',label:'Inscripciones',detail:'Solicitudes y folios',permission:'admissions.index',icon:FileCheck2},
   {key:'documents',label:'Documentos',detail:'Entrega de archivos',permission:'student_documents.index',icon:BookOpen},
   {key:'messages',label:'Mensajes',detail:'Comunicación escolar',permission:'',icon:MessageCircle}]}
@@ -35,7 +35,7 @@ export default function PortalHome({user,summary,data,can,onNavigate,selectedChi
  const role=(Object.hasOwn(cards,user.role)?user.role:'guardian') as Role;
  const info=cards[role];const HeroIcon=info.icon;
  const allowed=info.actions.filter(action=>!action.permission||can(action.permission));
- const children=data.students||[];
+ const children=(data.students||[]).filter(child=>child.enrollment_stage==='enrolled');
  return <section className={'sc-home sc-home-'+role}>
   <div className="sc-home-hero"><div className="sc-home-copy">
    <span className="sc-home-overline">{t('portal.'+role+'.eyebrow',info.eyebrow)}</span><h1>{t('portal.'+role+'.headline',info.headline)}</h1><p>{t('portal.'+role+'.intro',info.intro)}</p>
