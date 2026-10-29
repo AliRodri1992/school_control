@@ -20,6 +20,6 @@ it('shows professional contact cards and functional actions',async()=>{
  expect(onEdit).toHaveBeenCalledWith(contacts[0]);
  await userEvent.click(screen.getByRole('button',{name:'Eliminar contacto Pedro López'}));
  expect(onDelete).toHaveBeenCalledWith(contacts[1]);
- await userEvent.click(screen.getByRole('button',{name:/Emergencia 1/}));
+ await userEvent.click(screen.getByRole('button',{name:/Emergencia/}));
  expect(screen.queryByText('Pedro López')).toBeNull();
 });

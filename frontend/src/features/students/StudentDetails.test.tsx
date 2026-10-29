@@ -13,6 +13,6 @@ it('renders a complete student record page instead of a dialog',async()=>{
  expect(screen.queryByRole('dialog')).toBeNull();
  await userEvent.click(screen.getByRole('button',{name:'Contactos'}));
  expect(screen.getByRole('heading',{name:'Contactos'})).toBeTruthy();
- await userEvent.click(screen.getByRole('button',{name:'Volver a alumnos'}));
+ await userEvent.click(screen.getByRole('button',{name:'Volver al directorio'}));
  expect(close).toHaveBeenCalledOnce();
 });

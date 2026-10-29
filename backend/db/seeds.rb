@@ -60,7 +60,13 @@ if ENV["DEMO_SEEDS"] == "true"
     record.assign_attributes(kind: "new", grade_level: 1)
   end
   group = year.groups.find_by!(grade_level: 1, section: "A")
-  AdmitStudent.call(admission: admission, group: group, actor: admin) if admission.status == "submitted"
+  if admission.status == "submitted"
+    student.addresses.find_or_create_by!(country_code: "MX", purpose: "home", line1: "Calle Aula 12")
+    student.phone_numbers.find_or_create_by!(number_e164: "+525555000001", purpose: "emergency")
+    student.contacts.find_or_create_by!(name: "Familia de ejemplo", relationship: "Tutor")
+    admission.update!(status: "approved")
+  end
+  AdmitStudent.call(admission: admission, group: group, actor: admin) if admission.status == "approved" && !admission.enrollment
   GenerateSchedule.call(group: group) unless ScheduleSlot.joins(:course).where(courses: { group_id: group.id }).exists?
   Announcement.find_or_create_by!(title: "Bienvenidos a nuestra comunidad") { |record| record.body = "Consulta tus horarios, conoce las próximas actividades y acompaña cada paso del aprendizaje." }
   CalendarEvent.find_or_create_by!(academic_year: year, title: "Reunión de bienvenida") do |record|

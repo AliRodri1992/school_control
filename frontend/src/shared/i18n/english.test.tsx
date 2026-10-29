@@ -25,8 +25,8 @@ function LocalizedSchool(){
 
 it('translates module descriptions, fields, table headers and actions in English',()=>{
  render(<LocaleProvider locale="en" translations={{}}><LocalizedSchool/></LocaleProvider>);
- expect(screen.getByRole('heading',{name:'Student records'})).toBeTruthy();
- expect(screen.getByText('A complete school journey, from first through sixth grade.')).toBeTruthy();
+ expect(screen.getByRole('heading',{name:'Students and records'})).toBeTruthy();
+ expect(screen.getByText("Identify, access and support each student's school journey.")).toBeTruthy();
  expect(screen.getByText('First name(s)')).toBeTruthy();
  expect(screen.getByText('Student')).toBeTruthy();
  expect(screen.getByText('Quick access')).toBeTruthy();
@@ -35,7 +35,7 @@ it('translates module descriptions, fields, table headers and actions in English
 
 it('keeps Mexican Spanish as the default and prioritizes published translations',()=>{
  render(<LocaleProvider locale="es" translations={{'portal.shortcuts':'Accesos institucionales'}}><LocalizedSchool/></LocaleProvider>);
- expect(screen.getByRole('heading',{name:'Expedientes'})).toBeTruthy();
+ expect(screen.getByRole('heading',{name:'Alumnos y expedientes'})).toBeTruthy();
  expect(screen.getByText('Nombre(s)')).toBeTruthy();
  expect(screen.getByText('Accesos institucionales')).toBeTruthy();
  expect(screen.getByRole('button',{name:'Editar'}).getAttribute('title')).toBe('Editar');

@@ -2,47 +2,55 @@ require "rails_helper"
 
 RSpec.describe "Academic workflows" do
   let(:admin) { create(:user, role: "admin") }
+  def ready!(admission)
+    student = admission.student
+    student.addresses.find_or_create_by!(country_code: "MX", line1: "Calle Aula 10", purpose: "home")
+    student.phone_numbers.find_or_create_by!(number_e164: "+525500000001", purpose: "emergency")
+    student.contacts.find_or_create_by!(name: "Responsable legal", relationship: "Tutor")
+    admission.update!(status: "approved")
+    admission
+  end
 
   it "approves an application atomically and writes an audit entry" do
     admission = create(:admission)
     group = create(:group, academic_year: admission.academic_year)
-    result = AdmitStudent.call(admission: admission, group: group, actor: admin)
+    result = AdmitStudent.call(admission: ready!(admission), group: group, actor: admin)
     expect(result.student).to eq(admission.student)
     expect(admission.reload.status).to eq("approved")
-    expect(AuditEvent.last.action).to eq("admission.approved")
+    expect(AuditEvent.last.action).to eq("admission.formalized")
   end
 
   it "rejects a stale new-entry application after enrollment in another cycle" do
     first = create(:admission)
     second = create(:admission, student: first.student)
-    AdmitStudent.call(admission: first, group: create(:group, academic_year: first.academic_year), actor: admin)
-    expect { AdmitStudent.call(admission: second, group: create(:group, academic_year: second.academic_year), actor: admin) }.to raise_error(ActiveRecord::RecordInvalid)
+    AdmitStudent.call(admission: ready!(first), group: create(:group, academic_year: first.academic_year), actor: admin)
+    expect { AdmitStudent.call(admission: ready!(second), group: create(:group, academic_year: second.academic_year), actor: admin) }.to raise_error(ActiveRecord::RecordInvalid)
     expect(Enrollment.count).to eq(1)
   end
 
   it "rejects duplicate approval" do
     admission = create(:admission)
     group = create(:group, academic_year: admission.academic_year)
-    AdmitStudent.call(admission: admission, group: group, actor: admin)
-    expect { AdmitStudent.call(admission: admission, group: group, actor: admin) }.to raise_error(ArgumentError)
+    AdmitStudent.call(admission: ready!(admission), group: group, actor: admin)
+    expect { AdmitStudent.call(admission: ready!(admission), group: group, actor: admin) }.to raise_error(ArgumentError)
     expect(Enrollment.count).to eq(1)
   end
 
   it "does not exceed group capacity" do
     admission = create(:admission)
     group = create(:group, academic_year: admission.academic_year, capacity: 1)
-    AdmitStudent.call(admission: admission, group: group, actor: admin)
+    AdmitStudent.call(admission: ready!(admission), group: group, actor: admin)
     another = create(:admission, academic_year: group.academic_year)
-    expect { AdmitStudent.call(admission: another, group: group, actor: admin) }.to raise_error(ArgumentError, /cupo/)
-    expect(another.reload.status).to eq("submitted")
+    expect { AdmitStudent.call(admission: ready!(another), group: group, actor: admin) }.to raise_error(ArgumentError, /cupo/)
+    expect(another.reload.status).to eq("approved")
   end
 
   it "rolls back an incompatible group assignment" do
     admission = create(:admission)
     group = create(:group, academic_year: admission.academic_year, grade_level: 2)
-    expect { AdmitStudent.call(admission: admission, group: group, actor: admin) }.to raise_error(ActiveRecord::RecordInvalid)
+    expect { AdmitStudent.call(admission: ready!(admission), group: group, actor: admin) }.to raise_error(ActiveRecord::RecordInvalid)
     expect(Enrollment.count).to eq(0)
-    expect(admission.reload.status).to eq("submitted")
+    expect(admission.reload.status).to eq("approved")
   end
 
   it "creates exactly the requested periods and rejects accidental regeneration" do

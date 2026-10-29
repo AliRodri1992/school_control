@@ -48,7 +48,7 @@ export const englishByText:Record<string,string>={
  // Module titles and descriptions
  'Plantillas de correo':'Email templates','Contenido e identidad institucional para los avisos.':'Content and school branding for notifications.',
  'Contactos familiares':'Family contacts','Contactos de emergencia y personas autorizadas para recoger al alumno.':'Emergency contacts and authorized pickup persons.',
- 'Expedientes':'Student records','Una trayectoria, desde el primer día hasta sexto grado.':'A complete school journey, from first through sixth grade.',
+ 'Expedientes':'Student records', 'Alumnos y expedientes':'Students and records', 'Identifica, consulta y acompaña la trayectoria escolar de cada alumno.':"Identify, access and support each student's school journey.",'Una trayectoria, desde el primer día hasta sexto grado.':'A complete school journey, from first through sixth grade.',
  'Inscripciones':'Admissions','Solicitudes transparentes, con folio y seguimiento.':'Trackable applications with reference numbers.',
  'Trayectoria escolar':'Academic history','Matrícula, promoción de grado y egreso con historial.':'Enrollment, advancement and graduation history.',
  'Ciclos y convocatorias':'School years and admissions','Define las fechas que abrirán cada proceso a las familias.':'Set application and enrollment dates for families.',

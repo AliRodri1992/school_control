@@ -55,10 +55,17 @@ RSpec.describe "Administration workflows", type: :request do
     expect(admission.reload.reason).to eq("Información pendiente")
   end
 
-  it "approves through the API and exposes the enrollment" do
+  it "approves without enrolling and formalizes only after a complete file" do
     admission = create(:admission)
     group = create(:group, academic_year: admission.academic_year)
-    post "/api/admissions/#{admission.id}/approve", params: { group_id: group.id }, as: :json
+    student = admission.student
+    student.addresses.create!(country_code: "MX", purpose: "home", line1: "Calle Aula 10")
+    student.phone_numbers.create!(number_e164: "+525500000001", purpose: "emergency")
+    student.contacts.create!(name: "Responsable legal", relationship: "Tutor")
+    post "/api/admissions/#{admission.id}/approve", as: :json
+    expect(response).to have_http_status(:ok)
+    expect(Enrollment.where(admission: admission)).not_to exist
+    post "/api/admissions/#{admission.id}/formalize", params: { group_id: group.id }, as: :json
     expect(response).to have_http_status(:created)
     get "/api/enrollments"
     expect(response.parsed_body.first["student_name"]).to eq(admission.student.full_name)
