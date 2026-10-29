@@ -24,7 +24,7 @@ module DemoModules
       record.body = "Tres ideas sobre la lectura de demostración."
       record.submitted_at = Time.current
     end
-    [1, 2, 3].each do |term|
+    [ 1, 2, 3 ].each do |term|
       Grade.find_or_create_by!(enrollment: enrollment, course: course, term: term) do |record|
         record.score = 8 + (term % 2)
         record.status = term == 3 ? "draft" : "published"
@@ -40,8 +40,8 @@ module DemoModules
         record.expected_version = grade.lock_version || 0
       end
     end
-    first_day = [year.starts_on, Date.current - 7.days].max
-    last_day = [year.ends_on, Date.current].min
+    first_day = [ year.starts_on, Date.current - 7.days ].max
+    last_day = [ year.ends_on, Date.current ].min
     if first_day <= last_day
       (first_day..last_day).select { |day| (1..5).cover?(day.wday) }.first(4).each_with_index do |day, index|
         Attendance.find_or_create_by!(enrollment: enrollment, on: day) do |record|
@@ -77,7 +77,7 @@ module DemoModules
   end
 
   def self.seed_preferences(guardian, learner)
-    [guardian, learner].each do |user|
+    [ guardian, learner ].each do |user|
       UserPreference.find_or_create_by!(user: user)
     end
   end
