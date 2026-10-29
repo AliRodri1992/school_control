@@ -23,6 +23,7 @@ const FamilyContacts=lazy(()=>import('./features/contacts/FamilyContacts'));
 import StudentRowActions from './features/students/StudentRowActions';
 import ApplicantRegistration from './features/students/ApplicantRegistration';
 import AdmissionRequirements from './features/students/AdmissionRequirements';
+import AdmissionDetail from './features/students/AdmissionDetail';
 import {studentInitials,studentDirectoryStats} from './features/students/studentDirectory';
 import {useStudentReport} from './features/students/useStudentReport';
 const EmailTemplateDesigner=lazy(()=>import('./features/mail/EmailTemplateDesigner'));
@@ -62,6 +63,7 @@ export default function App(){
  const readableDate=(value:string)=>new Date(value).toLocaleString(locale==='en'?'en-US':'es-MX',{dateStyle:'medium',timeStyle:'short'});
  const navigate=useNavigate();const location=useLocation();
  const [applicantWizard,setApplicantWizard]=useState<Row|null|false>(false);
+ const [selectedAdmission,setSelectedAdmission]=useState<Row|null>(null);
  const [studentStage,setStudentStage]=useState<'enrolled'|'applicant'>('enrolled');
  const [resetToken,setResetToken]=useState(()=>new URLSearchParams(window.location.hash.slice(1)).get('reset-password')||'');
  useEffect(()=>{if(resetToken)window.history.replaceState(null,'',window.location.pathname+window.location.search);},[resetToken]);
@@ -91,6 +93,7 @@ export default function App(){
    if(next==='imports'&&!canImportFromPermissions(user?.permissions))return;
    if(next!=='imports'&&next!=='profile'&&next!=='notifications'&&next!=='messages'&&next!=='preferences'&&next!=='help'&&next!=='privacy'&&next!=='terms'&&!user?.permissions?.[pagePermission(next)]?.length)return;
    if(next!=='student_details')setDetailStudent(null);
+   setSelectedAdmission(null);
    closeStudentReport();
    const remembered=loadRememberedFilters(user?.id,next);
    setPage(next);setQuery(remembered?.query||'');setNotice('');setMobile(false);setPageNumber(0);
@@ -272,7 +275,16 @@ export default function App(){
   childrenList={user.role==='guardian'?data.students||[]:[]} selectedChildId={selectedChild} onSelectChild={selectChild}
  onSignOut={async()=>{try{await api('session','DELETE');signedOut();void notify('Sesión cerrada correctamente.');}catch(e){setError((e as Error).message);}}}>
  <Suspense fallback={<div className="content" role="status"><p>{ui('Cargando módulo…')}</p></div>}><div className="content">{error&&<div className="error" role="alert">{error}<button aria-label={ui('Cerrar error')} onClick={()=>setError('')}><X size={16}/></button></div>}{reportError&&<div className="error" role="alert">{reportError}<button aria-label={ui('Cerrar error de boleta')} onClick={clearStudentReportError}><X size={16}/></button></div>}{notice&&<div className="success" role="status"><Check size={16}/>{notice}</div>}
- {page==='students'&&applicantWizard!==false?<ApplicantRegistration existing={applicantWizard} years={data.academic_years||[]} admissions={data.admissions||[]} onClose={()=>setApplicantWizard(false)} onSaved={()=>refresh()}/>:page==='student_details'?(detailStudent?<StudentDetails key={detailStudent.id} student={detailStudent} onClose={()=>go('students')}
+ {page==='admissions'&&selectedAdmission?<AdmissionDetail admission={selectedAdmission} student={(data.students||[]).find(s=>String(s.id)===String(selectedAdmission.student_id))}
+   onClose={()=>setSelectedAdmission(null)} onContinue={['draft','correction_requested'].includes(selectedAdmission.status)?()=>{const student=(data.students||[]).find(s=>String(s.id)===String(selectedAdmission.student_id));go('students');setApplicantWizard(student||null);}:undefined}
+   onOpenStudent={()=>{const student=(data.students||[]).find(s=>String(s.id)===String(selectedAdmission.student_id));if(student)openStudentRecord(student);}}
+   onDocuments={()=>go('documents')}
+   onApprove={can('admissions.approve')?()=>{approve(selectedAdmission);setSelectedAdmission(null);}:undefined}
+   onCorrections={can('admissions.reject')?()=>{requestCorrections(selectedAdmission);setSelectedAdmission(null);}:undefined}
+   onReject={can('admissions.reject')?()=>{reject(selectedAdmission);setSelectedAdmission(null);}:undefined}
+   onFormalize={can('admissions.approve')?()=>{formalize(selectedAdmission);setSelectedAdmission(null);}:undefined}
+   onCancel={['draft','submitted','correction_requested'].includes(selectedAdmission.status)&&can('admissions.create')?()=>void perform(async()=>{await api('admissions/'+selectedAdmission.id+'/cancel','POST');setSelectedAdmission(null);}):undefined}
+ />:page==='students'&&applicantWizard!==false?<ApplicantRegistration existing={applicantWizard} years={data.academic_years||[]} admissions={data.admissions||[]} onClose={()=>setApplicantWizard(false)} onSaved={()=>refresh()}/>:page==='student_details'?(detailStudent?<StudentDetails key={detailStudent.id} student={detailStudent} onClose={()=>go('students')}
     canEdit={can('students.update')} canWriteNotes={!!user.permissions?.['students.update']?.includes('institution')}
     canViewReport={can('students.report')}/>:
     <section className="sc-record-loading" role="status">{studentRecordLoading?ui('Cargando expediente del alumno…'):ui('No fue posible consultar este expediente.')}
@@ -325,6 +337,7 @@ export default function App(){
   reportLoading={reportLoadingStudentId===String(row.id)} canEdit={can('students.update')} onView={()=>openStudentRecord(row)}
   onReport={()=>void openStudentReport(row.id)} onEdit={()=>createOrEdit(row)}/>}
  {page!=='students'&&can(`${page}.${['grades','attendances'].includes(page)?'create':'update'}`)&&!['admissions','announcements'].includes(page)&&(page!=='grades'||row.status!=='published')&&<TableAction kind="edit" ariaLabel={`Editar ${translatedModules[page]?.singular||"registro"} ${row.full_name||row.name||row.id}`} onClick={()=>createOrEdit(row)}/>}
+ {page==='admissions'&&can('admissions.index')&&<TableAction kind="view" ariaLabel={`Ver solicitud ${row.folio||row.id}`} onClick={()=>setSelectedAdmission(row)}/>}
  {page==='admissions'&&row.status==='submitted'&&<>{can('admissions.approve')&&<TableAction kind="approve" ariaLabel={`Aprobar solicitud ${row.folio||row.id}`} onClick={()=>approve(row)}/>}
  {can('admissions.reject')&&<><button className="secondary" type="button" onClick={()=>requestCorrections(row)}>{ui('Solicitar correcciones')}</button><TableAction kind="reject" ariaLabel={`Rechazar solicitud ${row.folio||row.id}`} onClick={()=>reject(row)}/></>}</>}
  {page==='admissions'&&row.status==='approved'&&can('admissions.approve')&&<button className="primary" type="button" onClick={()=>formalize(row)}>{ui('Formalizar inscripción')}</button>}
