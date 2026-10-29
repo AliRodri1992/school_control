@@ -154,6 +154,8 @@ jobs:
           exit 1
       - run: docker compose run --rm backend bundle exec rails db:prepare db:seed
       - run: docker compose run --rm backend bundle exec rails db:seed
+      - name: Verify minimum school demonstration coverage
+        run: docker compose run --rm backend bundle exec rails runner bin/verify_demo_seeds.rb
       - name: Boot School Control while another Rails server occupies host port 3000
         run: |
           python3 -m http.server 3000 --bind 127.0.0.1 >/tmp/another-rails.log 2>&1 &
