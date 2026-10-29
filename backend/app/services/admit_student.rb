@@ -1,7 +1,7 @@
 class AdmitStudent
   def self.call(admission:, group:, actor:)
     admission.with_lock do
-      raise ArgumentError, "La solicitud ya fue resuelta" unless admission.status == "approved"
+      raise ArgumentError, "La solicitud ya fue formalizada o no está aprobada" unless admission.status == "approved" && !admission.enrollment
       admission.student.with_lock do
         admission.errors.clear
         raise ArgumentError, "Expediente incompleto" unless admission.complete_for_submission?
