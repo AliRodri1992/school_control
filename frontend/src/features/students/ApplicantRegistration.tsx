@@ -6,6 +6,7 @@ import {useSchoolLocale} from '../../shared/i18n/LocaleContext';
 
 type Props={years:Row[];existing?:Row|null;admissions:Row[];onClose:()=>void;onSaved:()=>Promise<void>};
 const stages=['Identidad','Domicilio','Teléfonos','Familiares','Documentos','Revisión y envío'];
+type FamilyEntry={id?:number;name:string;relationship:string;phone:string;email:string;emergency:boolean;pickup_authorized:boolean};
 export default function ApplicantRegistration({years,existing,admissions,onClose,onSaved}:Props){
  const {ui}=useSchoolLocale();
  const [student,setStudent]=useState<Row|null>(existing||null);
@@ -24,6 +25,8 @@ export default function ApplicantRegistration({years,existing,admissions,onClose
  const [checklist,setChecklist]=useState<string[]>([]);
  const [docTitle,setDocTitle]=useState('');
  const [recordIds,setRecordIds]=useState<{address?:number;phone?:number;contact?:number}>({});
+ const [family,setFamily]=useState<FamilyEntry[]>([]);
+ const [pickupAuthorized,setPickupAuthorized]=useState(false);
  const editable=!admission||['draft','correction_requested'].includes(admission.status);
  useEffect(()=>{
   if(!existing?.id)return;
@@ -36,7 +39,11 @@ export default function ApplicantRegistration({years,existing,admissions,onClose
   ]).then(([addresses,phones,contacts,docs])=>{
     if(!active)return;
     const address=(addresses as Row[])[0],phone=(phones as Row[])[0];
-    const contact=(contacts as Row[]).find(row=>String(row.student_id)===String(existing.id));
+    const related=(contacts as Row[]).filter(row=>String(row.student_id)===String(existing.id));
+    const contact=related[0];
+    setFamily(related.slice(1).map(row=>({id:row.id,name:row.name,relationship:row.relationship,phone:row.phone,
+      email:row.email||'',emergency:row.emergency===true,pickup_authorized:row.pickup_authorized===true})));
+    setPickupAuthorized(contact?.pickup_authorized===true);
     const files=(docs as Row[]).filter(row=>String(row.student_id)===String(existing.id));
     setRecordIds({address:address?.id,phone:phone?.id,contact:contact?.id});
     setDocuments(files.map(row=>String(row.title)));
@@ -120,8 +127,17 @@ export default function ApplicantRegistration({years,existing,admissions,onClose
     if(!form.contact_name.trim()||!form.relationship.trim()||!form.contact_phone.trim())throw Error(ui('Agrega al menos un contacto familiar.'));
     const updated=await api('student_contacts'+(recordIds.contact?'/'+recordIds.contact:''),recordIds.contact?'PATCH':'POST',{
      student_id:student?.id,name:form.contact_name,relationship:form.relationship,
-     phone:form.contact_phone,email:form.contact_email,emergency:true,pickup_authorized:false});
+     phone:form.contact_phone,email:form.contact_email,emergency:true,pickup_authorized:pickupAuthorized});
     setRecordIds(previous=>({...previous,contact:updated.id}));
+    for(let index=0;index<family.length;index++){
+     const person=family[index];
+     if(!person.name.trim()||!person.phone.trim()||!person.relationship.trim())throw Error(ui('Completa los datos de cada familiar agregado.'));
+     const saved=await api('student_contacts'+(person.id?'/'+person.id:''),person.id?'PATCH':'POST',{
+      student_id:student?.id,name:person.name,relationship:person.relationship,
+      phone:person.phone,email:person.email,emergency:person.emergency,pickup_authorized:person.pickup_authorized
+     });
+     setFamily(previous=>previous.map((entry,i)=>i===index?{...entry,id:saved.id}:entry));
+    }
    }
    await onSaved();
    setStep(current=>Math.min(current+1,5));
@@ -154,9 +170,22 @@ export default function ApplicantRegistration({years,existing,admissions,onClose
     {field('neighborhood','Colonia','text',false)}{field('locality','Municipio o alcaldía')}{field('region','Estado')}{field('postal_code','Código postal','text',false)}</div>}
    {step===2&&<div className="sc-applicant-grid">{field('number_e164','Teléfono de emergencia con código internacional','tel')}
     <p className="sc-applicant-hint">{ui('Puedes agregar teléfonos adicionales desde el expediente del aspirante.')}</p></div>}
-   {step===3&&<div className="sc-applicant-grid">{field('contact_name','Nombre del familiar')}{field('relationship','Parentesco')}
-    {field('contact_phone','Teléfono de contacto','tel')}{field('contact_email','Correo electrónico','email',false)}
-    <p className="sc-applicant-hint"><Users size={16}/>{ui('El tutor que inició sesión permanecerá vinculado como responsable principal. Puedes agregar más familiares desde el expediente.')}</p>
+   {step===3&&<div className="sc-applicant-family">
+    <div className="sc-applicant-grid">{field('contact_name','Nombre del familiar')}{field('relationship','Parentesco')}
+     {field('contact_phone','Teléfono de contacto','tel')}{field('contact_email','Correo electrónico','email',false)}
+     <label className="sc-applicant-check"><input type="checkbox" checked={pickupAuthorized} onChange={e=>setPickupAuthorized(e.target.checked)}/>{ui('Autorizado para recoger al menor')}</label>
+    </div>
+    <div className="sc-applicant-family-extras">
+     {family.map((person,index)=><fieldset key={person.id||index} className="sc-applicant-family-entry"><legend>{ui('Familiar adicional')} {index+1}</legend>
+      <div className="sc-applicant-grid">{([
+       ['name','Nombre completo'],['relationship','Parentesco'],['phone','Teléfono'],['email','Correo electrónico']
+      ] as const).map(([key,label])=><label key={key} className="sc-applicant-field"><span>{ui(label)}</span><input type={key==='email'?'email':'text'} value={person[key]} onChange={e=>setFamily(previous=>previous.map((entry,i)=>i===index?{...entry,[key]:e.target.value}:entry))}/></label>)}</div>
+      <div className="sc-applicant-family-flags"><label><input type="checkbox" checked={person.emergency} onChange={e=>setFamily(previous=>previous.map((entry,i)=>i===index?{...entry,emergency:e.target.checked}:entry))}/>{ui('Contacto de emergencia')}</label>
+      <label><input type="checkbox" checked={person.pickup_authorized} onChange={e=>setFamily(previous=>previous.map((entry,i)=>i===index?{...entry,pickup_authorized:e.target.checked}:entry))}/>{ui('Autorizado para recoger')}</label></div>
+     </fieldset>)}
+    </div>
+    <button type="button" className="secondary" onClick={()=>setFamily(previous=>[...previous,{name:'',relationship:'',phone:'',email:'',emergency:false,pickup_authorized:false}])}>{ui('Agregar otro familiar')}</button>
+    <p className="sc-applicant-hint"><Users size={16}/>{ui('El tutor que inició sesión permanece vinculado como responsable principal. La autorización de recogida se registra por persona.')}</p>
    </div>}
    {step===4&&<div className="sc-applicant-documents"><FileText size={28}/><p>{ui('Adjunta un PDF, PNG o JPG de hasta 10 MB. Los documentos obligatorios dependen del ciclo y grado.')}</p>
     {requirements.length>0&&<label className="sc-applicant-field"><span>{ui('Tipo de documento')}</span><select value={docTitle}
