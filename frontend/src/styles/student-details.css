@@ -113,3 +113,24 @@
 .sc-applicant-step-actions button{display:inline-flex;align-items:center;gap:9px;min-height:44px}
 .sc-applicant-resume{font-size:11px}
 @media(max-width:750px){.sc-applicant-grid{grid-template-columns:1fr}.sc-applicant-progress li small{font-size:9px}.sc-applicant-wizard-header{padding:22px}.sc-applicant-progress{padding:10px;gap:4px}.sc-applicant-step{padding:18px}.sc-applicant-step-actions button{flex:1;justify-content:center}}
+
+/* Admissions rule editor: compact administrative controls with explicit scope. */
+.sc-admission-requirements{display:grid;gap:16px;background:white;border:1px solid #dce4f1;border-radius:16px;padding:22px;margin-bottom:20px;min-width:0}
+.sc-admission-requirements-intro{display:flex;align-items:center;gap:14px}
+.sc-admission-requirements-icon{display:grid;place-items:center;flex:none;width:46px;height:46px;border-radius:12px;background:#edf2ff;color:#3e59c3}
+.sc-admission-requirements-intro h2{font-size:17px;margin:0 0 5px;color:#142344}
+.sc-admission-requirements-intro p{font-size:12px;color:#596b87;margin:0;line-height:1.6}
+.sc-admission-requirements-toolbar,.sc-admission-requirements-add{display:flex;gap:14px;align-items:end;flex-wrap:wrap}
+.sc-admission-requirements-toolbar label,.sc-admission-requirements-add label{display:grid;gap:7px;font-weight:700;font-size:12px;color:#394e71}
+.sc-admission-requirements-add label:has(input[type=checkbox]){display:flex;align-items:center;gap:7px}
+.sc-admission-requirements-add label:has(input[type=checkbox]) input{accent-color:#405cf5}
+.sc-admission-requirements-toolbar select,.sc-admission-requirements-add input:not([type=checkbox]){min-height:42px;padding:9px 12px;border:1px solid #bcc9df;border-radius:10px;color:#193456;background:white}
+.sc-admission-requirements-add .primary{min-height:42px}
+.sc-admission-requirements-list{display:grid;gap:8px}
+.sc-admission-requirements-list>div{display:flex;gap:11px;align-items:center;padding:12px 15px;border-radius:10px;background:#f8faff;border:1px solid #e2eaf6;flex-wrap:wrap}
+.sc-admission-requirements-list>div svg{color:#405cf5}
+.sc-admission-requirements-list>div strong{font-size:13px}
+.sc-admission-requirements-list>div small{font-size:11px;color:#63738d;flex:1;min-width:170px}
+.sc-admission-requirements-list>div button{min-height:38px;min-width:38px;display:grid;place-items:center}
+.sc-admission-requirements-list>p{padding:16px;margin:0;background:#f7f9fd;border-radius:10px;color:#66748c;font-size:12px}
+@media(max-width:680px){.sc-admission-requirements{padding:15px}.sc-admission-requirements-toolbar label{flex:1}.sc-admission-requirements-add>label:first-child{flex-basis:100%}.sc-admission-requirements-add .primary{width:100%;justify-content:center}}
