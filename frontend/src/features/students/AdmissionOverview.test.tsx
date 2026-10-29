@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import {expect,it} from 'vitest';
-import {render,screen,fireEvent} from '@testing-library/react';
+import {render,screen} from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import AdmissionOverview from './AdmissionOverview';
 import {filterAdmissionRows} from './AdmissionOverview';
 const rows=[
@@ -19,10 +20,12 @@ it('filters applications by status and kind without mixing them with enrollment 
  expect(filterAdmissionRows(applications,{year:'',grade:'',date:'',status:'submitted',kind:'reenrollment'})).toHaveLength(0);
 });
 
-it('exposes status and application type as usable filters',()=>{
+it('exposes status and application type as usable filters',async()=>{
  const updates:string[]=[];
  render(<AdmissionOverview items={[]} years={[]} year="" onYear={()=>{}} grade="" onGrade={()=>{}} date="" onDate={()=>{}} status="" onStatus={value=>updates.push('status:'+value)} kind="" onKind={value=>updates.push('kind:'+value)} onReset={()=>{}}/>);
- fireEvent.change(screen.getByRole('combobox',{name:'Filtrar por estado de solicitud'}),{target:{value:'submitted'}});
- fireEvent.change(screen.getByRole('combobox',{name:'Filtrar por tipo de solicitud'}),{target:{value:'reenrollment'}});
+ await userEvent.click(screen.getByRole('combobox',{name:'Filtrar por estado de solicitud'}));
+ await userEvent.click(screen.getByRole('option',{name:'En revisión'}));
+ await userEvent.click(screen.getByRole('combobox',{name:'Filtrar por tipo de solicitud'}));
+ await userEvent.click(screen.getByRole('option',{name:'Reinscripción'}));
  expect(updates).toEqual(['status:submitted','kind:reenrollment']);
 });
