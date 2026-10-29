@@ -16,8 +16,8 @@ module DemoBulk
     students = []
     groups.each_with_index do |group, group_index|
       group.update!(capacity: TARGET_PER_GROUP + 10) if group.capacity < TARGET_PER_GROUP
-      needed = [ TARGET_PER_GROUP - group.enrollments.count, 0 ].max
-      needed.times do |index|
+      TARGET_PER_GROUP.times do |index|
+        break if group.enrollments.count >= TARGET_PER_GROUP
         serial = group_index * 20 + index + 1
         guardian = guardians[(serial - 1) % guardians.length]
         birth = Date.new(2019 - group.grade_level, 1, 1) + serial.days
