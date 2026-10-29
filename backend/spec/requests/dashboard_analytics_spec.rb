@@ -22,9 +22,22 @@ RSpec.describe "Authorized dashboard analytics", type: :request do
     data = response.parsed_body
     expect(data.fetch("enrollment_trend")).to include(hash_including("value" => 1))
     expect(data.fetch("students_by_grade")).to include("label" => "1°", "value" => 1)
-    expect(data.fetch("admission_status")).to include("label" => "Aprobadas", "value" => 1)
+    expect(data.fetch("admission_status")).to include("label" => "Inscritas", "value" => 1)
     expect(data.fetch("grade_distribution")).to include("label" => "8", "value" => 1)
     expect(data.fetch("grades_by_term")).to include("label" => "Periodo 1", "value" => 8.5)
+  end
+
+  it "never counts an applicant as an active student" do
+    applicant = create(:student)
+    enrolled = create(:enrollment)
+    login(create(:user, role: "admin"))
+    get "/api/dashboard", as: :json
+    expect(response).to have_http_status(:ok)
+    expect(response.parsed_body.fetch("students")).to eq(1)
+    expect(response.parsed_body.fetch("applicants")).to eq(1)
+    expect(response.parsed_body.fetch("enrolled_students")).to eq(1)
+    expect(applicant.enrollment_stage).to eq("applicant")
+    expect(enrolled.student.enrollment_stage).to eq("enrolled")
   end
 
   it "limits teachers to their assigned classes, including published mark averages" do

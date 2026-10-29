@@ -3,7 +3,7 @@ module Api
     after_action :verify_policy_scoped, only: :index
     after_action :verify_authorized, except: :index
     def index
-      render json: policy_scope(Student).order(:last_name, :first_name).map { |student| present(student) }
+      render json: policy_scope(Student).includes(:guardian, :enrollments).order(:last_name, :first_name).map { |student| present(student) }
     end
 
     def show

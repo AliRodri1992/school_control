@@ -22,7 +22,7 @@ class Student < ApplicationRecord
 
   # Enrollment, not application approval alone, determines student membership.
   def enrollment_stage
-    enrollments.exists? ? "enrolled" : "applicant"
+    (enrollments.loaded? ? enrollments.any? : enrollments.exists?) ? "enrolled" : "applicant"
   end
 
   def valid_identity

@@ -128,9 +128,18 @@ class DashboardAnalytics
 
   def admission_status
     totals = admissions.group(:status).count
-    %w[submitted approved rejected].filter_map do |status|
-      { label: { "submitted" => "Enviadas", "approved" => "Aprobadas", "rejected" => "Rechazadas" }.fetch(status), value: totals[status] } if totals[status].to_i.positive?
-    end
+    formalized = admissions.where(id: Enrollment.select(:admission_id)).count
+    approved_pending = admissions.where(status: "approved").where.not(id: Enrollment.select(:admission_id)).count
+    statuses = {
+      "draft" => [ "Borradores", totals["draft"] ],
+      "submitted" => [ "En revisión", totals["submitted"] ],
+      "correction_requested" => [ "Correcciones", totals["correction_requested"] ],
+      "approved" => [ "Aprobadas", approved_pending ],
+      "rejected" => [ "Rechazadas", totals["rejected"] ],
+      "cancelled" => [ "Canceladas", totals["cancelled"] ],
+      "enrolled" => [ "Inscritas", formalized ]
+    }
+    statuses.values.filter_map { |label, count| { label: label, value: count } if count.to_i.positive? }
   end
 
   def attendance_trend

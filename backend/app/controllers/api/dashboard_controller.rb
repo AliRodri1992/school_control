@@ -10,8 +10,17 @@ module Api
       alerts = scope.where(id: absences.select { |_id, count| count >= 3 }.keys).includes(:student).map do |enrollment|
         { student_name: enrollment.student.full_name, message: "#{absences[enrollment.id]} inasistencias en 30 días", kind: "attendance" }
       end
-      render json: { students: (group || analytics.dig(:chart_filters, :student_id) || analytics.dig(:chart_filters, :academic_year_id)) ?
-        scope.select(:student_id).distinct.count : students_scope.count,
+      visible_applicants = students_scope.where.not(id: Enrollment.select(:student_id))
+      visible_applicants = visible_applicants.where(id: Admission.where(academic_year_id: analytics.dig(:chart_filters, :academic_year_id)).select(:student_id)) if
+        analytics.dig(:chart_filters, :academic_year_id)
+      visible_applicants = visible_applicants.where(id: analytics.dig(:chart_filters, :student_id)) if
+        analytics.dig(:chart_filters, :student_id)
+      render json: { students: scope.where(status: "active").select(:student_id).distinct.count,
+        enrolled_students: scope.select(:student_id).distinct.count,
+        applicants: group ? 0 : visible_applicants.count,
+        formalized_admissions: scope.count,
+        approved_pending: Admission.where(student: students_scope, status: "approved")
+          .where.not(id: Enrollment.select(:admission_id)).count,
         today_classes: ScheduleSlot.where(course: courses_scope, weekday: Date.current.cwday).count,
         grade_drafts: educator_access? ? Grade.where(course: courses_scope, status: "draft").count : 0,
         pending_documents: current_user.can?("student_documents.index") ?
