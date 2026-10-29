@@ -313,7 +313,7 @@ export function PortalChrome({user,school,page,mobile,onMobile,can,pendingAdmiss
    const exact=(item.key==='students'&&page==='student_details')||item.key===page;
    const isAncestor=!exact&&findNavPath([{title:'',items:[item]}],page).length>0;
    const isOpen=expanded.includes(item.key);
-   const translated=resolveNavigationLabel(portal,item.key,translate('nav.'+item.key,item.title));
+   const translated=resolveNavigationLabel(portal,item.key,translate(portal==='tutors'&&item.key==='students'?'nav.tutors.students':'nav.'+item.key,item.title));
    return <div className="sc-nav-node" key={item.key+'-'+depth}>
      <div className={'sc-nav-item'+(exact?' is-active':'')+(isAncestor?' is-ancestor':'')}
        style={{paddingLeft:Math.min(depth,3)*8}}>

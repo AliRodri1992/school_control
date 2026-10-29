@@ -134,3 +134,11 @@
 .sc-admission-requirements-list>div button{min-height:38px;min-width:38px;display:grid;place-items:center}
 .sc-admission-requirements-list>p{padding:16px;margin:0;background:#f7f9fd;border-radius:10px;color:#66748c;font-size:12px}
 @media(max-width:680px){.sc-admission-requirements{padding:15px}.sc-admission-requirements-toolbar label{flex:1}.sc-admission-requirements-add>label:first-child{flex-basis:100%}.sc-admission-requirements-add .primary{width:100%;justify-content:center}}
+
+.sc-applicant-progress li>button{border:0;background:transparent;display:grid;justify-items:center;gap:7px;color:inherit;width:100%;cursor:pointer}
+.sc-applicant-progress li>button:disabled{cursor:default;opacity:.8}
+.sc-applicant-progress li>button>span{width:28px;height:28px;border:1px solid #b8c3db;border-radius:50%;display:grid;place-items:center;font-weight:700}
+.sc-applicant-progress li[aria-current=step]>button>span,.sc-applicant-progress li.is-done>button>span{background:#3554ce;border-color:#3554ce;color:#fff}
+.sc-applicant-progress li>button:focus-visible{outline:2px solid #405cf5;outline-offset:3px;border-radius:9px}
+.sc-applicant-missing{border:1px solid #edcd81;background:#fff9ec;color:#755419;border-radius:10px;padding:16px;width:100%;font-size:12px}
+.sc-applicant-missing ul{margin:10px 0 0;padding-left:20px}

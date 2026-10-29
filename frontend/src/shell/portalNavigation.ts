@@ -34,7 +34,7 @@ export const portalGroups:Record<PortalId,NavGroup[]>={
   {title:'Mi escuela',items:[{key:'dashboard',title:'Mi inicio'},{key:'schedule',title:'Mi horario'},{key:'classroom',title:'Mis tareas'},{key:'grades',title:'Mis calificaciones'},{key:'attendances',title:'Mi asistencia'},{key:'calendar_events',title:'Calendario'},{key:'messages',title:'Mensajes'}]}
  ],
  tutors:[
-  {title:'Mi familia',items:[{key:'dashboard',title:'Inicio familiar'},{key:'students',title:'Mis hijos'},{key:'admissions',title:'Inscripciones'},{key:'documents',title:'Documentos'}]},
+  {title:'Mi familia',items:[{key:'dashboard',title:'Inicio familiar'},{key:'students',title:'Aspirantes y mis hijos'},{key:'admissions',title:'Inscripciones'},{key:'documents',title:'Documentos'}]},
   {title:'Seguimiento',items:[{key:'grades',title:'Calificaciones'},{key:'attendances',title:'Asistencia'},{key:'schedule',title:'Horarios'},{key:'classroom',title:'Actividades'},{key:'calendar_events',title:'Agenda'},{key:'messages',title:'Mensajes'},{key:'announcements',title:'Comunicados'}]}
  ]
 };
