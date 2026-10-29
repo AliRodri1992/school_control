@@ -41,6 +41,24 @@ if ENV["DEMO_SEEDS"] == "true"
     record.assign_attributes(first_name: "Alex", last_name: "Ejemplo", birth_date: Date.new(2020, 1, 1), guardian: guardian, user: learner)
   end
   admission = Admission.find_or_create_by!(student: student, academic_year: year) { |record| record.assign_attributes(grade_level: 1, kind: "new") }
+  # Aspirante de primer ingreso: no crear matrícula antes de aprobar su solicitud.
+  applicant = Student.find_or_create_by!(curp: "DEMO200205MDFRNN02") do |record|
+    record.assign_attributes(first_name: "Sofía", last_name: "Ejemplo", birth_date: Date.new(2020, 2, 5),
+      guardian: guardian, emergency_phone: "+525555000002")
+  end
+  applicant.addresses.find_or_create_by!(purpose: "home", line1: "Calle Escuela 15") do |address|
+    address.assign_attributes(country_code: "MX", locality: "Ciudad de México", region: "Ciudad de México",
+      postal_code: "06000", primary: true)
+  end
+  applicant.phone_numbers.find_or_create_by!(purpose: "emergency", number_e164: "+525555000002") do |phone|
+    phone.assign_attributes(country_code: "MX", primary: true)
+  end
+  applicant.contacts.find_or_create_by!(name: "Familia de ejemplo", relationship: "Tutor") do |contact|
+    contact.assign_attributes(primary: true, emergency: true, pickup_authorized: true)
+  end
+  Admission.find_or_create_by!(student: applicant, academic_year: year) do |record|
+    record.assign_attributes(kind: "new", grade_level: 1)
+  end
   group = year.groups.find_by!(grade_level: 1, section: "A")
   AdmitStudent.call(admission: admission, group: group, actor: admin) if admission.status == "submitted"
   GenerateSchedule.call(group: group) unless ScheduleSlot.joins(:course).where(courses: { group_id: group.id }).exists?

@@ -17,6 +17,11 @@ class Student < ApplicationRecord
 
   def full_name = "#{first_name} #{last_name}"
 
+  # Enrollment, not application approval alone, determines student membership.
+  def enrollment_stage
+    enrollments.exists? ? "enrolled" : "applicant"
+  end
+
   def valid_identity
     errors.add(:guardian, "debe ser una cuenta de padre o tutor") unless guardian && (guardian.guardian? || guardian.effective_permissions.values.any? { |scopes| scopes.include?("family") })
     errors.add(:user, "debe ser una cuenta de alumno") if user && !user.learner?

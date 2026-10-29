@@ -8,9 +8,10 @@ import type {Field,Row} from '../../modules';
 import {confirmDanger} from '../../notifications';
 
 type DataKind='addresses'|'phones'|'contacts'|'notes';
-type Kind='overview'|DataKind;
+type Kind='overview'|'family'|DataKind;
 const category:{kind:Kind;title:string;description:string}[]=[
  {kind:'overview',title:'Información general',description:'Identidad, datos básicos y trayectoria escolar'},
+ {kind:'family',title:'Datos familiares',description:'Tutor responsable y personas vinculadas al aspirante'},
  {kind:'addresses',title:'Direcciones',description:'Domicilios vinculados al expediente'},
  {kind:'phones',title:'Teléfonos',description:'Medios de contacto internacionales'},
  {kind:'contacts',title:'Contactos',description:'Personas autorizadas y de emergencia'},
@@ -42,7 +43,7 @@ const fields:Record<DataKind,Field[]>={
  notes:[{key:'body',label:'Contenido de la nota',type:'textarea'}, {key:'category',label:'Categoría',optional:true},
   {key:'visibility',label:'Visibilidad',options:[['internal','Solo personal autorizado'],['shared','Compartida con la familia']],optional:true}]
 };
-const icon:Record<Kind,typeof MapPin>={overview:IdCard,addresses:MapPin,phones:Phone,contacts:Users,notes:FileText};
+const icon:Record<Kind,typeof MapPin>={overview:IdCard,family:Users,addresses:MapPin,phones:Phone,contacts:Users,notes:FileText};
 function title(row:Row,kind:DataKind):string{
  if(kind==='addresses')return row.line1||'Dirección';
  if(kind==='phones')return row.number_e164||'Teléfono';
@@ -59,7 +60,7 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
  const [busy,setBusy]=useState(false),[loading,setLoading]=useState(false);
  const [report,setReport]=useState<Row|null>(null);
  const root='students/'+student.id+'/details/';
- async function fetchItems(selected:Kind){if(selected==='overview')return;setLoading(true);
+ async function fetchItems(selected:Kind){if(selected==='overview'||selected==='family')return;setLoading(true);
   try{setItems(await api(root+selected));setError('');}catch(e){setError((e as Error).message);}finally{setLoading(false);}
  }
  useEffect(()=>{void fetchItems(kind);},[student.id,kind]);
@@ -81,14 +82,14 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
   setBusy(true);setError('');
   try{await api(root+kind+'/'+row.id,'DELETE');await fetchItems(kind);}catch(e){setError((e as Error).message);}finally{setBusy(false);}
  }
- const writable=kind!=='overview'&&canEdit&&(kind!=='notes'||canWriteNotes);
+ const writable=kind!=='overview'&&kind!=='family'&&canEdit&&(kind!=='notes'||canWriteNotes);
  return <section className="sc-student-details" aria-label={'Expediente de '+student.full_name}>
   <div className="sc-record-hero">
    <div className="sc-record-hero-copy">
-    <button className="sc-record-back" type="button" onClick={onClose}><ArrowLeft size={17}/>{ui("Volver a alumnos")}</button>
-    <span className="eyebrow">{ui("CONTROL ESCOLAR / EXPEDIENTE DEL ALUMNO")}</span>
+    <button className="sc-record-back" type="button" onClick={onClose}><ArrowLeft size={17}/>{ui('Volver al directorio')}</button>
+    <span className="eyebrow">{student.enrollment_stage==='enrolled'?ui('CONTROL ESCOLAR / EXPEDIENTE DEL ALUMNO'):ui('ADMISIONES / EXPEDIENTE DEL ASPIRANTE')}</span>
     <h1>{student.full_name}</h1>
-    <p>{ui("Consulta su información personal, contactos y trayectoria en una vista completa.")}</p>
+    <p>{student.enrollment_stage==='enrolled'?ui('Consulta la identidad, contactos y trayectoria escolar.'):ui('Completa los datos generales, dirección, teléfonos y contactos familiares antes del ingreso.')}</p>
     <span className="sc-record-identity"><IdCard size={16}/>{student.curp||'CURP no registrada'}</span>
    </div>
    <div className="sc-record-illustration" aria-hidden="true">
@@ -116,7 +117,7 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
       <Icon size={18}/><span >{ui(section.title)}</span></button>;})}
    </nav>
    <section className="sc-record-content">
-    {kind==='overview'?<>
+    {kind==='family'?<><div className="sc-details-heading"><div><span className="eyebrow">{ui('FAMILIA Y RESPONSABLES')}</span><h2>{ui('Datos familiares')}</h2><p>{ui('La cuenta del tutor responsable se administra desde el portal familiar. Registra familiares adicionales en Contactos.')}</p></div></div><div className="sc-record-summary"><div><small>{ui('Tutor responsable')}</small><strong>{student.guardian_name||ui('Tutor vinculado')}</strong></div><div><small>{ui('Identificador de tutor')}</small><strong>#{student.guardian_id}</strong></div></div><button className="secondary" type="button" onClick={()=>setKind('contacts')}>{ui('Ver y agregar familiares autorizados')}</button></>:kind==='overview'?<>
       <div className="sc-details-heading"><div><span className="eyebrow">{ui("INFORMACIÓN GENERAL")}</span>
        <h2>{ui("Resumen del expediente")}</h2><p>{ui("Identidad registrada y seguimiento académico disponible.")}</p></div></div>
       <div className="sc-record-summary">
@@ -126,7 +127,7 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
        <div><small>{ui("Dirección registrada")}</small><strong>{student.address||ui('Consulta la sección Direcciones')}</strong></div>
       </div>
       <div className="sc-record-history-heading"><BookOpen size={20}/><h3>{ui("Trayectoria académica")}</h3></div>
-      {report?.years?.length?report.years.map((year:Row)=><article className="sc-record-year" key={year.enrollment.id}>
+      {student.enrollment_stage!=='enrolled'?<div className="sc-applicant-notice" role="status">{ui('Este expediente corresponde a un aspirante. Se convertirá en alumno cuando se formalice su inscripción.')}</div>:report?.years?.length?report.years.map((year:Row)=><article className="sc-record-year" key={year.enrollment.id}>
         <div><strong>{year.enrollment.group_label||'Grupo escolar'}</strong><span >{ui(year.enrollment.status||'Inscripción')}</span></div>
         <small>{year.grades?.length||0} calificaciones · {Object.entries(year.attendance||{}).map(([status,count])=>status+': '+count).join(' · ')||ui('Sin asistencias registradas')}</small>
        </article>):<TableEmptyState mode={canViewReport?'empty':'forbidden'} canCreate={false}/>}

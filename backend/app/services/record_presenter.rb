@@ -7,7 +7,8 @@ class RecordPresenter
         avatar_url: record.avatar.attached? ? "/api/profile/avatar" : nil
       )
     when Student
-      record.as_json(only: %i[id first_name last_name curp birth_date emergency_phone address guardian_id user_id]).merge(full_name: record.full_name)
+      record.as_json(only: %i[id first_name last_name curp birth_date emergency_phone address guardian_id user_id]).merge(full_name: record.full_name, enrollment_stage: record.enrollment_stage,
+        guardian_name: record.guardian&.name)
     when School
       record.as_json(only: %i[id name code address phone]).merge(logo_url: record.logo.attached? ? Rails.application.routes.url_helpers.rails_blob_path(record.logo, only_path: true) : nil)
     when Group
