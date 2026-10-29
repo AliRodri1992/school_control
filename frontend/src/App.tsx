@@ -24,6 +24,7 @@ import StudentRowActions from './features/students/StudentRowActions';
 import ApplicantRegistration from './features/students/ApplicantRegistration';
 import AdmissionRequirements from './features/students/AdmissionRequirements';
 import AdmissionDetail from './features/students/AdmissionDetail';
+import AdmissionOverview,{filterAdmissionRows} from './features/students/AdmissionOverview';
 import {studentInitials,studentDirectoryStats} from './features/students/studentDirectory';
 import {useStudentReport} from './features/students/useStudentReport';
 const EmailTemplateDesigner=lazy(()=>import('./features/mail/EmailTemplateDesigner'));
@@ -64,6 +65,7 @@ export default function App(){
  const navigate=useNavigate();const location=useLocation();
  const [applicantWizard,setApplicantWizard]=useState<Row|null|false>(false);
  const [selectedAdmission,setSelectedAdmission]=useState<Row|null>(null);
+ const [admissionYearFilter,setAdmissionYearFilter]=useState(''),[admissionGradeFilter,setAdmissionGradeFilter]=useState(''),[admissionDateFilter,setAdmissionDateFilter]=useState('');
  const [studentStage,setStudentStage]=useState<'enrolled'|'applicant'>('enrolled');
  const [resetToken,setResetToken]=useState(()=>new URLSearchParams(window.location.hash.slice(1)).get('reset-password')||'');
  useEffect(()=>{if(resetToken)window.history.replaceState(null,'',window.location.pathname+window.location.search);},[resetToken]);
@@ -219,7 +221,7 @@ export default function App(){
 
  const editable = can(`${page}.create`);
  const linkedEnrollments=new Set((data.enrollments||[]).filter(e=>String(e.student_id)===selectedChild).map(e=>String(e.id)));
- const records=(data[page]||[]).filter(row=>{
+ const records=(page==='admissions'?filterAdmissionRows(data.admissions||[],{year:admissionYearFilter,grade:admissionGradeFilter,date:admissionDateFilter}):(data[page]||[])).filter(row=>{
   if(page==='students' && (row.enrollment_stage||'applicant')!==studentStage)return false;
   if(user?.role==='guardian'&&selectedChild){
    if(page==='students'&&String(row.id)!==selectedChild)return false;
@@ -320,6 +322,12 @@ export default function App(){
  {page==='students'&&<section className="sc-students-overview" aria-label={ui('Resumen de alumnos')}><div className="sc-students-overview-intro"><span>{ui('DIRECTORIO ESCOLAR')}</span><strong>{ui('Cada expediente, una trayectoria por acompañar')}</strong><p>{ui('Accede a datos de identificación, contactos autorizados y seguimiento académico desde un mismo lugar.')}</p></div><div className="sc-students-overview-metrics"><article><span>{studentStage==='enrolled'?ui('Alumnos inscritos'):ui('Aspirantes registrados')}</span><strong>{(data.students||[]).filter(s=>(s.enrollment_stage||'applicant')===studentStage).length}</strong></article><article><span>{ui('Con CURP registrada')}</span><strong>{studentDirectoryStats((data.students||[]).filter(s=>(s.enrollment_stage||'applicant')===studentStage)).withCurp}</strong></article><article><span>{ui('Resultados de búsqueda')}</span><strong>{records.length}</strong></article></div></section>}
  {page==='academic_years'&&<div className="info">{ui('Las solicitudes solo se admiten dentro de las fechas de apertura y cierre configuradas para cada proceso.')}</div>}
  {page==='grades'&&<div className="info">{['admin','teacher'].includes(user.role)?ui('Las familias y alumnos solo ven calificaciones publicadas. Promedio visible: ') : ui('Promedio de calificaciones publicadas: ')} <strong>{mean(records.map(x=>Number(x.score)))}</strong> . {ui('La boleta detallada se encuentra en Expedientes.')}</div>}
+ {page==='admissions'&&<AdmissionOverview items={data.admissions||[]} years={data.academic_years||[]}
+  year={admissionYearFilter} grade={admissionGradeFilter} date={admissionDateFilter}
+  onYear={value=>{setAdmissionYearFilter(value);setPageNumber(0);}}
+  onGrade={value=>{setAdmissionGradeFilter(value);setPageNumber(0);}}
+  onDate={value=>{setAdmissionDateFilter(value);setPageNumber(0);}}
+  onReset={()=>{setAdmissionYearFilter('');setAdmissionGradeFilter('');setAdmissionDateFilter('');setPageNumber(0);}}/>}
  {page==='admissions'&&can('admissions.approve')&&<AdmissionRequirements years={data.academic_years||[]}/>}
  <section className={'panel table-panel'+(page==='students'?' sc-students-panel':'')}><div className="toolbar"><div className="search"><Search size={17}/><input aria-label={page==='students'?ui('Buscar alumnos por nombre o CURP'):ui('Buscar registros')} placeholder={page==='students'?ui('Buscar por nombre, CURP o dato del expediente…'):ui('Buscar…')} value={query} onChange={e=>{setQuery(e.target.value);setPageNumber(0);}}/></div>{statuses.length>0&&<button className="secondary" type="button" aria-expanded={advanced} onClick={()=>setAdvanced(value=>!value)}>{ui('Filtros avanzados')}</button>}
   <span className="count">{records.length} {ui('Registros').toLowerCase()}</span></div>

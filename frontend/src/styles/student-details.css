@@ -177,3 +177,18 @@
 .sc-admission-file-actions button{min-height:42px}
 @media(max-width:850px){.sc-admission-file-grid{grid-template-columns:1fr}}
 @media(max-width:550px){.sc-admission-file-flow{gap:3px;padding:10px}.sc-admission-file-flow>div small{font-size:9px}.sc-admission-file-card{padding:17px}.sc-admission-file-actions button{flex:1;min-width:150px}}
+
+.sc-admission-overview{display:grid;gap:14px;margin-bottom:18px}
+.sc-admission-overview-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.sc-admission-overview-kpis article{min-width:0;background:white;border:1px solid #dfe6f2;border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px}
+.sc-admission-overview-icon{flex:none;width:39px;height:39px;display:grid;place-items:center;border-radius:11px;background:#edf2ff;color:#405cf5}
+.sc-admission-overview-kpis article>div{display:grid;gap:6px;min-width:0}
+.sc-admission-overview-kpis small{font-size:11px;line-height:1.4;color:#5b6c87}
+.sc-admission-overview-kpis strong{font-size:25px;color:#162953;font-weight:800;font-variant-numeric:tabular-nums}
+.sc-admission-overview-filters{display:flex;gap:13px;flex-wrap:wrap;align-items:end;background:white;border:1px solid #dfe6f2;border-radius:14px;padding:16px}
+.sc-admission-overview-filter-title{display:flex;align-items:center;gap:8px;color:#2944a0;font-size:13px;min-width:150px;margin-bottom:12px}
+.sc-admission-overview-filters label{display:grid;gap:7px;font-size:11px;color:#536481;font-weight:700;flex:1;min-width:142px}
+.sc-admission-overview-filters select,.sc-admission-overview-filters input{min-height:42px;width:100%;border:1px solid #bfcbdd;background:white;border-radius:9px;padding:9px;color:#183357}
+.sc-admission-overview-filters button{min-height:42px}
+@media(max-width:1120px){.sc-admission-overview-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.sc-admission-overview-kpis{gap:8px}.sc-admission-overview-kpis article{padding:12px}.sc-admission-overview-icon{width:34px;height:34px}.sc-admission-overview-filters label{flex-basis:100%}.sc-admission-overview-filters button{width:100%}}
