@@ -37,6 +37,7 @@ module DemoBulk
     seed_communications(year, admin, guardians)
     seed_calendar(year)
     seed_documents(students, guardians)
+    seed_imports(admin)
     puts "Demo escolar: #{groups.size} grupos; matrícula mínima de #{TARGET_PER_GROUP} por grupo; #{students.size} alumnos adicionales."
   end
 
@@ -184,4 +185,18 @@ module DemoBulk
       document.save!
     end
   end
+  def self.seed_imports(admin)
+    MIN_RECORDS.times do |i|
+      filename = "DEMO_PENDIENTE_NO_IMPORTAR_#{format('%02d', i + 1)}.csv"
+      next if DataImport.joins(file_attachment: :blob).where(user: admin)
+        .where(active_storage_blobs: { filename: filename }).exists?
+
+      row = "DEMO#{format('%06d', i + 700)}HDFRNN00"
+      contents = "first_name,last_name,curp,birth_date\\nAlumno,Demostracion,#{row},2018-01-01\\n"
+      batch = DataImport.new(user: admin, kind: "students", status: "uploaded")
+      batch.file.attach(io: StringIO.new(contents), filename: filename, content_type: "text/csv")
+      batch.save!
+    end
+  end
+
 end
