@@ -23,7 +23,7 @@ it('never offers a second formalization after a matrícula already exists',async
  render(<AdmissionDetail admission={{id:8,status:'approved',enrollment_id:12,grade_level:1,student_name:'Ana',year_name:'2026-2027'}}
   onClose={vi.fn()} onFormalize={vi.fn()}/>);
  expect(screen.queryByRole('button',{name:'Formalizar inscripción'})).toBeNull();
- expect(screen.getByText('Inscripción formalizada')).toBeTruthy();
+ expect(screen.getAllByText('Inscripción formalizada').length).toBeGreaterThan(0);
 });
 it('allows formalization only for approved requests that have no matrícula yet',async()=>{
  vi.mocked(api).mockImplementation(async path=>path.endsWith('/history')?[]:{status:'approved',missing_for_submission:[],missing_for_formalization:[]});
