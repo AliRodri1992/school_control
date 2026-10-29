@@ -75,6 +75,8 @@ if ENV["DEMO_SEEDS"] == "true"
     record.kind = "meeting"
     record.description = "Presentación del ciclo escolar y encuentro con las familias."
   end
+  require_relative "demo_admissions"
+  DemoAdmissions.seed!(year: year, guardian: guardian, admin: admin)
   puts "Datos ficticios preparados sin duplicar registros."
 end
 
