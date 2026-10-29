@@ -22,6 +22,7 @@ module DemoModules
     end
     AssignmentSubmission.find_or_create_by!(assignment: assignment, enrollment: enrollment) do |record|
       record.body = "Tres ideas sobre la lectura de demostración."
+      record.submitted_at = Time.current
     end
     [1, 2, 3].each do |term|
       Grade.find_or_create_by!(enrollment: enrollment, course: course, term: term) do |record|
