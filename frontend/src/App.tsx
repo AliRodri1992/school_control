@@ -21,6 +21,7 @@ const Preferences=lazy(()=>import('./features/preferences/Preferences'));
 const StudentDetails=lazy(()=>import('./features/students/StudentDetails'));
 const FamilyContacts=lazy(()=>import('./features/contacts/FamilyContacts'));
 import StudentRowActions from './features/students/StudentRowActions';
+import EnrollmentJourney from './features/students/EnrollmentJourney';
 import ApplicantRegistration from './features/students/ApplicantRegistration';
 import AdmissionRequirements from './features/students/AdmissionRequirements';
 import AdmissionDetail from './features/students/AdmissionDetail';
@@ -312,7 +313,8 @@ export default function App(){
   page==='preferences'?<Preferences onSaved={prefs=>setPageSize(prefs.rows_per_page)}/>:
   page==='profile'?<Profile onChange={setUser} onSignedOut={signedOut} onNavigate={go}/>:
  page==='notifications'?<Notifications navigate={target=>{if(target==='profile'||target==='notifications'||target==='messages'||modules[target]||['dashboard','reports','classroom','documents','schedule','school','access_roles'].includes(target))go(target);}}/>:
- page==='classroom'?<Classroom user={user} courses={data.courses||[]} enrollments={data.enrollments||[]}/>:
+ page==='enrollments'?<EnrollmentJourney items={data.enrollments||[]} groups={data.groups||[]} years={data.academic_years||[]} canComplete={can('enrollments.complete')} onComplete={complete} error={moduleLoadErrors.enrollments?.message}/>:
+  page==='classroom'?<Classroom user={user} courses={data.courses||[]} enrollments={data.enrollments||[]}/>:
  page==='documents'?<Documents students={(data.students||[]).filter(s=>user.role!=='guardian'||!selectedChild||String(s.id)===selectedChild)} admin={can('student_documents.review')}/>:
  page==='messages'?<Messages userId={user.id}/>:
  page==='school'?<SchoolSettings school={school} busy={busy} onSave={form=>perform(async()=>setSchool(await api('school','PATCH',form)))}/>:
