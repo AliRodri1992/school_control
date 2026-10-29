@@ -24,6 +24,7 @@ minimums = {
   "Classroom submissions" => AssignmentSubmission.count,
   "Student documents" => StudentDocument.count,
   "Import batches" => DataImport.count,
+  "Ready report exports" => ReportExport.where(status: "ready").count,
   "Announcements" => Announcement.count,
   "Messages" => InstitutionalMessage.count,
   "Calendar events" => CalendarEvent.count
