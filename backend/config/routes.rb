@@ -44,6 +44,9 @@ Rails.application.routes.draw do
     end
     resources :assignments, only: %i[index create update] do
       get :submissions, on: :member
+      get :readiness, on: :member
+      get :history, on: :member
+      post :cancel, on: :member
       post :submit, on: :member
       post :review, on: :member
     end
@@ -78,6 +81,7 @@ Rails.application.routes.draw do
     resources :students, only: %i[index show create update] do
       get :report, on: :member
     end
+    resources :admission_document_requirements, only: %i[index create destroy]
     resources :admissions, only: %i[index create] do
       post :submit, on: :member
       post :request_corrections, on: :member

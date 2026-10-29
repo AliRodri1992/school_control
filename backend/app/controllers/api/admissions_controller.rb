@@ -6,7 +6,8 @@ module Api
 
     def permission_key
       { 'submit' => 'admissions.create', 'request_corrections' => 'admissions.reject',
-        'formalize' => 'admissions.approve' }.fetch(action_name, super)
+        'formalize' => 'admissions.approve', 'readiness' => 'admissions.index',
+        'cancel' => 'admissions.create', 'history' => 'admissions.index' }.fetch(action_name, super)
     end
 
     def index
@@ -25,12 +26,38 @@ module Api
       render json: present(admission), status: :created
     end
 
+    def readiness
+      admission = policy_scope(Admission).find(params[:id])
+      authorize admission, :show?
+      render json: { status: admission.status, missing_for_submission: admission.missing_requirements,
+        missing_for_formalization: admission.missing_requirements(for_formalization: true) }
+    end
+
+    def history
+      admission = policy_scope(Admission).find(params[:id])
+      authorize admission, :show?
+      render json: AuditEvent.where(record_type: "Admission", record_id: admission.id).order(:created_at)
+        .map { |event| { action: event.action, created_at: event.created_at } }
+    end
+
+    def cancel
+      admission = Admission.find(params[:id])
+      authorize admission, :create?
+      admission.with_lock do
+        raise ArgumentError, "No se puede cancelar una solicitud resuelta" unless %w[draft submitted correction_requested].include?(admission.status)
+        admission.update!(status: "cancelled")
+        audit(admission, "admission.cancelled")
+      end
+      render json: present(admission)
+    end
+
     def submit
       admission = Admission.find(params[:id])
       authorize admission, :create?
       admission.with_lock do
         raise ArgumentError, "Solo puede enviar un borrador o una corrección" unless %w[draft correction_requested].include?(admission.status)
         raise ArgumentError, "Complete domicilio, teléfono y contacto familiar antes de enviar" unless admission.complete_for_submission?
+        raise ArgumentError, "El periodo de solicitudes está cerrado" unless admission.academic_year.open_for?(admission.kind)
         admission.eligible_history
         raise ActiveRecord::RecordInvalid, admission if admission.errors.any?
         admission.update!(status: "submitted", reason: nil)

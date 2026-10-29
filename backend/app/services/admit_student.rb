@@ -4,7 +4,7 @@ class AdmitStudent
       raise ArgumentError, "La solicitud ya fue formalizada o no está aprobada" unless admission.status == "approved" && !admission.enrollment
       admission.student.with_lock do
         admission.errors.clear
-        raise ArgumentError, "Expediente incompleto" unless admission.complete_for_submission?
+        raise ArgumentError, "Expediente incompleto" unless admission.complete_for_enrollment?
         admission.eligible_history
         raise ActiveRecord::RecordInvalid, admission if admission.errors.any?
         group.with_lock do

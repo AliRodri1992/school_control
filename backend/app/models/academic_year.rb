@@ -1,4 +1,5 @@
 class AcademicYear < ApplicationRecord
+  has_many :admission_document_requirements, dependent: :restrict_with_error
   has_many :groups, dependent: :restrict_with_error
   has_many :admissions, dependent: :restrict_with_error
   validates :name, :starts_on, :ends_on, :admissions_open_on, :admissions_close_on,
