@@ -315,7 +315,8 @@ export default function App(){
   page==='profile'?<Profile onChange={setUser} onSignedOut={signedOut} onNavigate={go}/>:
  page==='notifications'?<Notifications navigate={target=>{if(target==='profile'||target==='notifications'||target==='messages'||modules[target]||['dashboard','reports','classroom','documents','schedule','school','access_roles'].includes(target))go(target);}}/>:
  page==='academic_years'?<SchoolCycles items={data.academic_years||[]} canCreate={can('academic_years.create')} canEdit={can('academic_years.update')}
-  onCreate={()=>createOrEdit()} onEdit={createOrEdit} error={moduleLoadErrors.academic_years?.message}/>:
+  onSave={async(values,existing)=>{await api(existing?'academic_years/'+existing.id:'academic_years',existing?'PATCH':'POST',values);await refresh();void notify('Cambios guardados correctamente.');}}
+  error={moduleLoadErrors.academic_years?.message}/>:
   page==='enrollments'?<EnrollmentJourney items={data.enrollments||[]} groups={data.groups||[]} years={data.academic_years||[]} canComplete={can('enrollments.complete')} onComplete={complete} error={moduleLoadErrors.enrollments?.message}/>:
   page==='classroom'?<Classroom user={user} courses={data.courses||[]} enrollments={data.enrollments||[]}/>:
  page==='documents'?<Documents students={(data.students||[]).filter(s=>user.role!=='guardian'||!selectedChild||String(s.id)===selectedChild)} admin={can('student_documents.review')}/>:
