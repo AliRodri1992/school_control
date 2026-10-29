@@ -185,8 +185,18 @@ export default function App(){
    }});
  }
  function approve(record:Row){
-   const groups = (data.groups||[]).filter(g=>g.academic_year_id===record.academic_year_id&&g.grade_level===record.grade_level);
-   setDialog({title:`${ui('Aprobar solicitud')} · ${record.student_name}`,fields:[{key:'group_id',label:ui('Asignar grupo'),options:groups.map(g=>[String(g.id),`${g.label} · ${g.capacity-g.occupied} ${ui(' lugares').trim()}`])}],values:{},submit:async values=>{await api(`admissions/${record.id}/approve`,'POST',values);setDialog(null);}});
+   void perform(async()=>{await api(`admissions/${record.id}/approve`,'POST');});
+ }
+ function formalize(record:Row){
+   const groups=(data.groups||[]).filter(g=>g.academic_year_id===record.academic_year_id&&g.grade_level===record.grade_level&&g.occupied<g.capacity);
+   setDialog({title:`${ui('Formalizar inscripción')} · ${record.student_name}`,fields:[{key:'group_id',label:ui('Asignar grupo'),options:groups.map(g=>[String(g.id),`${g.label} · ${g.capacity-g.occupied} ${ui('lugares disponibles')}`])}],values:{},submit:async values=>{
+    await api(`admissions/${record.id}/formalize`,'POST',values);setDialog(null);
+   }});
+ }
+ function requestCorrections(record:Row){
+   setDialog({title:ui('Solicitar correcciones'),fields:[{key:'reason',label:ui('Observaciones para la familia'),type:'textarea'}],values:{},submit:async values=>{
+    await api(`admissions/${record.id}/request_corrections`,'POST',values);setDialog(null);
+   }});
  }
  function reject(record:Row){setDialog({title:ui('Rechazar solicitud'),fields:[{key:'reason',label:ui('Motivo para la familia'),type:'textarea'}],values:{},submit:async values=>{await api(`admissions/${record.id}/reject`,'POST',values);setDialog(null);}});}
  function complete(record:Row){
@@ -313,7 +323,10 @@ export default function App(){
   reportLoading={reportLoadingStudentId===String(row.id)} canEdit={can('students.update')} onView={()=>openStudentRecord(row)}
   onReport={()=>void openStudentReport(row.id)} onEdit={()=>createOrEdit(row)}/>}
  {page!=='students'&&can(`${page}.${['grades','attendances'].includes(page)?'create':'update'}`)&&!['admissions','announcements'].includes(page)&&(page!=='grades'||row.status!=='published')&&<TableAction kind="edit" ariaLabel={`Editar ${translatedModules[page]?.singular||"registro"} ${row.full_name||row.name||row.id}`} onClick={()=>createOrEdit(row)}/>}
- {page==='admissions'&&(can('admissions.approve')||can('admissions.reject'))&&row.status==='submitted'&&<><TableAction kind="approve" ariaLabel={`Aprobar solicitud ${row.folio||row.id}`} onClick={()=>approve(row)}/><TableAction kind="reject" ariaLabel={`Rechazar solicitud ${row.folio||row.id}`} onClick={()=>reject(row)}/></>}
+ {page==='admissions'&&row.status==='submitted'&&<>{can('admissions.approve')&&<TableAction kind="approve" ariaLabel={`Aprobar solicitud ${row.folio||row.id}`} onClick={()=>approve(row)}/>}
+ {can('admissions.reject')&&<><button className="secondary" type="button" onClick={()=>requestCorrections(row)}>{ui('Solicitar correcciones')}</button><TableAction kind="reject" ariaLabel={`Rechazar solicitud ${row.folio||row.id}`} onClick={()=>reject(row)}/></>}</>}
+ {page==='admissions'&&row.status==='approved'&&can('admissions.approve')&&<button className="primary" type="button" onClick={()=>formalize(row)}>{ui('Formalizar inscripción')}</button>}
+ {page==='admissions'&&row.status==='draft'&&can('admissions.create')&&<span className="badge">{ui('Borrador')}</span>}
  {page==='enrollments'&&can('enrollments.complete')&&row.status==='active'&&<TableAction kind="complete" ariaLabel={`Cerrar ciclo de ${row.student_name||row.id}`} onClick={()=>complete(row)}/>}
  {page==='users'&&can('users.update')&&row.id!==user.id&&<TableAction kind={row.active?"deactivate":"activate"} ariaLabel={`${row.active?"Desactivar":"Activar"} usuario ${row.name||row.id}`} onClick={()=>perform(async()=>{await api(`users/${row.id}`,'PATCH',{active:!row.active});})}/>}
  </div></td></tr>)}</tbody></table></div>}{!records.length&&(moduleLoadErrors[page]?
