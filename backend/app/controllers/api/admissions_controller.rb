@@ -4,6 +4,11 @@ module Api
     after_action :verify_authorized, except: :index
     before_action :require_admin, only: %i[approve reject request_corrections formalize]
 
+    def permission_key
+      { 'submit' => 'admissions.create', 'request_corrections' => 'admissions.reject',
+        'formalize' => 'admissions.approve' }.fetch(action_name, super)
+    end
+
     def index
       render json: policy_scope(Admission).includes(:student, :academic_year).order(created_at: :desc).map { |record| present(record) }
     end
@@ -11,7 +16,7 @@ module Api
     def create
       student = students_scope.find(params.require(:student_id))
       admission = student.admissions.new(params.permit(:academic_year_id, :grade_level, :kind))
-      admission.status = 'draft' if params[:draft] == true
+      admission.status = "draft" if ActiveModel::Type::Boolean.new.cast(params[:draft])
       authorize admission, :create?
       admission.transaction do
         admission.save!
