@@ -202,3 +202,24 @@
 .sc-applicant-family-flags input,.sc-applicant-check input{accent-color:#405cf5;width:17px;height:17px}
 .sc-applicant-family-extras{display:grid;gap:13px}
 .sc-applicant-family>.secondary{justify-self:start}
+
+/* Admissions: strong separation between application review and formalized enrollment. */
+.sc-admission-overview{display:grid;gap:16px;min-width:0}
+.sc-admission-overview-intro{padding:21px clamp(16px,3vw,28px);border-radius:15px;border:1px solid #dce5f5;background:linear-gradient(120deg,#f1f5ff,#fff)}
+.sc-admission-overview-intro>span{display:block;color:#3c5bc2;font-size:10px;font-weight:800;letter-spacing:1.3px}
+.sc-admission-overview-intro>strong{display:block;margin-top:6px;color:#20395f;font-size:clamp(16px,2.3vw,21px)}
+.sc-admission-overview-intro p{margin:7px 0 0;max-width:850px;color:#617590;font-size:12px;line-height:1.65}
+.sc-admission-overview-filters{display:flex;align-items:end;flex-wrap:wrap;gap:12px}
+.sc-admission-overview-filters label{min-width:135px;flex:1 1 145px}
+.sc-admission-overview-filters select,.sc-admission-overview-filters input{max-width:100%;width:100%;min-height:42px}
+.sc-admissions-panel{min-width:0;border-color:#dce5f2}
+.sc-admissions-panel .toolbar .search{flex:1 1 320px}
+.sc-admissions-table{width:100%}
+.sc-admissions-table td{vertical-align:middle}
+.sc-admission-identity{display:grid;gap:4px;min-width:145px}
+.sc-admission-identity strong{font-size:12px;color:#203c64;font-weight:800}
+.sc-admission-identity small{font-size:10px;color:#6c7d95;line-height:1.4}
+.sc-admissions-panel .sc-table-action-group{justify-content:flex-end;gap:6px}
+.sc-admissions-panel .sc-table-action-group button{min-width:36px;min-height:36px}
+@media(max-width:840px){.sc-admission-overview-filters{align-items:stretch}.sc-admission-overview-filters label{flex:1 1 170px}.sc-admissions-panel .table-scroll{max-width:100%;overflow-x:auto}}
+@media(max-width:480px){.sc-admission-overview-intro{padding:17px}.sc-admission-overview-filters label{flex-basis:100%}.sc-admission-overview-filters button{width:100%}}

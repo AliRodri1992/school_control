@@ -25,6 +25,7 @@ export default function AdmissionDetail({admission,student,onClose,onContinue,on
  },[admission.id]);
  const status=admission.enrollment_id?'enrolled':String(admission.status);
  const canEdit=['draft','correction_requested'].includes(admission.status);
+ const completed=Boolean(admission.enrollment_id);
  return <section className="sc-admission-file" aria-label={ui('Seguimiento de solicitud')}>
   <header className="sc-admission-file-hero"><button type="button" className="sc-record-back" onClick={onClose}><ArrowLeft size={16}/>{ui('Volver a solicitudes')}</button>
    <span className="eyebrow">{ui('ADMISIONES / SEGUIMIENTO')}</span><h1>{admission.student_name||student?.full_name||ui('Solicitud de ingreso')}</h1>
@@ -65,7 +66,7 @@ export default function AdmissionDetail({admission,student,onClose,onContinue,on
    {status==='submitted'&&onApprove&&<button className="primary" type="button" onClick={onApprove}>{ui('Aprobar solicitud')}</button>}
    {status==='submitted'&&onCorrections&&<button className="secondary" type="button" onClick={onCorrections}>{ui('Solicitar correcciones')}</button>}
    {status==='submitted'&&onReject&&<button className="secondary" type="button" onClick={onReject}>{ui('Rechazar solicitud')}</button>}
-   {status==='approved'&&onFormalize&&<button className="primary" type="button" onClick={onFormalize}>{ui('Formalizar inscripción')}</button>}
+   {status==='approved'&&!completed&&onFormalize&&<button className="primary" type="button" onClick={onFormalize}>{ui('Formalizar inscripción')}</button>}
   </footer>
  </section>;
 }
