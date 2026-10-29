@@ -1,0 +1,183 @@
+# Development-only, deterministic school-wide dataset.
+# Creates students and their genuine promotion history instead of bypassing enrollment validation.
+module DemoBulk
+  FIRST_NAMES = %w[Ana Luis Sofia Mateo Elisa Diego Carla Pablo Irene Hugo Julia Bruno Lucia Tomas Elena Ivan].freeze
+  LAST_NAMES = %w[Rivera Flores Luna Ortiz Torres Ruiz Perez Soto Vargas Mora Salas Rojas Castro Diaz].freeze
+  TARGET_PER_GROUP = 10
+  MIN_RECORDS = 30
+
+  def self.seed!(year:, admin:, password:)
+    raise "Demo dataset is development-only" unless Rails.env.development?
+    guardians = seed_guardians(password)
+    seed_subjects
+    groups = year.groups.where(grade_level: 1..6, section: %w[A B]).order(:grade_level, :section).to_a
+    raise "Expected 12 class groups" unless groups.size == 12
+
+    students = []
+    groups.each_with_index do |group, group_index|
+      group.update!(capacity: TARGET_PER_GROUP + 10) if group.capacity < TARGET_PER_GROUP
+      needed = [ TARGET_PER_GROUP - group.enrollments.count, 0 ].max
+      needed.times do |index|
+        serial = group_index * 20 + index + 1
+        guardian = guardians[(serial - 1) % guardians.length]
+        birth = Date.new(2019 - group.grade_level, 1, 1) + serial.days
+        curp = "DEMO#{birth.strftime('%y%m%d')}HDFRNN#{serial % 10}#{serial % 10}"
+        student = Student.find_or_create_by!(curp: curp) do |record|
+          record.assign_attributes(first_name: FIRST_NAMES[serial % FIRST_NAMES.length],
+            last_name: LAST_NAMES[serial % LAST_NAMES.length], birth_date: birth, guardian: guardian,
+            nationality: "MX", emergency_phone: "+525555#{format('%06d', serial)}")
+        end
+        populate_identity(student, guardian, serial)
+        ensure_progression(student, group, year, admin)
+        students << student
+      end
+    end
+
+    seed_classroom(year, students)
+    seed_communications(year, admin, guardians)
+    seed_calendar(year)
+    seed_documents(students, guardians)
+    puts "Demo escolar: #{groups.size} grupos; matrícula mínima de #{TARGET_PER_GROUP} por grupo; #{students.size} alumnos adicionales."
+  end
+
+  def self.seed_guardians(password)
+    (1..MIN_RECORDS).map do |n|
+      User.find_or_create_by!(email: "familia.demo#{format('%02d', n)}@school.test") do |record|
+        record.assign_attributes(name: "Familia de demostración #{n}", role: "guardian", password: password)
+      end
+    end
+  end
+
+  def self.seed_subjects
+    topics = %w[Lectura Escritura Ortografia Comprension Pensamiento Logica Numeros Geometria Medicion
+      Ciencias Biologia Ecologia Ambiente Historia Regional Geografia Cultura Civismo Etica Arte
+      Musica Teatro Movimiento Salud Bienestar Tecnologia Programacion Investigacion Biblioteca]
+    topics.each_with_index do |name, i|
+      Subject.find_or_create_by!(code: "DM#{format('%02d', i + 1)}") do |record|
+        record.name = "Taller de #{name}"
+      end
+    end
+  end
+
+  def self.populate_identity(student, guardian, serial)
+    student.addresses.find_or_create_by!(purpose: "home", line1: "Calle Demo #{serial}") do |record|
+      record.assign_attributes(country_code: "MX", region: "Estado de México",
+        locality: "Municipio de demostración", postal_code: "54700", primary: true)
+    end
+    student.phone_numbers.find_or_create_by!(purpose: "emergency", number_e164: "+525555#{format('%06d', serial)}") do |record|
+      record.assign_attributes(country_code: "MX", primary: true)
+    end
+    student.contacts.find_or_create_by!(name: guardian.name, relationship: "Tutor") do |record|
+      record.assign_attributes(primary: true, emergency: true, pickup_authorized: true)
+    end
+    StudentContact.find_or_create_by!(student: student, name: guardian.name, phone: "+525555#{format('%06d', serial)}") do |record|
+      record.assign_attributes(relationship: "Tutor", emergency: true, pickup_authorized: true)
+    end
+  end
+
+  def self.ensure_progression(student, current_group, current_year, admin)
+    grade = current_group.grade_level
+    (1..grade).each do |step|
+      offset = grade - step
+      cycle = if offset.zero?
+        current_year
+      else
+        AcademicYear.find_or_create_by!(name: "Demo histórico #{current_year.starts_on.year - offset}") do |record|
+          record.assign_attributes(starts_on: current_year.starts_on.prev_year(offset),
+            ends_on: current_year.ends_on.prev_year(offset),
+            admissions_open_on: current_year.starts_on.prev_year(offset) - 60.days,
+            admissions_close_on: current_year.starts_on.prev_year(offset) - 1.day,
+            reenrollment_open_on: current_year.starts_on.prev_year(offset) - 60.days,
+            reenrollment_close_on: current_year.starts_on.prev_year(offset) - 1.day)
+        end
+      end
+      group = offset.zero? ? current_group :
+        Group.find_or_create_by!(academic_year: cycle, grade_level: step, section: current_group.section)
+      admission = Admission.find_or_create_by!(student: student, academic_year: cycle) do |record|
+        record.assign_attributes(grade_level: step, kind: step == 1 ? "new" : "reenrollment", status: "draft")
+      end
+      if admission.status == "draft"
+        admission.update!(status: "approved", folio: "ESC-DEMO-#{student.id}-#{cycle.id}")
+      end
+      enrollment = Enrollment.find_or_create_by!(student: student, academic_year: cycle) do |record|
+        record.assign_attributes(admission: admission, group: group, status: offset.zero? ? "active" : "completed",
+          outcome: offset.zero? ? nil : "promoted")
+      end
+      if !offset.zero? && enrollment.status != "completed"
+        enrollment.update!(status: "completed", outcome: "promoted")
+      end
+      AuditEvent.find_or_create_by!(user: admin, action: "admission.formalized", record_type: "Admission",
+        record_id: admission.id)
+    end
+  end
+
+  def self.seed_classroom(year, students)
+    calendar_day = [ year.starts_on, Date.current - 14.days ].max
+    school_days = (calendar_day..[ year.ends_on, Date.current ].min).select { |d| (1..5).cover?(d.wday) }.first(3)
+    students.each_with_index do |student, i|
+      enrollment = student.enrollments.find_by!(academic_year: year)
+      course = enrollment.group.courses.order(:id).first!
+      school_days.each_with_index do |day, idx|
+        Attendance.find_or_create_by!(enrollment: enrollment, on: day) do |record|
+          record.status = %w[present present late absent justified][(i + idx) % 5]
+        end
+      end
+      Grade.find_or_create_by!(enrollment: enrollment, course: course, term: 1) do |record|
+        record.assign_attributes(score: 7 + (i % 4), status: i.even? ? "published" : "draft",
+          reviewer: i.even? ? course.teacher : nil)
+      end
+      assignment = Assignment.find_or_create_by!(course: course, title: "Lectura guiada de demostración") do |record|
+        record.assign_attributes(instructions: "Lee el texto y responde las preguntas de comprensión.", due_at: 7.days.from_now)
+      end
+      AssignmentSubmission.find_or_create_by!(assignment: assignment, enrollment: enrollment) do |record|
+        record.assign_attributes(body: "Respuesta de demostración del alumno #{student.id}.", submitted_at: Time.current)
+      end
+      next unless i < MIN_RECORDS
+
+      GradeChangeRequest.find_or_create_by!(grade: enrollment.grades.find_by!(course: course, term: 1),
+        requester: course.teacher, status: "pending") do |record|
+        record.assign_attributes(reason: "Revisión de calificación ficticia #{i + 1}", score: 9,
+          previous_score: 7 + (i % 4), expected_version: 0)
+      end
+    end
+    year.groups.order(:grade_level, :section).each do |group|
+      GenerateSchedule.call(group: group) unless ScheduleSlot.joins(:course).where(courses: { group_id: group.id }).exists?
+    end
+  end
+
+  def self.seed_communications(year, admin, guardians)
+    MIN_RECORDS.times do |i|
+      n = i + 1
+      Announcement.find_or_create_by!(title: "Aviso de demostración #{format('%02d', n)}") do |record|
+        record.assign_attributes(body: "Comunicado escolar ficticio número #{n}.", audience: %w[all guardian teacher student][i % 4])
+      end
+      InstitutionalMessage.find_or_create_by!(sender: admin, recipient: guardians[i], subject: "Seguimiento de ejemplo #{n}") do |record|
+        record.body = "Mensaje institucional ficticio para la familia #{n}."
+      end
+    end
+  end
+
+  def self.seed_calendar(year)
+    MIN_RECORDS.times do |i|
+      n = i + 1
+      CalendarEvent.find_or_create_by!(academic_year: year, title: "Actividad demostrativa #{n}") do |record|
+        start_time = (Date.current + (i + 1).days).in_time_zone.change(hour: 9, min: 0)
+        record.assign_attributes(kind: %w[activity exam meeting holiday][i % 4],
+          starts_at: start_time, ends_at: start_time + 1.hour,
+          description: "Actividad escolar ficticia del calendario.")
+      end
+    end
+  end
+
+  def self.seed_documents(students, guardians)
+    students.first(MIN_RECORDS).each_with_index do |student, i|
+      next if StudentDocument.exists?(student: student, title: "Documento demo #{i + 1}")
+
+      document = StudentDocument.new(student: student, uploader: guardians[i], title: "Documento demo #{i + 1}",
+        status: i.even? ? "approved" : "pending")
+      document.file.attach(io: StringIO.new(DemoAdmissions::PNG),
+        filename: "documento-demo-#{i + 1}.png", content_type: "image/png")
+      document.save!
+    end
+  end
+end
