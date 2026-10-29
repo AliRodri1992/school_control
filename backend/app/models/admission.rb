@@ -6,9 +6,15 @@ class Admission < ApplicationRecord
   validates :student_id, uniqueness: { scope: :academic_year_id }
   validates :folio, presence: true, uniqueness: true
   validates :kind, inclusion: { in: %w[new reenrollment] }
-  validates :status, inclusion: { in: %w[submitted approved rejected] }
+  validates :status, inclusion: { in: %w[draft submitted correction_requested approved rejected cancelled] }
   validates :grade_level, inclusion: { in: 1..6 }
   validate :eligible, on: :create
+
+  def complete_for_submission?
+    student.present? && student.curp.present? && student.birth_date.present? &&
+      student.addresses.exists? && student.phone_numbers.exists? &&
+      student.contacts.exists? && student.guardian.present?
+  end
 
   def assign_folio
     self.folio ||= "ESC-#{SecureRandom.hex(6).upcase}"

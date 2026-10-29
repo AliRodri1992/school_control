@@ -79,6 +79,9 @@ Rails.application.routes.draw do
       get :report, on: :member
     end
     resources :admissions, only: %i[index create] do
+      post :submit, on: :member
+      post :request_corrections, on: :member
+      post :formalize, on: :member
       post :approve, on: :member
       post :reject, on: :member
     end
