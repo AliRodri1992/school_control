@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect,useState} from 'react';
 import {ArrowLeft,ArrowRight,CheckCircle2,FileText,Save,Send,Users} from 'lucide-react';
 import {api} from '../../api';
 import type {Row} from '../../modules';
@@ -20,6 +20,65 @@ export default function ApplicantRegistration({years,existing,admissions,onClose
  });
  const [file,setFile]=useState<File|null>(null);
  const [documents,setDocuments]=useState<string[]>([]);
+ const [requirements,setRequirements]=useState<{title:string;required_for_submission:boolean;required_for_formalization:boolean}[]>([]);
+ const [checklist,setChecklist]=useState<string[]>([]);
+ const [docTitle,setDocTitle]=useState('');
+ const [recordIds,setRecordIds]=useState<{address?:number;phone?:number;contact?:number}>({});
+ const editable=!admission||['draft','correction_requested'].includes(admission.status);
+ useEffect(()=>{
+  if(!existing?.id)return;
+  let active=true;
+  void Promise.all([
+   api('students/'+existing.id+'/details/addresses'),
+   api('students/'+existing.id+'/details/phones'),
+   api('student_contacts'),
+   api('student_documents')
+  ]).then(([addresses,phones,contacts,docs])=>{
+    if(!active)return;
+    const address=(addresses as Row[])[0],phone=(phones as Row[])[0];
+    const contact=(contacts as Row[]).find(row=>String(row.student_id)===String(existing.id));
+    const files=(docs as Row[]).filter(row=>String(row.student_id)===String(existing.id));
+    setRecordIds({address:address?.id,phone:phone?.id,contact:contact?.id});
+    setDocuments(files.map(row=>String(row.title)));
+    setForm(previous=>({...previous,academic_year_id:String(admission?.academic_year_id||previous.academic_year_id),
+     grade_level:String(admission?.grade_level||previous.grade_level),
+     country_code:address?.country_code||previous.country_code,
+     line1:address?.line1||'',line2:address?.line2||'',neighborhood:address?.neighborhood||'',
+     locality:address?.locality||'',region:address?.region||'',postal_code:address?.postal_code||'',
+     number_e164:phone?.number_e164||'',
+     contact_name:contact?.name||'',relationship:contact?.relationship||'',
+     contact_phone:contact?.phone||'',contact_email:contact?.email||''}));
+  }).catch((cause:Error)=>{if(active)setError(cause.message);});
+  return()=>{active=false;};
+ },[existing?.id]);
+ useEffect(()=>{
+  if(!admission)return;
+  let active=true;
+  void api('admission_document_requirements?academic_year_id='+admission.academic_year_id+'&grade_level='+admission.grade_level)
+   .then((items:typeof requirements)=>{if(active){setRequirements(items);setDocTitle(current=>current||items[0]?.title||'');}})
+   .catch((cause:Error)=>{if(active)setError(cause.message);});
+  return()=>{active=false;};
+ },[admission?.id]);
+ useEffect(()=>{
+  if(step!==5||!admission)return;
+  let active=true;
+  void api('admissions/'+admission.id+'/readiness')
+   .then((result:{missing_for_submission:string[]})=>{if(active)setChecklist(result.missing_for_submission);})
+   .catch((cause:Error)=>{if(active)setError(cause.message);});
+  return()=>{active=false;};
+ },[step,admission?.id]);
+ async function uploadDocument(){
+  if(!student||!file||busy)return;
+  setBusy(true);setError('');
+  try{
+   const payload=new FormData();payload.append('student_id',String(student.id));
+   payload.append('title',docTitle.trim()||file.name);payload.append('file',file);
+   await api('student_documents','POST',payload);
+   setDocuments(current=>[...current,docTitle.trim()||file.name]);setFile(null);
+   await onSaved();
+  }catch(cause){setError((cause as Error).message);}finally{setBusy(false);}
+ }
+
  const set=(key:string,value:string)=>setForm(current=>({...current,[key]:value}));
  const field=(key:string,label:string,type='text',required=true)=> <label key={key} className="sc-applicant-field"><span>{ui(label)}{required?' *':''}</span><input type={type} value={form[key]||''}
   onChange={event=>set(key,event.target.value)} required={required}/></label>;
@@ -46,22 +105,23 @@ export default function ApplicantRegistration({years,existing,admissions,onClose
     setAdmission(draft);
    }else if(step===1){
     if(!form.line1.trim()||!form.country_code||!form.locality.trim()||!form.region.trim())throw Error(ui('Completa el domicilio principal.'));
-    await api('students/'+student?.id+'/details/addresses','POST',{
-     country_code:form.country_code.toUpperCase(),purpose:'home',line1:form.line1,
-     locality:form.locality,region:form.region,postal_code:form.postal_code,primary:true
+    const updated=await api('students/'+student?.id+'/details/addresses'+(recordIds.address?'/'+recordIds.address:''),recordIds.address?'PATCH':'POST',{
+     country_code:form.country_code.toUpperCase(),purpose:'home',line1:form.line1,line2:form.line2,
+     neighborhood:form.neighborhood,locality:form.locality,region:form.region,postal_code:form.postal_code,primary:true
     });
+    setRecordIds(previous=>({...previous,address:updated.id}));
    }else if(step===2){
     if(!form.number_e164.match(/^\+[1-9]\d{1,14}$/))throw Error(ui('El teléfono debe incluir código internacional, por ejemplo +525512345678.'));
-    await api('students/'+student?.id+'/details/phones','POST',{
+    const updated=await api('students/'+student?.id+'/details/phones'+(recordIds.phone?'/'+recordIds.phone:''),recordIds.phone?'PATCH':'POST',{
      number_e164:form.number_e164,country_code:form.country_code,purpose:'emergency',primary:true
     });
+    setRecordIds(previous=>({...previous,phone:updated.id}));
    }else if(step===3){
     if(!form.contact_name.trim()||!form.relationship.trim()||!form.contact_phone.trim())throw Error(ui('Agrega al menos un contacto familiar.'));
-    await api('student_contacts','POST',{student_id:student?.id,name:form.contact_name,relationship:form.relationship,
+    const updated=await api('student_contacts'+(recordIds.contact?'/'+recordIds.contact:''),recordIds.contact?'PATCH':'POST',{
+     student_id:student?.id,name:form.contact_name,relationship:form.relationship,
      phone:form.contact_phone,email:form.contact_email,emergency:true,pickup_authorized:false});
-   }else if(step===4&&file){
-    const payload=new FormData();payload.append('student_id',String(student?.id));payload.append('title',file.name);payload.append('file',file);
-    await api('student_documents','POST',payload);setDocuments(v=>[...v,file.name]);setFile(null);
+    setRecordIds(previous=>({...previous,contact:updated.id}));
    }
    await onSaved();
    setStep(current=>Math.min(current+1,5));
@@ -79,7 +139,8 @@ export default function ApplicantRegistration({years,existing,admissions,onClose
    <p>{ui('Guarda tu avance en la escuela y revisa los datos antes de enviar la solicitud.')}</p>
    {admission&&<span className="sc-applicant-folio">{ui('Folio')}: {admission.folio}</span>}</header>
   <ol className="sc-applicant-progress">{stages.map((name,index)=><li key={name} aria-current={step===index?'step':undefined} className={index<step?'is-done':''}>
-   <span>{index<step?<CheckCircle2 size={16}/>:index+1}</span><small>{ui(name)}</small></li>)}</ol>
+   <button type="button" disabled={!student||!editable} aria-label={ui('Ir a')+' '+ui(name)} aria-current={step===index?'step':undefined} onClick={()=>setStep(index)}>
+    <span>{index<step?<CheckCircle2 size={16}/>:index+1}</span><small>{ui(name)}</small></button></li>)}</ol>
   <div className="sc-applicant-step"><div className="sc-applicant-step-title"><span>{ui('PASO')} {step+1} / 6</span><h2>{ui(stages[step])}</h2></div>
    {step===0&&<div className="sc-applicant-grid">{field('first_name','Nombre(s)')}{field('last_name','Primer apellido')}
     {field('second_last_name','Segundo apellido','text',false)}{field('curp','CURP')}{field('birth_date','Fecha de nacimiento','date')}{field('birth_place','Lugar de nacimiento','text',false)}
@@ -88,26 +149,34 @@ export default function ApplicantRegistration({years,existing,admissions,onClose
      onChange={e=>set('academic_year_id',e.target.value)}>{years.map(year=><option key={year.id} value={year.id}>{year.name}</option>)}</select></label>
     <label className="sc-applicant-field"><span>{ui('Grado solicitado')}</span><select value={form.grade_level} onChange={e=>set('grade_level',e.target.value)}><option value="1">{ui('Primero de primaria')}</option></select></label>
    </div>}
-   {step===1&&<div className="sc-applicant-grid">{field('country_code','Código de país ISO')}{field('line1','Calle, número exterior e interior')}
-    {field('locality','Municipio o alcaldía')}{field('region','Estado')}{field('postal_code','Código postal','text',false)}</div>}
+   {step===1&&<div className="sc-applicant-grid">{field('country_code','Código de país ISO')}{field('line1','Calle y número exterior')}
+    {field('line2','Número interior y referencias','text',false)}
+    {field('neighborhood','Colonia','text',false)}{field('locality','Municipio o alcaldía')}{field('region','Estado')}{field('postal_code','Código postal','text',false)}</div>}
    {step===2&&<div className="sc-applicant-grid">{field('number_e164','Teléfono de emergencia con código internacional','tel')}
     <p className="sc-applicant-hint">{ui('Puedes agregar teléfonos adicionales desde el expediente del aspirante.')}</p></div>}
    {step===3&&<div className="sc-applicant-grid">{field('contact_name','Nombre del familiar')}{field('relationship','Parentesco')}
     {field('contact_phone','Teléfono de contacto','tel')}{field('contact_email','Correo electrónico','email',false)}
     <p className="sc-applicant-hint"><Users size={16}/>{ui('El tutor que inició sesión permanecerá vinculado como responsable principal. Puedes agregar más familiares desde el expediente.')}</p>
    </div>}
-   {step===4&&<div className="sc-applicant-documents"><FileText size={28}/><p>{ui('Adjunta un PDF, PNG o JPG de hasta 10 MB. También puedes completar documentos posteriormente desde tu portal.')}</p>
+   {step===4&&<div className="sc-applicant-documents"><FileText size={28}/><p>{ui('Adjunta un PDF, PNG o JPG de hasta 10 MB. Los documentos obligatorios dependen del ciclo y grado.')}</p>
+    {requirements.length>0&&<label className="sc-applicant-field"><span>{ui('Tipo de documento')}</span><select value={docTitle}
+      onChange={e=>setDocTitle(e.target.value)}>{requirements.map(r=><option key={r.title} value={r.title}>{r.title}</option>)}</select></label>}
     <input type="file" aria-label={ui('Documento del aspirante')} accept=".pdf,.png,.jpg,.jpeg" onChange={e=>setFile(e.target.files?.[0]||null)}/>
-    {documents.map(name=><span key={name}>{name}</span>)}</div>}
+    <button type="button" className="secondary" disabled={busy||!file} onClick={()=>void uploadDocument()}>{ui('Adjuntar documento')}</button>
+    {documents.map((name,index)=><span key={name+index}>{name}</span>)}</div>}
    {step===5&&<div className="sc-applicant-review"><CheckCircle2 size={27}/><h3>{ui('Revisa antes de enviar')}</h3>
     <p>{student?.full_name||form.first_name+' '+form.last_name}</p><p>{ui('CURP')}: {form.curp}</p>
     <p>{ui('Domicilio')}: {form.line1}, {form.locality}</p><p>{ui('Responsable adicional')}: {form.contact_name}</p>
-    <p>{ui('Al enviar, el equipo escolar revisará la solicitud. La aprobación no significa inscripción automática.')}</p></div>}
+    <p>{ui('Al enviar, el equipo escolar revisará la solicitud. La aprobación no significa inscripción automática.')}</p>
+    {checklist.length>0&&<div role="alert" className="sc-applicant-missing"><strong>{ui('Antes de enviar, completa lo siguiente:')}</strong>
+      <ul>{checklist.map(missing=><li key={missing}>{missing}</li>)}</ul></div>}
+    {checklist.length===0&&<p role="status">{ui('Sin secciones obligatorias pendientes de completar.')}</p>}</div>}
+   {admission&&!editable&&<p className="sc-applicant-hint" role="status">{ui('Esta solicitud ya fue enviada o resuelta. Consulta el estado desde el listado de admisiones.')}</p>}
    {error&&<p role="alert" className="sc-applicant-error">{error}</p>}
    <footer className="sc-applicant-step-actions">
     <button className="secondary" type="button" disabled={busy} onClick={onClose}><Save size={16}/>{ui('Salir y continuar después')}</button>
-    {step<5?<button className="primary" type="button" disabled={busy} onClick={()=>void proceed()}>{ui('Guardar y continuar')}<ArrowRight size={16}/></button>:
-     <button className="primary" type="button" disabled={busy||!admission} onClick={()=>void send()}><Send size={16}/>{ui('Enviar solicitud')}</button>}
+    {step<5?<button className="primary" type="button" disabled={busy||!editable} onClick={()=>void proceed()}>{ui('Guardar y continuar')}<ArrowRight size={16}/></button>:
+     <button className="primary" type="button" disabled={busy||!admission||!editable||checklist.length>0} onClick={()=>void send()}><Send size={16}/>{ui('Enviar solicitud')}</button>}
    </footer>
   </div></section>;
 }
