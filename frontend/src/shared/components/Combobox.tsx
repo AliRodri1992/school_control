@@ -3,16 +3,16 @@ import {useEffect,useId,useRef,useState} from 'react';
 import {Check,ChevronDown,Search} from 'lucide-react';
 
 export type Choice = {value:string;label:string;disabled?:boolean};
-export default function Combobox({value,onChange,options,placeholder='Seleccione una opción',label,id:inputId,disabled=false,invalid=false,describedBy}:{
- value:string;onChange:(value:string)=>void;options:Choice[];placeholder?:string;label:string;id?:string;disabled?:boolean;invalid?:boolean;describedBy?:string;
+export default function Combobox({value,onChange,options,placeholder='Seleccione una opción',label,id:inputId,disabled=false,invalid=false,describedBy,searchable=true}:{
+ value:string;onChange:(value:string)=>void;options:Choice[];placeholder?:string;label:string;id?:string;disabled?:boolean;invalid?:boolean;describedBy?:string;searchable?:boolean;
 }) {
  const {ui,locale}=useSchoolLocale();
  const fallbackId=useId(),id=inputId||fallbackId,[open,setOpen]=useState(false),[query,setQuery]=useState('');
  const [highlighted,setHighlighted]=useState(0);
  const searchRef=useRef<HTMLInputElement>(null);
  const root=useRef<HTMLDivElement>(null);
- const filtered=options.filter(opt=>opt.label.toLowerCase().includes(query.toLowerCase()));
- useEffect(()=>{if(open)searchRef.current?.focus();},[open]);
+ const filtered=searchable?options.filter(opt=>opt.label.toLowerCase().includes(query.toLowerCase())):options;
+ useEffect(()=>{if(open&&searchable)searchRef.current?.focus();},[open]);
  const current=options.find(opt=>opt.value===value);
  useEffect(()=>{
   function outside(event:MouseEvent){if(root.current&&!root.current.contains(event.target as Node))setOpen(false);}
@@ -49,8 +49,8 @@ export default function Combobox({value,onChange,options,placeholder='Seleccione
      <span className={current?'':'sc-combobox-placeholder'}>{current?.label||ui(placeholder)}</span><ChevronDown size={17} aria-hidden="true"/>
    </button>
    {open&&<div className="sc-combobox-panel">
-     <div className="sc-combobox-search"><Search size={15}/><input ref={searchRef} aria-label={(locale==='en'?'Search in ':'Buscar en ')+label} aria-activedescendant={filtered[highlighted]?id+'-option-'+highlighted:undefined} type="search" value={query}
-       placeholder={ui('Buscar opción…')} onChange={e=>{setQuery(e.target.value);setHighlighted(0);}}/></div>
+     {searchable&&<div className="sc-combobox-search"><Search size={15}/><input ref={searchRef} aria-label={(locale==='en'?'Search in ':'Buscar en ')+label} aria-activedescendant={filtered[highlighted]?id+'-option-'+highlighted:undefined} type="search" value={query}
+       placeholder={ui('Buscar opción…')} onChange={e=>{setQuery(e.target.value);setHighlighted(0);}}/></div>}
      <div id={id+'-list'} role="listbox" aria-label={label} className="sc-combobox-list">
        <button role="option" type="button" aria-selected={!value} className="sc-combobox-option" onClick={()=>select('')}>{ui(placeholder)}</button>
        {filtered.map((opt,index)=><button id={id+'-option-'+index} key={opt.value} type="button" role="option" aria-selected={opt.value===value}
