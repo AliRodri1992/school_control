@@ -5,7 +5,7 @@ class Admission < ApplicationRecord
   has_many :document_requirements, -> { order(:title) }, through: :academic_year, source: :admission_document_requirements
   before_validation :assign_folio, on: :create
   validates :student_id, uniqueness: { scope: :academic_year_id }
-  validates :folio, presence: true, uniqueness: true
+  validates :folio, presence: true, uniqueness: true, unless: -> { status == "draft" }
   validates :kind, inclusion: { in: %w[new reenrollment] }
   validates :status, inclusion: { in: %w[draft submitted correction_requested approved rejected cancelled] }
   validates :grade_level, inclusion: { in: 1..6 }
@@ -34,7 +34,7 @@ class Admission < ApplicationRecord
   def complete_for_enrollment? = missing_requirements(for_formalization: true).empty?
 
   def assign_folio
-    self.folio ||= "ESC-#{SecureRandom.hex(6).upcase}"
+    self.folio ||= "ESC-#{SecureRandom.hex(6).upcase}" unless status == "draft"
   end
 
   def eligible

@@ -19,6 +19,9 @@ module Api
       admission = student.admissions.new(params.permit(:academic_year_id, :grade_level, :kind))
       admission.status = "draft" if ActiveModel::Type::Boolean.new.cast(params[:draft])
       authorize admission, :create?
+      if admission.status != "draft" && !admission.complete_for_submission?
+        raise ArgumentError, "Complete domicilio, teléfono y contacto familiar antes de enviar"
+      end
       admission.transaction do
         admission.save!
         audit(admission, "admission.created")
@@ -60,7 +63,10 @@ module Api
         raise ArgumentError, "El periodo de solicitudes está cerrado" unless admission.academic_year.open_for?(admission.kind)
         admission.eligible_history
         raise ActiveRecord::RecordInvalid, admission if admission.errors.any?
-        admission.update!(status: "submitted", reason: nil)
+        admission.status = "submitted"
+        admission.assign_folio
+        admission.reason = nil
+        admission.save!
         audit(admission, "admission.submitted")
       end
       render json: present(admission)
