@@ -223,3 +223,17 @@
 .sc-admissions-panel .sc-table-action-group button{min-width:36px;min-height:36px}
 @media(max-width:840px){.sc-admission-overview-filters{align-items:stretch}.sc-admission-overview-filters label{flex:1 1 170px}.sc-admissions-panel .table-scroll{max-width:100%;overflow-x:auto}}
 @media(max-width:480px){.sc-admission-overview-intro{padding:17px}.sc-admission-overview-filters label{flex-basis:100%}.sc-admission-overview-filters button{width:100%}}
+
+/* Mobile admission list: stacked records, no full-page horizontal scrolling. */
+@media(max-width:700px){
+ .sc-admissions-panel .table-scroll{overflow:visible}
+ .sc-admissions-table,.sc-admissions-table tbody,.sc-admissions-table tr,.sc-admissions-table td{display:block;width:100%;box-sizing:border-box}
+ .sc-admissions-table thead{display:none}
+ .sc-admissions-table tbody{display:grid;gap:12px;padding:12px}
+ .sc-admissions-table tbody tr{border:1px solid #dbe5f4;border-radius:13px;overflow:hidden;background:#fff;box-shadow:0 3px 12px #193b6b0c}
+ .sc-admissions-table tbody td{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border-bottom:1px solid #edf2f9;padding:10px 13px;text-align:right;font-size:12px;white-space:normal;overflow-wrap:anywhere}
+ .sc-admissions-table tbody td::before{content:attr(data-label);display:block;flex:0 0 39%;text-align:left;color:#647895;font-size:11px;font-weight:750}
+ .sc-admissions-table tbody td:last-child{border-bottom:0}
+ .sc-admissions-table .sc-admission-identity{text-align:right;min-width:0}
+ .sc-admissions-panel .sc-table-action-cell .sc-table-action-group{flex-wrap:wrap}
+}
