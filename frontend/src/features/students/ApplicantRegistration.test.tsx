@@ -1,0 +1,46 @@
+// @vitest-environment jsdom
+import {afterEach,expect,it,vi} from 'vitest';
+import {cleanup,fireEvent,render,screen} from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import ApplicantRegistration from './ApplicantRegistration';
+import {api} from '../../api';
+vi.mock('../../api',()=>({api:vi.fn()}));
+afterEach(()=>{cleanup();vi.mocked(api).mockReset();});
+it('saves applicant stages on the server before submitting their application',async()=>{
+ vi.mocked(api).mockImplementation(async (path,method)=>{
+  if(path==='students'&&method==='POST')return {id:12,full_name:'Sara Prueba'};
+  if(path==='admissions'&&method==='POST')return {id:34,student_id:12,academic_year_id:5,grade_level:1,status:'draft',folio:null};
+  if(path.startsWith('admission_document_requirements'))return [];
+  if(path.endsWith('/readiness'))return {status:'draft',missing_for_submission:[],missing_for_formalization:[]};
+  if(path.includes('/details/addresses'))return {id:1};
+  if(path.includes('/details/phones'))return {id:2};
+  if(path==='student_contacts')return {id:3};
+  return {id:34,status:'submitted',folio:'ESC-TEST'};
+ });
+ const onClose=vi.fn(),onSaved=vi.fn(async()=>undefined);
+ render(<ApplicantRegistration years={[{id:5,name:'2026-2027'}]} admissions={[]} onClose={onClose} onSaved={onSaved}/>);
+ await userEvent.type(screen.getByLabelText('Nombre(s) *'),'Sara');
+ await userEvent.type(screen.getByLabelText('Primer apellido *'),'Prueba');
+ await userEvent.type(screen.getByLabelText('CURP *'),'DEMO200101MDFRNN01');
+ fireEvent.change(screen.getByLabelText('Fecha de nacimiento *'),{target:{value:'2020-01-01'}});
+ await userEvent.click(screen.getByRole('button',{name:'Guardar y continuar'}));
+ expect(await screen.findByRole('heading',{name:'Domicilio'})).toBeTruthy();
+ await userEvent.type(screen.getByLabelText('Calle y número exterior *'),'Calle Demo 12');
+ await userEvent.type(screen.getByLabelText('Municipio o alcaldía *'),'Demo');
+ await userEvent.type(screen.getByLabelText('Estado *'),'México');
+ await userEvent.click(screen.getByRole('button',{name:'Guardar y continuar'}));
+ expect(await screen.findByRole('heading',{name:'Teléfonos'})).toBeTruthy();
+ await userEvent.type(screen.getByLabelText('Teléfono de emergencia con código internacional *'),'+525555555555');
+ await userEvent.click(screen.getByRole('button',{name:'Guardar y continuar'}));
+ expect(await screen.findByRole('heading',{name:'Familiares'})).toBeTruthy();
+ await userEvent.type(screen.getByLabelText('Nombre del familiar *'),'Tutor de prueba');
+ await userEvent.type(screen.getByLabelText('Parentesco *'),'Madre');
+ await userEvent.type(screen.getByLabelText('Teléfono de contacto *'),'5512345678');
+ await userEvent.click(screen.getByRole('button',{name:'Guardar y continuar'}));
+ expect(await screen.findByRole('heading',{name:'Documentos'})).toBeTruthy();
+ await userEvent.click(screen.getByRole('button',{name:'Guardar y continuar'}));
+ expect(await screen.findByRole('heading',{name:'Revisión y envío'})).toBeTruthy();
+ await userEvent.click(screen.getByRole('button',{name:'Enviar solicitud'}));
+ expect(api).toHaveBeenCalledWith('admissions/34/submit','POST');
+ expect(onClose).toHaveBeenCalled();
+});
