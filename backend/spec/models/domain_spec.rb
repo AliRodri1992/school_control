@@ -15,6 +15,15 @@ RSpec.describe "School domain" do
     subject { build(:student) }
     it { is_expected.to belong_to(:guardian) }
     it { is_expected.to validate_presence_of(:first_name) }
+    it "keeps an applicant outside enrolled student counts until enrollment exists" do
+      applicant = create(:student)
+      expect(applicant.enrollment_stage).to eq("applicant")
+      admission = create(:admission, student: applicant)
+      expect(applicant.reload.enrollment_stage).to eq("applicant")
+      create(:enrollment, admission: admission)
+      expect(applicant.reload.enrollment_stage).to eq("enrolled")
+      expect(RecordPresenter.call(applicant)).to include(enrollment_stage: "enrolled")
+    end
     it "rejects an invalid CURP" do
       expect(build(:student, curp: "invalid")).not_to be_valid
     end
