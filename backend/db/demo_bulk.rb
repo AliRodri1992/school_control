@@ -126,11 +126,15 @@ module DemoBulk
         record.assign_attributes(score: 7 + (i % 4), status: i.even? ? "published" : "draft",
           reviewer: i.even? ? course.teacher : nil)
       end
-      assignment = Assignment.find_or_create_by!(course: course, title: "Lectura guiada de demostración") do |record|
-        record.assign_attributes(instructions: "Lee el texto y responde las preguntas de comprensión.", due_at: 7.days.from_now)
-      end
-      AssignmentSubmission.find_or_create_by!(assignment: assignment, enrollment: enrollment) do |record|
-        record.assign_attributes(body: "Respuesta de demostración del alumno #{student.id}.", submitted_at: Time.current)
+      [ "Lectura guiada", "Investigación breve", "Resolución de problemas" ].each_with_index do |topic, task_index|
+        assignment = Assignment.find_or_create_by!(course: course, title: "#{topic} de demostración") do |record|
+          record.assign_attributes(instructions: "Realiza la actividad #{topic.downcase} y registra tus conclusiones.",
+            due_at: (task_index + 7).days.from_now)
+        end
+        AssignmentSubmission.find_or_create_by!(assignment: assignment, enrollment: enrollment) do |record|
+          record.assign_attributes(body: "Respuesta ficticia #{task_index + 1} del alumno #{student.id}.",
+            submitted_at: Time.current)
+        end
       end
       next unless i < MIN_RECORDS
 
