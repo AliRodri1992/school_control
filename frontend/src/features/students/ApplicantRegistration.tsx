@@ -1,6 +1,7 @@
 import {useEffect,useState} from 'react';
 import {ArrowLeft,ArrowRight,CheckCircle2,FileText,Save,Send,Users} from 'lucide-react';
 import {api} from '../../api';
+import Combobox from '../../shared/components/Combobox';
 import type {Row} from '../../modules';
 import {useSchoolLocale} from '../../shared/i18n/LocaleContext';
 
@@ -161,9 +162,8 @@ export default function ApplicantRegistration({years,existing,admissions,onClose
    {step===0&&<div className="sc-applicant-grid">{field('first_name','Nombre(s)')}{field('last_name','Primer apellido')}
     {field('second_last_name','Segundo apellido','text',false)}{field('curp','CURP')}{field('birth_date','Fecha de nacimiento','date')}{field('birth_place','Lugar de nacimiento','text',false)}
     {field('birth_state','Entidad de nacimiento','text',false)}{field('nationality','Nacionalidad','text',false)}
-    <label className="sc-applicant-field"><span>{ui('Ciclo escolar')} *</span><select value={form.academic_year_id}
-     onChange={e=>set('academic_year_id',e.target.value)}>{years.map(year=><option key={year.id} value={year.id}>{year.name}</option>)}</select></label>
-    <label className="sc-applicant-field"><span>{ui('Grado solicitado')}</span><select value={form.grade_level} onChange={e=>set('grade_level',e.target.value)}><option value="1">{ui('Primero de primaria')}</option></select></label>
+    <label className="sc-applicant-field"><span>{ui('Ciclo escolar')} *</span><Combobox label={ui('Ciclo escolar')} value={form.academic_year_id} onChange={value=>set('academic_year_id',value)} options={years.map(year=>({value:String(year.id),label:year.name}))}/></label>
+    <label className="sc-applicant-field"><span>{ui('Grado solicitado')}</span><Combobox label={ui('Grado solicitado')} value={form.grade_level} onChange={value=>set('grade_level',value)} options={[{value:'1',label:ui('Primero de primaria')}]}/></label>
    </div>}
    {step===1&&<div className="sc-applicant-grid">{field('country_code','Código de país ISO')}{field('line1','Calle y número exterior')}
     {field('line2','Número interior y referencias','text',false)}
@@ -188,8 +188,7 @@ export default function ApplicantRegistration({years,existing,admissions,onClose
     <p className="sc-applicant-hint"><Users size={16}/>{ui('El tutor que inició sesión permanece vinculado como responsable principal. La autorización de recogida se registra por persona.')}</p>
    </div>}
    {step===4&&<div className="sc-applicant-documents"><FileText size={28}/><p>{ui('Adjunta un PDF, PNG o JPG de hasta 10 MB. Los documentos obligatorios dependen del ciclo y grado.')}</p>
-    {requirements.length>0&&<label className="sc-applicant-field"><span>{ui('Tipo de documento')}</span><select value={docTitle}
-      onChange={e=>setDocTitle(e.target.value)}>{requirements.map(r=><option key={r.title} value={r.title}>{r.title}</option>)}</select></label>}
+    {requirements.length>0&&<label className="sc-applicant-field"><span>{ui('Tipo de documento')}</span><Combobox label={ui('Tipo de documento')} value={docTitle} onChange={setDocTitle} options={requirements.map(r=>({value:r.title,label:r.title}))}/></label>}
     <input type="file" aria-label={ui('Documento del aspirante')} accept=".pdf,.png,.jpg,.jpeg" onChange={e=>setFile(e.target.files?.[0]||null)}/>
     <button type="button" className="secondary" disabled={busy||!file} onClick={()=>void uploadDocument()}>{ui('Adjuntar documento')}</button>
     {documents.map((name,index)=><span key={name+index}>{name}</span>)}</div>}
