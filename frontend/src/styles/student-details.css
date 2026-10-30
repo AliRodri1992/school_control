@@ -325,3 +325,26 @@
 .sc-student-details .sc-dossier-composed>.sc-dossier-form-hero{border:1px solid #dbe5f5;border-bottom:0;border-radius:16px 16px 0 0;background:var(--surface-soft,#eef3ff);padding:21px 25px;margin:0}
 .sc-student-details .sc-dossier-composed>.sc-dossier-form-body{border:1px solid #dbe5f5;border-top:1px solid #e5eaf4;border-radius:0 0 16px 16px;background:var(--surface,#fff);padding:25px;margin:0}
 @media(max-width:650px){.sc-student-details .sc-dossier-composed>.sc-dossier-form-hero,.sc-student-details .sc-dossier-composed>.sc-dossier-form-body{padding:17px}}
+
+/* Student academic history — clear chronological visual hierarchy. */
+.sc-record-academic-timeline{display:grid;gap:16px;position:relative;padding-left:39px;margin:20px 0 6px}
+.sc-record-academic-timeline:before{content:"";position:absolute;left:15px;top:18px;bottom:18px;width:2px;background:#dae4f5}
+.sc-record-academic-entry{position:relative;min-width:0}
+.sc-record-academic-step{position:absolute;left:-39px;top:18px;width:31px;height:31px;border-radius:50%;background:#e9efff;border:2px solid #fff;box-shadow:0 0 0 1px #b7c8e9;color:#3858ab;font-size:12px;font-weight:850;display:grid;place-items:center;z-index:1}
+.sc-record-academic-card{background:#fff;border:1px solid #dae5f3;border-radius:15px;box-shadow:0 5px 20px #1a3a650b;overflow:hidden}
+.sc-record-academic-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;padding:19px 22px;background:linear-gradient(105deg,#f1f5ff,#fff);border-bottom:1px solid #e5ebf6}
+.sc-record-academic-eyebrow{color:#526bb0;font-size:10px;font-weight:850;letter-spacing:1px}
+.sc-record-academic-card-head h4{color:#203a63;font-size:18px;margin:5px 0 8px;overflow-wrap:anywhere}
+.sc-record-academic-card-head p{display:flex;align-items:center;gap:7px;margin:0;color:#647996;font-size:12px}
+.sc-record-academic-state{display:inline-flex;padding:7px 11px;border-radius:18px;background:#edf1f7;color:#576981;font-size:11px;font-weight:800}
+.sc-record-academic-state.is-active{background:#e8f7f0;color:#197455}.sc-record-academic-state.is-completed{background:#eaf0ff;color:#3e5db0}
+.sc-record-academic-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:18px 20px}
+.sc-record-academic-stats>div{display:flex;gap:11px;align-items:center;min-width:0;background:#f8faff;border:1px solid #ebf0f8;border-radius:11px;padding:13px}
+.sc-record-academic-stats svg{color:#5272b6;flex:none}
+.sc-record-academic-stats>div span{display:grid;gap:4px;min-width:0}.sc-record-academic-stats strong{color:#243b60;font-size:15px;overflow-wrap:anywhere}
+.sc-record-academic-stats small{color:#70829a;font-size:11px;line-height:1.4}
+.sc-record-academic-attendance{border-top:1px solid #edf1f8;padding:15px 20px}.sc-record-academic-attendance>strong{font-size:11px;color:#587091}.sc-record-academic-attendance>div{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}.sc-record-academic-attendance span{display:inline-flex;gap:9px;align-items:center;border-radius:7px;padding:6px 9px;background:#eef3fb;color:#576e90;font-size:11px}.sc-record-academic-attendance b{color:#294979}
+.sc-record-academic-no-data{margin:0;padding:12px 20px;border-top:1px solid #edf1f8;color:#7486a0;font-size:12px}
+.sc-record-academic-empty{display:flex;align-items:center;gap:19px;background:#f7faff;border:1px dashed #c2d1e9;border-radius:16px;padding:22px}.sc-record-academic-empty img{width:94px;height:94px;object-fit:contain;flex:none}.sc-record-academic-empty strong{color:#254268;font-size:15px}.sc-record-academic-empty p{color:#70839d;font-size:12px;line-height:1.6;margin-top:7px}
+@media(max-width:850px){.sc-record-academic-stats{grid-template-columns:1fr}.sc-record-academic-stats>div{padding:11px 13px}}
+@media(max-width:520px){.sc-record-academic-timeline{padding-left:30px}.sc-record-academic-timeline:before{left:10px}.sc-record-academic-step{left:-30px;width:23px;height:23px}.sc-record-academic-card-head,.sc-record-academic-stats,.sc-record-academic-attendance{padding:13px}.sc-record-academic-empty{flex-direction:column;text-align:center}}

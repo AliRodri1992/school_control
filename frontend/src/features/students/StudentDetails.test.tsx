@@ -59,3 +59,8 @@ it('renders operation heading as a connected panel above the form',async()=>{
  expect(shell?.children[0]?.classList.contains('sc-dossier-form-hero')).toBe(true);
  expect(shell?.children[1]?.classList.contains('sc-dossier-form-body')).toBe(true);
 });
+
+it('shows Auli guidance when academic history does not yet exist',()=>{
+ render(<StudentDetails student={{id:99,full_name:'Alumno de prueba',enrollment_stage:'applicant'}} onClose={vi.fn()} canEdit={false} canWriteNotes={false}/>);
+ expect(screen.getByText('Trayectoria pendiente de inscripción')).toBeTruthy();
+});

@@ -181,10 +181,33 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
        <div><dt>{ui('Domicilio')}</dt><dd>{student.address||ui('Consultar la sección Direcciones')}</dd></div>
       </dl>
       <div className="sc-record-history-heading"><BookOpen size={20}/><div><h3>{ui("Trayectoria académica")}</h3><p>{ui('Ciclos, grupos y actividad académica disponibles para este expediente.')}</p></div></div>
-      {student.enrollment_stage!=='enrolled'?<div className="sc-applicant-notice" role="status">{ui('Este expediente corresponde a un aspirante. Se convertirá en alumno cuando se formalice su inscripción.')}</div>:report?.years?.length?report.years.map((year:Row)=><article className="sc-record-year" key={year.enrollment.id}>
-        <div><strong>{year.enrollment.group_label||'Grupo escolar'}</strong><span >{ui(year.enrollment.status||'Inscripción')}</span></div>
-        <small>{year.grades?.length||0} calificaciones · {Object.entries(year.attendance||{}).map(([status,count])=>ui(status)+': '+count).join(' · ')||ui('Sin asistencias registradas')}</small>
-       </article>):<div className="sc-record-overview-empty"><GraduationCap size={26}/><strong>{ui(canViewReport?'Sin trayectoria académica disponible':'Trayectoria con acceso restringido')}</strong><p>{ui(canViewReport?'Cuando existan inscripciones formalizadas y resultados capturados, se mostrarán aquí.':'Necesitas autorización para consultar los resultados académicos de este alumno.')}</p></div>}
+      {student.enrollment_stage!=='enrolled'?<div className="sc-record-academic-empty" role="status"><img src="/illustrations/auli-explain.svg" alt="" /><div><strong>{ui('Trayectoria pendiente de inscripción')}</strong><p>{ui('Cuando se formalice la inscripción, aparecerán aquí los ciclos académicos del alumno.')}</p></div></div>:
+       report?.years?.length?<div className="sc-record-academic-timeline" aria-label={ui('Historial de ciclos académicos')}>
+        {[...report.years].reverse().map((year:Row,index:number)=>{
+         const enrollment=year.enrollment||{};
+         const attendance=Object.entries(year.attendance||{}).filter(([,count])=>Number(count)>0);
+         const totalAttendance=attendance.reduce((total,[,count])=>total+Number(count),0);
+         const grades=Array.isArray(year.grades)?year.grades:[];
+         const status=String(enrollment.status||'');
+         return <article className="sc-record-academic-entry" key={enrollment.id||index}>
+          <span className="sc-record-academic-step" aria-hidden="true">{index+1}</span>
+          <div className="sc-record-academic-card">
+           <div className="sc-record-academic-card-head">
+            <div><span className="sc-record-academic-eyebrow">{ui('CICLO ACADÉMICO')}</span><h4>{enrollment.academic_year_name||enrollment.year_name||ui('Ciclo sin nombre')}</h4>
+             <p><GraduationCap size={16}/>{enrollment.group_label||ui('Grupo no asignado')}</p></div>
+            <span className={'sc-record-academic-state'+(status==='active'?' is-active':status==='completed'?' is-completed':'')}>{ui(status==='active'?'En curso':status==='completed'?'Finalizado':status||'Sin estado')}</span>
+           </div>
+           <div className="sc-record-academic-stats">
+            <div><BookOpen size={18}/><span><strong>{grades.length}</strong><small>{ui('Calificaciones registradas')}</small></span></div>
+            <div><CalendarDays size={18}/><span><strong>{totalAttendance}</strong><small>{ui('Registros de asistencia')}</small></span></div>
+            <div><ShieldCheck size={18}/><span><strong>{enrollment.outcome?ui(String(enrollment.outcome)):ui('Pendiente')}</strong><small>{ui('Resultado del ciclo')}</small></span></div>
+           </div>
+           {attendance.length>0?<div className="sc-record-academic-attendance"><strong>{ui('Detalle de asistencia')}</strong><div>{attendance.map(([key,count])=><span key={key}>{ui(key)} <b>{Number(count)}</b></span>)}</div></div>:
+            <p className="sc-record-academic-no-data">{ui('Todavía no existen asistencias registradas para este ciclo.')}</p>}
+          </div>
+         </article>;
+        })}
+       </div>:<div className="sc-record-academic-empty"><img src="/illustrations/auli-explain.svg" alt=""/><div><strong>{ui(canViewReport?'Sin trayectoria académica disponible':'Trayectoria con acceso restringido')}</strong><p>{ui(canViewReport?'Cuando existan inscripciones formalizadas y resultados capturados, se mostrarán aquí.':'Necesitas autorización para consultar los resultados académicos de este alumno.')}</p></div></div>}
     </>:<>
      <div className={'sc-details-heading'+(creating||editing?' sc-details-section-heading':'')}><div><span className="eyebrow">{ui(kindDescriptions[kind as DataKind].eyebrow)}</span>
        <h2>{ui(category.find(section=>section.kind===kind)?.title||'')}</h2>
