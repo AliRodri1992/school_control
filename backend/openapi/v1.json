@@ -6017,13 +6017,22 @@
                     "type": "string"
                   },
                   "nationality": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 80
                   },
                   "sex": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                      "female",
+                      "male",
+                      "unspecified"
+                    ]
                   },
                   "curp": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 18,
+                    "maxLength": 18,
+                    "pattern": "^[A-Z][AEIOUX][A-Z]{2}[0-9]{6}[HM][A-Z]{5}[A-Z0-9][0-9]$"
                   },
                   "birth_date": {
                     "type": "string",
@@ -6580,9 +6589,8 @@
                     "type": "string",
                     "enum": [
                       "promoted",
-                      "repeated",
-                      "graduated",
-                      "withdrawn"
+                      "repeat",
+                      "graduated"
                     ]
                   }
                 },
@@ -6949,29 +6957,8 @@
             "sessionCookie": []
           }
         ],
-        "requestBody": {
-          "required": true,
-          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "lock_version": {
-                    "type": "integer"
-                  }
-                },
-                "required": [
-                  "lock_version"
-                ]
-              },
-              "example": {
-                "lock_version": 0
-              }
-            }
-          }
-        },
-        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto.",
+        "x-request-body": "Operación sin cuerpo de petición."
       }
     },
     "/api/grades/{id}/publish": {
@@ -7050,29 +7037,8 @@
             "sessionCookie": []
           }
         ],
-        "requestBody": {
-          "required": true,
-          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "lock_version": {
-                    "type": "integer"
-                  }
-                },
-                "required": [
-                  "lock_version"
-                ]
-              },
-              "example": {
-                "lock_version": 0
-              }
-            }
-          }
-        },
-        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto.",
+        "x-request-body": "Operación sin cuerpo de petición."
       }
     },
     "/api/grades/{id}/correct": {
@@ -7164,11 +7130,19 @@
                   },
                   "reason": {
                     "type": "string"
+                  },
+                  "lock_version": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "feedback": {
+                    "type": "string"
                   }
                 },
                 "required": [
                   "score",
-                  "reason"
+                  "reason",
+                  "lock_version"
                 ]
               },
               "example": {
