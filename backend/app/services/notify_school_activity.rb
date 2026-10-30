@@ -24,7 +24,7 @@ class NotifySchoolActivity
       suffix = { "created" => "creada", "updated" => "actualizada", "deleted" => "eliminada" }.fetch(action)
       suffix = suffix.sub(/a\z/, "o") if event.record_type == "PhoneNumber"
       title = "#{types.fetch(event.record_type)} #{suffix} exitosamente"
-      ActivityNotifier.with(title: title, page: "students", notification_type: action, audit_event_id: event.id).deliver(event.user) if event.user&.active?
+      ActivityNotifier.with(title: title, page: "students", notification_type: types.fetch(event.record_type), action_type: action, audit_event_id: event.id).deliver(event.user) if event.user&.active?
       return
     end
     recipients = [ event.user ]
@@ -58,6 +58,6 @@ class NotifySchoolActivity
 
       true
     end
-    ActivityNotifier.with(title: title, page: page, audit_event_id: event.id).deliver(recipients) if recipients.any?
+    ActivityNotifier.with(title: title, page: page, notification_type: { "students" => "Alumno", "admissions" => "Admisión", "enrollments" => "Inscripción", "grades" => "Calificación", "attendances" => "Asistencia", "messages" => "Mensaje", "documents" => "Documento", "classroom" => "Actividad", "calendar_events" => "Calendario" }.fetch(page, "Sistema"), audit_event_id: event.id).deliver(recipients) if recipients.any?
   end
 end

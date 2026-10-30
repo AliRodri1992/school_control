@@ -319,3 +319,9 @@
 .sc-dossier-phone-number input{min-height:0;height:100%;box-sizing:border-box}
 .sc-dossier-form .form-actions{align-items:center;flex-wrap:wrap}
 @media(max-width:690px){.sc-dossier-fieldset .form-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* Connected, but visually distinct operation heading above the form surface. */
+.sc-student-details .sc-dossier-composed{display:grid;grid-template-rows:auto auto;gap:0;overflow:visible;background:transparent;border:0;box-shadow:none}
+.sc-student-details .sc-dossier-composed>.sc-dossier-form-hero{border:1px solid #dbe5f5;border-bottom:0;border-radius:16px 16px 0 0;background:var(--surface-soft,#eef3ff);padding:21px 25px;margin:0}
+.sc-student-details .sc-dossier-composed>.sc-dossier-form-body{border:1px solid #dbe5f5;border-top:1px solid #e5eaf4;border-radius:0 0 16px 16px;background:var(--surface,#fff);padding:25px;margin:0}
+@media(max-width:650px){.sc-student-details .sc-dossier-composed>.sc-dossier-form-hero,.sc-student-details .sc-dossier-composed>.sc-dossier-form-body{padding:17px}}
