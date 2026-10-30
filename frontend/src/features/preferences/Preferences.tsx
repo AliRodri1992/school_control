@@ -127,25 +127,19 @@ export default function Preferences({onSaved}:{onSaved?:(settings:Settings)=>voi
        ['notification_grades','Calificaciones'],['notification_attendance','Asistencias'],
        ['notification_events','Eventos y actividades']] as const).map(([key,label])=>
        <label className="sc-pref-toggle" key={key}><span>{ui(label)}</span><input type="checkbox" checked={settings[key]} onChange={event=>patch(key,event.target.checked)}/></label>)}
-      <label>{ui('Frecuencia de correo electrónico')}<select value={settings.notification_digest} onChange={event=>patch('notification_digest',event.target.value)}>
-       <option value="immediate">{ui('Inmediatamente')}</option><option value="daily">{ui('Resumen diario')}</option><option value="weekly">{ui('Resumen semanal')}</option></select></label>
+      <label>{ui('Frecuencia de correo electrónico')}<Combobox label={ui('Frecuencia de correo electrónico')} value={settings.notification_digest} onChange={value=>patch('notification_digest',value)} searchable={false} options={[{value:'immediate',label:ui('Inmediatamente')},{value:'daily',label:ui('Resumen diario')},{value:'weekly',label:ui('Resumen semanal')}]}/></label>
       <p className="sc-pref-help-line">{ui('Las notificaciones críticas de seguridad se mantienen activas. Las preferencias de correo requieren un servicio de envíos configurado.')}</p>
      </>}
      {section==='lists'&&<>
-      <label>{ui('Densidad de tablas')}<select value={settings.table_density} onChange={event=>patch('table_density',event.target.value)}>
-       <option value="comfortable">{ui('Cómoda')}</option><option value="compact">{ui('Compacta')}</option><option value="spacious">{ui('Amplia')}</option></select></label>
+      <label>{ui('Densidad de tablas')}<Combobox label={ui('Densidad de tablas')} value={settings.table_density} onChange={value=>patch('table_density',value)} searchable={false} options={[{value:'comfortable',label:ui('Cómoda')},{value:'compact',label:ui('Compacta')},{value:'spacious',label:ui('Amplia')}]}/></label>
       <label className="sc-pref-toggle">{ui('Recordar filtros de listados')}<input type="checkbox" checked={settings.remember_filters} onChange={event=>patch('remember_filters',event.target.checked)}/></label>
       <p className="sc-pref-help-line">{ui('Puedes configurar los registros por página en Apariencia e idioma.')}</p>
      </>}
      {section==='calendar'&&<>
-      <label>{ui('Formato de hora')}<select value={settings.time_format} onChange={event=>patch('time_format',event.target.value)}>
-       <option value="24h">24 horas</option><option value="12h">12 horas</option></select></label>
-      <label>{ui('Formato de fecha')}<select value={settings.date_format} onChange={event=>patch('date_format',event.target.value)}>
-       <option value="dd/mm/yyyy">DD/MM/AAAA</option><option value="mm/dd/yyyy">MM/DD/AAAA</option><option value="yyyy-mm-dd">AAAA-MM-DD</option></select></label>
-      <label>{ui('Primer día de la semana')}<select value={settings.week_start} onChange={event=>patch('week_start',event.target.value)}>
-       <option value="monday">{ui('Lunes')}</option><option value="sunday">{ui('Domingo')}</option></select></label>
-      <label>{ui('Vista inicial del calendario')}<select value={settings.calendar_view} onChange={event=>patch('calendar_view',event.target.value)}>
-       <option value="month">{ui('Mes')}</option><option value="week">{ui('Semana')}</option><option value="day">{ui('Día')}</option></select></label>
+      <label>{ui('Formato de hora')}<Combobox label={ui('Formato de hora')} value={settings.time_format} onChange={value=>patch('time_format',value)} searchable={false} options={[{value:'24h',label:"24 horas"},{value:'12h',label:"12 horas"}]}/></label>
+      <label>{ui('Formato de fecha')}<Combobox label={ui('Formato de fecha')} value={settings.date_format} onChange={value=>patch('date_format',value)} searchable={false} options={[{value:'dd/mm/yyyy',label:"DD/MM/AAAA"},{value:'mm/dd/yyyy',label:"MM/DD/AAAA"},{value:'yyyy-mm-dd',label:"AAAA-MM-DD"}]}/></label>
+      <label>{ui('Primer día de la semana')}<Combobox label={ui('Primer día de la semana')} value={settings.week_start} onChange={value=>patch('week_start',value)} searchable={false} options={[{value:'monday',label:ui('Lunes')},{value:'sunday',label:ui('Domingo')}]}/></label>
+      <label>{ui('Vista inicial del calendario')}<Combobox label={ui('Vista inicial del calendario')} value={settings.calendar_view} onChange={value=>patch('calendar_view',value)} searchable={false} options={[{value:'month',label:ui('Mes')},{value:'week',label:ui('Semana')},{value:'day',label:ui('Día')}]}/></label>
      </>}
      {section==='accessibility'&&<>
       {([['large_text','Texto ampliado'],['high_contrast','Contraste alto'],['reduce_motion','Reducir animaciones']] as const).map(([key,label])=>

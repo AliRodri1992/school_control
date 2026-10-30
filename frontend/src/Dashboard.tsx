@@ -180,19 +180,11 @@ export default function Dashboard({summary,data,role='admin',userId=0,selectedCh
   </p>}
   <div className="sc-analytics-date-filters" role="group" aria-label={ui('Filtros de estadísticas')}>
    <label>{ui('Periodo de análisis')}
-    <select value={period} onChange={e=>setPeriod(e.target.value)}>
-     <option value="30">{ui('Últimos 30 días')}</option>
-     <option value="90">{ui('Últimos 90 días')}</option>
-     <option value="180">{ui('Últimos 180 días')}</option>
-     <option value="365">{ui('Últimos 365 días')}</option>
-    </select>
+    <Combobox label={ui('Periodo de análisis')} value={period} onChange={setPeriod} searchable={false} options={[{value:'30',label:ui('Últimos 30 días')},{value:'90',label:ui('Últimos 90 días')},{value:'180',label:ui('Últimos 180 días')},{value:'365',label:ui('Últimos 365 días')}]}/>
    </label>
    {yearOptions.length>0&&
     <label>{ui('Ciclo escolar')}
-     <select value={academicYear} onChange={e=>setAcademicYear(e.target.value)}>
-      <option value="">{ui('Todos los ciclos autorizados')}</option>
-      {yearOptions.map(year=><option value={String(year.id)} key={year.id}>{year.name}</option>)}
-     </select>
+     <Combobox label={ui('Ciclo escolar')} value={academicYear} onChange={setAcademicYear} searchable={yearOptions.length>7} placeholder={ui('Todos los ciclos autorizados')} options={yearOptions.map(year=>({value:String(year.id),label:String(year.name)}))}/>
     </label>}
    <span className="sc-analytics-filter-note">
     {role==='guardian'?(selectedChildId?ui('Estadísticas del hijo seleccionado'):ui('Estadísticas de tus hijos vinculados')):
