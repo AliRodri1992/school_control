@@ -131,3 +131,16 @@ RSpec.describe "paginated student dossier collections", type: :request do
     expect(response.parsed_body.fetch("items").first.fetch("body")).to eq("Nota compartida")
   end
 end
+
+RSpec.describe "Student dossier OpenAPI filtering contract" do
+  it "declares the pagination and per-section filter parameter types" do
+    schema = JSON.parse(Rails.root.join("openapi/v1.json").read)
+    %w[addresses phones contacts notes].each do |kind|
+      operation = schema.fetch("paths").fetch("/api/students/{student_id}/details/#{kind}").fetch("get")
+      parameters = operation.fetch("parameters").index_by { |entry| entry.fetch("name") }
+      expect(parameters.fetch("page").dig("schema", "type")).to eq("integer")
+      expect(parameters.fetch("per_page").dig("schema", "enum")).to eq([ 8, 16, 24 ])
+      expect(parameters.fetch("q").dig("schema", "type")).to eq("string")
+    end
+  end
+end

@@ -8969,11 +8969,141 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Página solicitada (entero positivo). Al indicarla, la respuesta incluye paginación y totales.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "description": "Cantidad de registros por página. Valores admitidos: 8, 16 y 24.",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                8,
+                16,
+                24
+              ],
+              "default": 8
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Buscar texto de forma parcial en los campos de la sección.",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "description": "Orden por fecha de creación del registro.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "newest",
+                "oldest"
+              ],
+              "default": "newest"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "description": "Filtrar por propósito o tipo de registro.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "home",
+                "fiscal",
+                "other"
+              ]
+            }
+          },
+          {
+            "name": "flag",
+            "in": "query",
+            "required": false,
+            "description": "Mostrar únicamente los registros que cumplan esta característica.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "primary"
+              ]
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Resultado JSON de los registros autorizados"
+            "description": "Sin page: lista de registros. Con page: datos paginados y total real de registros autorizados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": true
+                          }
+                        },
+                        "total": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "page": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "per_page": {
+                          "type": "integer",
+                          "enum": [
+                            8,
+                            16,
+                            24
+                          ]
+                        },
+                        "total_pages": {
+                          "type": "integer",
+                          "minimum": 1
+                        }
+                      },
+                      "required": [
+                        "items",
+                        "total",
+                        "page",
+                        "per_page",
+                        "total_pages"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
           },
           "403": {
             "description": "Sin permiso"
@@ -8981,7 +9111,8 @@
           "422": {
             "description": "Validación de campos"
           }
-        }
+        },
+        "description": "Listado de registros autorizados del expediente. Sin el parámetro page conserva la respuesta de tipo array de compatibilidad; con page devuelve un objeto con items y metadatos de paginación. Los filtros se aplican en el servidor y respetan el alcance de permisos del usuario."
       },
       "post": {
         "operationId": "post_student_addresses",
@@ -9247,11 +9378,142 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Página solicitada (entero positivo). Al indicarla, la respuesta incluye paginación y totales.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "description": "Cantidad de registros por página. Valores admitidos: 8, 16 y 24.",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                8,
+                16,
+                24
+              ],
+              "default": 8
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Buscar texto de forma parcial en los campos de la sección.",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "description": "Orden por fecha de creación del registro.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "newest",
+                "oldest"
+              ],
+              "default": "newest"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "description": "Filtrar por propósito o tipo de registro.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "mobile",
+                "home",
+                "work",
+                "emergency"
+              ]
+            }
+          },
+          {
+            "name": "flag",
+            "in": "query",
+            "required": false,
+            "description": "Mostrar únicamente los registros que cumplan esta característica.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "primary"
+              ]
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Resultado JSON de los registros autorizados"
+            "description": "Sin page: lista de registros. Con page: datos paginados y total real de registros autorizados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": true
+                          }
+                        },
+                        "total": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "page": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "per_page": {
+                          "type": "integer",
+                          "enum": [
+                            8,
+                            16,
+                            24
+                          ]
+                        },
+                        "total_pages": {
+                          "type": "integer",
+                          "minimum": 1
+                        }
+                      },
+                      "required": [
+                        "items",
+                        "total",
+                        "page",
+                        "per_page",
+                        "total_pages"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
           },
           "403": {
             "description": "Sin permiso"
@@ -9259,7 +9521,8 @@
           "422": {
             "description": "Validación de campos"
           }
-        }
+        },
+        "description": "Listado de registros autorizados del expediente. Sin el parámetro page conserva la respuesta de tipo array de compatibilidad; con page devuelve un objeto con items y metadatos de paginación. Los filtros se aplican en el servidor y respetan el alcance de permisos del usuario."
       },
       "post": {
         "operationId": "post_student_phones",
@@ -9492,11 +9755,129 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Página solicitada (entero positivo). Al indicarla, la respuesta incluye paginación y totales.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "description": "Cantidad de registros por página. Valores admitidos: 8, 16 y 24.",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                8,
+                16,
+                24
+              ],
+              "default": 8
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Buscar texto de forma parcial en los campos de la sección.",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "description": "Orden por fecha de creación del registro.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "newest",
+                "oldest"
+              ],
+              "default": "newest"
+            }
+          },
+          {
+            "name": "flag",
+            "in": "query",
+            "required": false,
+            "description": "Mostrar únicamente los registros que cumplan esta característica.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "primary",
+                "emergency",
+                "pickup_authorized"
+              ]
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Resultado JSON de los registros autorizados"
+            "description": "Sin page: lista de registros. Con page: datos paginados y total real de registros autorizados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": true
+                          }
+                        },
+                        "total": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "page": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "per_page": {
+                          "type": "integer",
+                          "enum": [
+                            8,
+                            16,
+                            24
+                          ]
+                        },
+                        "total_pages": {
+                          "type": "integer",
+                          "minimum": 1
+                        }
+                      },
+                      "required": [
+                        "items",
+                        "total",
+                        "page",
+                        "per_page",
+                        "total_pages"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
           },
           "403": {
             "description": "Sin permiso"
@@ -9504,7 +9885,8 @@
           "422": {
             "description": "Validación de campos"
           }
-        }
+        },
+        "description": "Listado de registros autorizados del expediente. Sin el parámetro page conserva la respuesta de tipo array de compatibilidad; con page devuelve un objeto con items y metadatos de paginación. Los filtros se aplican en el servidor y respetan el alcance de permisos del usuario."
       },
       "post": {
         "operationId": "post_student_contacts",
@@ -9740,11 +10122,128 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Página solicitada (entero positivo). Al indicarla, la respuesta incluye paginación y totales.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "description": "Cantidad de registros por página. Valores admitidos: 8, 16 y 24.",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                8,
+                16,
+                24
+              ],
+              "default": 8
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Buscar texto de forma parcial en los campos de la sección.",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "description": "Orden por fecha de creación del registro.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "newest",
+                "oldest"
+              ],
+              "default": "newest"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "description": "Filtrar por visibilidad de la nota.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "internal",
+                "shared"
+              ]
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Resultado JSON de los registros autorizados"
+            "description": "Sin page: lista de registros. Con page: datos paginados y total real de registros autorizados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": true
+                          }
+                        },
+                        "total": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "page": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "per_page": {
+                          "type": "integer",
+                          "enum": [
+                            8,
+                            16,
+                            24
+                          ]
+                        },
+                        "total_pages": {
+                          "type": "integer",
+                          "minimum": 1
+                        }
+                      },
+                      "required": [
+                        "items",
+                        "total",
+                        "page",
+                        "per_page",
+                        "total_pages"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
           },
           "403": {
             "description": "Sin permiso"
@@ -9752,7 +10251,8 @@
           "422": {
             "description": "Validación de campos"
           }
-        }
+        },
+        "description": "Listado de registros autorizados del expediente. Sin el parámetro page conserva la respuesta de tipo array de compatibilidad; con page devuelve un objeto con items y metadatos de paginación. Los filtros se aplican en el servidor y respetan el alcance de permisos del usuario."
       },
       "post": {
         "operationId": "post_student_notes",
