@@ -293,3 +293,15 @@
 .sc-student-details .sc-dossier-form-shell .form-actions button:disabled{opacity:.65;cursor:not-allowed}
 .sc-student-details .sc-dossier-form-shell .sc-record-field input[aria-invalid=true],.sc-student-details .sc-dossier-form-shell .sc-record-field textarea[aria-invalid=true]{border-color:#d14a60;box-shadow:0 0 0 2px #d14a6019}
 @media(max-width:460px){.sc-student-details .sc-dossier-form-shell .form-actions{flex-direction:column-reverse}.sc-student-details .sc-dossier-form-shell .form-actions button{width:100%}}
+
+/* Distinct hierarchy for record section and creation/editing workspace. */
+.sc-record-content.sc-record-content-form-active{background:transparent;border:0;padding:0;min-height:0;display:grid;align-content:start;gap:18px}
+.sc-record-content-form-active>.sc-details-section-heading{background:var(--surface,#fff);border:1px solid #e1e8f4;border-radius:16px;padding:24px 28px;margin:0;box-shadow:0 3px 16px #15396708}
+.sc-record-content-form-active>.sc-details-section-heading .eyebrow{display:block;margin-bottom:8px;color:#4c65a4;font-size:11px;font-weight:800;letter-spacing:.1em}
+.sc-record-content-form-active>.sc-details-section-heading h2{margin:0 0 8px;font-size:clamp(22px,2.6vw,27px);color:var(--text,#23375c)}
+.sc-record-content-form-active>.sc-details-section-heading p{margin:0;color:var(--text-muted,#697891);line-height:1.6}
+.sc-record-content-form-active>.sc-dossier-form-shell{border-radius:16px;box-shadow:0 5px 20px #1539670d}
+.sc-record-content-form-active .sc-dossier-form-hero{background:var(--surface-soft,#f0f4fd);padding:22px 27px}
+.sc-record-content-form-active .sc-dossier-form-body{padding:25px 27px}
+.sc-record-content-form-active>.error{margin:0}
+@media(max-width:650px){.sc-record-content-form-active>.sc-details-section-heading{padding:19px}.sc-record-content-form-active .sc-dossier-form-hero{padding:18px}.sc-record-content-form-active .sc-dossier-form-body{padding:18px}}

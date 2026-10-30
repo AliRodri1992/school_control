@@ -37,3 +37,15 @@ it('offers a dedicated new-note form and hides searching on small option lists',
  await userEvent.click(screen.getByRole('combobox',{name:'Visibilidad'}));
  expect(screen.queryByRole('searchbox',{name:'Buscar en Visibilidad'})).toBeNull();
 });
+
+it('separates the section heading from the creation form for notes',async()=>{
+ const {api}=await import('../../api');
+ vi.mocked(api).mockResolvedValue([]);
+ const {container}=render(<StudentDetails student={{id:58,full_name:'Sofía Ramos'}} onClose={vi.fn()} canEdit canWriteNotes/>);
+ await userEvent.click(screen.getByRole('button',{name:'Notas'}));
+ await userEvent.click(await screen.findByRole('button',{name:'Agregar nota'}));
+ const section=container.querySelector('.sc-record-content-form-active');
+ expect(section).toBeTruthy();
+ expect(section?.querySelector(':scope > .sc-details-section-heading h2')?.textContent).toBe('Notas');
+ expect(section?.querySelector(':scope > .sc-dossier-form-shell .sc-dossier-form-hero h3')?.textContent).toBe('Agregar nota');
+});

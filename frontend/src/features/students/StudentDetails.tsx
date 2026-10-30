@@ -137,7 +137,7 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
       type="button" onClick={()=>{setKind(section.kind);setEditing(null);setCreating(false);setError('');}}>
       <Icon size={18}/><span >{ui(section.title)}</span></button>;})}
    </nav>
-   <section className="sc-record-content">
+   <section className={'sc-record-content'+(kind!=='overview'&&kind!=='family'&&(creating||editing)?' sc-record-content-form-active':'')}>
     {kind==='family'?<div className="sc-family">
      <div className="sc-details-heading"><div><span className="eyebrow">{ui('FAMILIA Y RESPONSABLES')}</span><h2>{ui('Datos familiares')}</h2><p>{ui('Consulta las personas vinculadas al alumno y sus autorizaciones de contacto y recogida.')}</p></div></div>
      <section className="sc-family-guardian" aria-label={ui('Tutor responsable')}>
@@ -183,7 +183,7 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
         <small>{year.grades?.length||0} calificaciones · {Object.entries(year.attendance||{}).map(([status,count])=>ui(status)+': '+count).join(' · ')||ui('Sin asistencias registradas')}</small>
        </article>):<div className="sc-record-overview-empty"><GraduationCap size={26}/><strong>{ui(canViewReport?'Sin trayectoria académica disponible':'Trayectoria con acceso restringido')}</strong><p>{ui(canViewReport?'Cuando existan inscripciones formalizadas y resultados capturados, se mostrarán aquí.':'Necesitas autorización para consultar los resultados académicos de este alumno.')}</p></div>}
     </>:<>
-     <div className="sc-details-heading"><div><span className="eyebrow">{ui(kindDescriptions[kind as DataKind].eyebrow)}</span>
+     <div className={'sc-details-heading'+(creating||editing?' sc-details-section-heading':'')}><div><span className="eyebrow">{ui(kindDescriptions[kind as DataKind].eyebrow)}</span>
        <h2>{ui(category.find(section=>section.kind===kind)?.title||'')}</h2>
        <p>{ui(category.find(section=>section.kind===kind)?.description||'')}</p></div>
        {writable&&!creating&&!editing&&!loading&&items.length>0&&<button className="primary" type="button" onClick={()=>{setCreating(true);setEditing(null);}}>
