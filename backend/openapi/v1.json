@@ -3,7 +3,7 @@
   "info": {
     "title": "School Control — Rails API",
     "version": "0.1.0",
-    "description": "Contrato inicial de las rutas reales. Las estructuras específicas de cada operación se ampliarán gradualmente mediante pruebas de contrato. Todas las respuestas pueden devolver errores JSON por campo."
+    "description": "Referencia de rutas de School Control. Tipos y estructuras de request documentados por operación. Las reglas de negocio y los permisos pueden añadir requisitos según el contexto."
   },
   "servers": [
     {
@@ -417,7 +417,8 @@
             }
           }
         },
-        "security": []
+        "security": [],
+        "parameters": []
       },
       "post": {
         "tags": [
@@ -472,12 +473,28 @@
         "security": [],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "email",
+                  "password"
+                ]
+              },
+              "example": {
+                "email": "valor",
+                "password": "valor"
               }
             }
           }
@@ -491,7 +508,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       },
       "delete": {
         "tags": [
@@ -547,7 +565,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       }
     },
     "/api/registration": {
@@ -604,12 +623,38 @@
         "security": [],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "password_confirmation": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "email",
+                  "password",
+                  "password_confirmation"
+                ]
+              },
+              "example": {
+                "name": "valor",
+                "email": "valor",
+                "password": "valor",
+                "password_confirmation": "valor"
               }
             }
           }
@@ -623,7 +668,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/school": {
@@ -677,7 +723,8 @@
             }
           }
         },
-        "security": []
+        "security": [],
+        "parameters": []
       },
       "patch": {
         "tags": [
@@ -737,13 +784,31 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
-              }
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "address": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "logo": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              },
+              "example": {}
             }
           }
         },
@@ -756,7 +821,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/password_reset": {
@@ -813,12 +879,23 @@
         "security": [],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                },
+                "required": [
+                  "email"
+                ]
+              },
+              "example": {
+                "email": "valor"
               }
             }
           }
@@ -832,7 +909,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       },
       "patch": {
         "tags": [
@@ -887,12 +965,32 @@
         "security": [],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "password_confirmation": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "token",
+                  "password",
+                  "password_confirmation"
+                ]
+              },
+              "example": {
+                "token": "valor",
+                "password": "valor",
+                "password_confirmation": "valor"
               }
             }
           }
@@ -906,7 +1004,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/profile": {
@@ -964,7 +1063,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       },
       "patch": {
         "tags": [
@@ -1023,13 +1123,22 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
-              }
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "email_notifications": {
+                    "type": "boolean"
+                  }
+                },
+                "required": []
+              },
+              "example": {}
             }
           }
         },
@@ -1042,7 +1151,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/profile/password": {
@@ -1103,12 +1213,32 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "current_password": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "password_confirmation": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "current_password",
+                  "password",
+                  "password_confirmation"
+                ]
+              },
+              "example": {
+                "current_password": "valor",
+                "password": "valor",
+                "password_confirmation": "valor"
               }
             }
           }
@@ -1122,7 +1252,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/profile/sessions": {
@@ -1180,7 +1311,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       }
     },
     "/api/email_templates": {
@@ -1239,7 +1371,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       },
       "post": {
         "tags": [
@@ -1299,12 +1432,52 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "key": {
+                    "type": "string"
+                  },
+                  "locale": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "subject": {
+                    "type": "string"
+                  },
+                  "heading": {
+                    "type": "string"
+                  },
+                  "body": {
+                    "type": "string"
+                  },
+                  "html_body": {
+                    "type": "string"
+                  },
+                  "footer": {
+                    "type": "string"
+                  },
+                  "accent_color": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "key",
+                  "locale",
+                  "subject",
+                  "body"
+                ]
+              },
+              "example": {
+                "key": "valor",
+                "locale": "valor",
+                "subject": "valor",
+                "body": "valor"
               }
             }
           }
@@ -1318,7 +1491,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/email_templates/{id}": {
@@ -1399,16 +1573,47 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
-              }
+                "properties": {
+                  "key": {
+                    "type": "string"
+                  },
+                  "locale": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "subject": {
+                    "type": "string"
+                  },
+                  "heading": {
+                    "type": "string"
+                  },
+                  "body": {
+                    "type": "string"
+                  },
+                  "html_body": {
+                    "type": "string"
+                  },
+                  "footer": {
+                    "type": "string"
+                  },
+                  "accent_color": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              },
+              "example": {}
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/notifications": {
@@ -1466,7 +1671,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       }
     },
     "/api/notifications/{id}/read": {
@@ -1544,18 +1750,7 @@
             "sessionCookie": []
           }
         ],
-        "requestBody": {
-          "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": true
-              }
-            }
-          }
-        }
+        "x-request-body": "No requiere cuerpo de petición."
       }
     },
     "/api/assignments": {
@@ -1614,7 +1809,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       },
       "post": {
         "tags": [
@@ -1674,12 +1870,41 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "course_id": {
+                    "type": "integer"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "instructions": {
+                    "type": "string"
+                  },
+                  "due_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "published": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "course_id",
+                  "title",
+                  "instructions",
+                  "due_at"
+                ]
+              },
+              "example": {
+                "course_id": 1,
+                "title": "valor",
+                "instructions": "valor",
+                "due_at": "valor"
               }
             }
           }
@@ -1693,7 +1918,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/assignments/{id}": {
@@ -1774,16 +2000,40 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "instructions": {
+                    "type": "string"
+                  },
+                  "due_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "published": {
+                    "type": "boolean"
+                  },
+                  "lock_version": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "lock_version"
+                ]
+              },
+              "example": {
+                "lock_version": 0
               }
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/assignments/{id}/submissions": {
@@ -1934,16 +2184,35 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "enrollment_id": {
+                    "type": "integer"
+                  },
+                  "body": {
+                    "type": "string"
+                  },
+                  "lock_version": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "enrollment_id",
+                  "body"
+                ]
+              },
+              "example": {
+                "enrollment_id": 1,
+                "body": "valor"
               }
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/assignments/{id}/review": {
@@ -2024,16 +2293,40 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "submission_id": {
+                    "type": "integer"
+                  },
+                  "score": {
+                    "type": "number"
+                  },
+                  "feedback": {
+                    "type": "string"
+                  },
+                  "lock_version": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "submission_id",
+                  "score",
+                  "lock_version"
+                ]
+              },
+              "example": {
+                "submission_id": 1,
+                "score": "valor",
+                "lock_version": 0
               }
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/student_documents": {
@@ -2092,7 +2385,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       },
       "post": {
         "tags": [
@@ -2152,12 +2446,28 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "student_id": {
+                    "type": "integer"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": [
+                  "student_id",
+                  "title",
+                  "file"
+                ]
               }
             }
           }
@@ -2171,7 +2481,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/student_documents/{id}/download": {
@@ -2322,16 +2633,40 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "pending",
+                      "approved",
+                      "correction_requested"
+                    ]
+                  },
+                  "review_notes": {
+                    "type": "string"
+                  },
+                  "lock_version": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "status",
+                  "lock_version"
+                ]
+              },
+              "example": {
+                "status": "valor",
+                "lock_version": 0
               }
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/student_contacts": {
@@ -2390,7 +2725,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       },
       "post": {
         "tags": [
@@ -2548,16 +2884,39 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
-              }
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "relationship": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "emergency": {
+                    "type": "boolean"
+                  },
+                  "pickup_authorized": {
+                    "type": "boolean"
+                  }
+                },
+                "required": []
+              },
+              "example": {}
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       },
       "delete": {
         "tags": [
@@ -2683,7 +3042,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       },
       "post": {
         "tags": [
@@ -2742,12 +3102,32 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "recipient_id": {
+                    "type": "string"
+                  },
+                  "subject": {
+                    "type": "string"
+                  },
+                  "body": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "recipient_id",
+                  "subject",
+                  "body"
+                ]
+              },
+              "example": {
+                "recipient_id": 1,
+                "subject": "valor",
+                "body": "valor"
               }
             }
           }
@@ -2761,7 +3141,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/messages/recipients": {
@@ -2819,7 +3200,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       }
     },
     "/api/messages/{id}/read": {
@@ -2897,18 +3279,7 @@
             "sessionCookie": []
           }
         ],
-        "requestBody": {
-          "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": true
-              }
-            }
-          }
-        }
+        "x-request-body": "No requiere cuerpo de petición."
       }
     },
     "/api/reports": {
@@ -2967,7 +3338,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       },
       "post": {
         "tags": [
@@ -3027,12 +3399,35 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "file_format": {
+                    "type": "string",
+                    "enum": [
+                      "pdf",
+                      "xlsx"
+                    ]
+                  },
+                  "filters": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                },
+                "required": [
+                  "kind",
+                  "file_format"
+                ]
+              },
+              "example": {
+                "kind": "valor",
+                "file_format": "valor"
               }
             }
           }
@@ -3046,7 +3441,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/reports/{id}": {
@@ -3175,7 +3571,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       }
     },
     "/api/reports/{id}/download": {
@@ -3304,7 +3701,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       },
       "post": {
         "tags": [
@@ -3364,12 +3762,34 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "permissions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              },
+              "example": {
+                "name": "valor"
               }
             }
           }
@@ -3383,7 +3803,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/access_roles/{id}": {
@@ -3464,16 +3885,35 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
-              }
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "permissions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  }
+                },
+                "required": []
+              },
+              "example": {}
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/access_roles/assign": {
@@ -3535,12 +3975,28 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "user_id": {
+                    "type": "integer"
+                  },
+                  "access_role_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "required": [
+                  "user_id"
+                ]
+              },
+              "example": {
+                "user_id": 1
               }
             }
           }
@@ -3554,7 +4010,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/users": {
@@ -3613,7 +4070,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       },
       "post": {
         "tags": [
@@ -3673,12 +4131,41 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "password_confirmation": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "email",
+                  "password",
+                  "password_confirmation"
+                ]
+              },
+              "example": {
+                "name": "valor",
+                "email": "valor",
+                "password": "valor",
+                "password_confirmation": "valor"
               }
             }
           }
@@ -3692,7 +4179,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/users/{id}": {
@@ -3773,16 +4261,30 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
-              }
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "active": {
+                    "type": "boolean"
+                  }
+                },
+                "required": []
+              },
+              "example": {}
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/academic_years": {
@@ -3841,7 +4343,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       },
       "post": {
         "tags": [
@@ -3901,12 +4404,58 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "starts_on": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "ends_on": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "admissions_open_on": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "admissions_close_on": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "reenrollment_open_on": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "reenrollment_close_on": {
+                    "type": "string",
+                    "format": "date"
+                  }
+                },
+                "required": [
+                  "name",
+                  "starts_on",
+                  "ends_on",
+                  "admissions_open_on",
+                  "admissions_close_on",
+                  "reenrollment_open_on",
+                  "reenrollment_close_on"
+                ]
+              },
+              "example": {
+                "name": "valor",
+                "starts_on": "valor",
+                "ends_on": "valor",
+                "admissions_open_on": "valor",
+                "admissions_close_on": "valor",
+                "reenrollment_open_on": "valor",
+                "reenrollment_close_on": "valor"
               }
             }
           }
@@ -3920,7 +4469,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/academic_years/{id}": {
@@ -4001,16 +4551,47 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
-              }
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "starts_on": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "ends_on": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "admissions_open_on": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "admissions_close_on": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "reenrollment_open_on": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "reenrollment_close_on": {
+                    "type": "string",
+                    "format": "date"
+                  }
+                },
+                "required": []
+              },
+              "example": {}
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/groups": {
@@ -4069,7 +4650,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       },
       "post": {
         "tags": [
@@ -4129,12 +4711,37 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "academic_year_id": {
+                    "type": "integer"
+                  },
+                  "grade_level": {
+                    "type": "integer"
+                  },
+                  "section": {
+                    "type": "string"
+                  },
+                  "capacity": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "academic_year_id",
+                  "grade_level",
+                  "section",
+                  "capacity"
+                ]
+              },
+              "example": {
+                "academic_year_id": 1,
+                "grade_level": "valor",
+                "section": "valor",
+                "capacity": "valor"
               }
             }
           }
@@ -4148,7 +4755,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/groups/{id}": {
@@ -4229,16 +4837,32 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
-              }
+                "properties": {
+                  "academic_year_id": {
+                    "type": "integer"
+                  },
+                  "grade_level": {
+                    "type": "integer"
+                  },
+                  "section": {
+                    "type": "string"
+                  },
+                  "capacity": {
+                    "type": "integer"
+                  }
+                },
+                "required": []
+              },
+              "example": {}
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/groups/{id}/generate_schedule": {
@@ -4317,18 +4941,7 @@
             "sessionCookie": []
           }
         ],
-        "requestBody": {
-          "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": true
-              }
-            }
-          }
-        }
+        "x-request-body": "No requiere cuerpo de petición."
       }
     },
     "/api/subjects": {
@@ -4387,7 +5000,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       },
       "post": {
         "tags": [
@@ -4447,12 +5061,27 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "code"
+                ]
+              },
+              "example": {
+                "name": "valor",
+                "code": "valor"
               }
             }
           }
@@ -4466,7 +5095,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/subjects/{id}": {
@@ -4547,16 +5177,26 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
-              }
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              },
+              "example": {}
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/courses": {
@@ -4615,7 +5255,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       },
       "post": {
         "tags": [
@@ -4675,12 +5316,37 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "group_id": {
+                    "type": "integer"
+                  },
+                  "subject_id": {
+                    "type": "integer"
+                  },
+                  "teacher_id": {
+                    "type": "integer"
+                  },
+                  "weekly_periods": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "group_id",
+                  "subject_id",
+                  "teacher_id",
+                  "weekly_periods"
+                ]
+              },
+              "example": {
+                "group_id": 1,
+                "subject_id": 1,
+                "teacher_id": 1,
+                "weekly_periods": "valor"
               }
             }
           }
@@ -4694,7 +5360,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/courses/{id}": {
@@ -4775,16 +5442,32 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
-              }
+                "properties": {
+                  "group_id": {
+                    "type": "integer"
+                  },
+                  "subject_id": {
+                    "type": "integer"
+                  },
+                  "teacher_id": {
+                    "type": "integer"
+                  },
+                  "weekly_periods": {
+                    "type": "integer"
+                  }
+                },
+                "required": []
+              },
+              "example": {}
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/schedule_slots": {
@@ -4843,7 +5526,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       },
       "post": {
         "tags": [
@@ -4903,12 +5587,42 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "course_id": {
+                    "type": "integer"
+                  },
+                  "weekday": {
+                    "type": "integer"
+                  },
+                  "starts_minute": {
+                    "type": "integer"
+                  },
+                  "ends_minute": {
+                    "type": "integer"
+                  },
+                  "room": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "course_id",
+                  "weekday",
+                  "starts_minute",
+                  "ends_minute",
+                  "room"
+                ]
+              },
+              "example": {
+                "course_id": 1,
+                "weekday": "valor",
+                "starts_minute": "valor",
+                "ends_minute": "valor",
+                "room": "valor"
               }
             }
           }
@@ -4922,7 +5636,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/schedule_slots/{id}": {
@@ -5053,7 +5768,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       },
       "post": {
         "tags": [
@@ -5279,16 +5995,54 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
-              }
+                "properties": {
+                  "first_name": {
+                    "type": "string"
+                  },
+                  "last_name": {
+                    "type": "string"
+                  },
+                  "second_last_name": {
+                    "type": "string"
+                  },
+                  "birth_place": {
+                    "type": "string"
+                  },
+                  "birth_state": {
+                    "type": "string"
+                  },
+                  "nationality": {
+                    "type": "string"
+                  },
+                  "sex": {
+                    "type": "string"
+                  },
+                  "curp": {
+                    "type": "string"
+                  },
+                  "birth_date": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "emergency_phone": {
+                    "type": "string"
+                  },
+                  "address": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              },
+              "example": {}
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/students/{id}/report": {
@@ -5417,7 +6171,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       },
       "post": {
         "tags": [
@@ -5573,18 +6328,7 @@
             "sessionCookie": []
           }
         ],
-        "requestBody": {
-          "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": true
-              }
-            }
-          }
-        }
+        "x-request-body": "No requiere cuerpo de petición."
       }
     },
     "/api/admissions/{id}/reject": {
@@ -5665,16 +6409,27 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "reason"
+                ]
+              },
+              "example": {
+                "reason": "valor"
               }
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/enrollments": {
@@ -5733,7 +6488,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       }
     },
     "/api/enrollments/{id}/complete": {
@@ -5814,16 +6570,33 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "outcome": {
+                    "type": "string",
+                    "enum": [
+                      "promoted",
+                      "repeated",
+                      "graduated",
+                      "withdrawn"
+                    ]
+                  }
+                },
+                "required": [
+                  "outcome"
+                ]
+              },
+              "example": {
+                "outcome": "valor"
               }
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/attendances": {
@@ -5882,7 +6655,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       },
       "post": {
         "tags": [
@@ -6018,7 +6792,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       },
       "post": {
         "tags": [
@@ -6176,16 +6951,27 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "lock_version": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "lock_version"
+                ]
+              },
+              "example": {
+                "lock_version": 0
               }
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/grades/{id}/publish": {
@@ -6266,16 +7052,27 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "lock_version": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "lock_version"
+                ]
+              },
+              "example": {
+                "lock_version": 0
               }
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/grades/{id}/correct": {
@@ -6356,16 +7153,32 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "score": {
+                    "type": "number"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "score",
+                  "reason"
+                ]
+              },
+              "example": {
+                "score": "valor",
+                "reason": "valor"
               }
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/grades/{id}/history": {
@@ -6584,16 +7397,35 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "score": {
+                    "type": "number"
+                  },
+                  "feedback": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "score",
+                  "reason"
+                ]
+              },
+              "example": {
+                "score": "valor",
+                "reason": "valor"
               }
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/grades/{grade_id}/change_requests/{id}/resolve": {
@@ -6683,16 +7515,35 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "decision": {
+                    "type": "string"
+                  },
+                  "lock_version": {
+                    "type": "integer"
+                  },
+                  "resolution_reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "decision",
+                  "lock_version"
+                ]
+              },
+              "example": {
+                "decision": "valor",
+                "lock_version": 0
               }
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/calendar_events": {
@@ -6751,7 +7602,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       },
       "post": {
         "tags": [
@@ -6811,12 +7663,56 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "academic_year_id": {
+                    "type": "integer"
+                  },
+                  "group_id": {
+                    "type": "integer"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "exam",
+                      "holiday",
+                      "meeting",
+                      "activity"
+                    ]
+                  },
+                  "starts_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "ends_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "academic_year_id",
+                  "title",
+                  "kind",
+                  "starts_at",
+                  "ends_at"
+                ]
+              },
+              "example": {
+                "academic_year_id": 1,
+                "title": "valor",
+                "kind": "valor",
+                "starts_at": "valor",
+                "ends_at": "valor"
               }
             }
           }
@@ -6830,7 +7726,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/calendar_events/{id}": {
@@ -6911,16 +7808,43 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
-              }
+                "properties": {
+                  "academic_year_id": {
+                    "type": "integer"
+                  },
+                  "group_id": {
+                    "type": "integer"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "type": "string"
+                  },
+                  "starts_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "ends_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              },
+              "example": {}
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       },
       "delete": {
         "tags": [
@@ -7047,7 +7971,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       },
       "post": {
         "tags": [
@@ -7107,12 +8032,38 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "body": {
+                    "type": "string"
+                  },
+                  "audience": {
+                    "type": "string",
+                    "enum": [
+                      "all",
+                      "guardian",
+                      "teacher",
+                      "student"
+                    ]
+                  }
+                },
+                "required": [
+                  "title",
+                  "body",
+                  "audience"
+                ]
+              },
+              "example": {
+                "title": "valor",
+                "body": "valor",
+                "audience": "valor"
               }
             }
           }
@@ -7126,7 +8077,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/announcements/{id}": {
@@ -7254,7 +8206,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       },
       "put": {
         "tags": [
@@ -7313,12 +8266,23 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "Validar campos según el módulo; se documentarán los esquemas definitivos por operación.",
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "configuration": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                },
+                "required": [
+                  "configuration"
+                ]
+              },
+              "example": {
+                "configuration": "valor"
               }
             }
           }
@@ -7332,7 +8296,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/dashboard": {
@@ -7391,7 +8356,8 @@
           {
             "sessionCookie": []
           }
-        ]
+        ],
+        "parameters": []
       }
     },
     "/api/docs": {
@@ -7411,7 +8377,8 @@
             "sessionCookie": []
           }
         ],
-        "x-rbac-permission": "access_roles.index"
+        "x-rbac-permission": "access_roles.index",
+        "parameters": []
       }
     },
     "/api/data_imports": {
@@ -7441,7 +8408,8 @@
           "422": {
             "description": "Error de formato, mapeo o validación"
           }
-        }
+        },
+        "parameters": []
       },
       "post": {
         "tags": [
@@ -7641,15 +8609,28 @@
         },
         "requestBody": {
           "required": true,
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "mapping": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                },
+                "required": [
+                  "mapping"
+                ]
+              },
+              "example": {
+                "mapping": "valor"
               }
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/data_imports/{id}/execute": {
@@ -7698,17 +8679,7 @@
             "description": "Error de formato, mapeo o validación"
           }
         },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": true
-              }
-            }
-          }
-        }
+        "x-request-body": "No requiere cuerpo de petición."
       }
     },
     "/api/languages": {
@@ -7734,7 +8705,8 @@
           "422": {
             "description": "Validación"
           }
-        }
+        },
+        "parameters": []
       },
       "post": {
         "summary": "Dar de alta idioma en borrador",
@@ -7761,11 +8733,42 @@
         },
         "requestBody": {
           "required": true,
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "native_name": {
+                    "type": "string"
+                  },
+                  "text_direction": {
+                    "type": "string",
+                    "enum": [
+                      "ltr",
+                      "rtl"
+                    ]
+                  },
+                  "status": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "code",
+                  "name",
+                  "native_name"
+                ]
+              },
+              "example": {
+                "code": "valor",
+                "name": "valor",
+                "native_name": "valor"
               }
             }
           }
@@ -7779,7 +8782,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/languages/{id}": {
@@ -7826,15 +8830,32 @@
         ],
         "requestBody": {
           "required": true,
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
-              }
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "native_name": {
+                    "type": "string"
+                  },
+                  "text_direction": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              },
+              "example": {}
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/languages/{id}/bundle": {
@@ -7895,7 +8916,8 @@
           "422": {
             "description": "Validación"
           }
-        }
+        },
+        "parameters": []
       },
       "post": {
         "summary": "Crear traducción revisable",
@@ -7922,11 +8944,35 @@
         },
         "requestBody": {
           "required": true,
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "language_id": {
+                    "type": "string"
+                  },
+                  "key": {
+                    "type": "string"
+                  },
+                  "text": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "language_id",
+                  "key",
+                  "text"
+                ]
+              },
+              "example": {
+                "language_id": 1,
+                "key": "valor",
+                "text": "valor"
               }
             }
           }
@@ -7940,7 +8986,8 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/translation_entries/{id}": {
@@ -7987,15 +9034,26 @@
         ],
         "requestBody": {
           "required": true,
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
-              }
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              },
+              "example": {}
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/students/{student_id}/details/addresses": {
@@ -8076,15 +9134,64 @@
         },
         "requestBody": {
           "required": true,
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "country_code": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 2,
+                    "description": "Código ISO 3166-1 alpha-2."
+                  },
+                  "purpose": {
+                    "type": "string"
+                  },
+                  "primary": {
+                    "type": "boolean"
+                  },
+                  "line1": {
+                    "type": "string"
+                  },
+                  "line2": {
+                    "type": "string"
+                  },
+                  "neighborhood": {
+                    "type": "string"
+                  },
+                  "locality": {
+                    "type": "string"
+                  },
+                  "region": {
+                    "type": "string"
+                  },
+                  "postal_code": {
+                    "type": "string"
+                  },
+                  "latitude": {
+                    "type": "number"
+                  },
+                  "longitude": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "country_code",
+                  "purpose",
+                  "line1"
+                ]
+              },
+              "example": {
+                "country_code": "valor",
+                "purpose": "valor",
+                "line1": "valor"
               }
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/students/{student_id}/details/addresses/{id}": {
@@ -8139,15 +9246,56 @@
         },
         "requestBody": {
           "required": true,
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
-              }
+                "properties": {
+                  "country_code": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 2,
+                    "description": "Código ISO 3166-1 alpha-2."
+                  },
+                  "purpose": {
+                    "type": "string"
+                  },
+                  "primary": {
+                    "type": "boolean"
+                  },
+                  "line1": {
+                    "type": "string"
+                  },
+                  "line2": {
+                    "type": "string"
+                  },
+                  "neighborhood": {
+                    "type": "string"
+                  },
+                  "locality": {
+                    "type": "string"
+                  },
+                  "region": {
+                    "type": "string"
+                  },
+                  "postal_code": {
+                    "type": "string"
+                  },
+                  "latitude": {
+                    "type": "number"
+                  },
+                  "longitude": {
+                    "type": "number"
+                  }
+                },
+                "required": []
+              },
+              "example": {}
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       },
       "delete": {
         "operationId": "delete_student_addresses_record",
@@ -8270,15 +9418,46 @@
         },
         "requestBody": {
           "required": true,
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "number_e164": {
+                    "type": "string",
+                    "pattern": "^\\\\+[1-9]\\\\d{1,14}$",
+                    "description": "Formato internacional E.164."
+                  },
+                  "country_code": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 2,
+                    "description": "Código ISO 3166-1 alpha-2."
+                  },
+                  "purpose": {
+                    "type": "string"
+                  },
+                  "extension": {
+                    "type": "string"
+                  },
+                  "primary": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "number_e164",
+                  "purpose"
+                ]
+              },
+              "example": {
+                "number_e164": "valor",
+                "purpose": "valor"
               }
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/students/{student_id}/details/phones/{id}": {
@@ -8333,15 +9512,40 @@
         },
         "requestBody": {
           "required": true,
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
-              }
+                "properties": {
+                  "number_e164": {
+                    "type": "string",
+                    "pattern": "^\\\\+[1-9]\\\\d{1,14}$",
+                    "description": "Formato internacional E.164."
+                  },
+                  "country_code": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 2,
+                    "description": "Código ISO 3166-1 alpha-2."
+                  },
+                  "purpose": {
+                    "type": "string"
+                  },
+                  "extension": {
+                    "type": "string"
+                  },
+                  "primary": {
+                    "type": "boolean"
+                  }
+                },
+                "required": []
+              },
+              "example": {}
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       },
       "delete": {
         "operationId": "delete_student_phones_record",
@@ -8464,15 +9668,46 @@
         },
         "requestBody": {
           "required": true,
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "relationship": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "emergency": {
+                    "type": "boolean"
+                  },
+                  "pickup_authorized": {
+                    "type": "boolean"
+                  },
+                  "primary": {
+                    "type": "boolean"
+                  },
+                  "priority": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              },
+              "example": {
+                "name": "valor"
               }
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/students/{student_id}/details/contacts/{id}": {
@@ -8527,15 +9762,42 @@
         },
         "requestBody": {
           "required": true,
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
-              }
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "relationship": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "emergency": {
+                    "type": "boolean"
+                  },
+                  "pickup_authorized": {
+                    "type": "boolean"
+                  },
+                  "primary": {
+                    "type": "boolean"
+                  },
+                  "priority": {
+                    "type": "integer"
+                  }
+                },
+                "required": []
+              },
+              "example": {}
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       },
       "delete": {
         "operationId": "delete_student_contacts_record",
@@ -8658,15 +9920,33 @@
         },
         "requestBody": {
           "required": true,
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "body": {
+                    "type": "string"
+                  },
+                  "category": {
+                    "type": "string"
+                  },
+                  "visibility": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "body"
+                ]
+              },
+              "example": {
+                "body": "valor"
               }
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       }
     },
     "/api/students/{student_id}/details/notes/{id}": {
@@ -8721,15 +10001,29 @@
         },
         "requestBody": {
           "required": true,
+          "description": "Campos aceptados por esta operación. Los campos no marcados como obligatorios pueden estar sujetos a reglas adicionales de negocio.",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
-              }
+                "properties": {
+                  "body": {
+                    "type": "string"
+                  },
+                  "category": {
+                    "type": "string"
+                  },
+                  "visibility": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              },
+              "example": {}
             }
           }
-        }
+        },
+        "x-documentation-source": "Campos contrastados con controladores Rails; restricciones adicionales requieren validación por modelo y contexto."
       },
       "delete": {
         "operationId": "delete_student_notes_record",
@@ -8793,7 +10087,8 @@
           "422": {
             "description": "Valores inválidos o hijo de otra familia"
           }
-        }
+        },
+        "parameters": []
       },
       "patch": {
         "operationId": "patch_preferences",
@@ -8933,7 +10228,8 @@
           "422": {
             "description": "Error de validación"
           }
-        }
+        },
+        "parameters": []
       },
       "post": {
         "tags": [
@@ -8993,7 +10289,8 @@
               }
             }
           }
-        }
+        },
+        "parameters": []
       }
     },
     "/api/import_mapping_templates/{id}": {
