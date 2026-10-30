@@ -27,3 +27,14 @@ it('shows backend validation errors using the field label',()=>{
    onSubmit={vi.fn()} onCancel={vi.fn()} options={()=>[]} optionName={r=>r.name}/>);
  expect(screen.getByText('Nombre del alumno ya existe.')).toBeTruthy();
 });
+
+it('navigates both steps of a complex form and preserves entered fields',async()=>{
+ const fields=Array.from({length:6},(_,i)=>({key:'field'+i,label:'Campo '+i,optional:false}));
+ render(<RecordForm fields={fields} initial={{}} onSubmit={vi.fn()} onCancel={vi.fn()} busy={false} options={()=>[]} optionName={r=>r.name} error=""/>);
+ expect(screen.getByText('1 · Información básica')).toBeTruthy();
+ for(let i=0;i<3;i++)await userEvent.type(screen.getByLabelText(/Campo [0-2]/),'dato'+i);
+ await userEvent.click(screen.getByRole('button',{name:'Siguiente'}));
+ expect(screen.getByLabelText(/Campo 3/)).toBeTruthy();
+ await userEvent.click(screen.getByRole('button',{name:'Anterior'}));
+ expect(screen.getAllByRole('textbox').length).toBe(3);
+});
