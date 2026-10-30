@@ -1,7 +1,7 @@
 import TableEmptyState from '../../shared/components/TableEmptyState';
 import {useSchoolLocale} from '../../shared/i18n/LocaleContext';
 import {useEffect,useState} from 'react';
-import {ArrowLeft,BookOpen,FileText,GraduationCap,IdCard,MapPin,Phone,Plus,Users,CalendarDays,ShieldCheck,HeartHandshake,UserRoundCheck,ArrowRight} from 'lucide-react';
+import {ArrowLeft,BookOpen,FileText,GraduationCap,IdCard,MapPin,Phone,Plus,Users,CalendarDays,ShieldCheck,HeartHandshake,UserRoundCheck,ArrowRight,StickyNote,House,Mail,Star,PenLine,Trash2,MapPinned,Info} from 'lucide-react';
 import {api} from '../../api';
 import RecordForm from '../../shared/components/RecordForm';
 import type {Field,Row} from '../../modules';
@@ -44,6 +44,14 @@ const fields:Record<DataKind,Field[]>={
   {key:'visibility',label:'Visibilidad',options:[['internal','Solo personal autorizado'],['shared','Compartida con la familia']],optional:true}]
 };
 const icon:Record<Kind,typeof MapPin>={overview:IdCard,family:Users,addresses:MapPin,phones:Phone,contacts:Users,notes:FileText};
+const kindDescriptions:Record<DataKind,{emptyTitle:string;emptyMessage:string;add:string;eyebrow:string}>={
+ addresses:{emptyTitle:'Aún no hay direcciones registradas',emptyMessage:'Agrega el domicilio del alumno para mantener actualizado su expediente y facilitar la comunicación escolar.',add:'Agregar dirección',eyebrow:'UBICACIÓN Y DOMICILIOS'},
+ phones:{emptyTitle:'Aún no hay teléfonos registrados',emptyMessage:'Registra números de contacto, especialmente uno para emergencias, con su código internacional.',add:'Agregar teléfono',eyebrow:'COMUNICACIÓN Y EMERGENCIAS'},
+ contacts:{emptyTitle:'Aún no hay contactos registrados',emptyMessage:'Vincula una persona de confianza e identifica si puede atender emergencias o recoger al alumno.',add:'Agregar contacto',eyebrow:'RED DE APOYO DEL ALUMNO'},
+ notes:{emptyTitle:'Todavía no hay notas de seguimiento',emptyMessage:'Las observaciones y acuerdos autorizados aparecerán aquí para acompañar el expediente escolar.',add:'Agregar nota',eyebrow:'SEGUIMIENTO INSTITUCIONAL'}
+};
+const yes=(value:unknown)=>value===true||value===1||value==='true'||value==='1';
+const humanPurpose=(value:unknown)=>({home:'Domicilio',fiscal:'Fiscal',other:'Otro',mobile:'Celular',work:'Trabajo',emergency:'Emergencia'}[String(value)]||String(value||'Sin clasificar'));
 function title(row:Row,kind:DataKind):string{
  if(kind==='addresses')return row.line1||'Dirección';
  if(kind==='phones')return row.number_e164||'Teléfono';
@@ -155,23 +163,28 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
     </div>:kind==='overview'?<>
       <div className="sc-details-heading"><div><span className="eyebrow">{ui("INFORMACIÓN GENERAL")}</span>
        <h2>{ui("Resumen del expediente")}</h2><p>{ui("Identidad registrada y seguimiento académico disponible.")}</p></div></div>
-      <div className="sc-record-summary">
-       <div><small>{ui("Nombre del alumno")}</small><strong>{student.full_name}</strong></div>
-       <div><small>{ui("CURP")}</small><strong>{student.curp||ui('Pendiente')}</strong></div>
-       <div><small>{ui("Fecha de nacimiento")}</small><strong>{student.birth_date||ui('Pendiente')}</strong></div>
-       <div><small>{ui("Dirección registrada")}</small><strong>{student.address||ui('Consulta la sección Direcciones')}</strong></div>
+      <div className="sc-record-overview-banner">
+       <span className="sc-record-overview-badge"><IdCard size={18}/></span>
+       <div><strong>{ui('Información de identificación')}</strong><p>{ui('Datos asociados al expediente. Los campos pendientes se indican sin ocultar información.')}</p></div>
+       <span className="sc-record-overview-stage">{student.enrollment_stage==='enrolled'?ui('Alumno inscrito'):ui('Aspirante')}</span>
       </div>
-      <div className="sc-record-history-heading"><BookOpen size={20}/><h3>{ui("Trayectoria académica")}</h3></div>
+      <dl className="sc-record-summary">
+       <div><dt>{ui('Nombre completo')}</dt><dd>{student.full_name||ui('Sin registrar')}</dd></div>
+       <div><dt>{ui('CURP')}</dt><dd>{student.curp||ui('Sin registrar')}</dd></div>
+       <div><dt>{ui('Fecha de nacimiento')}</dt><dd>{student.birth_date||ui('Sin registrar')}</dd></div>
+       <div><dt>{ui('Domicilio')}</dt><dd>{student.address||ui('Consultar la sección Direcciones')}</dd></div>
+      </dl>
+      <div className="sc-record-history-heading"><BookOpen size={20}/><div><h3>{ui("Trayectoria académica")}</h3><p>{ui('Ciclos, grupos y actividad académica disponibles para este expediente.')}</p></div></div>
       {student.enrollment_stage!=='enrolled'?<div className="sc-applicant-notice" role="status">{ui('Este expediente corresponde a un aspirante. Se convertirá en alumno cuando se formalice su inscripción.')}</div>:report?.years?.length?report.years.map((year:Row)=><article className="sc-record-year" key={year.enrollment.id}>
         <div><strong>{year.enrollment.group_label||'Grupo escolar'}</strong><span >{ui(year.enrollment.status||'Inscripción')}</span></div>
         <small>{year.grades?.length||0} calificaciones · {Object.entries(year.attendance||{}).map(([status,count])=>ui(status)+': '+count).join(' · ')||ui('Sin asistencias registradas')}</small>
-       </article>):<TableEmptyState mode={canViewReport?'empty':'forbidden'} canCreate={false}/>}
+       </article>):<div className="sc-record-overview-empty"><GraduationCap size={26}/><strong>{ui(canViewReport?'Sin trayectoria académica disponible':'Trayectoria con acceso restringido')}</strong><p>{ui(canViewReport?'Cuando existan inscripciones formalizadas y resultados capturados, se mostrarán aquí.':'Necesitas autorización para consultar los resultados académicos de este alumno.')}</p></div>}
     </>:<>
-     <div className="sc-details-heading"><div><span className="eyebrow">{ui("EXPEDIENTE / INFORMACIÓN RELACIONADA")}</span>
+     <div className="sc-details-heading"><div><span className="eyebrow">{ui(kindDescriptions[kind as DataKind].eyebrow)}</span>
        <h2>{ui(category.find(section=>section.kind===kind)?.title||'')}</h2>
        <p>{ui(category.find(section=>section.kind===kind)?.description||'')}</p></div>
        {writable&&!creating&&!editing&&<button className="primary" type="button" onClick={()=>{setCreating(true);setEditing(null);}}>
-         <Plus size={17}/>{ui("Agregar registro")}</button>}
+         <Plus size={17}/>{ui(kindDescriptions[kind as DataKind].add)}</button>}
      </div>
      {error&&<div className="error" role="alert">{error}</div>}
      {(creating||editing)&&<div className="sc-details-form"><RecordForm key={kind+'-'+(editing?.id||'new')}
@@ -179,17 +192,41 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
        onSubmit={values=>void save(values)} onCancel={()=>{setEditing(null);setCreating(false);setError('');}} busy={busy}
        options={()=>[]} optionName={row=>String(row.name||row.id)} error={error} fieldErrors={fieldErrors}/></div>}
      {!creating&&!editing&&<div className="sc-details-list">
-       {loading?<p>{ui("Cargando información…")}</p>:items.length?items.map(row=><article className="sc-details-card" key={row.id}>
-         <span className="sc-details-card-icon">{kind==='addresses'?<MapPin size={21}/>:kind==='phones'?<Phone size={21}/>:kind==='contacts'?<Users size={21}/>:<FileText size={21}/>}</span>
-         <div><strong>{title(row,kind as DataKind)}</strong>
-          <p>{kind==='addresses'?[row.locality,row.region,row.postal_code].filter(Boolean).join(' · '):kind==='phones'?row.purpose:kind==='contacts'?[row.relationship,row.email].filter(Boolean).join(' · '):row.category}</p>
-          {row.legacy_student_contact_id&&<small>{ui("Contacto vinculado a Contactos familiares")}</small>}
-         </div>
-         {writable&&!row.legacy_student_contact_id&&<div className="actions">
-          <button className="secondary" type="button" onClick={()=>{setEditing(row);setFieldErrors({});}}>{ui("Editar")}</button>
-          <button className="secondary danger" type="button" disabled={busy} onClick={()=>void remove(row)}>{ui("Eliminar")}</button>
-         </div>}
-        </article>):<TableEmptyState canCreate={writable}/>}
+       {loading?<div className="sc-details-loading" role="status"><span className="sc-details-skeleton"/><span className="sc-details-skeleton"/><span>{ui('Cargando información…')}</span></div>:
+       items.length?<><div className="sc-details-collection-head"><span><Info size={15}/>{items.length} {ui(items.length===1?'registro disponible':'registros disponibles')}</span><small>{ui('Información vinculada a este alumno')}</small></div>
+        <div className="sc-details-card-grid">{items.map(row=>{
+         const Icon=kind==='addresses'?MapPinned:kind==='phones'?Phone:kind==='contacts'?Users:StickyNote;
+         const details=kind==='addresses'?[row.line2,row.neighborhood,row.locality,row.region,row.postal_code].filter(Boolean).join(' · '):
+           kind==='phones'?[humanPurpose(row.purpose),row.extension?ui('Extensión')+' '+row.extension:''].filter(Boolean).join(' · '):
+           kind==='contacts'?[row.relationship,row.email].filter(Boolean).join(' · '):String(row.category||ui('Seguimiento general'));
+         return <article className={'sc-details-card sc-details-card-'+kind} key={row.id}>
+          <div className="sc-details-card-top"><span className="sc-details-card-icon"><Icon size={21}/></span>
+           <div className="sc-details-card-main"><h3>{title(row,kind as DataKind)}</h3><p>{details||ui('Información complementaria sin registrar')}</p></div>
+           {yes(row.primary)&&<span className="sc-details-chip is-primary"><Star size={13}/>{ui('Principal')}</span>}
+          </div>
+          {kind==='addresses'&&<div className="sc-details-card-detail"><House size={15}/>{ui(humanPurpose(row.purpose))}{row.country_code?' · '+row.country_code:''}</div>}
+          {kind==='phones'&&<div className="sc-details-card-detail"><Phone size={15}/><a href={'tel:'+String(row.number_e164||'')}>{row.number_e164}</a></div>}
+          {kind==='contacts'&&<div className="sc-details-card-chips">
+           <span className={'sc-details-chip'+(yes(row.emergency)?' is-alert':'')}>{yes(row.emergency)?ui('Contacto de emergencia'):ui('Contacto adicional')}</span>
+           {yes(row.pickup_authorized)&&<span className="sc-details-chip is-authorized"><ShieldCheck size={13}/>{ui('Recogida autorizada')}</span>}
+           {row.email&&<a className="sc-details-chip is-email" href={'mailto:'+row.email}><Mail size={13}/>{row.email}</a>}
+          </div>}
+          {kind==='notes'&&<div className="sc-details-card-chips"><span className="sc-details-chip"><StickyNote size={13}/>{ui(row.category||'General')}</span><span className="sc-details-chip">{ui(row.visibility==='shared'?'Compartida con la familia':'Nota institucional')}</span></div>}
+          {row.legacy_student_contact_id&&<p className="sc-details-linked"><Users size={14}/>{ui('Gestionado desde Contactos familiares')}</p>}
+          {writable&&!row.legacy_student_contact_id&&<div className="sc-details-card-actions">
+           <button className="secondary" type="button" onClick={()=>{setEditing(row);setFieldErrors({});}}><PenLine size={15}/>{ui('Editar')}</button>
+           <button className="secondary danger" type="button" disabled={busy} onClick={()=>void remove(row)}><Trash2 size={15}/>{ui('Eliminar')}</button>
+          </div>}
+         </article>;
+        })}</div></>:
+        <div className="sc-details-empty">
+         <div className="sc-details-empty-art" aria-hidden="true">{kind==='addresses'?<MapPinned size={34}/>:kind==='phones'?<Phone size={34}/>:kind==='contacts'?<HeartHandshake size={34}/>:<StickyNote size={34}/>}</div>
+         <span className="sc-details-empty-eyebrow">{ui('EXPEDIENTE SIN REGISTROS')}</span>
+         <h3>{ui(kindDescriptions[kind as DataKind].emptyTitle)}</h3>
+         <p>{ui(kindDescriptions[kind as DataKind].emptyMessage)}</p>
+         {writable?<button type="button" className="primary" onClick={()=>{setCreating(true);setEditing(null);}}><Plus size={16}/>{ui(kindDescriptions[kind as DataKind].add)}</button>:
+          <small>{ui('La consulta está disponible; no tienes permisos para agregar registros en esta sección.')}</small>}
+        </div>}
      </div>}
     </>}
    </section>

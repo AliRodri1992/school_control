@@ -16,3 +16,13 @@ it('renders a complete student record page instead of a dialog',async()=>{
  await userEvent.click(screen.getByRole('button',{name:'Volver al directorio'}));
  expect(close).toHaveBeenCalledOnce();
 });
+
+it('shows an actionable empty state and meaningful contact cards',async()=>{
+ const {api}=await import('../../api');
+ vi.mocked(api).mockImplementation(async path=>path.endsWith('/contacts')?[]:[]);
+ render(<StudentDetails student={{id:44,full_name:'Luis García'}} onClose={vi.fn()} canEdit canWriteNotes/>);
+ await userEvent.click(screen.getByRole('button',{name:'Direcciones'}));
+ expect(await screen.findByRole('heading',{name:'Aún no hay direcciones registradas'})).toBeTruthy();
+ await userEvent.click(screen.getByRole('button',{name:'Agregar dirección'}));
+ expect(screen.getByText('Calle y número')).toBeTruthy();
+});
