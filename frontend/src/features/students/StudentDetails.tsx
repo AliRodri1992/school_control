@@ -1,7 +1,7 @@
 import TableEmptyState from '../../shared/components/TableEmptyState';
 import {useSchoolLocale} from '../../shared/i18n/LocaleContext';
 import {useEffect,useState} from 'react';
-import {ArrowLeft,BookOpen,FileText,GraduationCap,IdCard,MapPin,Phone,Plus,Users,CalendarDays} from 'lucide-react';
+import {ArrowLeft,BookOpen,FileText,GraduationCap,IdCard,MapPin,Phone,Plus,Users,CalendarDays,ShieldCheck,HeartHandshake,UserRoundCheck,ArrowRight} from 'lucide-react';
 import {api} from '../../api';
 import RecordForm from '../../shared/components/RecordForm';
 import type {Field,Row} from '../../modules';
@@ -59,11 +59,21 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
  const [error,setError]=useState(''),[fieldErrors,setFieldErrors]=useState<Record<string,string[]>>({});
  const [busy,setBusy]=useState(false),[loading,setLoading]=useState(false);
  const [report,setReport]=useState<Row|null>(null);
+ const [familyContacts,setFamilyContacts]=useState<Row[]>([]),[familyLoading,setFamilyLoading]=useState(false),[familyError,setFamilyError]=useState('');
  const root='students/'+student.id+'/details/';
  async function fetchItems(selected:Kind){if(selected==='overview'||selected==='family')return;setLoading(true);
   try{setItems(await api(root+selected));setError('');}catch(e){setError((e as Error).message);}finally{setLoading(false);}
  }
  useEffect(()=>{void fetchItems(kind);},[student.id,kind]);
+ useEffect(()=>{
+  if(kind!=='family')return;
+  let active=true;
+  setFamilyLoading(true);setFamilyError('');
+  void api(root+'contacts').then((value:Row[])=>{if(active)setFamilyContacts(value);})
+    .catch((cause:Error)=>{if(active)setFamilyError(cause.message);})
+    .finally(()=>{if(active)setFamilyLoading(false);});
+  return()=>{active=false;};
+ },[kind,student.id]);
  useEffect(()=>{
    if(!canViewReport)return;
    let active=true;
@@ -117,7 +127,32 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
       <Icon size={18}/><span >{ui(section.title)}</span></button>;})}
    </nav>
    <section className="sc-record-content">
-    {kind==='family'?<><div className="sc-details-heading"><div><span className="eyebrow">{ui('FAMILIA Y RESPONSABLES')}</span><h2>{ui('Datos familiares')}</h2><p>{ui('La cuenta del tutor responsable se administra desde el portal familiar. Registra familiares adicionales en Contactos.')}</p></div></div><div className="sc-record-summary"><div><small>{ui('Tutor responsable')}</small><strong>{student.guardian_name||ui('Tutor vinculado')}</strong></div><div><small>{ui('Identificador de tutor')}</small><strong>#{student.guardian_id}</strong></div></div><button className="secondary" type="button" onClick={()=>setKind('contacts')}>{ui('Ver y agregar familiares autorizados')}</button></>:kind==='overview'?<>
+    {kind==='family'?<div className="sc-family">
+     <div className="sc-details-heading"><div><span className="eyebrow">{ui('FAMILIA Y RESPONSABLES')}</span><h2>{ui('Datos familiares')}</h2><p>{ui('Consulta las personas vinculadas al alumno y sus autorizaciones de contacto y recogida.')}</p></div></div>
+     <section className="sc-family-guardian" aria-label={ui('Tutor responsable')}>
+      <div className="sc-family-avatar" aria-hidden="true"><Users size={28}/></div>
+      <div className="sc-family-guardian-info"><span className="sc-family-eyebrow">{ui('RESPONSABLE PRINCIPAL')}</span><h3>{student.guardian_name||ui('Tutor vinculado')}</h3>
+       <p>{ui('Responsable de la cuenta familiar y del seguimiento de la inscripción.')}</p>
+       <span className="sc-family-id">{ui('Identificador de tutor')} #{student.guardian_id||'—'}</span></div>
+      <span className="sc-family-primary"><ShieldCheck size={15}/>{ui('Tutor responsable')}</span>
+     </section>
+     <div className="sc-family-section-heading"><div><h3>{ui('Red de apoyo familiar')}</h3><p>{ui('Contactos adicionales registrados en el expediente del alumno.')}</p></div>
+      <button className="secondary sc-family-manage" type="button" onClick={()=>setKind('contacts')}>{ui('Administrar contactos')}<ArrowRight size={16}/></button></div>
+     {familyLoading?<TableEmptyState mode="loading"/>:familyError?<p className="sc-family-load-error" role="alert">{familyError}</p>:familyContacts.length?
+      <><div className="sc-family-summary"><div><Users size={18}/><span>{ui('Contactos registrados')}</span><strong>{familyContacts.length}</strong></div>
+       <div><HeartHandshake size={18}/><span>{ui('Contactos de emergencia')}</span><strong>{familyContacts.filter(c=>c.emergency===true).length}</strong></div>
+       <div><UserRoundCheck size={18}/><span>{ui('Recogida autorizada')}</span><strong>{familyContacts.filter(c=>c.pickup_authorized===true).length}</strong></div></div>
+       <div className="sc-family-cards">{familyContacts.map(contact=><article className="sc-family-card" key={contact.id}>
+        <div className="sc-family-card-head"><span className="sc-family-contact-icon"><Users size={19}/></span><div><h4>{contact.name}</h4><small>{contact.relationship||ui('Parentesco sin registrar')}</small></div></div>
+        <div className="sc-family-badges">{contact.emergency===true&&<span><HeartHandshake size={14}/>{ui('Emergencia')}</span>}
+         {contact.pickup_authorized===true&&<span><UserRoundCheck size={14}/>{ui('Recogida autorizada')}</span>}
+         {contact.primary===true&&<span><ShieldCheck size={14}/>{ui('Principal')}</span>}</div>
+        <dl>{contact.phone&&<div><dt>{ui('Teléfono')}</dt><dd>{contact.phone}</dd></div>}{contact.email&&<div><dt>{ui('Correo electrónico')}</dt><dd>{contact.email}</dd></div>}</dl>
+       </article>)}</div></>:
+      <div className="sc-family-empty"><HeartHandshake size={30}/><h4>{ui('Sin familiares adicionales registrados')}</h4>
+       <p>{ui('El tutor responsable ya está vinculado. Puedes añadir contactos de emergencia o personas autorizadas para recoger al alumno.')}</p>
+       {canEdit&&<button className="secondary" type="button" onClick={()=>setKind('contacts')}>{ui('Agregar contacto familiar')}</button>}</div>}
+    </div>:kind==='overview'?<>
       <div className="sc-details-heading"><div><span className="eyebrow">{ui("INFORMACIÓN GENERAL")}</span>
        <h2>{ui("Resumen del expediente")}</h2><p>{ui("Identidad registrada y seguimiento académico disponible.")}</p></div></div>
       <div className="sc-record-summary">
