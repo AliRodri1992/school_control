@@ -103,9 +103,12 @@ module Api
     def apply_list_filters(scope)
       search = params[:q].to_s.strip
       if search.present?
-        columns = LIST_SEARCH_COLUMNS.fetch(resource)
-        predicate = columns.map { |column| "#{scope.klass.table_name}.#{column} ILIKE :query" }.join(" OR ")
-        scope = scope.where(predicate, query: "%#{ActiveRecord::Base.sanitize_sql_like(search)}%")
+        table = scope.klass.arel_table
+        escaped = ActiveRecord::Base.sanitize_sql_like(search)
+        predicates = LIST_SEARCH_COLUMNS.fetch(resource).map do |column|
+          table[column].matches("%#{escaped}%")
+        end
+        scope = scope.where(predicates.reduce(&:or))
       end
 
       kind = params[:type].to_s
@@ -122,7 +125,13 @@ module Api
       flag = params[:flag].to_s
       allowed_flags = resource == "contacts" ? %w[primary emergency pickup_authorized] :
         %w[addresses phones].include?(resource) ? %w[primary] : []
-      scope = scope.where(flag => true) if allowed_flags.include?(flag)
+      if allowed_flags.include?(flag)
+        scope = case flag
+        when "primary" then scope.where(primary: true)
+        when "emergency" then scope.where(emergency: true)
+        when "pickup_authorized" then scope.where(pickup_authorized: true)
+        end
+      end
       scope
     end
 
