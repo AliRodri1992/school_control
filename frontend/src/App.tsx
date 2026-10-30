@@ -89,6 +89,7 @@ export default function App(){
  const [groupFilter,setGroupFilter] = useState('');
  const [sorting,setSorting]=useState('');
  const [ascending,setAscending]=useState(true),[pageNumber,setPageNumber]=useState(0),[pageSize,setPageSize]=useState(15),[statusFilter,setStatusFilter]=useState(''),[advanced,setAdvanced]=useState(false);
+ const [moduleFacet,setModuleFacet]=useState(''),[moduleDate,setModuleDate]=useState('');
  const [selectedChild,setSelectedChild]=useState('');
  const [fieldErrors,setFieldErrors]=useState<Record<string,string[]>>({});
  const [moduleLoadErrors,setModuleLoadErrors]=useState<Record<string,ModuleLoadError>>({});
@@ -99,6 +100,7 @@ export default function App(){
    if(next!=='imports'&&next!=='profile'&&next!=='notifications'&&next!=='messages'&&next!=='preferences'&&next!=='help'&&next!=='privacy'&&next!=='terms'&&!user?.permissions?.[pagePermission(next)]?.length)return;
    if(next!=='student_details')setDetailStudent(null);
    setSelectedAdmission(null);
+   setModuleFacet('');setModuleDate('');setAdvanced(false);
    closeStudentReport();
    const remembered=loadRememberedFilters(user?.id,next);
    setPage(next);setQuery(remembered?.query||'');setNotice('');setMobile(false);setPageNumber(0);
@@ -231,9 +233,15 @@ export default function App(){
    if(row.student_id&&String(row.student_id)!==selectedChild)return false;
    if(row.enrollment_id&&!linkedEnrollments.has(String(row.enrollment_id)))return false;
   }
-  return (!statusFilter||String(row.status||'')===statusFilter)&&JSON.stringify(Object.values(row)).toLowerCase().includes(query.toLowerCase());
+  const fk=({groups:'grade_level',courses:'teacher_id',attendances:'status',grades:'term',calendar_events:'kind',announcements:'audience',users:'role'} as Record<string,string>)[page];
+  const dk=({attendances:'on',calendar_events:'starts_at'} as Record<string,string>)[page];
+  return (!statusFilter||String(row.status||'')===statusFilter)&&(!moduleFacet||!fk||String(row[fk]??'')===moduleFacet)&&(!moduleDate||!dk||String(row[dk]||'').slice(0,10)===moduleDate)&&JSON.stringify(Object.values(row)).toLowerCase().includes(query.toLowerCase());
  }).sort((a,b)=>!sorting?0:String(a[sorting]??'').localeCompare(String(b[sorting]??''),locale==='en'?'en-US':'es-MX',{numeric:true})*(ascending?1:-1));
  const statuses=[...new Set((data[page]||[]).map(row=>String(row.status||'')).filter(Boolean))].sort();
+ const hasModuleWorkbench=['groups','courses','attendances','grades','calendar_events','announcements','users','subjects'].includes(page);
+ const facetKey=({groups:'grade_level',courses:'teacher_id',attendances:'status',grades:'term',calendar_events:'kind',announcements:'audience',users:'role',subjects:'code'} as Record<string,string>)[page];
+ const facetValues=hasModuleWorkbench&&facetKey?[...new Set((data[page]||[]).map(row=>String(row[facetKey]??'')).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})):[];
+ const moduleDateKey=({attendances:'on',calendar_events:'starts_at'} as Record<string,string>)[page];
  const pages=Math.max(1,Math.ceil(records.length/pageSize));
  const currentPage=Math.min(pageNumber,pages-1);
  const shownRows=records.slice(currentPage*pageSize,(currentPage+1)*pageSize);
@@ -328,6 +336,9 @@ export default function App(){
  {page==='students'&&<nav className="sc-student-stage-filter" aria-label={ui('Tipo de expediente')}><button type="button" aria-pressed={studentStage==='enrolled'} onClick={()=>{setStudentStage('enrolled');setPageNumber(0);setQuery('');}}>{user.role==='guardian'?ui('Mis hijos inscritos'):ui('Alumnos inscritos')}</button><button type="button" aria-pressed={studentStage==='applicant'} onClick={()=>{setStudentStage('applicant');setPageNumber(0);setQuery('');}}>{user.role==='guardian'?ui('Mis aspirantes y solicitudes'):ui('Aspirantes')}</button></nav>}
  {page==='students'&&<section className="sc-students-overview" aria-label={ui('Resumen de alumnos')}><div className="sc-students-overview-intro"><span>{ui('DIRECTORIO ESCOLAR')}</span><strong>{ui('Cada expediente, una trayectoria por acompañar')}</strong><p>{ui('Accede a datos de identificación, contactos autorizados y seguimiento académico desde un mismo lugar.')}</p></div><div className="sc-students-overview-metrics"><article><span>{studentStage==='enrolled'?ui('Alumnos inscritos'):ui('Aspirantes registrados')}</span><strong>{(data.students||[]).filter(s=>(s.enrollment_stage||'applicant')===studentStage).length}</strong></article><article><span>{ui('Con CURP registrada')}</span><strong>{studentDirectoryStats((data.students||[]).filter(s=>(s.enrollment_stage||'applicant')===studentStage)).withCurp}</strong></article><article><span>{ui('Resultados de búsqueda')}</span><strong>{records.length}</strong></article></div></section>}
  {page==='academic_years'&&<div className="info">{ui('Las solicitudes solo se admiten dentro de las fechas de apertura y cierre configuradas para cada proceso.')}</div>}
+ {hasModuleWorkbench&&<section className="sc-workbench-overview" aria-label={ui('Indicadores del módulo')}>
+ <div className="sc-workbench-story"><span>{ui('CENTRO DE GESTIÓN')}</span><h2>{translatedModules[page].title}</h2><p>{ui('Consulta y administra los registros autorizados con filtros contextuales y seguimiento.')}</p></div>
+ <div className="sc-workbench-kpis"><article><span>{ui('Total registrado')}</span><strong>{(data[page]||[]).length}</strong></article><article><span>{ui('Resultados de búsqueda')}</span><strong>{records.length}</strong></article><article><span>{ui('Página actual')}</span><strong>{currentPage+1} / {pages}</strong></article></div></section>}
  {page==='grades'&&<div className="info">{['admin','teacher'].includes(user.role)?ui('Las familias y alumnos solo ven calificaciones publicadas. Promedio visible: ') : ui('Promedio de calificaciones publicadas: ')} <strong>{mean(records.map(x=>Number(x.score)))}</strong> . {ui('La boleta detallada se encuentra en Expedientes.')}</div>}
  {page==='admissions'&&<AdmissionOverview items={data.admissions||[]} years={data.academic_years||[]}
   year={admissionYearFilter} grade={admissionGradeFilter} date={admissionDateFilter}
@@ -339,13 +350,15 @@ export default function App(){
   onDate={value=>{setAdmissionDateFilter(value);setPageNumber(0);}}
   onReset={()=>{setAdmissionYearFilter('');setAdmissionGradeFilter('');setAdmissionDateFilter('');setAdmissionStatusFilter('');setAdmissionKindFilter('');setStatusFilter('');setQuery('');setPageNumber(0);}}/>}
  {page==='admissions'&&can('admissions.approve')&&<AdmissionRequirements years={data.academic_years||[]}/>}
- <section className={'panel table-panel'+(page==='students'?' sc-students-panel':'')+(page==='admissions'?' sc-admissions-panel':'')}><div className="toolbar"><div className="search"><Search size={17}/><input aria-label={page==='students'?ui('Buscar alumnos por nombre o CURP'):page==='admissions'?ui('Buscar solicitudes por alumno o folio'):ui('Buscar registros')} placeholder={page==='students'?ui('Buscar por nombre, CURP o dato del expediente…'):page==='admissions'?ui('Buscar alumno o folio…'):ui('Buscar…')} value={query} onChange={e=>{setQuery(e.target.value);setPageNumber(0);}}/></div>{statuses.length>0&&page!=='admissions'&&<button className="secondary" type="button" aria-expanded={advanced} onClick={()=>setAdvanced(value=>!value)}>{ui('Filtros avanzados')}</button>}
+ <section className={'panel table-panel'+(page==='students'?' sc-students-panel':'')+(page==='admissions'?' sc-admissions-panel':'')}><div className="toolbar"><div className="search"><Search size={17}/><input aria-label={page==='students'?ui('Buscar alumnos por nombre o CURP'):page==='admissions'?ui('Buscar solicitudes por alumno o folio'):ui('Buscar registros')} placeholder={page==='students'?ui('Buscar por nombre, CURP o dato del expediente…'):page==='admissions'?ui('Buscar alumno o folio…'):ui('Buscar…')} value={query} onChange={e=>{setQuery(e.target.value);setPageNumber(0);}}/></div>{(statuses.length>0||hasModuleWorkbench)&&page!=='admissions'&&<button className="secondary" type="button" aria-expanded={advanced} onClick={()=>setAdvanced(value=>!value)}>{ui('Filtros avanzados')}</button>}
   <span className="count">{records.length} {ui('Registros').toLowerCase()}</span></div>
-  {advanced&&statuses.length>0&&page!=='admissions'&&<div className="sc-advanced-filters">
-  <div className="sc-toolbar-filter"><label>{ui('Estado')}</label><Combobox label={ui('Filtrar por estado')} value={statusFilter}
+  {advanced&&(statuses.length>0||hasModuleWorkbench)&&page!=='admissions'&&<div className="sc-advanced-filters sc-workbench-filters">
+  {statuses.length>0&&<div className="sc-toolbar-filter"><label>{ui('Estado')}</label><Combobox label={ui('Filtrar por estado')} value={statusFilter}
      onChange={value=>{setStatusFilter(value);setPageNumber(0);}} placeholder={ui('Todos los estados')}
-     options={statuses.map(status=>({value:status,label:display(status)}))}/></div>
-  <button className="text-button" onClick={()=>{setStatusFilter('');setQuery('');setSorting('');setPageNumber(0);}}>{ui('Limpiar filtros')}</button>
+     options={statuses.map(status=>({value:status,label:display(status)}))}/></div>}
+  {hasModuleWorkbench&&facetValues.length>0&&<div className="sc-toolbar-filter"><label>{ui(({groups:'Grado',courses:'Docente',attendances:'Asistencia',grades:'Trimestre',calendar_events:'Tipo de evento',announcements:'Destinatarios',users:'Perfil',subjects:'Clave'} as Record<string,string>)[page]||'Categoría')}</label><Combobox label={ui('Filtrar por categoría')} value={moduleFacet} searchable={facetValues.length>7} placeholder={ui('Todas las opciones')} onChange={value=>{setModuleFacet(value);setPageNumber(0);}} options={facetValues.map(value=>({value,label:display(value)}))}/></div>}
+  {hasModuleWorkbench&&moduleDateKey&&<div className="sc-toolbar-filter"><label htmlFor="sc-workbench-date">{ui('Fecha')}</label><input id="sc-workbench-date" type="date" value={moduleDate} onChange={event=>{setModuleDate(event.target.value);setPageNumber(0);}}/></div>}
+  <button className="text-button" onClick={()=>{setStatusFilter('');setModuleFacet('');setModuleDate('');setQuery('');setSorting('');setPageNumber(0);}}>{ui('Limpiar filtros')}</button>
   </div>}
   {records.length>0&&<div className="table-scroll"><table className={page==='students'?'sc-students-table':page==='admissions'?'sc-admissions-table':undefined}><thead><tr>{translatedModules[page].columns.map(([key,title])=><th key={key} aria-sort={sorting===key?(ascending?"ascending":"descending"):"none"}><button className="sc-sort-button" aria-label={(locale==='en'?'Sort by ':'Ordenar por ')+title} onClick={()=>sortBy(key)}>{title}{sorting===key?(ascending?" ↑":" ↓"):" ↕"}</button></th>)}<th className="sc-table-action-col">{ui('Acciones')}</th></tr></thead><tbody>{shownRows.map(row=><tr key={row.id}>{translatedModules[page].columns.map(([key])=><td key={key} data-label={page==='admissions'?translatedModules[page].columns.find(([field])=>field===key)?.[1]:undefined}>{page==='admissions'&&key==='folio'?<div className="sc-admission-identity"><strong>{row.folio||ui('Borrador sin folio')}</strong><small>{row.enrollment_id?ui('Matrícula formalizada'):row.status==='approved'?ui('Pendiente de formalización'):ui('Solicitud de admisión')}</small></div>:page==='students'&&key==='full_name'?<div className="sc-student-identity"><span className="sc-student-initials" aria-hidden="true">{studentInitials(row)}</span><div><strong>{row.full_name||[row.first_name,row.last_name].filter(Boolean).join(' ')}</strong><span className="sc-student-stage-label">{row.enrollment_stage==='enrolled'?ui('Inscrito'):ui('Aspirante')}</span><small>{ui('Expediente')} #{row.id}</small></div></div>:['status','outcome','role','kind'].includes(key)?<span className={`badge ${row[key]||''}`}>{display(row[key])}</span>:key.endsWith('_at')?readableDate(row[key]):display(row[key])}</td>)}<td className="sc-table-action-cell" data-label={page==='admissions'?ui('Acciones'):undefined}><div className="sc-table-action-group">
  {page==='grades'&&<GradeActions grade={row} admin={user.role==='admin'} permissions={user.permissions} onChanged={()=>refresh()}/>}
@@ -367,7 +380,7 @@ export default function App(){
     <div><TableEmptyState mode="error" description={moduleLoadErrors[page].message}/><div className="form-actions"><button className="secondary" type="button" onClick={()=>void refresh().catch(e=>setError((e as Error).message))}>{ui('Reintentar consulta')}</button></div></div>)
    :!user.permissions?.[pagePermission(page)]?.length?<TableEmptyState mode="forbidden"/>
    :data[page]===undefined?<TableEmptyState mode="loading"/>
-   :<TableEmptyState mode={query||statusFilter?'filtered':'empty'} canCreate={editable}/>)}
+   :<TableEmptyState mode={query||statusFilter||moduleFacet||moduleDate?'filtered':'empty'} canCreate={editable}/>)}
  
   {records.length>0&&<div className="sc-pagination">
     <div className="sc-page-size"><label>{ui('Por página')}</label><Combobox label={ui('Registros por página')} value={String(pageSize)}

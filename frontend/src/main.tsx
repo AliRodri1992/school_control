@@ -16,6 +16,7 @@ import './styles/dialogs.css';
 import './styles/imports.css';
 import './styles/languages.css';
 import './styles/forms.css';
+import './styles/module-workbench.css';
 import './styles/api-docs.css';
 import './styles/mail-designer.css';
 import './styles/student-details.css';
