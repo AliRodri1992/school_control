@@ -12,6 +12,6 @@ class ActivityNotifier < Noticed::Event
   notification_methods do
     def title = params[:title]
     def page = params[:page]
-    def notification_type = params[:notification_type] || 'activity'
+    def notification_type = params[:notification_type] || "activity"
   end
 end
