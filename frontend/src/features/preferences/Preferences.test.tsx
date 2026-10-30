@@ -185,7 +185,8 @@ it('saves accessibility and calendar preferences without changing the dashboard 
  expect(document.documentElement.dataset.schoolContrast).toBe('true');
  expect(JSON.parse(localStorage.getItem('school-preferences')||'{}').high_contrast).toBe(true);
  await userEvent.click(screen.getByRole('button',{name:'Fecha y calendario'}));
- await userEvent.selectOptions(screen.getByLabelText('Formato de hora'),'12h');
+ await userEvent.click(screen.getByRole('combobox',{name:'Formato de hora'}));
+ await userEvent.click(screen.getByRole('option',{name:'12 horas'}));
  await userEvent.click(screen.getByRole('button',{name:'Guardar preferencias'}));
  await waitFor(()=>expect(fetchApi).toHaveBeenCalledWith('preferences','PATCH',{time_format:'12h'}));
  expect(screen.queryByText('Página de inicio')).toBeNull();
