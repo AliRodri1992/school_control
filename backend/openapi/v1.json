@@ -491,10 +491,6 @@
                   "email",
                   "password"
                 ]
-              },
-              "example": {
-                "email": "valor",
-                "password": "valor"
               }
             }
           }
@@ -649,12 +645,6 @@
                   "password",
                   "password_confirmation"
                 ]
-              },
-              "example": {
-                "name": "valor",
-                "email": "valor",
-                "password": "valor",
-                "password_confirmation": "valor"
               }
             }
           }
@@ -807,8 +797,7 @@
                   }
                 },
                 "required": []
-              },
-              "example": {}
+              }
             }
           }
         },
@@ -893,9 +882,6 @@
                 "required": [
                   "email"
                 ]
-              },
-              "example": {
-                "email": "valor"
               }
             }
           }
@@ -986,11 +972,6 @@
                   "password",
                   "password_confirmation"
                 ]
-              },
-              "example": {
-                "token": "valor",
-                "password": "valor",
-                "password_confirmation": "valor"
               }
             }
           }
@@ -1137,8 +1118,7 @@
                   }
                 },
                 "required": []
-              },
-              "example": {}
+              }
             }
           }
         },
@@ -1234,11 +1214,6 @@
                   "password",
                   "password_confirmation"
                 ]
-              },
-              "example": {
-                "current_password": "valor",
-                "password": "valor",
-                "password_confirmation": "valor"
               }
             }
           }
@@ -1472,12 +1447,6 @@
                   "subject",
                   "body"
                 ]
-              },
-              "example": {
-                "key": "valor",
-                "locale": "valor",
-                "subject": "valor",
-                "body": "valor"
               }
             }
           }
@@ -1608,8 +1577,7 @@
                   }
                 },
                 "required": []
-              },
-              "example": {}
+              }
             }
           }
         },
@@ -1899,12 +1867,6 @@
                   "instructions",
                   "due_at"
                 ]
-              },
-              "example": {
-                "course_id": 1,
-                "title": "valor",
-                "instructions": "valor",
-                "due_at": "valor"
               }
             }
           }
@@ -2026,9 +1988,6 @@
                 "required": [
                   "lock_version"
                 ]
-              },
-              "example": {
-                "lock_version": 0
               }
             }
           }
@@ -2204,10 +2163,6 @@
                   "enrollment_id",
                   "body"
                 ]
-              },
-              "example": {
-                "enrollment_id": 1,
-                "body": "valor"
               }
             }
           }
@@ -2317,11 +2272,6 @@
                   "score",
                   "lock_version"
                 ]
-              },
-              "example": {
-                "submission_id": 1,
-                "score": "valor",
-                "lock_version": 0
               }
             }
           }
@@ -2658,10 +2608,6 @@
                   "status",
                   "lock_version"
                 ]
-              },
-              "example": {
-                "status": "valor",
-                "lock_version": 0
               }
             }
           }
@@ -2911,8 +2857,7 @@
                   }
                 },
                 "required": []
-              },
-              "example": {}
+              }
             }
           }
         },
@@ -3123,11 +3068,6 @@
                   "subject",
                   "body"
                 ]
-              },
-              "example": {
-                "recipient_id": 1,
-                "subject": "valor",
-                "body": "valor"
               }
             }
           }
@@ -3424,10 +3364,6 @@
                   "kind",
                   "file_format"
                 ]
-              },
-              "example": {
-                "kind": "valor",
-                "file_format": "valor"
               }
             }
           }
@@ -3572,7 +3508,89 @@
             "sessionCookie": []
           }
         ],
-        "parameters": []
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Tipo de reporte: enrollments, grades, attendances, admissions, schedules o audit."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Página de resultados; mínimo 1."
+          },
+          {
+            "name": "academic_year_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filtro opcional del reporte."
+          },
+          {
+            "name": "group_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filtro opcional del reporte."
+          },
+          {
+            "name": "student_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filtro opcional del reporte."
+          },
+          {
+            "name": "course_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filtro opcional del reporte."
+          },
+          {
+            "name": "term",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filtro opcional del reporte."
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Fecha inicial, ISO 8601 (AAAA-MM-DD)."
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Fecha final, ISO 8601 (AAAA-MM-DD)."
+          }
+        ]
       }
     },
     "/api/reports/{id}/download": {
@@ -3787,9 +3805,6 @@
                 "required": [
                   "name"
                 ]
-              },
-              "example": {
-                "name": "valor"
               }
             }
           }
@@ -3908,8 +3923,7 @@
                   }
                 },
                 "required": []
-              },
-              "example": {}
+              }
             }
           }
         },
@@ -3994,9 +4008,6 @@
                 "required": [
                   "user_id"
                 ]
-              },
-              "example": {
-                "user_id": 1
               }
             }
           }
@@ -4160,12 +4171,6 @@
                   "password",
                   "password_confirmation"
                 ]
-              },
-              "example": {
-                "name": "valor",
-                "email": "valor",
-                "password": "valor",
-                "password_confirmation": "valor"
               }
             }
           }
@@ -4279,8 +4284,7 @@
                   }
                 },
                 "required": []
-              },
-              "example": {}
+              }
             }
           }
         },
@@ -4447,15 +4451,6 @@
                   "reenrollment_open_on",
                   "reenrollment_close_on"
                 ]
-              },
-              "example": {
-                "name": "valor",
-                "starts_on": "valor",
-                "ends_on": "valor",
-                "admissions_open_on": "valor",
-                "admissions_close_on": "valor",
-                "reenrollment_open_on": "valor",
-                "reenrollment_close_on": "valor"
               }
             }
           }
@@ -4586,8 +4581,7 @@
                   }
                 },
                 "required": []
-              },
-              "example": {}
+              }
             }
           }
         },
@@ -4736,12 +4730,6 @@
                   "section",
                   "capacity"
                 ]
-              },
-              "example": {
-                "academic_year_id": 1,
-                "grade_level": "valor",
-                "section": "valor",
-                "capacity": "valor"
               }
             }
           }
@@ -4857,8 +4845,7 @@
                   }
                 },
                 "required": []
-              },
-              "example": {}
+              }
             }
           }
         },
@@ -5078,10 +5065,6 @@
                   "name",
                   "code"
                 ]
-              },
-              "example": {
-                "name": "valor",
-                "code": "valor"
               }
             }
           }
@@ -5191,8 +5174,7 @@
                   }
                 },
                 "required": []
-              },
-              "example": {}
+              }
             }
           }
         },
@@ -5341,12 +5323,6 @@
                   "teacher_id",
                   "weekly_periods"
                 ]
-              },
-              "example": {
-                "group_id": 1,
-                "subject_id": 1,
-                "teacher_id": 1,
-                "weekly_periods": "valor"
               }
             }
           }
@@ -5462,8 +5438,7 @@
                   }
                 },
                 "required": []
-              },
-              "example": {}
+              }
             }
           }
         },
@@ -5616,13 +5591,6 @@
                   "ends_minute",
                   "room"
                 ]
-              },
-              "example": {
-                "course_id": 1,
-                "weekday": "valor",
-                "starts_minute": "valor",
-                "ends_minute": "valor",
-                "room": "valor"
               }
             }
           }
@@ -6046,8 +6014,7 @@
                   }
                 },
                 "required": []
-              },
-              "example": {}
+              }
             }
           }
         },
@@ -6431,9 +6398,6 @@
                 "required": [
                   "reason"
                 ]
-              },
-              "example": {
-                "reason": "valor"
               }
             }
           }
@@ -6597,9 +6561,6 @@
                 "required": [
                   "outcome"
                 ]
-              },
-              "example": {
-                "outcome": "valor"
               }
             }
           }
@@ -7144,10 +7105,6 @@
                   "reason",
                   "lock_version"
                 ]
-              },
-              "example": {
-                "score": "valor",
-                "reason": "valor"
               }
             }
           }
@@ -7391,10 +7348,6 @@
                   "score",
                   "reason"
                 ]
-              },
-              "example": {
-                "score": "valor",
-                "reason": "valor"
               }
             }
           }
@@ -7509,10 +7462,6 @@
                   "decision",
                   "lock_version"
                 ]
-              },
-              "example": {
-                "decision": "valor",
-                "lock_version": 0
               }
             }
           }
@@ -7680,13 +7629,6 @@
                   "starts_at",
                   "ends_at"
                 ]
-              },
-              "example": {
-                "academic_year_id": 1,
-                "title": "valor",
-                "kind": "valor",
-                "starts_at": "valor",
-                "ends_at": "valor"
               }
             }
           }
@@ -7813,8 +7755,7 @@
                   }
                 },
                 "required": []
-              },
-              "example": {}
+              }
             }
           }
         },
@@ -8033,11 +7974,6 @@
                   "body",
                   "audience"
                 ]
-              },
-              "example": {
-                "title": "valor",
-                "body": "valor",
-                "audience": "valor"
               }
             }
           }
@@ -8254,9 +8190,6 @@
                 "required": [
                   "configuration"
                 ]
-              },
-              "example": {
-                "configuration": "valor"
               }
             }
           }
@@ -8597,9 +8530,6 @@
                 "required": [
                   "mapping"
                 ]
-              },
-              "example": {
-                "mapping": "valor"
               }
             }
           }
@@ -8738,11 +8668,6 @@
                   "name",
                   "native_name"
                 ]
-              },
-              "example": {
-                "code": "valor",
-                "name": "valor",
-                "native_name": "valor"
               }
             }
           }
@@ -8824,8 +8749,7 @@
                   }
                 },
                 "required": []
-              },
-              "example": {}
+              }
             }
           }
         },
@@ -8942,11 +8866,6 @@
                   "key",
                   "text"
                 ]
-              },
-              "example": {
-                "language_id": 1,
-                "key": "valor",
-                "text": "valor"
               }
             }
           }
@@ -9022,8 +8941,7 @@
                   }
                 },
                 "required": []
-              },
-              "example": {}
+              }
             }
           }
         },
@@ -9156,11 +9074,6 @@
                   "purpose",
                   "line1"
                 ]
-              },
-              "example": {
-                "country_code": "valor",
-                "purpose": "valor",
-                "line1": "valor"
               }
             }
           }
@@ -9264,8 +9177,7 @@
                   }
                 },
                 "required": []
-              },
-              "example": {}
+              }
             }
           }
         },
@@ -9423,10 +9335,6 @@
                   "number_e164",
                   "purpose"
                 ]
-              },
-              "example": {
-                "number_e164": "valor",
-                "purpose": "valor"
               }
             }
           }
@@ -9514,8 +9422,7 @@
                   }
                 },
                 "required": []
-              },
-              "example": {}
+              }
             }
           }
         },
@@ -9674,9 +9581,6 @@
                 "required": [
                   "name"
                 ]
-              },
-              "example": {
-                "name": "valor"
               }
             }
           }
@@ -9766,8 +9670,7 @@
                   }
                 },
                 "required": []
-              },
-              "example": {}
+              }
             }
           }
         },
@@ -9913,9 +9816,6 @@
                 "required": [
                   "body"
                 ]
-              },
-              "example": {
-                "body": "valor"
               }
             }
           }
@@ -9992,8 +9892,7 @@
                   }
                 },
                 "required": []
-              },
-              "example": {}
+              }
             }
           }
         },
