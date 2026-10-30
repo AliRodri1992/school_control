@@ -183,7 +183,7 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
      <div className="sc-details-heading"><div><span className="eyebrow">{ui(kindDescriptions[kind as DataKind].eyebrow)}</span>
        <h2>{ui(category.find(section=>section.kind===kind)?.title||'')}</h2>
        <p>{ui(category.find(section=>section.kind===kind)?.description||'')}</p></div>
-       {writable&&!creating&&!editing&&<button className="primary" type="button" onClick={()=>{setCreating(true);setEditing(null);}}>
+       {writable&&!creating&&!editing&&!loading&&items.length>0&&<button className="primary" type="button" onClick={()=>{setCreating(true);setEditing(null);}}>
          <Plus size={17}/>{ui(kindDescriptions[kind as DataKind].add)}</button>}
      </div>
      {error&&<div className="error" role="alert">{error}</div>}
