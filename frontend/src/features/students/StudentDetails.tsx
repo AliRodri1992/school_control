@@ -6,7 +6,7 @@ import {api} from '../../api';
 import RecordForm from '../../shared/components/RecordForm';
 import StudentPhoneForm from './StudentPhoneForm';
 import type {Field,Row} from '../../modules';
-import {confirmDanger} from '../../notifications';
+import {confirmDanger,notify} from '../../notifications';
 
 type DataKind='addresses'|'phones'|'contacts'|'notes';
 type Kind='overview'|'family'|DataKind;
@@ -91,7 +91,10 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
  },[student.id,canViewReport]);
  async function save(attrs:Row){setBusy(true);setError('');setFieldErrors({});
   try{
+   const wasEditing=Boolean(editing);
    await api(root+kind+(editing?'/'+editing.id:''),editing?'PATCH':'POST',attrs);
+   const noun=({addresses:'Dirección',phones:'Teléfono',contacts:'Contacto',notes:'Nota'} as Record<DataKind,string>)[kind as DataKind];
+   void notify(noun+(wasEditing?' editado':' creado')+' exitosamente.');
    setCreating(false);setEditing(null);await fetchItems(kind);
   }catch(e){const cause=e as Error & {fieldErrors?:Record<string,string[]>};setError(cause.message);setFieldErrors(cause.fieldErrors||{});}
   finally{setBusy(false);}
@@ -101,7 +104,7 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
   const description={addresses:'Se eliminará el domicilio seleccionado del expediente.',phones:'Este número dejará de estar disponible para contacto escolar.',contacts:'Se eliminará la persona seleccionada y sus autorizaciones de este expediente.',notes:'Se eliminará esta nota y dejará de ser visible para los usuarios autorizados.'}[kind as DataKind];
   if(!await confirmDanger('Eliminar '+noun,'¿Confirmas que deseas eliminar '+String(title(row,kind as DataKind))+'? '+description,'Sí, eliminar',true))return;
   setBusy(true);setError('');
-  try{await api(root+kind+'/'+row.id,'DELETE');await fetchItems(kind);}catch(e){setError((e as Error).message);}finally{setBusy(false);}
+  try{await api(root+kind+'/'+row.id,'DELETE');await fetchItems(kind);void notify(({addresses:'Dirección',phones:'Teléfono',contacts:'Contacto',notes:'Nota'} as Record<DataKind,string>)[kind as DataKind]+' eliminado exitosamente.');}catch(e){setError((e as Error).message);}finally{setBusy(false);}
  }
  const writable=kind!=='overview'&&kind!=='family'&&canEdit&&(kind!=='notes'||canWriteNotes);
  return <section className="sc-student-details" aria-label={'Expediente de '+student.full_name}>

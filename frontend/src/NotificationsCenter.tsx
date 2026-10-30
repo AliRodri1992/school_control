@@ -1,7 +1,7 @@
 import {useEffect,useState} from 'react';
 import {Bell,CheckCheck,Clock3,Inbox,Search,RefreshCw,ArrowUpRight} from 'lucide-react';
 import {useSchoolLocale} from './shared/i18n/LocaleContext';
-import {notificationTime,symbol} from './shell/NotificationPopover';
+import {notificationTime,symbol,notificationTypeLabel} from './shell/NotificationPopover';
 import {displayNotificationTitle} from './shared/displayPreferences';
 import {api} from './api';
 import type {Row} from './modules';
@@ -94,7 +94,7 @@ export default function Notifications({navigate}:{navigate:(page:string)=>void})
       className={'sc-nc-item'+(isUnread?' is-unread':'')}>
       <span className="sc-nc-item-icon"><Icon size={20} aria-hidden="true"/></span>
       <span className="sc-nc-item-copy"><span className="sc-nc-item-title">{displayNotificationTitle(String(item.title),locale)}</span>
-       <span className="sc-nc-item-meta"><Clock3 size={13} aria-hidden="true"/>
+       <span className="sc-nc-item-meta">{item.notification_type&&<span className="sc-notification-kind">{notificationTypeLabel(String(item.notification_type),locale)}</span>}<Clock3 size={13} aria-hidden="true"/>
         <time dateTime={item.created_at||undefined}>{notificationTime(item.created_at,locale)}</time>
         <span className="sc-nc-item-state">{isUnread?(english?'New':'Nueva'):(english?'Read':'Leída')}</span>
        </span></span>

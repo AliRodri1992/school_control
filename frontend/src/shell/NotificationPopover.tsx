@@ -3,7 +3,7 @@ import {displayNotificationTitle,readDisplaySettings} from '../shared/displayPre
 import {ArrowRight,Bell,BellOff,BookOpenCheck,CalendarDays,CheckCheck,ClipboardCheck,FileText,GraduationCap,Mail,MessageSquare,ShieldCheck,X} from 'lucide-react';
 
 export type NotificationPreview={
- id:number|string;title:string;page?:string|null;created_at?:string|null;read_at?:string|null;
+ id:number|string;title:string;page?:string|null;notification_type?:string|null;created_at?:string|null;read_at?:string|null;
 };
 type Props={
  locale:string;items:NotificationPreview[];unread:number;loading?:boolean;busy?:boolean;
@@ -13,6 +13,10 @@ const copy={
  es:{title:'Notificaciones',subtitle:'Novedades de tu comunidad escolar',all:'Todas',unread:'Sin leer',pending:'pendientes',caughtUp:'Todo al día',markAll:'Marcar todas como leídas',close:'Cerrar notificaciones',emptyAll:'No tienes notificaciones recientes',emptyUnread:'Ya revisaste todas tus notificaciones',emptyHint:'Las novedades de tu escuela aparecerán aquí.',allLink:'Ir al centro de notificaciones',loading:'Cargando notificaciones',new:'Nueva',read:'Leída',open:'Abrir notificación'},
  en:{title:'Notifications',subtitle:'Updates from your school community',all:'All',unread:'Unread',pending:'unread',caughtUp:'All caught up',markAll:'Mark all as read',close:'Close notifications',emptyAll:'No recent notifications',emptyUnread:'You are all caught up',emptyHint:'School updates will appear here.',allLink:'Open notification center',loading:'Loading notifications',new:'New',read:'Read',open:'Open notification'}
 };
+export function notificationTypeLabel(value:string,locale:string):string{
+ const labels:Record<string,[string,string]>={created:['Creación','Created'],updated:['Actualización','Updated'],deleted:['Eliminación','Deleted'],activity:['Actividad','Activity']};
+ const label=labels[value];return label?(locale==='en'?label[1]:label[0]):value;
+}
 export function symbol(page?:string|null){
  switch(page){
  case 'grades':case 'students':case 'enrollments':return GraduationCap;
@@ -90,7 +94,7 @@ export default function NotificationPopover({locale,items,unread,loading=false,b
       <span className="sc-np-item-icon" aria-hidden="true"><Icon size={19}/></span>
       <span className="sc-np-item-main">
        <span className="sc-np-item-title">{displayNotificationTitle(item.title,locale)}</span>
-       <span className="sc-np-item-meta">{date&&<time dateTime={item.created_at||undefined}>{date}</time>}<span>{unseen?labels.new:labels.read}</span></span>
+       <span className="sc-np-item-meta">{item.notification_type&&<span className="sc-notification-kind">{notificationTypeLabel(item.notification_type,locale)}</span>}{date&&<time dateTime={item.created_at||undefined}>{date}</time>}<span>{unseen?labels.new:labels.read}</span></span>
       </span>
       {unseen&&<span className="sc-np-unread-dot" aria-hidden="true"/>}
      </button>;

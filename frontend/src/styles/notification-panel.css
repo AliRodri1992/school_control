@@ -101,3 +101,5 @@
  .sc-np-mark-all{font-size:10px}
 }
 @media(prefers-reduced-motion:reduce){.sc-np-item,.sc-np-tab{transition:none}}
+
+.sc-notification-kind{display:inline-flex;align-items:center;border-radius:7px;padding:3px 7px;background:#e8efff;color:#3457aa;font-weight:750;font-size:10px}
