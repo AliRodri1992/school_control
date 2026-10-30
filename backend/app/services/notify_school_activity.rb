@@ -22,6 +22,7 @@ class NotifySchoolActivity
     if types.key?(event.record_type) && event.action.match?(/\A(?:address|phone_number|contact|note)\.(?:created|updated|deleted)\z/)
       action = event.action.split(".").last
       suffix = { "created" => "creada", "updated" => "actualizada", "deleted" => "eliminada" }.fetch(action)
+      suffix = suffix.sub(/a\z/, "o") if event.record_type == "PhoneNumber"
       title = "#{types.fetch(event.record_type)} #{suffix} exitosamente"
       ActivityNotifier.with(title: title, page: "students", notification_type: action, audit_event_id: event.id).deliver(event.user) if event.user&.active?
       return
