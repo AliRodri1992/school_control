@@ -11,17 +11,21 @@ export default function RecordForm({fields,initial,onSubmit,onCancel,busy,option
 }) {
  const {locale,ui}=useSchoolLocale();
  const [values,setValues]=useState<Row>(initial);
+ const [step,setStep]=useState(0);
+ const wizard=!layout&&fields.length>=6;
+ const split=Math.ceil(fields.length/2);
  const [errors,setErrors]=useState<Record<string,string>>({});
  useEffect(()=>{const mapped:Record<string,string>={};
   for(const field of fields){
    const text=fieldErrors[field.key]?.[0];
    if(text)mapped[field.key]=field.label+' '+text.replace(/\.$/,'')+'.';
   }
+  if(Object.keys(mapped).length&&wizard){const firstError=fields.findIndex(field=>mapped[field.key]);if(firstError>=split)setStep(1);}
   if(Object.keys(mapped).length) setErrors(existing=>{
     const unchanged=Object.entries(mapped).every(([key,value])=>existing[key]===value);
     return unchanged?existing:{...existing,...mapped};
   });
- },[fieldErrors,fields]);
+ },[fieldErrors,fields,wizard,split]);
  function update(key:string,value:string){setValues(v=>({...v,[key]:value,...(key==='course_id'?{enrollment_id:''}:{})}));setErrors(v=>({...v,[key]:''}));}
  function handleSubmit(event:FormEvent){
   event.preventDefault();
@@ -62,7 +66,7 @@ export default function RecordForm({fields,initial,onSubmit,onCancel,busy,option
     {errors[field.key]&&<p className="sc-field-error" id={'record-'+field.key+'-error'} role="alert">{errors[field.key]}</p>}
    </div>;
 })}</div></section>;
-   })}</div>:<div className="sc-workbench-form"><header className="sc-workbench-form-intro"><span>{ui('CONFIGURACIÓN DEL REGISTRO')}</span><h3>{ui('Datos principales')}</h3><p>{ui('Completa los campos obligatorios; revisa los detalles adicionales antes de guardar.')}</p></header><div className="form-grid">{fields.map(field=>{
+   })}</div>:<div className="sc-workbench-form"><header className="sc-workbench-form-intro"><span>{ui('CONFIGURACIÓN DEL REGISTRO')}</span><h3>{ui('Datos principales')}</h3><p>{ui('Completa los campos obligatorios; revisa los detalles adicionales antes de guardar.')}</p>{wizard&&<div className="sc-workbench-steps" aria-label={ui('Pasos del formulario')}><span aria-current={step===0?'step':undefined}>1 · {ui('Información básica')}</span><span aria-current={step===1?'step':undefined}>2 · {ui('Detalles y confirmación')}</span></div>}</header><div className="form-grid">{(wizard?(step===0?fields.slice(0,split):fields.slice(split)):fields).map(field=>{
    const value=String(values[field.key]??'');
    const hasChoices=!!(field.source||field.options);
    const choices:Choice[]=hasChoices?(field.options||options(field.source!,values).map(r=>[String(r.id),optionName(r)] as [string,string]))
@@ -84,6 +88,8 @@ export default function RecordForm({fields,initial,onSubmit,onCancel,busy,option
 
   {error&&<p className="error" role="alert">{error}</p>}
   <div className="form-actions"><button type="button" className="secondary" onClick={onCancel}>{ui('Cancelar')}</button>
-   <button className="primary" type="submit" disabled={busy}>{busy?ui('Guardando…'):ui('Guardar')}</button></div>
+   {wizard&&step===1&&<button className="secondary" type="button" onClick={()=>setStep(0)}>{ui('Anterior')}</button>}
+   {wizard&&step===0?<button className="primary" type="button" onClick={()=>{const missing=fields.slice(0,split).find(field=>!field.optional&&!String(values[field.key]??'').trim());if(missing){setErrors(v=>({...v,[missing.key]:missing.label+(locale==='en'?' cannot be empty.':' no puede estar vacío.')}));return;}setStep(1);}}>{ui('Siguiente')}</button>:
+   <button className="primary" type="submit" disabled={busy}>{busy?ui('Guardando…'):ui('Guardar')}</button>}</div>
  </form>;
 }
