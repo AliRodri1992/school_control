@@ -2,11 +2,12 @@ import {useSchoolLocale} from '../i18n/LocaleContext';
 import {useEffect,useState,type FormEvent} from 'react';
 import type {Field,Row} from '../../modules';
 import Combobox,{type Choice} from './Combobox';
+import {MapPin,Users,ShieldCheck,FileText} from 'lucide-react';
 
-export default function RecordForm({fields,initial,onSubmit,onCancel,busy,options,optionName,error,fieldErrors={}}:{
+export default function RecordForm({fields,initial,onSubmit,onCancel,busy,options,optionName,error,fieldErrors={},layout}:{
  fields:Field[];initial:Row;onSubmit:(v:Row)=>void;onCancel:()=>void;busy:boolean;
  options:(source:string,values:Row)=>Row[];optionName:(record:Row)=>string;error:string;
- fieldErrors?:Record<string,string[]>;
+ fieldErrors?:Record<string,string[]>;layout?:'addresses'|'contacts'|'notes';
 }) {
  const {locale,ui}=useSchoolLocale();
  const [values,setValues]=useState<Row>(initial);
@@ -37,7 +38,12 @@ export default function RecordForm({fields,initial,onSubmit,onCancel,busy,option
  }
  function localDateTime(value:string){if(!value)return '';const date=new Date(value);return new Date(date.getTime()-date.getTimezoneOffset()*60000).toISOString().slice(0,16);}
  return <form noValidate onSubmit={handleSubmit}>
-  <div className="form-grid">{fields.map(field=>{
+  {layout?<div className="sc-dossier-form-groups">{(layout==='addresses'?
+   [{title:'Ubicación del domicilio',detail:'Identificación y dirección principal',keys:['country_code','purpose','line1','line2'],icon:MapPin},{title:'Referencia geográfica',detail:'Colonia, municipio y código postal',keys:['neighborhood','locality','region','postal_code'],icon:MapPin},{title:'Preferencia',detail:'Prioridad de este domicilio en el expediente',keys:['primary'],icon:ShieldCheck}]:
+   layout==='contacts'?[{title:'Identidad del familiar',detail:'Datos para identificar y contactar a la persona',keys:['name','relationship','email'],icon:Users},{title:'Autorizaciones',detail:'Emergencias y recogida segura del alumno',keys:['emergency','pickup_authorized','primary'],icon:ShieldCheck}]:
+   [{title:'Registro de seguimiento',detail:'Describe la observación o acuerdo institucional',keys:['body'],icon:FileText},{title:'Clasificación y privacidad',detail:'Organiza y controla quién puede consultar la nota',keys:['category','visibility'],icon:ShieldCheck}]).map(group=>{
+    const Icon=group.icon;
+    return <section className="sc-dossier-fieldset" key={group.title}><header><span><Icon size={19}/></span><div><h4>{ui(group.title)}</h4><p>{ui(group.detail)}</p></div></header><div className="form-grid">{fields.filter(field=>group.keys.includes(field.key)).map(field=>{
    const value=String(values[field.key]??'');
    const hasChoices=!!(field.source||field.options);
    const choices:Choice[]=hasChoices?(field.options||options(field.source!,values).map(r=>[String(r.id),optionName(r)] as [string,string]))
@@ -55,7 +61,27 @@ export default function RecordForm({fields,initial,onSubmit,onCancel,busy,option
        onChange={e=>update(field.key,e.target.value)}/>}
     {errors[field.key]&&<p className="sc-field-error" id={'record-'+field.key+'-error'} role="alert">{errors[field.key]}</p>}
    </div>;
-  })}</div>
+})}</div></section>;
+   })}</div>:<div className="form-grid">{fields.map(field=>{
+   const value=String(values[field.key]??'');
+   const hasChoices=!!(field.source||field.options);
+   const choices:Choice[]=hasChoices?(field.options||options(field.source!,values).map(r=>[String(r.id),optionName(r)] as [string,string]))
+    .map(([id,title])=>({value:String(id),label:String(title)})):[];
+   return <div className={'sc-record-field'+(field.type==='textarea'?' full':'')} key={field.key}>
+    <label htmlFor={'record-'+field.key}>{field.label}{!field.optional&&<span className="required" aria-hidden="true"> *</span>}</label>
+    {hasChoices?<Combobox searchable={choices.length>7} id={"record-"+field.key} value={value} label={field.label} options={choices} invalid={!!errors[field.key]} describedBy={errors[field.key]?'record-'+field.key+'-error':undefined}
+       onChange={v=>update(field.key,v)}/>:
+      field.type==='textarea'?<textarea id={'record-'+field.key} value={value} placeholder={field.label}
+       aria-invalid={!!errors[field.key]} aria-describedby={errors[field.key]?'record-'+field.key+'-error':undefined}
+       onChange={e=>update(field.key,e.target.value)}/>:
+      <input id={'record-'+field.key} value={field.type==='datetime-local'?localDateTime(value):value} placeholder={field.label}
+       type={field.type||'text'} min={field.min} max={field.max} step={field.key==='score'?'0.1':field.type==='number'?'1':undefined}
+       aria-invalid={!!errors[field.key]} aria-describedby={errors[field.key]?'record-'+field.key+'-error':undefined}
+       onChange={e=>update(field.key,e.target.value)}/>}
+    {errors[field.key]&&<p className="sc-field-error" id={'record-'+field.key+'-error'} role="alert">{errors[field.key]}</p>}
+   </div>;
+})}</div>}
+
   {error&&<p className="error" role="alert">{error}</p>}
   <div className="form-actions"><button type="button" className="secondary" onClick={onCancel}>{ui('Cancelar')}</button>
    <button className="primary" type="submit" disabled={busy}>{busy?ui('Guardando…'):ui('Guardar')}</button></div>
