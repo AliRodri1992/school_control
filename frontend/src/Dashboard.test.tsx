@@ -265,7 +265,7 @@ it('only offers school years returned by the authorized analytics scope',async()
   data={{academic_years:[{id:1,name:'Ciclo ajeno'},{id:7,name:'Ciclo autorizado'}]}}/>);
  await waitFor(()=>expect(screen.getByRole('combobox',{name:'Ciclo escolar'})).toBeTruthy());
  const year=screen.getByRole('combobox',{name:'Ciclo escolar'});
- expect(year.textContent).toContain('Todos los ciclos autorizados');
+ expect(year.textContent).toContain('Ciclo autorizado');
  year.focus();
  await userEvent.keyboard('{ArrowDown}');
  expect(await screen.findByRole('option',{name:'Ciclo autorizado'})).toBeTruthy();
