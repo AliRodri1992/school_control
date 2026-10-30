@@ -1,6 +1,7 @@
 import {useEffect,useState} from 'react';
 import {ClipboardCheck,FilePlus2,Trash2} from 'lucide-react';
 import {api} from '../../api';
+import Combobox from '../../shared/components/Combobox';
 import {useSchoolLocale} from '../../shared/i18n/LocaleContext';
 import type {Row} from '../../modules';
 
@@ -39,8 +40,8 @@ export default function AdmissionRequirements({years}:{years:Row[]}){
    <div><h2>{ui('Requisitos documentales')}</h2><p>{ui('Define qué documentos se solicitan y cuáles deben estar aprobados antes de matricular a un aspirante.')}</p></div>
   </div>
   <div className="sc-admission-requirements-toolbar">
-   <label>{ui('Ciclo escolar')}<select value={selected} onChange={e=>setYearId(e.target.value)}>{years.map(y=><option key={y.id} value={y.id}>{y.name}</option>)}</select></label>
-   <label>{ui('Grado')}<select value={grade} onChange={e=>setGrade(e.target.value)}>{Array.from({length:6},(_,i)=><option key={i} value={i+1}>{i+1}°</option>)}</select></label>
+   <div className="sc-admission-filter-field"><span>{ui('Ciclo escolar')}</span><Combobox label={ui('Ciclo escolar')} value={selected} onChange={setYearId} searchable={years.length>7} options={years.map(y=>({value:String(y.id),label:String(y.name)}))}/></div>
+   <div className="sc-admission-filter-field"><span>{ui('Grado')}</span><Combobox label={ui('Grado')} value={grade} onChange={setGrade} searchable={false} options={Array.from({length:6},(_,i)=>({value:String(i+1),label:(i+1)+'°'}))}/></div>
   </div>
   <div className="sc-admission-requirements-list">{items.length?items.map(item=><div key={item.id}>
    <FilePlus2 size={17}/><strong>{item.title}</strong><small>{item.required_for_submission?ui('Requerido para enviar'):ui('Opcional al enviar')} · {item.required_for_formalization?ui('Aprobado para matricular'):ui('No bloquea matrícula')}</small>

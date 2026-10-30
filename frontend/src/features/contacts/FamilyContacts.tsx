@@ -1,4 +1,5 @@
 import {useMemo,useState} from 'react';
+import Combobox from '../../shared/components/Combobox';
 import {AlertCircle,CheckCircle2,ContactRound,Mail,Phone,Search,ShieldCheck,UserRound,UsersRound,Plus,PenLine,Trash2,X} from 'lucide-react';
 import type {Row} from '../../modules';
 import TableEmptyState from '../../shared/components/TableEmptyState';
@@ -30,7 +31,7 @@ export default function FamilyContacts({contacts,students,canCreate,canEdit,canD
   <div className="sc-family-panel">
    <div className="sc-family-tools">
     <label className="sc-family-search"><Search size={18}/><input type="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar nombre, alumno, parentesco o teléfono" aria-label="Buscar contactos familiares"/></label>
-    <label className="sc-family-select-label"><span>Alumno</span><select aria-label="Filtrar contactos por alumno" value={student} onChange={e=>setStudent(e.target.value)}><option value="">Todos los alumnos</option>{students.map(s=><option key={s.id} value={String(s.id)}>{String(s.full_name||[s.first_name,s.last_name].filter(Boolean).join(' ')||s.name||s.id)}</option>)}</select></label>
+    <div className="sc-family-select-label"><span>Alumno</span><Combobox label="Filtrar contactos por alumno" value={student} onChange={setStudent} searchable={students.length>7} placeholder="Todos los alumnos" options={students.map(s=>({value:String(s.id),label:String(s.full_name||[s.first_name,s.last_name].filter(Boolean).join(' ')||s.name||s.id)}))}/></div>
    </div>
    <div className="sc-family-filterbar" aria-label="Tipos de contactos">
     {([['all','Todos',contacts.length],['emergency','Emergencia',emergency],['pickup','Recogida autorizada',pickup]] as const).map(([key,label,count])=><button key={key} type="button" className={filter===key?'is-selected':''} aria-pressed={filter===key} onClick={()=>setFilter(key)}>{label}<span>{count}</span></button>)}

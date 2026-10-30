@@ -23,3 +23,10 @@ it('shows professional contact cards and functional actions',async()=>{
  await userEvent.click(screen.getByRole('button',{name:/Emergencia/}));
  expect(screen.queryByText('Pedro López')).toBeNull();
 });
+
+it('renders student filter as branded combobox with search only for larger lists',async()=>{
+ const students=Array.from({length:10},(_,i)=>({id:i+1,full_name:'Alumno '+(i+1)}));
+ render(<FamilyContacts {...base} students={students}/>);
+ await userEvent.click(screen.getByRole('combobox',{name:'Filtrar contactos por alumno'}));
+ expect(screen.getByRole('searchbox',{name:'Buscar en Filtrar contactos por alumno'})).toBeTruthy();
+});
