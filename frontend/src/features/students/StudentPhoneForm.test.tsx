@@ -10,7 +10,7 @@ it('combines a selected dial prefix with digits for an international number',()=
 });
 it('renders an editable international phone with country and submits canonical values',async()=>{
  const onSubmit=vi.fn();
- render(<StudentPhoneForm initial={{number_e164:'+525512345678',country_code:'MX',purpose:'mobile',primary:true}}
+ render(<StudentPhoneForm initial={{id:9,number_e164:'+525512345678',country_code:'MX',purpose:'mobile',primary:true}}
  onSubmit={onSubmit} onCancel={vi.fn()} busy={false} error=""/>);
  expect(screen.getByRole('textbox',{name:/Número telefónico/})).toHaveProperty('value','5512345678');
  await userEvent.click(screen.getByRole('button',{name:'Guardar cambios'}));
