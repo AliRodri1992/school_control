@@ -31,3 +31,16 @@
 .sc-mail-choice .sc-combobox-trigger{font-size:13px}
 .sc-pref-row .sc-combobox{min-width:0}
 @media(max-width:600px){.sc-role-scope{width:100%}}
+
+/* Shared field geometry: labels, native inputs and dropdowns align on the same grid. */
+.sc-record-field{grid-template-rows:auto auto;align-content:start;min-width:0;gap:7px}
+.sc-record-field>label{min-height:19px;margin:0;line-height:19px}
+.sc-record-field>input,.sc-record-field>textarea,.sc-record-field>.sc-combobox{width:100%;min-width:0;box-sizing:border-box}
+.sc-record-field>input,.sc-record-field>.sc-combobox .sc-combobox-trigger{min-height:46px;height:46px;box-sizing:border-box}
+.sc-record-field>textarea{box-sizing:border-box}
+.sc-record-field .sc-field-error{margin:0;line-height:1.45;grid-column:1/-1}
+.sc-record-field .sc-combobox-trigger>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc-record-field .sc-combobox-trigger>svg{flex:none}
+.form-grid{align-items:start;grid-auto-flow:row}
+.form-grid>.sc-record-field{min-width:0}
+@media(max-width:620px){.form-grid{grid-template-columns:minmax(0,1fr)}}

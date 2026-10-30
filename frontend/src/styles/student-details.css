@@ -307,3 +307,15 @@
 @media(max-width:650px){.sc-record-content-form-active>.sc-details-section-heading{padding:19px}.sc-record-content-form-active .sc-dossier-form-hero{padding:18px}.sc-record-content-form-active .sc-dossier-form-body{padding:18px}}
 
 .sc-dossier-form-groups{display:grid;gap:17px}.sc-dossier-fieldset{border:1px solid #dce5f3;background:var(--surface,#fff);border-radius:14px;overflow:hidden}.sc-dossier-fieldset>header{display:flex;align-items:center;gap:12px;padding:17px 19px;background:var(--surface-soft,#f5f8ff);border-bottom:1px solid #e4ebf6}.sc-dossier-fieldset>header>span{height:41px;width:41px;border-radius:11px;display:grid;place-items:center;background:#e5ecff;color:#3758af;flex:none}.sc-dossier-fieldset h4{font-size:15px;color:var(--text,#27395d);font-weight:800;margin:0 0 5px}.sc-dossier-fieldset header p{font-size:12px;color:var(--text-muted,#6b7a92);margin:0}.sc-dossier-fieldset .form-grid{padding:20px;gap:18px}.sc-dossier-fieldset textarea{min-height:180px;line-height:1.65;resize:vertical}.sc-dossier-form-body:has(.sc-dossier-form-groups){background:var(--surface-soft,#f8faff)}.sc-dossier-form-groups+.form-actions{border-top:1px solid #e0e6f2;margin-top:21px;padding-top:19px}@media(max-width:690px){.sc-dossier-fieldset .form-grid{padding:16px;grid-template-columns:1fr}}
+
+/* Consistent alignment across student dossier forms and international phone inputs. */
+.sc-dossier-fieldset .form-grid{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;grid-auto-flow:row}
+.sc-dossier-fieldset .sc-record-field.full{grid-column:1/-1}
+.sc-dossier-fieldset .sc-record-field{align-self:start}
+.sc-dossier-fieldset .sc-record-field>label{min-height:19px;margin:0}
+.sc-dossier-phone-grid{align-items:start}
+.sc-dossier-phone-grid>.sc-record-field{min-width:0;align-content:start}
+.sc-dossier-phone-grid .sc-combobox-trigger,.sc-dossier-phone-number{height:46px;min-height:46px;box-sizing:border-box}
+.sc-dossier-phone-number input{min-height:0;height:100%;box-sizing:border-box}
+.sc-dossier-form .form-actions{align-items:center;flex-wrap:wrap}
+@media(max-width:690px){.sc-dossier-fieldset .form-grid{grid-template-columns:minmax(0,1fr)}}
