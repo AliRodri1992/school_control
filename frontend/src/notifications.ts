@@ -11,7 +11,7 @@ export function notify(title:string,icon:Kind='success') {
   customClass:{popup:'school-toast',title:'school-toast-title'}
  });
 }
-export async function confirmDanger(title:string,text:string,confirmText='Eliminar',mascot=false) {
+export async function confirmDanger(title:string,text:string,confirmText='Eliminar',mascot=true) {
  const result=await Swal.fire({
   title,text,icon:mascot?undefined:'warning',imageUrl:mascot?'/illustrations/auli-warning.svg':undefined,
   imageWidth:mascot?112:undefined,imageHeight:mascot?112:undefined,imageAlt:mascot?'Auli advierte que se eliminará información':undefined,

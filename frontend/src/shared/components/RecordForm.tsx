@@ -62,7 +62,7 @@ export default function RecordForm({fields,initial,onSubmit,onCancel,busy,option
     {errors[field.key]&&<p className="sc-field-error" id={'record-'+field.key+'-error'} role="alert">{errors[field.key]}</p>}
    </div>;
 })}</div></section>;
-   })}</div>:<div className="form-grid">{fields.map(field=>{
+   })}</div>:<div className="sc-workbench-form"><header className="sc-workbench-form-intro"><span>{ui('CONFIGURACIÓN DEL REGISTRO')}</span><h3>{ui('Datos principales')}</h3><p>{ui('Completa los campos obligatorios; revisa los detalles adicionales antes de guardar.')}</p></header><div className="form-grid">{fields.map(field=>{
    const value=String(values[field.key]??'');
    const hasChoices=!!(field.source||field.options);
    const choices:Choice[]=hasChoices?(field.options||options(field.source!,values).map(r=>[String(r.id),optionName(r)] as [string,string]))
@@ -80,7 +80,7 @@ export default function RecordForm({fields,initial,onSubmit,onCancel,busy,option
        onChange={e=>update(field.key,e.target.value)}/>}
     {errors[field.key]&&<p className="sc-field-error" id={'record-'+field.key+'-error'} role="alert">{errors[field.key]}</p>}
    </div>;
-})}</div>}
+})}</div></div>}
 
   {error&&<p className="error" role="alert">{error}</p>}
   <div className="form-actions"><button type="button" className="secondary" onClick={onCancel}>{ui('Cancelar')}</button>
