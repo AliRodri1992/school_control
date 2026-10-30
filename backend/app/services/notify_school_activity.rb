@@ -18,6 +18,14 @@ class NotifySchoolActivity
     record = model&.find_by(id: event.record_id)
     # Drafts and internal reviews must not notify families before publication.
     return if record.is_a?(Grade) && !%w[grade.published grade.corrected].include?(event.action)
+    types = { "Address" => "Dirección", "PhoneNumber" => "Teléfono", "Contact" => "Contacto", "Note" => "Nota" }
+    if types.key?(event.record_type) && event.action.match?(/\A(?:address|phone_number|contact|note)\.(?:created|updated|deleted)\z/)
+      action = event.action.split(".").last
+      suffix = { "created" => "creada", "updated" => "actualizada", "deleted" => "eliminada" }.fetch(action)
+      title = "#{types.fetch(event.record_type)} #{suffix} exitosamente"
+      ActivityNotifier.with(title: title, page: "students", notification_type: action, audit_event_id: event.id).deliver(event.user) if event.user&.active?
+      return
+    end
     recipients = [ event.user ]
     if record.is_a?(GradeChangeRequest)
       recipients << record.requester

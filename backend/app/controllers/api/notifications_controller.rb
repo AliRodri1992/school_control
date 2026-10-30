@@ -19,7 +19,7 @@ module Api
     private
 
     def serialize(item)
-      { id: item.id, title: item.title, page: item.page, read_at: item.read_at, created_at: item.created_at }
+      { id: item.id, title: item.title, page: item.page, notification_type: item.notification_type, read_at: item.read_at, created_at: item.created_at }
     end
   end
 end

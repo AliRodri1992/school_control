@@ -71,3 +71,22 @@ RSpec.describe "polymorphic student details", type: :request do
     expect(response).to have_http_status(:not_found)
   end
 end
+
+RSpec.describe "typed student detail notifications", type: :request do
+  let(:admin) { create(:user, role: "admin") }
+  let(:student) { create(:student) }
+  before { post "/api/session", params: { email: admin.email, password: "School-test-password-26" }, as: :json }
+  it "notifies the acting administrator when a note is created, updated and deleted" do
+    post "/api/students/#{student.id}/details/notes", params: { body: "Observación escolar", visibility: "internal" }, as: :json
+    expect(response).to have_http_status(:created)
+    id = response.parsed_body.fetch("id")
+    patch "/api/students/#{student.id}/details/notes/#{id}", params: { body: "Seguimiento actualizado" }, as: :json
+    expect(response).to have_http_status(:ok)
+    delete "/api/students/#{student.id}/details/notes/#{id}", as: :json
+    expect(response).to have_http_status(:no_content)
+    get "/api/notifications", as: :json
+    items = response.parsed_body.fetch("items")
+    expect(items.map { |item| item["notification_type"] }).to include("created", "updated", "deleted")
+    expect(items.map { |item| item["title"] }).to include("Nota creada exitosamente", "Nota actualizada exitosamente", "Nota eliminada exitosamente")
+  end
+end
