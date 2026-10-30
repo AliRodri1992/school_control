@@ -64,3 +64,18 @@ it('shows Auli guidance when academic history does not yet exist',()=>{
  render(<StudentDetails student={{id:99,full_name:'Alumno de prueba',enrollment_stage:'applicant'}} onClose={vi.fn()} canEdit={false} canWriteNotes={false}/>);
  expect(screen.getByText('Trayectoria pendiente de inscripción')).toBeTruthy();
 });
+
+it('offers contextual list search and filters when student records exist',async()=>{
+ const {api}=await import('../../api');
+ vi.mocked(api).mockImplementation(async path=>{
+  if(path.includes('/details/addresses?'))return {items:[{id:1,line1:'Calle Roble',country_code:'MX',purpose:'home',primary:true}],total:1,page:1,per_page:8,total_pages:1};
+  return [];
+ });
+ render(<StudentDetails student={{id:205,full_name:'Pedro Flores'}} onClose={vi.fn()} canEdit canWriteNotes/>);
+ await userEvent.click(screen.getByRole('button',{name:'Direcciones'}));
+ expect(await screen.findByText('Calle Roble')).toBeTruthy();
+ expect(screen.getByRole('searchbox',{name:'Buscar registros'})).toBeTruthy();
+ await userEvent.click(screen.getByRole('button',{name:'Filtros'}));
+ expect(screen.getByRole('combobox',{name:'Filtrar por tipo'})).toBeTruthy();
+ expect(screen.getByRole('combobox',{name:'Filtrar por características'})).toBeTruthy();
+});

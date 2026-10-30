@@ -1,10 +1,11 @@
 import TableEmptyState from '../../shared/components/TableEmptyState';
 import {useSchoolLocale} from '../../shared/i18n/LocaleContext';
-import {useEffect,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {ArrowLeft,BookOpen,FileText,GraduationCap,IdCard,MapPin,Phone,Plus,Users,CalendarDays,ShieldCheck,HeartHandshake,UserRoundCheck,ArrowRight,StickyNote,House,Mail,Star,PenLine,Trash2,MapPinned,Info} from 'lucide-react';
 import {api} from '../../api';
 import RecordForm from '../../shared/components/RecordForm';
 import StudentPhoneForm from './StudentPhoneForm';
+import DetailCollectionControls,{DetailCollectionPagination,collectionParams,initialCollectionFilters,type CollectionFilters,type CollectionMeta} from './DetailCollectionControls';
 import type {Field,Row} from '../../modules';
 import {confirmDanger,notify} from '../../notifications';
 
@@ -68,12 +69,43 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
  const [error,setError]=useState(''),[fieldErrors,setFieldErrors]=useState<Record<string,string[]>>({});
  const [busy,setBusy]=useState(false),[loading,setLoading]=useState(false);
  const [report,setReport]=useState<Row|null>(null);
+ const [collection,setCollection]=useState<CollectionFilters>(initialCollectionFilters);
+ const [debouncedQuery,setDebouncedQuery]=useState('');
+ const [collectionMeta,setCollectionMeta]=useState<CollectionMeta>({total:0,page:1,per_page:8,total_pages:1});
+ const requestSequence=useRef(0);
  const [familyContacts,setFamilyContacts]=useState<Row[]>([]),[familyLoading,setFamilyLoading]=useState(false),[familyError,setFamilyError]=useState('');
  const root='students/'+student.id+'/details/';
- async function fetchItems(selected:Kind){if(selected==='overview'||selected==='family')return;setLoading(true);
-  try{setItems(await api(root+selected));setError('');}catch(e){setError((e as Error).message);}finally{setLoading(false);}
+ async function fetchItems(selected:Kind){
+  const request=++requestSequence.current;
+  if(selected==='overview'||selected==='family')return;
+  setLoading(true);
+  try{
+   const params=collectionParams({...collection,query:debouncedQuery});
+   const result=await api(root+selected+'?'+params);
+   if(request!==requestSequence.current)return;
+   if(Array.isArray(result)){
+    setItems(result);
+    setCollectionMeta({total:result.length,page:1,per_page:collection.perPage,total_pages:Math.max(1,Math.ceil(result.length/collection.perPage))});
+   }else{
+    setItems(result.items||[]);
+    setCollectionMeta({total:Number(result.total)||0,page:Number(result.page)||1,
+      per_page:Number(result.per_page)||collection.perPage,total_pages:Number(result.total_pages)||1});
+    if(Number(result.page)&&Number(result.page)!==collection.page)
+     setCollection(previous=>({...previous,page:Number(result.page)}));
+   }
+   setError('');
+  }catch(e){
+   if(request!==requestSequence.current)return;
+   setError((e as Error).message);
+   setItems([]);
+   setCollectionMeta({total:0,page:1,per_page:collection.perPage,total_pages:1});
+  }finally{if(request===requestSequence.current)setLoading(false);}
  }
- useEffect(()=>{void fetchItems(kind);},[student.id,kind]);
+ useEffect(()=>{
+  const timer=window.setTimeout(()=>setDebouncedQuery(collection.query),250);
+  return()=>window.clearTimeout(timer);
+ },[collection.query]);
+ useEffect(()=>{void fetchItems(kind);},[student.id,kind,debouncedQuery,collection.type,collection.flag,collection.sort,collection.page,collection.perPage]);
  useEffect(()=>{
   if(kind!=='family')return;
   let active=true;
@@ -137,7 +169,7 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
   <div className="sc-record-layout">
    <nav className="sc-details-tabs" aria-label={ui("Secciones del expediente")}>
     {category.map(section=>{const Icon=icon[section.kind];return <button key={section.kind} aria-current={kind===section.kind?'page':undefined}
-      type="button" onClick={()=>{setKind(section.kind);setEditing(null);setCreating(false);setError('');}}>
+      type="button" onClick={()=>{setKind(section.kind);setEditing(null);setCreating(false);setError('');setCollection(initialCollectionFilters);setDebouncedQuery('');setItems([]);setCollectionMeta({total:0,page:1,per_page:8,total_pages:1});}}>
       <Icon size={18}/><span >{ui(section.title)}</span></button>;})}
    </nav>
    <section className={'sc-record-content'+(kind!=='overview'&&kind!=='family'&&(creating||editing)?' sc-record-content-form-active':'')}>
@@ -223,8 +255,10 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
        onSubmit={values=>void save(values)} onCancel={()=>{setEditing(null);setCreating(false);setError('');}} busy={busy}
        options={()=>[]} optionName={row=>String(row.name||row.id)} error={error} fieldErrors={fieldErrors}/>}</div></div>}
      {!creating&&!editing&&<div className="sc-details-list">
+       {(collectionMeta.total>0||items.length>0||collection.query||collection.type||collection.flag)&&
+        <DetailCollectionControls key={kind} kind={kind as DataKind} filters={collection} meta={collectionMeta} onChange={setCollection}/>}
        {loading?<div className="sc-details-loading" role="status"><span className="sc-details-skeleton"/><span className="sc-details-skeleton"/><span>{ui('Cargando información…')}</span></div>:
-       items.length?<><div className="sc-details-collection-head"><span><Info size={15}/>{items.length} {ui(items.length===1?'registro disponible':'registros disponibles')}</span><small>{ui('Información vinculada a este alumno')}</small></div>
+       items.length?<><div className="sc-details-collection-head"><span><Info size={15}/>{collectionMeta.total} {ui(collectionMeta.total===1?'registro disponible':'registros disponibles')}</span><small>{ui('Información vinculada a este alumno')}</small></div>
         <div className="sc-details-card-grid">{items.map(row=>{
          const Icon=kind==='addresses'?MapPinned:kind==='phones'?Phone:kind==='contacts'?Users:StickyNote;
          const details=kind==='addresses'?[row.line2,row.neighborhood,row.locality,row.region,row.postal_code].filter(Boolean).join(' · '):
@@ -249,13 +283,14 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
            <button className="secondary danger" type="button" disabled={busy} onClick={()=>void remove(row)}><Trash2 size={15}/>{ui('Eliminar')}</button>
           </div>}
          </article>;
-        })}</div></>:
+        })}</div><DetailCollectionPagination filters={collection} meta={collectionMeta} onChange={setCollection}/></>:
         <div className="sc-details-empty">
          <div className="sc-details-empty-art sc-details-empty-auli" aria-hidden="true"><img src="/illustrations/auli-explain.svg" alt=""/></div>
-         <span className="sc-details-empty-eyebrow">{ui('EXPEDIENTE SIN REGISTROS')}</span>
-         <h3>{ui(kindDescriptions[kind as DataKind].emptyTitle)}</h3>
-         <p>{ui(kindDescriptions[kind as DataKind].emptyMessage)}</p>
-         {writable?<button type="button" className="primary" onClick={()=>{setCreating(true);setEditing(null);}}><Plus size={16}/>{ui(kindDescriptions[kind as DataKind].add)}</button>:
+         <span className="sc-details-empty-eyebrow">{ui(collection.query||collection.type||collection.flag?'SIN COINCIDENCIAS':'EXPEDIENTE SIN REGISTROS')}</span>
+         <h3>{ui(collection.query||collection.type||collection.flag?'No se encontraron registros con estos filtros':kindDescriptions[kind as DataKind].emptyTitle)}</h3>
+         <p>{ui(collection.query||collection.type||collection.flag?'Prueba una búsqueda diferente o limpia los filtros para mostrar todos los registros.':kindDescriptions[kind as DataKind].emptyMessage)}</p>
+         {(collection.query||collection.type||collection.flag)?<button type="button" className="secondary" onClick={()=>{setCollection(initialCollectionFilters);setDebouncedQuery('');}}>{ui('Limpiar filtros')}</button>:
+         writable?<button type="button" className="primary" onClick={()=>{setCreating(true);setEditing(null);}}><Plus size={16}/>{ui(kindDescriptions[kind as DataKind].add)}</button>:
           <small>{ui('La consulta está disponible; no tienes permisos para agregar registros en esta sección.')}</small>}
         </div>}
      </div>}

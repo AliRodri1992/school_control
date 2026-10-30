@@ -19,6 +19,7 @@ import './styles/forms.css';
 import './styles/api-docs.css';
 import './styles/mail-designer.css';
 import './styles/student-details.css';
+import './styles/dossier-collection-controls.css';
 import './styles/enrollment-journey.css';
 import './styles/school-cycles.css';
 import './styles/cycle-form.css';
