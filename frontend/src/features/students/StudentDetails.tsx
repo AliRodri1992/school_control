@@ -99,7 +99,7 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
  async function remove(row:Row){
   const noun={addresses:'dirección',phones:'teléfono',contacts:'contacto',notes:'nota'}[kind as DataKind];
   const description={addresses:'Se eliminará el domicilio seleccionado del expediente.',phones:'Este número dejará de estar disponible para contacto escolar.',contacts:'Se eliminará la persona seleccionada y sus autorizaciones de este expediente.',notes:'Se eliminará esta nota y dejará de ser visible para los usuarios autorizados.'}[kind as DataKind];
-  if(!await confirmDanger('Eliminar '+noun,'¿Confirmas que deseas eliminar '+String(title(row,kind as DataKind))+'? '+description,'Sí, eliminar'))return;
+  if(!await confirmDanger('Eliminar '+noun,'¿Confirmas que deseas eliminar '+String(title(row,kind as DataKind))+'? '+description,'Sí, eliminar',true))return;
   setBusy(true);setError('');
   try{await api(root+kind+'/'+row.id,'DELETE');await fetchItems(kind);}catch(e){setError((e as Error).message);}finally{setBusy(false);}
  }

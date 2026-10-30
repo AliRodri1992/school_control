@@ -11,9 +11,11 @@ export function notify(title:string,icon:Kind='success') {
   customClass:{popup:'school-toast',title:'school-toast-title'}
  });
 }
-export async function confirmDanger(title:string,text:string,confirmText='Eliminar') {
+export async function confirmDanger(title:string,text:string,confirmText='Eliminar',mascot=false) {
  const result=await Swal.fire({
-  title,text,icon:'warning',showCancelButton:true,
+  title,text,icon:mascot?undefined:'warning',imageUrl:mascot?'/illustrations/auli-warning.svg':undefined,
+  imageWidth:mascot?112:undefined,imageHeight:mascot?112:undefined,imageAlt:mascot?'Auli advierte que se eliminará información':undefined,
+  showCancelButton:true,
   confirmButtonText:confirmText,cancelButtonText:'Cancelar',
   reverseButtons:true,focusCancel:true,buttonsStyling:false,customClass:classes
  });

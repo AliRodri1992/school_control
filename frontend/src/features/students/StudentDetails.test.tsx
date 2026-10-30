@@ -26,3 +26,14 @@ it('shows an actionable empty state and meaningful contact cards',async()=>{
  await userEvent.click(screen.getByRole('button',{name:'Agregar dirección'}));
  expect(screen.getByText('Calle y número')).toBeTruthy();
 });
+
+it('offers a dedicated new-note form and hides searching on small option lists',async()=>{
+ const {api}=await import('../../api');
+ vi.mocked(api).mockResolvedValue([]);
+ render(<StudentDetails student={{id:55,full_name:'Ana Pérez'}} onClose={vi.fn()} canEdit canWriteNotes/>);
+ await userEvent.click(screen.getByRole('button',{name:'Notas'}));
+ await userEvent.click(await screen.findByRole('button',{name:'Agregar nota'}));
+ expect(screen.getByRole('heading',{name:'Agregar nota'})).toBeTruthy();
+ await userEvent.click(screen.getByRole('combobox',{name:'Visibilidad'}));
+ expect(screen.queryByRole('searchbox',{name:'Buscar en Visibilidad'})).toBeNull();
+});
