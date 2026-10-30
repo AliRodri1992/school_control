@@ -44,3 +44,14 @@
 .form-grid{align-items:start;grid-auto-flow:row}
 .form-grid>.sc-record-field{min-width:0}
 @media(max-width:620px){.form-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* Dropdown panel is rendered in document.body: it must escape clipped cards and dialogs. */
+.sc-combobox-panel.sc-combobox-panel-portal{
+ position:fixed;
+ right:auto;
+ min-width:0;
+ max-width:calc(100vw - 16px);
+ box-sizing:border-box;
+ isolation:isolate;
+}
+.sc-combobox-panel-portal .sc-combobox-list{overscroll-behavior:contain;}
