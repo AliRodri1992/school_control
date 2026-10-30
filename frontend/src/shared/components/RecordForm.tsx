@@ -38,6 +38,7 @@ export default function RecordForm({fields,initial,onSubmit,onCancel,busy,option
    else clean[field.key]=value===''?null:value;
   }
   setErrors(next);
+  if(wizard&&Object.keys(next).length){const firstError=fields.findIndex(field=>Boolean(next[field.key]));if(firstError>=0)setStep(firstError<split?0:1);}
   if(!Object.keys(next).length)onSubmit(clean);
  }
  function localDateTime(value:string){if(!value)return '';const date=new Date(value);return new Date(date.getTime()-date.getTimezoneOffset()*60000).toISOString().slice(0,16);}
