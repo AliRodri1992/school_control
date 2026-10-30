@@ -3,8 +3,10 @@ import {useEffect,useMemo,useState} from 'react';
 import {BookOpen,ChevronDown,Code2,Search,ShieldCheck,Layers3,Route,LockKeyhole,RefreshCcw} from 'lucide-react';
 import {api} from '../../api';
 import {apiSections,apiSectionCounts,filterApiEntries,apiSectionFor} from './apiSections';
+import ApiRequestReference from './ApiRequestReference';
+import type {Schemas} from './apiSchema';
 type Operation={summary?:string;tags?:string[];description?:string;operationId?:string;security?:unknown[];parameters?:unknown[];requestBody?:unknown;responses?:Record<string,unknown>;'x-rbac-permission'?:string|string[]};
-type Contract={openapi:string;info:{title:string;version:string;description?:string};paths:Record<string,Record<string,Operation>>};
+type Contract={openapi:string;info:{title:string;version:string;description?:string};paths:Record<string,Record<string,Operation>>;components?:{schemas?:Schemas}};
 const verbs=['get','post','put','patch','delete'];
 export default function ApiDocs(){
  const {ui}=useSchoolLocale();
@@ -46,8 +48,7 @@ export default function ApiDocs(){
         {expanded&&<div className="sc-api-details"><p>{operation.description||ui('Operación documentada en el contrato Rails.')}</p>
          {operation['x-rbac-permission']&&<div className="sc-api-permission"><ShieldCheck size={16}/><strong>{ui('Permiso requerido')}</strong><code>{String(operation['x-rbac-permission'])}</code></div>}
          <p><LockKeyhole size={15}/>{operation.security?.length?ui('Requiere sesión autenticada.'):ui('Consulta el contrato para verificar el mecanismo de autenticación.')}</p>
-         {operation.parameters&&<details><summary>{ui('Parámetros')}</summary><pre>{JSON.stringify(operation.parameters,null,2)}</pre></details>}
-         {!!operation.requestBody&&<details><summary>{ui('Cuerpo de solicitud')}</summary><pre>{JSON.stringify(operation.requestBody,null,2)}</pre></details>}
+         <ApiRequestReference body={operation.requestBody} parameters={operation.parameters} schemas={contract.components?.schemas||{}}/>
          <details open><summary>{ui('Respuestas HTTP')}</summary><pre>{JSON.stringify(operation.responses||{},null,2)}</pre></details>
         </div>}</article>;
       })}</div></section>;
