@@ -233,7 +233,7 @@ export default function App(){
    if(row.student_id&&String(row.student_id)!==selectedChild)return false;
    if(row.enrollment_id&&!linkedEnrollments.has(String(row.enrollment_id)))return false;
   }
-  const fk=({groups:'grade_level',courses:'teacher_id',attendances:'status',grades:'term',calendar_events:'kind',announcements:'audience',users:'role'} as Record<string,string>)[page];
+  const fk=({groups:'grade_level',courses:'teacher_id',attendances:'status',grades:'term',calendar_events:'kind',announcements:'audience',users:'role',subjects:'code'} as Record<string,string>)[page];
   const dk=({attendances:'on',calendar_events:'starts_at'} as Record<string,string>)[page];
   return (!statusFilter||String(row.status||'')===statusFilter)&&(!moduleFacet||!fk||String(row[fk]??'')===moduleFacet)&&(!moduleDate||!dk||String(row[dk]||'').slice(0,10)===moduleDate)&&JSON.stringify(Object.values(row)).toLowerCase().includes(query.toLowerCase());
  }).sort((a,b)=>!sorting?0:String(a[sorting]??'').localeCompare(String(b[sorting]??''),locale==='en'?'en-US':'es-MX',{numeric:true})*(ascending?1:-1));
@@ -356,7 +356,7 @@ export default function App(){
   {statuses.length>0&&<div className="sc-toolbar-filter"><label>{ui('Estado')}</label><Combobox label={ui('Filtrar por estado')} value={statusFilter}
      onChange={value=>{setStatusFilter(value);setPageNumber(0);}} placeholder={ui('Todos los estados')}
      options={statuses.map(status=>({value:status,label:display(status)}))}/></div>}
-  {hasModuleWorkbench&&facetValues.length>0&&<div className="sc-toolbar-filter"><label>{ui(({groups:'Grado',courses:'Docente',attendances:'Asistencia',grades:'Trimestre',calendar_events:'Tipo de evento',announcements:'Destinatarios',users:'Perfil',subjects:'Clave'} as Record<string,string>)[page]||'Categoría')}</label><Combobox label={ui('Filtrar por categoría')} value={moduleFacet} searchable={facetValues.length>7} placeholder={ui('Todas las opciones')} onChange={value=>{setModuleFacet(value);setPageNumber(0);}} options={facetValues.map(value=>({value,label:display(value)}))}/></div>}
+  {hasModuleWorkbench&&facetValues.length>0&&facetKey!=='status'&&<div className="sc-toolbar-filter"><label>{ui(({groups:'Grado',courses:'Docente',attendances:'Asistencia',grades:'Trimestre',calendar_events:'Tipo de evento',announcements:'Destinatarios',users:'Perfil',subjects:'Clave'} as Record<string,string>)[page]||'Categoría')}</label><Combobox label={ui('Filtrar por categoría')} value={moduleFacet} searchable={facetValues.length>7} placeholder={ui('Todas las opciones')} onChange={value=>{setModuleFacet(value);setPageNumber(0);}} options={facetValues.map(value=>({value,label:display(value)}))}/></div>}
   {hasModuleWorkbench&&moduleDateKey&&<div className="sc-toolbar-filter"><label htmlFor="sc-workbench-date">{ui('Fecha')}</label><input id="sc-workbench-date" type="date" value={moduleDate} onChange={event=>{setModuleDate(event.target.value);setPageNumber(0);}}/></div>}
   <button className="text-button" onClick={()=>{setStatusFilter('');setModuleFacet('');setModuleDate('');setQuery('');setSorting('');setPageNumber(0);}}>{ui('Limpiar filtros')}</button>
   </div>}
