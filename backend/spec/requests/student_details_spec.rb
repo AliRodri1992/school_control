@@ -90,3 +90,44 @@ RSpec.describe "typed student detail notifications", type: :request do
     expect(items.map { |item| item["title"] }).to include("Nota creada exitosamente", "Nota actualizada exitosamente", "Nota eliminada exitosamente")
   end
 end
+
+RSpec.describe "paginated student dossier collections", type: :request do
+  let(:student) { create(:student) }
+  let(:admin) { create(:user, role: "admin") }
+
+  before do
+    post "/api/session", params: { email: admin.email, password: "School-test-password-26" }, as: :json
+  end
+
+  it "paginates notes with a truthful count and no silent hundred-record truncation" do
+    19.times do |index|
+      student.notes.create!(body: "Seguimiento escolar #{index + 1}", category: "academic",
+        visibility: "internal", author: admin)
+    end
+
+    get "/api/students/#{student.id}/details/notes", params: { page: 2, per_page: 8 }
+    expect(response).to have_http_status(:ok)
+    expect(response.parsed_body).to include("total" => 19, "page" => 2,
+      "per_page" => 8, "total_pages" => 3)
+    expect(response.parsed_body.fetch("items").length).to eq(8)
+  end
+
+  it "filters contacts by authorization and searches across names" do
+    student.contacts.create!(name: "María García", emergency: true, pickup_authorized: false)
+    student.contacts.create!(name: "José López", emergency: false, pickup_authorized: true)
+    get "/api/students/#{student.id}/details/contacts",
+      params: { page: 1, q: "María", flag: "emergency" }
+    expect(response).to have_http_status(:ok)
+    expect(response.parsed_body.fetch("total")).to eq(1)
+    expect(response.parsed_body.fetch("items").first.fetch("name")).to eq("María García")
+  end
+
+  it "restricts notes by visibility before applying search or pagination" do
+    student.notes.create!(body: "Nota confidencial", category: "general", visibility: "internal", author: admin)
+    student.notes.create!(body: "Nota compartida", category: "general", visibility: "shared", author: admin)
+    get "/api/students/#{student.id}/details/notes",
+      params: { page: 1, type: "shared", sort: "oldest" }
+    expect(response.parsed_body).to include("total" => 1)
+    expect(response.parsed_body.fetch("items").first.fetch("body")).to eq("Nota compartida")
+  end
+end

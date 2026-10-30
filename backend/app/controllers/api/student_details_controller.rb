@@ -17,7 +17,23 @@ module Api
     }.freeze
 
     def index
-      render json: visible_records.order(created_at: :desc).limit(100).map { |record| serialize(record) }
+      scope = visible_records
+      unless params[:page].present?
+        render json: scope.order(created_at: :desc).limit(100).map { |record| serialize(record) }
+        return
+      end
+
+      scope = apply_list_filters(scope)
+      per_page = permitted_page_size
+      total = scope.count
+      total_pages = [ (total.to_f / per_page).ceil, 1 ].max
+      page = [ params[:page].to_i.clamp(1, 10_000), total_pages ].min
+      direction = params[:sort] == "oldest" ? :asc : :desc
+      records = scope.order(created_at: direction, id: direction).offset((page - 1) * per_page).limit(per_page)
+      render json: {
+        items: records.map { |record| serialize(record) },
+        total: total, page: page, per_page: per_page, total_pages: total_pages
+      }
     end
 
     def create
@@ -71,6 +87,43 @@ module Api
     def visible_records
       return collection unless resource == "notes" && !institutional_student_access?
       collection.where(visibility: "shared")
+    end
+
+    LIST_SEARCH_COLUMNS = {
+      "addresses" => %w[line1 line2 neighborhood locality region postal_code country_code],
+      "phones" => %w[number_e164 extension country_code],
+      "contacts" => %w[name relationship email],
+      "notes" => %w[body category]
+    }.freeze
+
+    def permitted_page_size
+      [ 8, 16, 24 ].include?(params[:per_page].to_i) ? params[:per_page].to_i : 8
+    end
+
+    def apply_list_filters(scope)
+      search = params[:q].to_s.strip
+      if search.present?
+        columns = LIST_SEARCH_COLUMNS.fetch(resource)
+        predicate = columns.map { |column| "#{scope.klass.table_name}.#{column} ILIKE :query" }.join(" OR ")
+        scope = scope.where(predicate, query: "%#{ActiveRecord::Base.sanitize_sql_like(search)}%")
+      end
+
+      kind = params[:type].to_s
+      valid_types = case resource
+      when "addresses" then %w[home fiscal other]
+      when "phones" then %w[mobile home work emergency]
+      when "notes" then %w[internal shared]
+      else []
+      end
+      if valid_types.include?(kind)
+        scope = scope.where(resource == "notes" ? { visibility: kind } : { purpose: kind })
+      end
+
+      flag = params[:flag].to_s
+      allowed_flags = resource == "contacts" ? %w[primary emergency pickup_authorized] :
+        %w[addresses phones].include?(resource) ? %w[primary] : []
+      scope = scope.where(flag => true) if allowed_flags.include?(flag)
+      scope
     end
 
     def record_attributes
