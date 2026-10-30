@@ -94,7 +94,7 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
    const wasEditing=Boolean(editing);
    await api(root+kind+(editing?'/'+editing.id:''),editing?'PATCH':'POST',attrs);
    const noun=({addresses:'Dirección',phones:'Teléfono',contacts:'Contacto',notes:'Nota'} as Record<DataKind,string>)[kind as DataKind];
-   void notify(noun+(wasEditing?' editado':' creado')+' exitosamente.');
+   void notify(noun+' '+(wasEditing?'actualizad':'cread')+(kind==='addresses'||kind==='notes'?'a':'o')+' exitosamente.');
    setCreating(false);setEditing(null);await fetchItems(kind);
   }catch(e){const cause=e as Error & {fieldErrors?:Record<string,string[]>};setError(cause.message);setFieldErrors(cause.fieldErrors||{});}
   finally{setBusy(false);}
