@@ -265,11 +265,12 @@ it('only offers school years returned by the authorized analytics scope',async()
   data={{academic_years:[{id:1,name:'Ciclo ajeno'},{id:7,name:'Ciclo autorizado'}]}}/>);
  await waitFor(()=>expect(screen.getByRole('combobox',{name:'Ciclo escolar'})).toBeTruthy());
  const year=screen.getByRole('combobox',{name:'Ciclo escolar'});
- await userEvent.click(year);
- expect(screen.getByRole('option',{name:'Todos los ciclos autorizados'})).toBeTruthy();
- expect(screen.getByRole('option',{name:'Ciclo autorizado'})).toBeTruthy();
+ expect(year.textContent).toContain('Todos los ciclos autorizados');
+ year.focus();
+ await userEvent.keyboard('{ArrowDown}');
+ expect(await screen.findByRole('option',{name:'Ciclo autorizado'})).toBeTruthy();
  expect(screen.queryByRole('option',{name:'Ciclo ajeno'})).toBeNull();
- await userEvent.click(screen.getByRole('option',{name:'Ciclo autorizado'}));
+ await userEvent.keyboard('{Enter}');
  await waitFor(()=>expect(vi.mocked(api).mock.calls.some(call=>String(call[0]).includes('academic_year_id=7'))).toBe(true));
 });
 
