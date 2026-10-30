@@ -269,3 +269,21 @@
 .sc-details-empty{display:grid;justify-items:center;text-align:center;gap:9px;padding:clamp(28px,5vw,48px) 20px;background:radial-gradient(circle at top,#eff4ff,#fbfcff 70%);border:1px dashed #bfd0ee;border-radius:16px}.sc-details-empty-art{width:76px;height:76px;border-radius:22px;background:#e2eafe;color:#4b67ba;display:grid;place-items:center;margin-bottom:6px}.sc-details-empty-eyebrow{font-size:10px;font-weight:800;letter-spacing:1.1px;color:#6f83aa}.sc-details-empty h3{font-size:18px;color:#20385e;margin:0}.sc-details-empty p{max-width:430px;font-size:13px;line-height:1.65;color:#6c809a;margin:0 0 8px}.sc-details-empty small{max-width:440px;color:#8793a7;font-size:11px;line-height:1.5}.sc-details-loading{display:grid;gap:12px;padding:25px;color:#71839a;font-size:12px}.sc-details-skeleton{height:75px;border-radius:12px;background:linear-gradient(90deg,#edf2fa,#f8faff,#edf2fa)}
 @media(max-width:1120px){.sc-details-card-grid{grid-template-columns:1fr}}
 @media(max-width:600px){.sc-record-overview-banner{align-items:flex-start;flex-wrap:wrap}.sc-record-overview-stage{margin-left:55px}.sc-details-card-grid .sc-details-card{padding:14px}.sc-details-empty{padding:27px 13px}}
+
+/* Dossier record forms — clear section hierarchy, consistent inputs and responsive phone entry. */
+.sc-dossier-form-shell{border:1px solid #dbe5f5;border-radius:17px;overflow:hidden;background:#fff;box-shadow:0 8px 28px #1539670b}
+.sc-dossier-form-hero{display:flex;gap:16px;align-items:center;padding:22px 24px;background:linear-gradient(110deg,#eef3ff,#fbfcff);border-bottom:1px solid #e1e9f6}
+.sc-dossier-form-hero-icon{height:51px;width:51px;flex:none;display:grid;place-items:center;background:#dfe8ff;border-radius:15px;color:#3d5fb4}
+.sc-dossier-form-hero div>span{font-size:10px;font-weight:850;letter-spacing:1.2px;color:#4966b5}
+.sc-dossier-form-hero h3{font-size:19px;margin:5px 0;color:#1a355f}.sc-dossier-form-hero p{font-size:12px;line-height:1.6;color:#7184a0}
+.sc-dossier-form-body{padding:22px 24px}.sc-dossier-form-body .form-grid{gap:18px}.sc-dossier-form-body .sc-record-field label{font-size:12px;font-weight:750;color:#405574}
+.sc-dossier-form-body input:focus-visible,.sc-dossier-form-body textarea:focus-visible{outline:2px solid #5070cf;outline-offset:1px}
+.sc-dossier-form-section{display:flex;align-items:flex-start;gap:12px;margin-bottom:20px}.sc-dossier-form-section>span{display:grid;place-items:center;background:#eef3ff;color:#4866b6;height:37px;width:37px;flex:none;border-radius:11px}.sc-dossier-form-section h3{margin:0 0 5px;color:#1e375c;font-size:15px}.sc-dossier-form-section p{margin:0;color:#71839b;line-height:1.6;font-size:12px}
+.sc-dossier-phone-grid{display:grid;grid-template-columns:minmax(180px,1fr) minmax(0,1.6fr);gap:16px;margin-bottom:17px}
+.sc-dossier-phone-number{display:flex;align-items:center;border:1px solid #d6e1f0;border-radius:10px;overflow:hidden;min-height:43px}.sc-dossier-phone-number:focus-within{box-shadow:0 0 0 3px #405cf526;border-color:#405cf5}.sc-dossier-phone-number.is-invalid{border-color:#d14858}
+.sc-dossier-phone-number>span{background:#f1f5fd;color:#375597;border-right:1px solid #dce5f3;padding:11px 13px;font-weight:800;font-size:13px}
+.sc-dossier-phone-number input{border:0!important;min-width:0;width:100%;padding:11px 12px;outline:none!important;background:transparent}
+.sc-dossier-form .sc-record-field small{display:block;font-size:11px;color:#71839a;margin-top:6px}
+.sc-dossier-check{display:flex;gap:12px;align-items:center;padding:15px;border:1px solid #dce6f5;background:#f8faff;border-radius:12px;cursor:pointer}.sc-dossier-check input{accent-color:#405cf5;height:18px;width:18px}.sc-dossier-check svg{color:#405cf5;flex:none}.sc-dossier-check span{display:grid;gap:4px}.sc-dossier-check strong{font-size:12px;color:#263e64}.sc-dossier-check small{color:#70819a;font-size:11px}
+.sc-details-empty-auli{width:112px;height:112px;background:#eaf0ff}.sc-details-empty-auli img{width:100%;height:100%;object-fit:contain}
+@media(max-width:660px){.sc-dossier-form-hero{padding:17px}.sc-dossier-form-body{padding:16px}.sc-dossier-phone-grid{grid-template-columns:1fr}.sc-dossier-form-hero h3{font-size:17px}}

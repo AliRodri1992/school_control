@@ -4,6 +4,7 @@ import {useEffect,useState} from 'react';
 import {ArrowLeft,BookOpen,FileText,GraduationCap,IdCard,MapPin,Phone,Plus,Users,CalendarDays,ShieldCheck,HeartHandshake,UserRoundCheck,ArrowRight,StickyNote,House,Mail,Star,PenLine,Trash2,MapPinned,Info} from 'lucide-react';
 import {api} from '../../api';
 import RecordForm from '../../shared/components/RecordForm';
+import StudentPhoneForm from './StudentPhoneForm';
 import type {Field,Row} from '../../modules';
 import {confirmDanger} from '../../notifications';
 
@@ -96,7 +97,9 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
   finally{setBusy(false);}
  }
  async function remove(row:Row){
-  if(!await confirmDanger(ui('Eliminar')+' '+ui(category.find(x=>x.kind===kind)?.title||''),ui('Esta información dejará de aparecer en el expediente.')))return;
+  const noun={addresses:'dirección',phones:'teléfono',contacts:'contacto',notes:'nota'}[kind as DataKind];
+  const description={addresses:'Se eliminará el domicilio seleccionado del expediente.',phones:'Este número dejará de estar disponible para contacto escolar.',contacts:'Se eliminará la persona seleccionada y sus autorizaciones de este expediente.',notes:'Se eliminará esta nota y dejará de ser visible para los usuarios autorizados.'}[kind as DataKind];
+  if(!await confirmDanger('Eliminar '+noun,'¿Confirmas que deseas eliminar '+String(title(row,kind as DataKind))+'? '+description,'Sí, eliminar'))return;
   setBusy(true);setError('');
   try{await api(root+kind+'/'+row.id,'DELETE');await fetchItems(kind);}catch(e){setError((e as Error).message);}finally{setBusy(false);}
  }
@@ -187,10 +190,12 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
          <Plus size={17}/>{ui(kindDescriptions[kind as DataKind].add)}</button>}
      </div>
      {error&&<div className="error" role="alert">{error}</div>}
-     {(creating||editing)&&<div className="sc-details-form"><RecordForm key={kind+'-'+(editing?.id||'new')}
+     {(creating||editing)&&<div className="sc-details-form sc-dossier-form-shell">
+       <header className="sc-dossier-form-hero"><span className="sc-dossier-form-hero-icon">{kind==='addresses'?<MapPin size={24}/>:kind==='phones'?<Phone size={24}/>:kind==='contacts'?<Users size={24}/>:<StickyNote size={24}/>}</span><div><span>{ui(editing?'EDITAR INFORMACIÓN':'NUEVO REGISTRO')}</span><h3>{ui(editing?'Editar ':'Agregar ')+ui({addresses:'dirección',phones:'teléfono',contacts:'contacto',notes:'nota'}[kind as DataKind])}</h3><p>{ui('Completa los datos del expediente. Los campos obligatorios están identificados.')}</p></div></header>
+       <div className="sc-dossier-form-body">{kind==='phones'?<StudentPhoneForm key={'phone-'+(editing?.id||'new')} initial={editing||{}} onSubmit={values=>void save(values)} onCancel={()=>{setEditing(null);setCreating(false);setError('');}} busy={busy} error={error} fieldErrors={fieldErrors}/>:<RecordForm key={kind+'-'+(editing?.id||'new')}
        fields={fields[kind as DataKind].map(field=>({...field,label:ui(field.label),options:field.options?.map(([id,label])=>[id,ui(label)] as [string,string])}))} initial={editing||{}}
        onSubmit={values=>void save(values)} onCancel={()=>{setEditing(null);setCreating(false);setError('');}} busy={busy}
-       options={()=>[]} optionName={row=>String(row.name||row.id)} error={error} fieldErrors={fieldErrors}/></div>}
+       options={()=>[]} optionName={row=>String(row.name||row.id)} error={error} fieldErrors={fieldErrors}/>}</div></div>}
      {!creating&&!editing&&<div className="sc-details-list">
        {loading?<div className="sc-details-loading" role="status"><span className="sc-details-skeleton"/><span className="sc-details-skeleton"/><span>{ui('Cargando información…')}</span></div>:
        items.length?<><div className="sc-details-collection-head"><span><Info size={15}/>{items.length} {ui(items.length===1?'registro disponible':'registros disponibles')}</span><small>{ui('Información vinculada a este alumno')}</small></div>
@@ -220,7 +225,7 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
          </article>;
         })}</div></>:
         <div className="sc-details-empty">
-         <div className="sc-details-empty-art" aria-hidden="true">{kind==='addresses'?<MapPinned size={34}/>:kind==='phones'?<Phone size={34}/>:kind==='contacts'?<HeartHandshake size={34}/>:<StickyNote size={34}/>}</div>
+         <div className="sc-details-empty-art sc-details-empty-auli" aria-hidden="true"><img src="/illustrations/auli-explain.svg" alt=""/></div>
          <span className="sc-details-empty-eyebrow">{ui('EXPEDIENTE SIN REGISTROS')}</span>
          <h3>{ui(kindDescriptions[kind as DataKind].emptyTitle)}</h3>
          <p>{ui(kindDescriptions[kind as DataKind].emptyMessage)}</p>
