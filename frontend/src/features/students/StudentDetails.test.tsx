@@ -49,3 +49,13 @@ it('separates the section heading from the creation form for notes',async()=>{
  expect(section?.querySelector(':scope > .sc-details-section-heading h2')?.textContent).toBe('Notas');
  expect(section?.querySelector(':scope > .sc-dossier-form-shell .sc-dossier-form-hero h3')?.textContent).toBe('Agregar nota');
 });
+
+it('renders operation heading as a connected panel above the form',async()=>{
+ const {api}=await import('../../api');vi.mocked(api).mockResolvedValue([]);
+ const {container}=render(<StudentDetails student={{id:105,full_name:'Elena Morales'}} onClose={vi.fn()} canEdit canWriteNotes/>);
+ await userEvent.click(screen.getByRole('button',{name:'Teléfonos'}));
+ await userEvent.click(await screen.findByRole('button',{name:'Agregar teléfono'}));
+ const shell=container.querySelector('.sc-dossier-composed');
+ expect(shell?.children[0]?.classList.contains('sc-dossier-form-hero')).toBe(true);
+ expect(shell?.children[1]?.classList.contains('sc-dossier-form-body')).toBe(true);
+});

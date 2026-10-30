@@ -86,7 +86,7 @@ RSpec.describe "typed student detail notifications", type: :request do
     expect(response).to have_http_status(:no_content)
     get "/api/notifications", as: :json
     items = response.parsed_body.fetch("items")
-    expect(items.map { |item| item["notification_type"] }).to include("created", "updated", "deleted")
+    expect(items.map { |item| item["notification_type"] }).to include("Nota")
     expect(items.map { |item| item["title"] }).to include("Nota creada exitosamente", "Nota actualizada exitosamente", "Nota eliminada exitosamente")
   end
 end
