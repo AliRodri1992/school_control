@@ -1,14 +1,26 @@
 class AcademicYear < ApplicationRecord
+  EVALUATION_PERIODS = %w[first second third].freeze
+  STATUSES = %w[draft active closing closed archived].freeze
+  SOURCES = %w[manual sep state school].freeze
+
   has_many :admission_document_requirements, dependent: :restrict_with_error
   has_many :groups, dependent: :restrict_with_error
   has_many :admissions, dependent: :restrict_with_error
+  has_many :enrollments, dependent: :restrict_with_error
+  has_many :calendar_events, dependent: :restrict_with_error
+
   validates :name, :starts_on, :ends_on, :admissions_open_on, :admissions_close_on,
             :reenrollment_open_on, :reenrollment_close_on, presence: true
   validates :name, uniqueness: true
+  validates :status, inclusion: { in: STATUSES }
+  validates :calendar_source, inclusion: { in: SOURCES }
+  validates :planned_school_days, numericality: { only_integer: true, in: 1..366 }, allow_nil: true
+  validates :notes, length: { maximum: 4000 }
+  validates :calendar_source_reference, length: { maximum: 255 }
+  validate :valid_source_url
   validate :ordered_dates
   validate :ordered_evaluation_periods
-
-  EVALUATION_PERIODS = %w[first second third].freeze
+  validate :ordered_capture_windows
 
   def evaluation_period(term)
     prefix = EVALUATION_PERIODS.fetch(Integer(term) - 1)
@@ -33,14 +45,41 @@ class AcademicYear < ApplicationRecord
     end
   end
 
+  def ordered_capture_windows
+    EVALUATION_PERIODS.each do |prefix|
+      from = public_send("#{prefix}_term_capture_opens_on")
+      to = public_send("#{prefix}_term_capture_closes_on")
+      errors.add("#{prefix}_term_capture_closes_on", "debe ser igual o posterior a la apertura") if from && to && from > to
+      [ "capture_opens_on", "capture_closes_on", "review_on", "reports_on" ].each do |suffix|
+        field = "#{prefix}_term_#{suffix}"
+        date = public_send(field)
+        next unless date && starts_on && ends_on
+        errors.add(field, "debe estar dentro del calendario escolar") unless date.between?(starts_on, ends_on + 30.days)
+      end
+      review = public_send("#{prefix}_term_review_on")
+      reports = public_send("#{prefix}_term_reports_on")
+      errors.add("#{prefix}_term_review_on", "debe ser posterior al cierre de captura") if review && to && review < to
+      errors.add("#{prefix}_term_reports_on", "no puede ser anterior a la revisión") if reports && review && reports < review
+    end
+  end
+
+  def valid_source_url
+    return if calendar_source_url.blank?
+    uri = URI.parse(calendar_source_url)
+    errors.add(:calendar_source_url, "debe ser una URL http o https") unless %w[http https].include?(uri.scheme) && uri.host.present?
+  rescue URI::InvalidURIError
+    errors.add(:calendar_source_url, "debe ser una URL válida")
+  end
+
   def open_for?(kind)
+    return false if %w[closed archived].include?(status)
     from, to = kind == "new" ? [ admissions_open_on, admissions_close_on ] : [ reenrollment_open_on, reenrollment_close_on ]
     from.present? && to.present? && Date.current.between?(from, to)
   end
 
   def ordered_dates
     [ [ starts_on, ends_on ], [ admissions_open_on, admissions_close_on ],
-     [ reenrollment_open_on, reenrollment_close_on ] ].each do |from, to|
+      [ reenrollment_open_on, reenrollment_close_on ] ].each do |from, to|
       errors.add(:base, "Las fechas de inicio deben preceder al cierre") if from && to && from > to
     end
     errors.add(:ends_on, "debe ser posterior al inicio") if starts_on && ends_on && starts_on == ends_on

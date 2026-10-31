@@ -4,7 +4,7 @@ class PermissionCatalog
     "enrollments" => %w[index complete], "grades" => %w[index create review publish correct history],
     "grade_change_requests" => %w[index create resolve], "attendances" => %w[index create],
     "assignments" => %w[index create update submissions submit review], "student_documents" => %w[index create download review],
-    "student_contacts" => %w[index create update destroy], "academic_years" => %w[index create update],
+    "student_contacts" => %w[index create update destroy], "academic_years" => %w[index show create update destroy pdf],
     "groups" => %w[index create update generate_schedule], "courses" => %w[index create update],
     "subjects" => %w[index create update], "schedule_slots" => %w[index create destroy],
     "calendar_events" => %w[index create update destroy], "announcements" => %w[index create destroy],
@@ -18,7 +18,7 @@ class PermissionCatalog
   RELATIONAL = %w[students admissions enrollments grades grade_change_requests attendances assignments student_documents student_contacts groups courses schedule_slots calendar_events dashboard].freeze
   EDUCATOR = %w[grades.create grades.history grade_change_requests.index grade_change_requests.create attendances.create assignments.create assignments.update assignments.review].freeze
   FAMILY = %w[students.create students.update admissions.create student_contacts.index student_contacts.create student_contacts.update student_contacts.destroy student_documents.index student_documents.create student_documents.download].freeze
-  READ = %w[students.index students.show students.report admissions.index enrollments.index grades.index attendances.index assignments.index assignments.submissions academic_years.index groups.index courses.index subjects.index schedule_slots.index calendar_events.index announcements.index dashboard.show].freeze
+  READ = %w[students.index students.show students.report admissions.index enrollments.index grades.index attendances.index assignments.index assignments.submissions academic_years.index academic_years.show groups.index courses.index subjects.index schedule_slots.index calendar_events.index announcements.index dashboard.show].freeze
 
   def self.keys = ACTIONS.flat_map { |mod, actions| actions.map { |action| "#{mod}.#{action}" } }
 

@@ -64,7 +64,9 @@ Rails.application.routes.draw do
       post :assign, on: :collection
     end
     resources :users, only: %i[index create update]
-    resources :academic_years, only: %i[index create update]
+    resources :academic_years, only: %i[index show create update destroy] do
+      get :pdf, on: :member
+    end
     resources :groups, only: %i[index create update] do
       post :generate_schedule, on: :member
     end
