@@ -214,3 +214,19 @@ it('does not mark the document stage as saved before the user visits it',async()
  expect(nav.querySelectorAll('li.is-done')).toHaveLength(1);
  expect(screen.getByRole('button',{name:'Ir a Documentos'}).closest('li')?.className).toContain('is-locked');
 });
+
+it('uses clear step numbers and no circular progress symbols or decorative header dots',()=>{
+ vi.mocked(api).mockResolvedValue([]);
+ render(<ApplicantRegistration years={[{id:5,name:'2026-2027'}]} admissions={[]} onClose={vi.fn()} onSaved={vi.fn(async()=>{})}/>);
+ const steps=screen.getByRole('navigation',{name:'Etapas del registro'});
+ expect(steps.querySelectorAll('ol li')).toHaveLength(6);
+ expect(steps.querySelectorAll('.sc-applicant-progress-index')).toHaveLength(0);
+ expect(steps.querySelectorAll('.sc-applicant-progress-ordinal')).toHaveLength(6);
+ expect([...steps.querySelectorAll('.sc-applicant-progress-ordinal')].map(element=>element.textContent))
+  .toEqual(['01','02','03','04','05','06']);
+ expect(steps.querySelectorAll('ol li button svg')).toHaveLength(0);
+ expect(screen.getByRole('button',{name:'Ir a Identidad'}).textContent).toContain('En curso');
+ expect(screen.getByRole('button',{name:'Ir a Domicilio'}).textContent).toContain('Pendiente');
+ expect(document.querySelectorAll('.sc-applicant-eyebrow-dot')).toHaveLength(0);
+ expect(document.querySelectorAll('.sc-applicant-hero-state > span')).toHaveLength(0);
+});

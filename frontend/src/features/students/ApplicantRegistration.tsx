@@ -1,5 +1,5 @@
 import {useEffect,useRef,useState} from 'react';
-import {ArrowLeft,ArrowRight,CheckCircle2,FileText,Save,Send,Users,IdCard,MapPinned,Phone,ShieldCheck,UploadCloud,Trash2,CalendarDays,BookOpenCheck,LockKeyhole,Info,Check,ClipboardCheck,UserRoundCheck,Sparkles} from 'lucide-react';
+import {ArrowLeft,ArrowRight,CheckCircle2,FileText,Save,Send,Users,IdCard,MapPinned,Phone,ShieldCheck,UploadCloud,Trash2,CalendarDays,BookOpenCheck,LockKeyhole,Info,ClipboardCheck,UserRoundCheck,Sparkles} from 'lucide-react';
 import {api} from '../../api';
 import Combobox from '../../shared/components/Combobox';
 import type {Row} from '../../modules';
@@ -286,11 +286,11 @@ export default function ApplicantRegistration({years,existing,admissions,onClose
   <div className="sc-applicant-topline"><button type="button" className="sc-applicant-backlink" disabled={busy||loadingRecord} onClick={()=>void saveAndExit()}><ArrowLeft size={16}/>{ui('Mis aspirantes')}</button>
    <div className="sc-applicant-topline-right"><span><LockKeyhole size={13}/>{ui('Expediente privado')}</span><span><BookOpenCheck size={13}/>{ui('Nuevo ingreso a primaria')}</span></div></div>
   <header className="sc-applicant-wizard-header"><div className="sc-applicant-hero-copy">
-   <div className="eyebrow"><span className="sc-applicant-eyebrow-dot"/>{ui('PORTAL DE FAMILIAS · ADMISIÓN ESCOLAR')}</div>
+   <div className="eyebrow">{ui('PORTAL DE FAMILIAS · ADMISIÓN ESCOLAR')}</div>
    <h1>{student?ui('Completar expediente de aspirante'):ui('Registro de aspirante')}</h1>
    <p>{ui('Completa los datos de cada sección. El sistema guardará tu información al avanzar o salir.')}</p>
    <div className="sc-applicant-hero-badges"><span className="sc-applicant-hero-stage"><ClipboardCheck size={15}/>{ui('Registro por etapas')}</span>
-    <span className="sc-applicant-hero-state"><span/>{ui(dirty?'Cambios sin guardar':admission?.status==='correction_requested'?'Correcciones solicitadas':isDraft?'Borrador guardado':'Captura inicial')}</span>
+    <span className="sc-applicant-hero-state">{ui(dirty?'Cambios sin guardar':admission?.status==='correction_requested'?'Correcciones solicitadas':isDraft?'Borrador guardado':'Captura inicial')}</span>
     {admission?.folio&&<span className="sc-applicant-folio">{ui('Folio')}: {admission.folio}</span>}</div>
   </div><div className="sc-applicant-hero-mascot"><img src="/illustrations/auli-welcome.svg" alt={ui('Auli, mascota de School Control')}/>
    <div className="sc-applicant-hero-mascot-caption"><Sparkles size={14}/><strong>{ui('Auli te acompaña en tu registro')}</strong></div></div></header>
@@ -310,9 +310,8 @@ export default function ApplicantRegistration({years,existing,admissions,onClose
       className={[completed?'is-done':'',step===index?'is-current':'',index>furthest?'is-locked':''].join(' ')}>
      <button type="button" disabled={busy||loadingRecord||index>furthest}
       aria-label={ui('Ir a')+' '+ui(name)} onClick={()=>void moveTo(index)}>
-      <span className="sc-applicant-progress-index" aria-hidden="true">{completed?<Check size={18}/>:index+1}</span>
-      <span className="sc-applicant-progress-text"><strong>{ui(name)}</strong>
-       <small>{ui(completed?'Guardado':index===step?'En curso':index<furthest?'Disponible':'Pendiente')}</small></span>
+      <span className="sc-applicant-progress-text"><strong><span className="sc-applicant-progress-ordinal" aria-hidden="true">{String(index+1).padStart(2,'0')}</span> {ui(name)}</strong>
+       <small>{ui(index===step?'En curso':completed?'Guardado':index<furthest?'Disponible':'Pendiente')}</small></span>
      </button></li>;
    })}</ol>
   </nav>
