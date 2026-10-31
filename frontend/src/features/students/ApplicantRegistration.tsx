@@ -85,6 +85,8 @@ export default function ApplicantRegistration({years,existing,admissions,onClose
  },[step,admission?.id]);
  async function uploadDocument(){
   if(!student||!file||busy)return;
+  if(file.size>10*1024*1024){setError(ui('Documento: el archivo no debe superar 10 MB.'));return;}
+  if(!['application/pdf','image/png','image/jpeg'].includes(file.type)){setError(ui('Documento: selecciona un archivo PDF, PNG o JPG.'));return;}
   setBusy(true);setError('');
   try{
    const payload=new FormData();payload.append('student_id',String(student.id));
