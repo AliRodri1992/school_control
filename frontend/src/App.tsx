@@ -36,6 +36,7 @@ const LanguageManager=lazy(()=>import('./features/languages/LanguageManager'));
 import {useLocation,useNavigate} from 'react-router-dom';
 const ImportWizard=lazy(()=>import('./features/imports/ImportWizard'));
 import {confirmDanger} from './notifications';
+import {confirmFamilyContactDelete} from './features/contacts/confirmFamilyContactDelete';
 import {PortalChrome} from './shell/PortalChrome';
 import {currentPortal,resolvePortalLocation,makePortalUrl,canImportFromPermissions,isStudentRecordUrl,studentRecordUrl} from './shell/portalNavigation';
 import Login from './auth/Login';
@@ -174,6 +175,19 @@ export default function App(){
      .finally(()=>{if(active)setRestoringSession(false);});
    return ()=>{active=false;};
  },[]);
+ async function deleteFamilyContact(row:Row){
+  if(busy)return;
+  const studentName=String(row.student_name||data.students?.find((item:Row)=>String(item.id)===String(row.student_id))?.full_name||'Alumno no identificado');
+  const confirmed=await confirmFamilyContactDelete(row,data.student_contacts||[],studentName,async()=>{
+   setError('');
+   setBusy(true);
+   try{
+    await api('student_contacts/'+row.id,'DELETE');
+    await refresh();
+   }finally{setBusy(false);}
+  });
+  if(confirmed)void notify('Contacto eliminado exitosamente.');
+ }
  async function perform(action:()=>Promise<void>){setError('');setFieldErrors({});setBusy(true);try{await action();void notify('Cambios guardados correctamente.');await refresh();}catch(e){setError((e as Error).message);setFieldErrors((e as Error & {fieldErrors?:Record<string,string[]>}).fieldErrors||{});}finally{setBusy(false);}}
  function options(source:string, values:Row = {}):Row[]{
    if(source==='guardians')return (data.users||[]).filter(x=>x.role==='guardian');
@@ -308,7 +322,7 @@ export default function App(){
    busy={busy} loading={data.student_contacts===undefined&&!moduleLoadErrors.student_contacts}
    error={moduleLoadErrors.student_contacts?.message} onRetry={()=>void refresh()}
    onCreate={()=>createOrEdit()} onEdit={createOrEdit}
-   onDelete={row=>{void confirmDanger('Eliminar contacto','Este contacto dejará de estar disponible para el alumno.').then(ok=>{if(ok)void perform(async()=>{await api('student_contacts/'+row.id,'DELETE');});});}}/>:
+   onDelete={row=>{void deleteFamilyContact(row);}}/>:
   page==='dashboard'?<PortalHome user={user} summary={summary} data={data} can={can}
   onNavigate={go} selectedChildId={selectedChild} onSelectChild={selectChild}/>:
   page==='reports'?<Reports data={data}/>:
@@ -362,7 +376,7 @@ export default function App(){
   </div>}
   {records.length>0&&<div className="table-scroll"><table className={page==='students'?'sc-students-table':page==='admissions'?'sc-admissions-table':hasModuleWorkbench?'sc-workbench-table':undefined}><thead><tr>{translatedModules[page].columns.map(([key,title])=><th key={key} aria-sort={sorting===key?(ascending?"ascending":"descending"):"none"}><button className="sc-sort-button" aria-label={(locale==='en'?'Sort by ':'Ordenar por ')+title} onClick={()=>sortBy(key)}>{title}{sorting===key?(ascending?" ↑":" ↓"):" ↕"}</button></th>)}<th className="sc-table-action-col">{ui('Acciones')}</th></tr></thead><tbody>{shownRows.map(row=><tr key={row.id}>{translatedModules[page].columns.map(([key])=><td key={key} data-label={page==='admissions'||hasModuleWorkbench?translatedModules[page].columns.find(([field])=>field===key)?.[1]:undefined}>{page==='admissions'&&key==='folio'?<div className="sc-admission-identity"><strong>{row.folio||ui('Borrador sin folio')}</strong><small>{row.enrollment_id?ui('Matrícula formalizada'):row.status==='approved'?ui('Pendiente de formalización'):ui('Solicitud de admisión')}</small></div>:page==='students'&&key==='full_name'?<div className="sc-student-identity"><span className="sc-student-initials" aria-hidden="true">{studentInitials(row)}</span><div><strong>{row.full_name||[row.first_name,row.last_name].filter(Boolean).join(' ')}</strong><span className="sc-student-stage-label">{row.enrollment_stage==='enrolled'?ui('Inscrito'):ui('Aspirante')}</span><small>{ui('Expediente')} #{row.id}</small></div></div>:['status','outcome','role','kind'].includes(key)?<span className={`badge ${row[key]||''}`}>{display(row[key])}</span>:key.endsWith('_at')?readableDate(row[key]):display(row[key])}</td>)}<td className="sc-table-action-cell" data-label={page==='admissions'||hasModuleWorkbench?ui('Acciones'):undefined}><div className="sc-table-action-group">
  {page==='grades'&&<GradeActions grade={row} admin={user.role==='admin'} permissions={user.permissions} onChanged={()=>refresh()}/>}
- {page==='student_contacts'&&can('student_contacts.destroy')&&<TableAction kind="delete" ariaLabel={`Eliminar contacto de ${row.student_name||row.name}`} disabled={busy} onClick={()=>{void confirmDanger('Eliminar contacto','Este contacto dejará de estar disponible para el alumno.').then(ok=>{if(ok)void perform(async()=>{await api('student_contacts/'+row.id,'DELETE');});});}}/>}
+ {page==='student_contacts'&&can('student_contacts.destroy')&&<TableAction kind="delete" ariaLabel={`Eliminar contacto de ${row.student_name||row.name}`} disabled={busy} onClick={()=>{void deleteFamilyContact(row);}}/>}
  {page==='students'&&row.enrollment_stage==='applicant'&&can('students.update')&&!(data.admissions||[]).some(a=>String(a.student_id)===String(row.id)&&!['draft','correction_requested'].includes(a.status))&&<button className="secondary sc-applicant-resume" type="button" onClick={()=>setApplicantWizard(row)}>{ui('Continuar registro')}</button>}
  {page==='students'&&<StudentRowActions student={row} canView={can('students.show')} canReport={can('students.report')}
   reportLoading={reportLoadingStudentId===String(row.id)} canEdit={can('students.update')} onView={()=>openStudentRecord(row)}
