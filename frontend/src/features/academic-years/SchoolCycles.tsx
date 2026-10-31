@@ -1,7 +1,11 @@
-import {useMemo,useState} from 'react';
-import {CalendarDays,CalendarRange,GraduationCap,Pencil,Search,Users} from 'lucide-react';
+import {useEffect,useMemo,useState,type FormEvent} from 'react';
+import {ArrowLeft,CalendarDays,CalendarRange,CheckCircle2,ClipboardList,FileDown,Info,Plus,Search,Save,ShieldCheck,X} from 'lucide-react';
 import type {Row} from '../../modules';
+import {api} from '../../api';
+import {confirmDanger,notify} from '../../notifications';
 import {useSchoolLocale} from '../../shared/i18n/LocaleContext';
+import Combobox from '../../shared/components/Combobox';
+import TableAction from '../../shared/components/TableAction';
 import TableEmptyState from '../../shared/components/TableEmptyState';
 import CycleForm from './CycleForm';
 
@@ -16,34 +20,205 @@ export function schoolYearStats(items:Row[],today:string){
  reenrollments:items.filter(x=>windowState(x.reenrollment_open_on,x.reenrollment_close_on,today)==='open').length,
  upcoming:items.filter(x=>windowState(x.admissions_open_on,x.admissions_close_on,today)==='upcoming'||windowState(x.reenrollment_open_on,x.reenrollment_close_on,today)==='upcoming').length};
 }
-export default function SchoolCycles({items,onSave,canCreate,canEdit,error}:{items:Row[];onSave:(data:Row,existing?:Row|null)=>Promise<void>;canCreate:boolean;canEdit:boolean;error?:string}){
+const statusOptions=[{value:'draft',label:'En preparación'},{value:'active',label:'Activo'},
+ {value:'closing',label:'En cierre'},{value:'closed',label:'Cerrado'},{value:'archived',label:'Archivado'}];
+export const eventKinds=[{value:'suspension',label:'Suspensión de clases'},{value:'holiday',label:'Día festivo'},
+ {value:'cte',label:'Consejo Técnico Escolar'},{value:'vacation',label:'Vacaciones / receso'},
+ {value:'evaluation',label:'Periodo de evaluación'},{value:'report_delivery',label:'Entrega de boletas'},
+ {value:'administrative',label:'Actividad administrativa'},{value:'exam',label:'Examen'},
+ {value:'meeting',label:'Reunión'},{value:'activity',label:'Actividad escolar'}];
+const sourceOptions=[{value:'manual',label:'Captura manual'},{value:'sep',label:'SEP federal'},
+ {value:'state',label:'Autoridad estatal'},{value:'school',label:'Plantel'}];
+const datePart=(value:unknown)=>String(value||'').slice(0,10);
+const localDatetime=(value:unknown)=>String(value||'').slice(0,16);
+const nextDay=(date:string)=>{const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);return d.toISOString().slice(0,10);};
+const previousDay=(date:string)=>{const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-1);return d.toISOString().slice(0,10);};
+export function eventDatePayload(data:{allDay:boolean;start:string;end:string}){
+ if(!data.start||!data.end)throw new Error('Selecciona las fechas de inicio y fin del evento.');
+ if(data.start>data.end)throw new Error('La fecha final debe ser igual o posterior al inicio.');
+ return data.allDay?{starts_at:data.start+'T00:00:00',ends_at:nextDay(data.end)+'T00:00:00'}:
+  {starts_at:data.start,ends_at:data.end};
+}
+type Props={items:Row[];events?:Row[];onSave:(data:Row,existing?:Row|null)=>Promise<void>;
+ canCreate:boolean;canEdit:boolean;canDelete?:boolean;canPdf?:boolean;canManageEvents?:boolean;onRefresh?:()=>Promise<void>;error?:string};
+function CycleEventForm({cycleId,existing,onClose,onSaved}:{cycleId:number;existing?:Row|null;onClose:()=>void;onSaved:()=>Promise<void>}){
+ const {ui}=useSchoolLocale();
+ const [kind,setKind]=useState(String(existing?.kind||'suspension'));
+ const [title,setTitle]=useState(String(existing?.title||''));
+ const [description,setDescription]=useState(String(existing?.description||''));
+ const [source,setSource]=useState(String(existing?.source_type||'manual'));
+ const [sourceUrl,setSourceUrl]=useState(String(existing?.source_url||''));
+ const [sourceReference,setSourceReference]=useState(String(existing?.source_reference||''));
+ const [official,setOfficial]=useState(Boolean(existing?.official));
+ const [allDay,setAllDay]=useState(existing?.all_day!==false);
+ const [start,setStart]=useState(existing?.all_day!==false?datePart(existing?.starts_at):localDatetime(existing?.starts_at));
+ const [end,setEnd]=useState(existing?.all_day!==false?previousDay(datePart(existing?.ends_at)):localDatetime(existing?.ends_at));
+ const [error,setError]=useState(''),[saving,setSaving]=useState(false);
+ async function submit(event:FormEvent){
+  event.preventDefault();if(saving)return;
+  if(!title.trim()){setError('Título del evento no puede estar vacío.');return;}
+  try{
+   const dates=eventDatePayload({allDay,start,end});
+   setSaving(true);setError('');
+   await api(existing?.id?'calendar_events/'+existing.id:'calendar_events',existing?.id?'PATCH':'POST',{
+    academic_year_id:cycleId,title:title.trim(),kind,description:description.trim()||null,all_day:allDay,
+    official,source_type:source,source_url:sourceUrl.trim()||null,source_reference:sourceReference.trim()||null,...dates});
+   await onSaved();void notify(existing?'Evento actualizado correctamente.':'Evento registrado correctamente.');onClose();
+  }catch(cause){setError((cause as Error).message);}finally{setSaving(false);}
+ }
+ return <form className="sc-cycle-event-form" onSubmit={e=>void submit(e)} noValidate>
+  <header><div><strong>{ui(existing?'Editar evento':'Registrar fecha o evento')}</strong><p>{ui('Captura fechas oficiales o internas. Esta opción no importa información de la SEP.')}</p></div>
+   <button type="button" className="secondary" aria-label={ui('Cerrar formulario de evento')} onClick={onClose}><X size={16}/></button></header>
+  <div className="sc-cycle-event-fields">
+   <label className="sc-cycle-event-wide">{ui('Título del evento')}<input value={title} maxLength={200} onChange={e=>setTitle(e.target.value)} placeholder="Consejo Técnico Escolar"/></label>
+   <label>{ui('Tipo de evento')}<Combobox label={ui('Tipo de evento')} value={kind} onChange={setKind} options={eventKinds.map(x=>({...x,label:ui(x.label)}))} searchable={false}/></label>
+   <label>{ui('Origen')}<Combobox label={ui('Origen')} value={source} onChange={setSource} options={sourceOptions.map(x=>({...x,label:ui(x.label)}))} searchable={false}/></label>
+   <label className="sc-cycle-event-check"><input type="checkbox" checked={allDay} onChange={e=>{setAllDay(e.target.checked);setStart('');setEnd('');}}/>{ui('Evento de día completo')}</label>
+   <label className="sc-cycle-event-check"><input type="checkbox" checked={official} onChange={e=>setOfficial(e.target.checked)}/>{ui('Fecha oficial verificada')}</label>
+   <label>{ui('Inicio')}<input type={allDay?'date':'datetime-local'} value={start} onChange={e=>setStart(e.target.value)}/></label>
+   <label>{ui(allDay?'Último día incluido':'Fin')}<input type={allDay?'date':'datetime-local'} value={end} onChange={e=>setEnd(e.target.value)}/></label>
+   <label>{ui('Referencia de la fuente')}<input value={sourceReference} maxLength={255} onChange={e=>setSourceReference(e.target.value)}/></label>
+   <label>{ui('URL de la fuente')}<input type="url" value={sourceUrl} onChange={e=>setSourceUrl(e.target.value)} placeholder="https://..."/></label>
+   <label className="sc-cycle-event-wide">{ui('Observaciones')}<textarea rows={2} value={description} onChange={e=>setDescription(e.target.value)}/></label>
+  </div>
+  {error&&<p role="alert" className="sc-cycle-form-error">{error}</p>}
+  <footer><button type="button" className="secondary" disabled={saving} onClick={onClose}>{ui('Cancelar')}</button>
+   <button type="submit" className="primary" disabled={saving}><Save size={16}/>{saving?ui('Guardando…'):ui('Guardar evento')}</button></footer>
+ </form>;
+}
+export default function SchoolCycles({items,events=[],onSave,canCreate,canEdit,canDelete=false,canPdf=false,canManageEvents=false,onRefresh,error}:Props){
  const {ui,locale}=useSchoolLocale();
- const [query,setQuery]=useState('');
- const [editor,setEditor]=useState<Row|null|false>(false);
+ const [query,setQuery]=useState(''),[filter,setFilter]=useState(''),[page,setPage]=useState(0),[pageSize,setPageSize]=useState('10');
+ const [editor,setEditor]=useState<Row|null|false>(false),[selectedId,setSelectedId]=useState<string|null>(null);
+ const [detailTab,setDetailTab]=useState<'overview'|'calendar'>('overview'),[eventEditor,setEventEditor]=useState<Row|null|false>(false);
+ const [eventQuery,setEventQuery]=useState(''),[operationError,setOperationError]=useState(''),[working,setWorking]=useState(false);
  const today=new Date().toLocaleDateString('en-CA');
  const stats=useMemo(()=>schoolYearStats(items,today),[items,today]);
- const rows=useMemo(()=>items.filter(x=>String(x.name||'').toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())).sort((a,b)=>String(b.starts_on||'').localeCompare(String(a.starts_on||''))),[items,query]);
- const stateNames:Record<string,string>={open:'Abierta',upcoming:'Próxima',closed:'Cerrada',unknown:'Sin configurar'};
- const format=(date?:string)=>date?new Date(date+'T12:00:00').toLocaleDateString(locale.startsWith('en')?'en-US':'es-MX',{day:'numeric',month:'short',year:'numeric'}):ui('Sin fecha');
- const period=(label:string,from?:string,to?:string,icon?:'school')=>{
-  const state=windowState(from,to,today);const Icon=icon==='school'?GraduationCap:CalendarRange;
-  return <div className="sc-cycle-period"><div className="sc-cycle-period-title"><Icon size={17}/><strong>{ui(label)}</strong><span className={'sc-cycle-badge state-'+state}>{ui(stateNames[state])}</span></div>
-   <div className="sc-cycle-date-row"><span>{ui('Apertura')}<strong>{format(from)}</strong></span><span>{ui('Cierre')}<strong>{format(to)}</strong></span></div></div>;
- };
- if(editor!==false)return <CycleForm key={editor?.id||'new'} initial={editor||undefined} onCancel={()=>setEditor(false)} onSave={async values=>{await onSave(values,editor||null);setEditor(false);}}/>;
- return <section className="sc-cycles" aria-label={ui('Ciclos y convocatorias')}>
-  <header className="sc-cycles-hero"><div><span>{ui('PLANEACIÓN ESCOLAR')}</span><h2>{ui('Organiza cada ciclo y sus convocatorias')}</h2><p>{ui('Visualiza el calendario lectivo y las ventanas de inscripción y reinscripción, sin perder de vista sus fechas clave.')}</p></div><CalendarDays size={46} aria-hidden="true"/></header>
+ const selected=items.find(x=>String(x.id)===selectedId);
+ const rows=useMemo(()=>items.filter(x=>(!filter||String(x.status||'active')===filter)
+  &&String(x.name||'').toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()))
+  .sort((a,b)=>String(b.starts_on||'').localeCompare(String(a.starts_on||''))),[items,query,filter]);
+ const visible=rows.slice(page*Number(pageSize),(page+1)*Number(pageSize));
+ useEffect(()=>setPage(0),[query,filter,pageSize]);
+ const format=(date?:string)=>date?new Date(datePart(date)+'T12:00:00').toLocaleDateString(locale.startsWith('en')?'en-US':'es-MX',{day:'numeric',month:'short',year:'numeric'}):ui('Sin configurar');
+ const statusLabel=(value?:string)=>ui(statusOptions.find(s=>s.value===(value||'active'))?.label||'Sin estado');
+ const linkedEvents=events.filter(x=>String(x.academic_year_id)===selectedId)
+  .filter(x=>[x.title,x.kind,x.source_reference].some(value=>String(value||'').toLocaleLowerCase().includes(eventQuery.toLocaleLowerCase())))
+  .sort((a,b)=>String(a.starts_at).localeCompare(String(b.starts_at)));
+ async function removeCycle(item:Row){
+  if(working)return;
+  const accepted=await confirmDanger(ui('¿Eliminar ciclo escolar '+item.name+'?'),
+   ui('Solo es posible eliminarlo si no tiene grupos, inscripciones, evaluaciones o eventos relacionados. Esta acción no se puede deshacer.'),ui('Eliminar ciclo'));
+  if(!accepted)return;
+  setWorking(true);setOperationError('');
+  try{await api('academic_years/'+item.id,'DELETE');await onRefresh?.();void notify('Ciclo escolar eliminado.');if(selectedId===String(item.id))setSelectedId(null);}
+  catch(cause){setOperationError((cause as Error).message);void notify((cause as Error).message,'error');}
+  finally{setWorking(false);}
+ }
+ async function removeEvent(item:Row){
+  if(working)return;
+  const accepted=await confirmDanger(ui('¿Eliminar evento?'),String(item.title)+' · '+format(item.starts_at),ui('Eliminar evento'));
+  if(!accepted)return;
+  setWorking(true);setOperationError('');
+  try{await api('calendar_events/'+item.id,'DELETE');await onRefresh?.();void notify('Evento eliminado correctamente.');}
+  catch(cause){setOperationError((cause as Error).message);void notify((cause as Error).message,'error');}
+  finally{setWorking(false);}
+ }
+ const pdfLink=(item:Row)=>'/api/academic_years/'+item.id+'/pdf';
+ if(editor!==false)return <CycleForm key={editor?.id||'new'} initial={editor||undefined} onCancel={()=>setEditor(false)}
+   onSave={async values=>{await onSave(values,editor||null);setEditor(false);}}/>;
+ const summary=(label:string,value?:string)=><div className="sc-cycle-info-pair"><span>{ui(label)}</span><strong>{value||'—'}</strong></div>;
+ if(selected)return <section className="sc-cycles sc-cycle-detail">
+  <button type="button" className="sc-cycle-form-back" onClick={()=>{setSelectedId(null);setEventEditor(false);setOperationError('');}}><ArrowLeft size={17}/>{ui('Volver al listado')}</button>
+  <header className="sc-cycle-detail-hero"><div><span>{ui('EXPEDIENTE DEL CICLO ESCOLAR')}</span>
+   <h2>{selected.name}</h2><p>{format(selected.starts_on)} — {format(selected.ends_on)} · {statusLabel(selected.status)}</p></div>
+   <div className="sc-cycle-detail-actions">{canPdf&&<a className="secondary sc-cycle-action-link" href={pdfLink(selected)}><FileDown size={17}/>{ui('Generar PDF')}</a>}
+    {canEdit&&<button className="primary" type="button" onClick={()=>setEditor(selected)}>{ui('Editar ciclo')}</button>}</div></header>
+  <div className="sc-cycle-detail-tabs" role="tablist" aria-label={ui('Información del ciclo')}>
+   <button type="button" role="tab" aria-selected={detailTab==='overview'} className={detailTab==='overview'?'active':''} onClick={()=>setDetailTab('overview')}><ClipboardList size={17}/>{ui('Resumen y evaluaciones')}</button>
+   <button type="button" role="tab" aria-selected={detailTab==='calendar'} className={detailTab==='calendar'?'active':''} onClick={()=>setDetailTab('calendar')}><CalendarDays size={17}/>{ui('Calendario y eventos')} <span>{events.filter(x=>String(x.academic_year_id)===selectedId).length}</span></button>
+  </div>
+  {operationError&&<p className="sc-cycle-form-general-error" role="alert">{operationError}</p>}
+  {detailTab==='overview'?<div className="sc-cycle-detail-grid">
+    <article className="sc-cycle-detail-panel"><h3><GraduationCap size={19}/>{ui('Datos generales')}</h3>
+     <div className="sc-cycle-detail-facts">{summary('Inicio de clases',format(selected.starts_on))}{summary('Fin de clases',format(selected.ends_on))}
+      {summary('Días lectivos previstos',selected.planned_school_days?String(selected.planned_school_days):undefined)}
+      {summary('Estado',statusLabel(selected.status))}</div></article>
+    <article className="sc-cycle-detail-panel"><h3><Users size={19}/>{ui('Convocatorias')}</h3>
+     <div className="sc-cycle-detail-facts">{summary('Nuevo ingreso',format(selected.admissions_open_on)+' – '+format(selected.admissions_close_on))}
+      {summary('Reinscripciones',format(selected.reenrollment_open_on)+' – '+format(selected.reenrollment_close_on))}</div></article>
+    <article className="sc-cycle-detail-panel sc-cycle-detail-wide"><h3><ClipboardList size={19}/>{ui('Evaluación trimestral')}</h3>
+     <div className="sc-cycle-trimester-grid">{(['first','second','third'] as const).map((term,index)=><section key={term} className="sc-cycle-trimester">
+      <h4>{ui(['Primer','Segundo','Tercer'][index]+' trimestre')}</h4>
+      {summary('Periodo',format(selected[term+'_term_starts_on'])+' – '+format(selected[term+'_term_ends_on']))}
+      {summary('Captura',format(selected[term+'_term_capture_opens_on'])+' – '+format(selected[term+'_term_capture_closes_on']))}
+      {summary('Revisión',format(selected[term+'_term_review_on']))}
+      {summary('Entrega de boletas',format(selected[term+'_term_reports_on']))}
+     </section>)}</div></article>
+    <article className="sc-cycle-detail-panel sc-cycle-detail-wide"><h3><ShieldCheck size={19}/>{ui('Procedencia y observaciones')}</h3>
+     <div className="sc-cycle-detail-facts">{summary('Origen',sourceOptions.find(x=>x.value===selected.calendar_source)?.label||'Captura manual')}
+      {summary('Referencia',selected.calendar_source_reference)}
+      {summary('Publicación',format(selected.calendar_published_on))}</div>
+     {selected.calendar_source_url&&<p className="sc-cycle-source-link"><a target="_blank" rel="noopener noreferrer" href={String(selected.calendar_source_url)}>{ui('Consultar fuente del calendario')}</a></p>}
+     {selected.notes&&<p className="sc-cycle-detail-notes">{selected.notes}</p>}</article>
+    {canDelete&&<div className="sc-cycle-delete-zone"><Info size={17}/><span>{ui('Los ciclos con información académica vinculada no pueden eliminarse.')}</span>
+      <button type="button" className="secondary" disabled={working} onClick={()=>void removeCycle(selected)}>{ui('Eliminar ciclo')}</button></div>}
+   </div>:<div className="sc-cycle-detail-panel sc-cycle-events-panel">
+    <div className="sc-cycle-events-heading"><div><h3>{ui('Fechas y eventos del calendario')}</h3><p>{ui('Registra suspensiones, vacaciones, sesiones de CTE y actividades. Sin importador automático.')}</p></div>
+     {canManageEvents&&<button type="button" className="primary" onClick={()=>setEventEditor(null)}><Plus size={17}/>{ui('Registrar evento')}</button>}</div>
+    <div className="sc-cycle-events-note"><Info size={17}/>{ui('Los eventos oficiales deben capturarse conforme a las publicaciones vigentes de las autoridades educativas.')}</div>
+    {eventEditor!==false&&canManageEvents&&<CycleEventForm key={eventEditor?.id||'new-event'} cycleId={Number(selected.id)}
+       existing={eventEditor||undefined} onClose={()=>setEventEditor(false)} onSaved={async()=>{await onRefresh?.();}}/>}
+    <label className="sc-cycles-search"><Search size={17}/><input aria-label={ui('Buscar evento del calendario')}
+     placeholder={ui('Buscar por fecha, concepto o fuente…')} value={eventQuery} onChange={e=>setEventQuery(e.target.value)}/></label>
+    {linkedEvents.length?<div className="sc-cycle-table-wrap"><table className="sc-cycle-table"><thead><tr>
+     <th>{ui('Fecha')}</th><th>{ui('Evento')}</th><th>{ui('Tipo')}</th><th>{ui('Procedencia')}</th><th>{ui('Acciones')}</th>
+    </tr></thead><tbody>{linkedEvents.map(event=><tr key={event.id}>
+     <td>{format(event.starts_at)}{datePart(event.ends_at)&&event.all_day&&nextDay(datePart(event.starts_at))!==datePart(event.ends_at)?' – '+format(previousDay(datePart(event.ends_at))):''}</td>
+     <td><strong>{event.title}</strong>{event.description&&<small>{event.description}</small>}</td>
+     <td>{ui(eventKinds.find(k=>k.value===event.kind)?.label||event.kind)}</td>
+     <td><span className="sc-cycle-source-tag">{ui(sourceOptions.find(s=>s.value===event.source_type)?.label||'Manual')}</span>{event.official&&<small>{ui('Oficial')}</small>}</td>
+     <td className="sc-cycle-row-actions">{canManageEvents&&<><TableAction kind="edit" ariaLabel={ui('Editar '+event.title)} onClick={()=>setEventEditor(event)}/>
+      <TableAction kind="delete" ariaLabel={ui('Eliminar '+event.title)} disabled={working} onClick={()=>void removeEvent(event)}/></>}</td>
+    </tr>)}</tbody></table></div>:<TableEmptyState mode={eventQuery?'filtered':'empty'} canCreate={canManageEvents}/>}
+   </div>}
+ </section>;
+ return <section className="sc-cycles" aria-label={ui('Ciclos escolares')}>
+  <header className="sc-cycles-hero"><div><span>{ui('ADMINISTRACIÓN ACADÉMICA')}</span><h2>{ui('Ciclos escolares')}</h2>
+   <p>{ui('Controla vigencias, trimestres, convocatorias y fechas oficiales en un solo lugar.')}</p></div><CalendarDays size={46} aria-hidden="true"/></header>
   <div className="sc-cycles-kpis">{[
    {title:'Ciclos registrados',value:stats.total,icon:CalendarDays},{title:'Inscripciones abiertas',value:stats.admissions,icon:Users},
-   {title:'Reinscripciones abiertas',value:stats.reenrollments,icon:GraduationCap},{title:'Próximas convocatorias',value:stats.upcoming,icon:CalendarRange}
+   {title:'Reinscripciones abiertas',value:stats.reenrollments,icon:CheckCircle2},{title:'Próximas convocatorias',value:stats.upcoming,icon:CalendarRange}
   ].map(metric=>{const Icon=metric.icon;return <article key={metric.title}><div><Icon size={17}/><span>{ui(metric.title)}</span></div><strong>{metric.value}</strong></article>;})}</div>
-  <section className="sc-cycles-workspace"><div className="sc-cycles-heading"><div><h3>{ui('Calendario de ciclos escolares')}</h3><p>{ui('Las fechas de cada convocatoria determinan cuándo pueden enviarse solicitudes.')}</p></div>{canCreate&&<button className="primary" type="button" onClick={()=>setEditor(null)}>{ui('Registrar ciclo')}</button>}</div>
-   <label className="sc-cycles-search"><Search size={18}/><input aria-label={ui('Buscar ciclo escolar')} placeholder={ui('Buscar por nombre del ciclo…')} value={query} onChange={event=>setQuery(event.target.value)}/></label>
-   {error?<TableEmptyState mode="error" description={error}/>:rows.length?<div className="sc-cycles-list">{rows.map(item=><article className="sc-cycle-card" key={item.id}>
-    <div className="sc-cycle-card-heading"><div><span className="sc-cycle-card-icon"><CalendarDays size={20}/></span><div><h4>{item.name}</h4><small>{ui('Periodo lectivo')}: {format(item.starts_on)} — {format(item.ends_on)}</small></div></div>
-    {canEdit&&<button type="button" className="secondary sc-cycle-edit" onClick={()=>setEditor(item)}><Pencil size={15}/>{ui('Editar ciclo y trimestres')}</button>}</div>
-    <div className="sc-cycle-periods">{period('Inscripciones · nuevo ingreso',item.admissions_open_on,item.admissions_close_on)}{period('Reinscripciones',item.reenrollment_open_on,item.reenrollment_close_on)}{period('Clases',item.starts_on,item.ends_on,'school')}{period('Primer trimestre',item.first_term_starts_on,item.first_term_ends_on)}{period('Segundo trimestre',item.second_term_starts_on,item.second_term_ends_on)}{period('Tercer trimestre',item.third_term_starts_on,item.third_term_ends_on)}</div>
-   </article>)}</div>:<TableEmptyState mode={query?'filtered':'empty'} canCreate={canCreate}/>}
+  <section className="sc-cycles-workspace">
+   <div className="sc-cycles-heading"><div><h3>{ui('Administrar ciclos escolares')}</h3><p>{ui('Consulta, registra, edita y genera la ficha PDF de cada ciclo.')}</p></div>
+    {canCreate&&<button className="primary" type="button" onClick={()=>setEditor(null)}><Plus size={17}/>{ui('Registrar ciclo')}</button>}</div>
+   <div className="sc-cycle-toolbar">
+    <label className="sc-cycles-search"><Search size={18}/><input aria-label={ui('Buscar ciclo escolar')} placeholder={ui('Buscar por nombre del ciclo…')} value={query} onChange={event=>setQuery(event.target.value)}/></label>
+    <div className="sc-cycle-filter"><span>{ui('Estado')}</span><Combobox label={ui('Filtrar por estado')} value={filter} onChange={setFilter} options={statusOptions.map(x=>({...x,label:ui(x.label)}))} placeholder={ui('Todos los estados')} searchable={false}/></div>
+    {(query||filter)&&<button type="button" className="secondary" onClick={()=>{setQuery('');setFilter('');}}>{ui('Limpiar filtros')}</button>}
+   </div>
+   {operationError&&<p role="alert" className="sc-cycle-form-general-error">{operationError}</p>}
+   {error?<TableEmptyState mode="error" description={error}/>:rows.length?<div className="sc-cycle-table-wrap"><table className="sc-cycle-table"><thead><tr>
+    <th>{ui('Ciclo escolar')}</th><th>{ui('Periodo de clases')}</th><th>{ui('Estado')}</th><th>{ui('Trimestres')}</th><th>{ui('Origen')}</th><th>{ui('Acciones')}</th>
+   </tr></thead><tbody>{visible.map(item=><tr key={item.id}>
+    <td><strong>{item.name}</strong><small>{item.planned_school_days?item.planned_school_days+' '+ui('días lectivos'):'Sin días configurados'}</small></td>
+    <td>{format(item.starts_on)}<small>{ui('al')} {format(item.ends_on)}</small></td>
+    <td><span className={'sc-cycle-status status-'+String(item.status||'active')}>{statusLabel(item.status)}</span></td>
+    <td>{(['first','second','third'] as const).filter(t=>item[t+'_term_starts_on']&&item[t+'_term_ends_on']).length} / 3</td>
+    <td>{ui(sourceOptions.find(s=>s.value===item.calendar_source)?.label||'Captura manual')}</td>
+    <td className="sc-cycle-row-actions"><TableAction kind="view" ariaLabel={ui('Ver ciclo '+item.name)} onClick={()=>{setSelectedId(String(item.id));setDetailTab('overview');setOperationError('');}}/>
+     {canEdit&&<TableAction kind="edit" ariaLabel={ui('Editar ciclo '+item.name)} onClick={()=>setEditor(item)}/>}
+     {canPdf&&<TableAction kind="download" ariaLabel={ui('Generar PDF de '+item.name)} href={pdfLink(item)}/>}
+     {canDelete&&<TableAction kind="delete" ariaLabel={ui('Eliminar ciclo '+item.name)} disabled={working} onClick={()=>void removeCycle(item)}/>}</td>
+   </tr>)}</tbody></table></div>:<TableEmptyState mode={query||filter?'filtered':'empty'} canCreate={canCreate}/>}
+   {rows.length>0&&<footer className="sc-cycle-pagination">
+    <div><span>{ui('Mostrar')}</span><Combobox label={ui('Filas por página')} value={pageSize} onChange={setPageSize}
+       options={['10','20','50'].map(n=>({value:n,label:n}))} searchable={false}/><span>{ui('por página')}</span></div>
+    <div><span>{page*Number(pageSize)+1}–{Math.min((page+1)*Number(pageSize),rows.length)} {ui('de')} {rows.length}</span>
+     <button type="button" className="secondary" disabled={page===0} onClick={()=>setPage(p=>p-1)}>{ui('Anterior')}</button>
+     <button type="button" className="secondary" disabled={(page+1)*Number(pageSize)>=rows.length} onClick={()=>setPage(p=>p+1)}>{ui('Siguiente')}</button></div>
+   </footer>}
   </section>
  </section>;
 }
