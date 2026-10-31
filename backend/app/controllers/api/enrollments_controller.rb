@@ -11,7 +11,7 @@ module Api
     def complete
       enrollment = Enrollment.find(params[:id])
       authorize enrollment, :complete?
-      CompleteEnrollment.call(enrollment: enrollment, outcome: params.require(:outcome), actor: current_user)
+      CompleteEnrollment.call(enrollment: enrollment, outcome: params.require(:outcome), actor: current_user, reason: params[:reason])
       render json: present(enrollment)
     end
   end

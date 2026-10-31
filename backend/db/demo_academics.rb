@@ -109,7 +109,7 @@ module DemoAcademics
         period = enrollment.academic_year.evaluation_period(term)
         marks = Grade.where(enrollment: enrollment, course: courses.select { |course| details[:subjects].include?(course.subject.code) }, term: term).pluck(:score)
         next if marks.empty?
-        score = (marks.sum / marks.length).round(1, :half_up).clamp(5, 10)
+        score = (marks.sum / marks.length).round.clamp(enrollment.group.grade_level <= 2 ? 6 : 5, 10)
         state = period[:ends_on] && period[:ends_on] < Date.current && index % 5 != 0 ? "published" : "draft"
         FormativeEvaluation.find_or_create_by!(enrollment: enrollment, field_code: code, term: term) do |record|
           record.assign_attributes(score: score, status: state,

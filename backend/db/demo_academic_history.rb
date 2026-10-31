@@ -74,7 +74,7 @@ module DemoAcademicHistory
           day = term_ends.fetch(term - 1)
           published_at = Time.zone.local(day.year, day.month, day.day, 16)
           { enrollment_id: enrollment.id, field_code: code, term: term,
-            score: (values.sum / values.length).round(1, :half_up).clamp(5, 10),
+            score: (values.sum / values.length).round.clamp(enrollment.group.grade_level <= 2 ? 6 : 5, 10),
             status: "published", feedback: "Valoración histórica ficticia: #{details[:name]}, trimestre #{term}.",
             reviewer_id: course_teacher_id(courses), published_at: published_at,
             created_at: published_at, updated_at: published_at }

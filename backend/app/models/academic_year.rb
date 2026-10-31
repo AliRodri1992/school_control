@@ -17,6 +17,16 @@ class AcademicYear < ApplicationRecord
   validates :name, uniqueness: true
   validates :status, inclusion: { in: STATUSES }
   validates :calendar_source, inclusion: { in: SOURCES }
+  validates :grading_rule_version, presence: true
+  validates :average_decimal_mode, inclusion: { in: %w[truncate round_half_up] }
+  validate :protect_grading_rules, on: :update
+
+  def protect_grading_rules
+    return unless will_save_change_to_grading_rule_version? || will_save_change_to_average_decimal_mode?
+    if FormativeEvaluation.where(enrollment_id: enrollments.select(:id)).exists?
+      errors.add(:base, "Las reglas del ciclo no pueden cambiar cuando existen evaluaciones; se debe conservar su versión histórica")
+    end
+  end
   validates :planned_school_days, numericality: { only_integer: true, in: 1..366 }, allow_nil: true
   validates :notes, length: { maximum: 4000 }
   validates :calendar_source_reference, length: { maximum: 255 }

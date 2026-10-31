@@ -65,7 +65,7 @@ module Api
         :name, :starts_on, :ends_on, :admissions_open_on, :admissions_close_on,
         :reenrollment_open_on, :reenrollment_close_on, :administrative_closes_on, :archive_on, :calendar_source,
         :calendar_source_url, :calendar_source_reference, :calendar_published_on,
-        :planned_school_days, :notes,
+        :planned_school_days, :notes, :grading_rule_version, :average_decimal_mode, :grading_rule_reference,
         *AcademicYear::EVALUATION_PERIODS.flat_map do |prefix|
           [ :"#{prefix}_term_starts_on", :"#{prefix}_term_ends_on", :"#{prefix}_term_capture_opens_on",
             :"#{prefix}_term_capture_closes_on", :"#{prefix}_term_review_on", :"#{prefix}_term_reports_on" ]

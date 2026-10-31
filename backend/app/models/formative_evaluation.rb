@@ -14,7 +14,15 @@ class FormativeEvaluation < ApplicationRecord
 
   validates :field_code, inclusion: { in: FIELDS.keys }
   validates :term, inclusion: { in: 1..3 }, uniqueness: { scope: %i[enrollment_id field_code] }
-  validates :score, numericality: { greater_than_or_equal_to: 5, less_than_or_equal_to: 10 }
+  validates :score, numericality: { only_integer: true, greater_than_or_equal_to: 5, less_than_or_equal_to: 10 }
+  validate :grade_specific_scale
+
+  def grade_specific_scale
+    return unless enrollment && score.present?
+    if enrollment.group.grade_level <= 2 && score < 6
+      errors.add(:score, "debe estar entre 6 y 10 para primero y segundo grado")
+    end
+  end
   validates :status, inclusion: { in: %w[draft published] }
   validate :protect_published_record
   validate :protect_closed_cycle
@@ -30,7 +38,7 @@ class FormativeEvaluation < ApplicationRecord
     errors.add(:base, "La evaluación publicada no puede modificarse directamente")
   end
 
-  def self.summary(records)
+  def self.summary(records, rounding: "truncate")
     grouped = records.select { |item| item.status == "published" }.group_by(&:field_code)
     FIELDS.map do |code, details|
       by_term = grouped.fetch(code, []).index_by(&:term)
@@ -39,7 +47,7 @@ class FormativeEvaluation < ApplicationRecord
         code: code,
         name: details.fetch(:name),
         terms: marks,
-        final: marks.all? ? (marks.sum / 3).round(1, :half_up) : nil,
+        final: marks.all? ? PrimarySchoolGrading.decimal(marks.sum / 3, mode: rounding) : nil,
         observations: (1..3).map { |term| by_term[term]&.feedback }
       }
     end

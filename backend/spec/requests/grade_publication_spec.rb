@@ -179,6 +179,14 @@ RSpec.describe "Grade publication and corrections", type: :request do
     [ 2, 3 ].each { |term| Grade.create!(enrollment: enrollment, course: course, term: term, score: 8) }
     expect { CompleteEnrollment.call(enrollment: enrollment, outcome: "promoted", actor: admin) }.to raise_error(ArgumentError, /publicadas/)
     enrollment.grades.each { |mark| publish(mark) }
+    expect { CompleteEnrollment.call(enrollment: enrollment, outcome: "promoted", actor: admin) }
+      .to raise_error(ArgumentError, /evaluaciones oficiales/)
+    FormativeEvaluation::FIELDS.each_key do |field|
+      (1..3).each do |term|
+        FormativeEvaluation.create!(enrollment: enrollment, field_code: field, term: term,
+          score: 8, status: "published", published_at: Time.current)
+      end
+    end
     CompleteEnrollment.call(enrollment: enrollment, outcome: "promoted", actor: admin)
     expect(enrollment.reload.status).to eq("completed")
   end
