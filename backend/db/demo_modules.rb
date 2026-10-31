@@ -88,11 +88,20 @@ module DemoModules
   end
 
   def self.seed_calendar(year)
+    day = ([ Date.current + 14.days, year.starts_on ].max..year.ends_on)
+      .find do |date|
+        (1..5).cover?(date.wday) && year.calendar_events
+          .where(kind: %w[holiday vacation suspension cte], all_day: true)
+          .none? { |event| date >= event.starts_at.to_date && date < event.ends_at.to_date }
+      end
+    day ||= DemoAcademics.school_days(year).last
+    return unless day
+
     CalendarEvent.find_or_create_by!(academic_year: year, title: "Evaluación de demostración") do |record|
-      record.starts_at = 14.days.from_now.change(hour: 9)
-      record.ends_at = 14.days.from_now.change(hour: 10)
+      record.starts_at = day.in_time_zone.change(hour: 9)
+      record.ends_at = record.starts_at + 1.hour
       record.kind = "exam"
-      record.description = "Ejemplo de evaluación programada."
+      record.description = "Ejemplo ficticio de evaluación programada."
     end
   end
 end

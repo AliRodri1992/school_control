@@ -168,13 +168,23 @@ module DemoBulk
   end
 
   def self.seed_calendar(year)
-    MIN_RECORDS.times do |i|
-      n = i + 1
+    blocked = year.calendar_events.where(kind: %w[holiday vacation suspension cte], all_day: true)
+      .flat_map { |event| (event.starts_at.to_date...event.ends_at.to_date).to_a }.to_set
+    school_days = (year.starts_on..year.ends_on).select do |day|
+      (1..5).cover?(day.wday) && !blocked.include?(day)
+    end
+    next_days = school_days.select { |day| day > Date.current }
+    dates = next_days.length >= MIN_RECORDS ? next_days.first(MIN_RECORDS) : school_days.last(MIN_RECORDS)
+    raise "El calendario no tiene suficientes días de clase para los eventos demo" if dates.length < MIN_RECORDS
+
+    dates.each_with_index do |day, index|
+      n = index + 1
       CalendarEvent.find_or_create_by!(academic_year: year, title: "Actividad demostrativa #{n}") do |record|
-        start_time = (Date.current + (i + 1).days).in_time_zone.change(hour: 9, min: 0)
-        record.assign_attributes(kind: %w[activity exam meeting holiday][i % 4],
+        start_time = day.in_time_zone.change(hour: 9, min: 0)
+        record.assign_attributes(kind: %w[activity exam meeting evaluation][index % 4],
           starts_at: start_time, ends_at: start_time + 1.hour,
-          description: "Actividad escolar ficticia del calendario.")
+          source_type: "manual", official: false,
+          description: "Actividad ficticia, no parte del calendario SEP.")
       end
     end
   end
