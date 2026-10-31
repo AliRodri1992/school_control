@@ -144,7 +144,6 @@ RSpec.describe "polymorphic student details", type: :request do
     expect(response).to have_http_status(:unprocessable_content)
     expect(mirror.reload.first_name).to be_nil
   end
-
 end
 
 RSpec.describe "typed student detail notifications", type: :request do

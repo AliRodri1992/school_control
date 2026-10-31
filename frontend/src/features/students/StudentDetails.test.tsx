@@ -79,3 +79,27 @@ it('offers contextual list search and filters when student records exist',async(
  expect(screen.getByRole('combobox',{name:'Filtrar por tipo'})).toBeTruthy();
  expect(screen.getByRole('combobox',{name:'Filtrar por características'})).toBeTruthy();
 });
+
+
+it('loads fresh persisted contact identity before editing instead of reusing stale card data',async()=>{
+ const {api}=await import('../../api');
+ const cached={id:12,name:'Nombre desactualizado',first_name:'Viejo',paternal_surname:'Nombre',
+  curp:'',relationship:'Madre',legacy_phone:'5512345678',emergency:true,pickup_authorized:false,primary:false};
+ const fresh={...cached,name:'María Elena Hernández López',first_name:'María',middle_name:'Elena',
+  paternal_surname:'Hernández',maternal_surname:'López',curp:'SALS850720MDFLLF03'};
+ vi.mocked(api).mockImplementation(async path=>{
+  if(path.includes('/details/contacts?'))return {items:[cached],total:1,page:1,per_page:8,total_pages:1};
+  if(path==='students/450/details/contacts/12')return fresh;
+  return [];
+ });
+ render(<StudentDetails student={{id:450,full_name:'Andrea Hernández'}} onClose={vi.fn()} canEdit canWriteNotes/>);
+ await userEvent.click(screen.getByRole('button',{name:'Contactos'}));
+ expect(await screen.findByRole('heading',{name:'Viejo Nombre'})).toBeTruthy();
+ await userEvent.click(screen.getByRole('button',{name:'Editar'}));
+ expect((await screen.findByLabelText(/Primer nombre/) as HTMLInputElement).value).toBe('María');
+ expect((screen.getByLabelText(/Segundo nombre/) as HTMLInputElement).value).toBe('Elena');
+ expect((screen.getByLabelText(/Apellido paterno/) as HTMLInputElement).value).toBe('Hernández');
+ expect((screen.getByLabelText(/Apellido materno/) as HTMLInputElement).value).toBe('López');
+ expect(screen.getAllByText('María Elena Hernández López').length).toBeGreaterThan(0);
+ expect(api).toHaveBeenCalledWith('students/450/details/contacts/12');
+});

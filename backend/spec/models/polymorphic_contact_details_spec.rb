@@ -54,5 +54,4 @@ RSpec.describe "polymorphic contact details", type: :model do
     expect(contact.birth_date).to be_nil
     expect(contact.sex).to be_nil
   end
-
 end
