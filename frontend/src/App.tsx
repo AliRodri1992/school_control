@@ -30,6 +30,7 @@ import AdmissionDetail from './features/students/AdmissionDetail';
 import AdmissionOverview,{filterAdmissionRows} from './features/students/AdmissionOverview';
 import {studentInitials,studentDirectoryStats} from './features/students/studentDirectory';
 import {useStudentReport} from './features/students/useStudentReport';
+import {issueStudentReportCard,acknowledgeStudentReportCard} from './features/students/reportCardActions';
 const EmailTemplateDesigner=lazy(()=>import('./features/mail/EmailTemplateDesigner'));
 const ApiDocs=lazy(()=>import('./features/api/ApiDocs'));
 import RecordForm from './shared/components/RecordForm';
@@ -55,7 +56,7 @@ const Messages=lazy(()=>import('./Messages'));
 import LogoUploader from './LogoUploader';
 import {notify} from './notifications';
 import {lazy,Suspense,useEffect,useRef,useState} from 'react';
-import {BookOpen, Plus, Search, X, Check, Printer, GraduationCap, FileText} from 'lucide-react';
+import {BookOpen, Plus, Search, X, Printer, GraduationCap, FileText} from 'lucide-react';
 import {api,timeLabel,mean} from './api';
 import type {ModuleLoadError} from './shared/data/loadPortalCollections';
 import {loadPortalSnapshot} from './shared/data/loadPortalSnapshot';
@@ -84,7 +85,7 @@ export default function App(){
  const [preparingLogin,setPreparingLogin]=useState(false);
  const bootReadyRef=useRef<(()=>void)|null>(null);
  const [page,setPage] = useState(()=>new URLSearchParams(window.location.search).has('verify_email')?'profile':'dashboard'),[data,setData] = useState<Record<string,Row[]>>({}),[summary,setSummary] = useState<Row>({});
- const [error,setError] = useState(''),[notice,setNotice] = useState(''),[query,setQuery] = useState(''),[mobile,setMobile] = useState(false),[busy,setBusy] = useState(false);
+ const [error,setError] = useState(''),[query,setQuery] = useState(''),[mobile,setMobile] = useState(false),[busy,setBusy] = useState(false);
  const [detailStudent,setDetailStudent]=useState<Row|null>(null);
  const [studentRecordLoading,setStudentRecordLoading]=useState(false);
  const [dialog,setDialog] = useState<{title:string;fields:Field[];values:Row;variant?:'family-contact';submit:(values:Row)=>Promise<void>}|null>(null);
@@ -103,19 +104,16 @@ export default function App(){
   if(!report?.student?.id)return;
   setBusy(true);setError('');
   try{
-   const issue=await api('students/'+report.student.id+'/issue_report_card','POST',{enrollment_id:enrollmentId,term,layout});
+   await issueStudentReportCard({studentId:report.student.id,enrollmentId,term,layout});
    setIssuedCards(await api('students/'+report.student.id+'/report_card_issues'));
-   setNotice('Boleta de consulta v'+issue.version+' emitida con copia inmutable.');
-   window.location.href='/api/students/'+report.student.id+'/report_cards/'+issue.id+'/download';
   }catch(e){setError((e as Error).message);}finally{setBusy(false);}
  }
  async function acknowledgeReportCard(issueId:number|string){
   if(!report?.student?.id)return;
   setBusy(true);setError('');
   try{
-   await api('students/'+report.student.id+'/report_cards/'+issueId+'/acknowledge','POST');
+   await acknowledgeStudentReportCard(report.student.id,issueId);
    setIssuedCards(await api('students/'+report.student.id+'/report_card_issues'));
-   setNotice('Acuse de consulta registrado; no afecta la acreditación.');
   }catch(e){setError((e as Error).message);}finally{setBusy(false);}
  }
  const [groupFilter,setGroupFilter] = useState('');
@@ -135,7 +133,7 @@ export default function App(){
    setModuleFacet('');setModuleDate('');setAdvanced(false);
    closeStudentReport();
    const remembered=loadRememberedFilters(user?.id,next);
-   setPage(next);setQuery(remembered?.query||'');setNotice('');setMobile(false);setPageNumber(0);
+   setPage(next);setQuery(remembered?.query||'');setMobile(false);setPageNumber(0);
    setStatusFilter(remembered?.statusFilter||'');setSorting(remembered?.sorting||'');
    const url=makePortalUrl(portal,next);
    if(location.pathname!==url)navigate(url);
@@ -361,7 +359,7 @@ export default function App(){
  onSearchNavigate={searchGo} onSearchStudent={openStudentRecord} searchCollections={data} 
   childrenList={user.role==='guardian'?data.students||[]:[]} selectedChildId={selectedChild} onSelectChild={selectChild}
  onSignOut={async()=>{try{await api('session','DELETE');signedOut();void notify('Sesión cerrada correctamente.');}catch(e){setError((e as Error).message);}}}>
- <Suspense fallback={<div className="content" role="status"><p>{ui('Cargando módulo…')}</p></div>}><div className="content">{error&&<div className="error" role="alert">{error}<button aria-label={ui('Cerrar error')} onClick={()=>setError('')}><X size={16}/></button></div>}{reportError&&<div className="error" role="alert">{reportError}<button aria-label={ui('Cerrar error de boleta')} onClick={clearStudentReportError}><X size={16}/></button></div>}{notice&&<div className="success" role="status"><Check size={16}/>{notice}</div>}
+ <Suspense fallback={<div className="content" role="status"><p>{ui('Cargando módulo…')}</p></div>}><div className="content">{error&&<div className="error" role="alert">{error}<button aria-label={ui('Cerrar error')} onClick={()=>setError('')}><X size={16}/></button></div>}{reportError&&<div className="error" role="alert">{reportError}<button aria-label={ui('Cerrar error de boleta')} onClick={clearStudentReportError}><X size={16}/></button></div>}
  {page==='admissions'&&selectedAdmission?<AdmissionDetail admission={selectedAdmission} student={(data.students||[]).find(s=>String(s.id)===String(selectedAdmission.student_id))}
    onClose={()=>setSelectedAdmission(null)} onContinue={['draft','correction_requested'].includes(selectedAdmission.status)?()=>{const student=(data.students||[]).find(s=>String(s.id)===String(selectedAdmission.student_id));go('students');setApplicantWizard(student||null);}:undefined}
    onOpenStudent={()=>{const student=(data.students||[]).find(s=>String(s.id)===String(selectedAdmission.student_id));if(student)openStudentRecord(student);}}
