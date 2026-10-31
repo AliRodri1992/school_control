@@ -17,7 +17,7 @@ it('rehydrates an existing address including location details and the primary sw
  expect((screen.getByLabelText(/Calle y número/) as HTMLInputElement).value).toBe('Calle Roble 12');
  expect((screen.getByLabelText('Código postal') as HTMLInputElement).value).toBe('54700');
  expect((screen.getByRole('switch',{name:'Domicilio principal'}) as HTMLInputElement).checked).toBe(true);
- expect(screen.getByRole('combobox',{name:'Tipo de domicilio'})).toHaveTextContent('Domicilio particular');
+ expect(screen.getByRole('combobox',{name:'Tipo de domicilio'}).textContent).toContain('Domicilio particular');
  expect(screen.getByRole('heading',{name:'Así se verá en el expediente'})).toBeTruthy();
 });
 
