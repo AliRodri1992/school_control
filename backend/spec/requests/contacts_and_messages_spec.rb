@@ -119,4 +119,42 @@ RSpec.describe "Family contacts and institutional messages", type: :request do
     get "/api/messages"
     expect(response.parsed_body).to eq([])
   end
+
+  it "stores a structured family identity and derives protected demographics from CURP" do
+    login(guardian)
+    part = "SALS850720MDFLLF0"
+    weights = FamilyCurp::VALUES
+    sum = part.chars.each_with_index.sum { |char, index| weights.index(char) * (18 - index) }
+    curp = part + ((10 - sum % 10) % 10).to_s
+    post "/api/student_contacts", params: { student_id: student.id,
+      first_name: "Sofía", middle_name: "Elena", paternal_surname: "Salinas",
+      maternal_surname: "Lara", curp: curp.downcase, relationship: "Madre",
+      phone: "+525512345678", sex: "H", birth_date: "1990-01-01" }, as: :json
+    expect(response).to have_http_status(:created)
+    data = response.parsed_body
+    expect(data["name"]).to eq("Sofía Elena Salinas Lara")
+    expect(data["curp"]).to eq(curp)
+    expect(data).not_to have_key("sex")
+    expect(data).not_to have_key("birth_date")
+    contact = StudentContact.find(data.fetch("id"))
+    expect(contact.birth_date).to eq(Date.new(1985, 7, 20))
+    expect(contact.sex).to eq("M")
+
+    patch "/api/student_contacts/#{contact.id}", params: { relationship: "Tutora",
+      sex: "H", birth_date: "2001-01-01", student_id: create(:student).id }, as: :json
+    expect(response).to have_http_status(:ok)
+    expect(contact.reload.student).to eq(student)
+    expect(contact.birth_date).to eq(Date.new(1985, 7, 20))
+    expect(contact.sex).to eq("M")
+  end
+
+  it "rejects structurally invalid CURP and incomplete structured identities" do
+    login(guardian)
+    post "/api/student_contacts", params: { student_id: student.id, first_name: "Sofía",
+      paternal_surname: "Salinas", curp: "INVALIDA",
+      relationship: "Madre", phone: "5512345678" }, as: :json
+    expect(response).to have_http_status(:unprocessable_content)
+    expect(StudentContact.where(student: student).count).to eq(0)
+  end
+
 end

@@ -46,7 +46,9 @@ module Api
     end
 
     def collection = StudentContact.where(student_id: students_scope.select(:id))
-    def attributes = params.permit(:name, :relationship, :phone, :email, :emergency, :pickup_authorized)
-    def serialize(record) = record.as_json.merge(student_name: record.student.full_name)
+    def attributes = params.permit(:name, :relationship, :phone, :email, :emergency, :pickup_authorized,
+      :first_name, :middle_name, :paternal_surname, :maternal_surname, :curp)
+    # CURP-derived data is internal; clients may neither submit nor overwrite it.
+    def serialize(record) = record.as_json(except: %i[birth_date sex]).merge(student_name: record.student.full_name)
   end
 end

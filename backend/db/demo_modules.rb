@@ -64,11 +64,11 @@ module DemoModules
   end
 
   def self.seed_family(student, guardian)
-    StudentContact.find_or_create_by!(student: student, name: "Contacto escolar demo", phone: "+525555000011") do |record|
-      record.relationship = "Familiar"
-      record.emergency = true
-      record.pickup_authorized = true
-    end
+    require_relative "demo_family_identities"
+    contact = StudentContact.find_or_initialize_by(student: student, phone: "+525555000011")
+    contact.assign_attributes(DemoFamilyIdentities.attributes(400).merge(
+      relationship: "Familiar", emergency: true, pickup_authorized: true))
+    contact.save!
     student.notes.find_or_create_by!(body: "Seguimiento interno de demostración") do |record|
       record.author = guardian
       record.category = "general"

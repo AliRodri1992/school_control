@@ -121,3 +121,16 @@
  .sc-family-edit-actions>button,.sc-family-edit-actions>button.primary{min-width:0;padding:10px}
 }
 @media(prefers-reduced-motion:reduce){.sc-family-edit-spinner{animation:none}.sc-family-edit-toggle>span,.sc-family-edit-toggle>span:after,.sc-family-edit-input-wrap{transition:none}}
+
+
+/* Structured family identity and CURP fields (also used when creating records). */
+.sc-family-edit-curp-field{grid-column:1/-1}
+.sc-family-edit-curp-field .sc-family-edit-input-wrap{max-width:390px}
+.sc-family-edit-curp-field input{text-transform:uppercase;letter-spacing:.08em;font-weight:750}
+.sc-family-edit-curp-field>small{max-width:650px;display:block}
+.sc-family-edit-student-select{min-width:200px;max-width:310px;flex:1;display:grid;gap:7px}
+.sc-family-edit-student-select>label{font-size:11px;font-weight:750;color:#526a8d}
+.sc-family-edit-student-select .sc-combobox-trigger{min-height:43px}
+.sc-family-edit-legacy{display:flex;align-items:flex-start;gap:10px;padding:13px 15px;background:#fff8e8;border:1px solid #f2dba5;border-radius:12px;color:#8e6726;font-size:12px;line-height:1.5}
+.sc-family-edit-legacy svg{flex:none}
+@media(max-width:760px){.sc-family-edit-student-select{width:100%;max-width:none}.sc-family-edit-curp-field .sc-family-edit-input-wrap{max-width:100%}}

@@ -1,5 +1,7 @@
 # Development-only, deterministic school-wide dataset.
 # Creates students and their genuine promotion history instead of bypassing enrollment validation.
+require_relative "demo_family_identities"
+
 module DemoBulk
   FIRST_NAMES = %w[Ana Luis Sofia Mateo Elisa Diego Carla Pablo Irene Hugo Julia Bruno Lucia Tomas Elena Ivan].freeze
   LAST_NAMES = %w[Rivera Flores Luna Ortiz Torres Ruiz Perez Soto Vargas Mora Salas Rojas Castro Diaz].freeze
@@ -72,9 +74,12 @@ module DemoBulk
     student.contacts.find_or_create_by!(name: guardian.name, relationship: "Tutor") do |record|
       record.assign_attributes(primary: true, emergency: true, pickup_authorized: true)
     end
-    StudentContact.find_or_create_by!(student: student, name: guardian.name, phone: "+525555#{format('%06d', serial)}") do |record|
-      record.assign_attributes(relationship: "Tutor", emergency: true, pickup_authorized: true)
-    end
+    number = "+525555#{format('%06d', serial)}"
+    identity = DemoFamilyIdentities.attributes(serial)
+    contact = StudentContact.find_or_initialize_by(student: student, phone: number)
+    contact.assign_attributes(identity.merge(relationship: serial.even? ? "Padre" : "Madre",
+      emergency: true, pickup_authorized: true))
+    contact.save!
   end
 
   def self.ensure_progression(student, current_group, current_year, admin)
