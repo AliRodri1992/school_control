@@ -100,6 +100,15 @@ if ENV["DEMO_SEEDS"] == "true"
   DemoAcademics.seed!(year: year, admin: admin)
   require_relative "demo_academic_history"
   DemoAcademicHistory.seed!(year: year)
+  # Explicit historical-data initialization, not a fabricated sequence of
+  # automatic transitions. Applies only to fictitious completed demo years.
+  AcademicYear.where("name LIKE ?", "Demo histórico %").where(status: "draft")
+    .where("ends_on < ?", Date.current).find_each do |history|
+      history.update_columns(status: "archived", status_changed_at: Time.current)
+      AuditEvent.create!(action: "academic_year.demo_history_imported",
+        record_type: "AcademicYear", record_id: history.id,
+        changes_summary: { from: "draft", to: "archived", reason: "Inicialización de historial ficticio" })
+    end
   puts "Datos ficticios preparados sin duplicar registros."
 end
 

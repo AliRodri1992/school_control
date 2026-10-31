@@ -5,6 +5,7 @@ module Api
     def destroy
       record = CalendarEvent.find(params[:id])
       authorize record, :destroy?
+      raise ArgumentError, "El calendario de un ciclo cerrado es de solo lectura" if record.academic_year.closed_for_academics?
       audit(record, "calendar.deleted")
       record.destroy!
       head :no_content

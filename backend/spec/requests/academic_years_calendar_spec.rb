@@ -28,6 +28,15 @@ RSpec.describe "Academic years management", type: :request do
     expect(AcademicYear.exists?(year.id)).to be(false)
   end
 
+  it "ignores attempts to set lifecycle status directly through the API" do
+    login("admin")
+    year = create(:academic_year)
+    patch "/api/academic_years/#{year.id}", params: { status: "archived", notes: "Revisado" }, as: :json
+    expect(response).to have_http_status(:ok)
+    expect(year.reload.status).to eq("draft")
+    expect(year.notes).to eq("Revisado")
+  end
+
   it "blocks deletion when records are linked" do
     login("admin")
     year = create(:academic_year)

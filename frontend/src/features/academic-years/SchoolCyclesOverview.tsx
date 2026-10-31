@@ -60,7 +60,7 @@ export function cycleProgress(year:Row,eventCount:number){
   ].filter((_,index)=>!checks[index])};
 }
 export function selectCurrentCycle(items:Row[],today:string){
- return [...items].filter(year=>['active','closing'].includes(String(year.status||'active'))&&
+ return [...items].filter(year=>['active','closing'].includes(String(year.status||'draft'))&&
   dateState(year.starts_on,year.ends_on,today)==='open')
   .sort((a,b)=>String(b.starts_on||'').localeCompare(String(a.starts_on||'')))[0];
 }
@@ -73,7 +73,7 @@ export function filterCycles(items:Row[],filters:{query:string;status:string;sou
  events.forEach(event=>counts.set(String(event.academic_year_id),(counts.get(String(event.academic_year_id))||0)+1));
  const needle=filters.query.trim().toLocaleLowerCase();
  return items.filter(year=>{
-  if(filters.status&&String(year.status||'active')!==filters.status)return false;
+  if(filters.status&&String(year.status||'draft')!==filters.status)return false;
   if(filters.source&&String(year.calendar_source||'manual')!==filters.source)return false;
   if(needle&&!String(year.name||'').toLocaleLowerCase().includes(needle))return false;
   const readiness=cycleProgress(year,counts.get(String(year.id))||0);
@@ -107,8 +107,8 @@ function CyclePreview({year,events,today,locale,onClose,onView,onEdit,canEdit,ca
     <p>{formDate(year.starts_on,locale)} – {formDate(year.ends_on,locale)}</p></div>
     <button ref={closeRef} type="button" className="sc-cycle-preview-close" onClick={onClose} aria-label={ui('Cerrar vista rápida')}><X size={20}/></button></header>
    <div className="sc-cycle-preview-content">
-    <div className="sc-cycle-preview-summary"><span className={'sc-cycle-status status-'+String(year.status||'active')}>
-      {ui(statusOptions.find(opt=>opt.value===String(year.status||'active'))?.label||'Activo')}</span>
+    <div className="sc-cycle-preview-summary"><span className={'sc-cycle-status status-'+String(year.status||'draft')}>
+      {ui(statusOptions.find(opt=>opt.value===String(year.status||'draft'))?.label||'En preparación')}</span>
      <span>{year.planned_school_days?year.planned_school_days+' '+ui('días lectivos'):ui('Días lectivos pendientes')}</span></div>
     <section className="sc-cycle-preview-block"><h3>{ui('Preparación del ciclo')}</h3>
      <div className="sc-cycle-preview-score"><strong>{progress.percentage}%</strong><span>{progress.completed} {ui('de')} {progress.total} {ui('apartados')}</span></div>
@@ -189,7 +189,7 @@ export default function SchoolCyclesOverview({items,events,canCreate,canEdit,can
  const ownedEvents=useMemo(()=>events.filter(event=>items.some(year=>String(year.id)===String(event.academic_year_id))),[events,items]);
  const current=selectCurrentCycle(items,today);
  const totalEvents=ownedEvents.length;
- const admissionsOpen=items.filter(year=>!['closed','archived'].includes(String(year.status||'active'))&&dateState(year.admissions_open_on,year.admissions_close_on,today)==='open').length;
+ const admissionsOpen=items.filter(year=>!['closed','archived'].includes(String(year.status||'draft'))&&dateState(year.admissions_open_on,year.admissions_close_on,today)==='open').length;
  const upcoming= current?upcomingYearEvents(ownedEvents,current.id,today):[];
  const cycleEvents=current?ownedEvents.filter(e=>String(e.academic_year_id)===String(current.id)):[];
  const activeProgress=current?cycleProgress(current,cycleEvents.length):null;
@@ -198,7 +198,7 @@ export default function SchoolCyclesOverview({items,events,canCreate,canEdit,can
  const visible=rows.slice(page*Number(pageSize),(page+1)*Number(pageSize));
  const preview=items.find(year=>String(year.id)===previewId);
  useEffect(()=>setPage(0),[query,status,source,readiness,order,pageSize]);
- const statusName=(year:Row)=>ui(statusOptions.find(opt=>opt.value===String(year.status||'active'))?.label||'Activo');
+ const statusName=(year:Row)=>ui(statusOptions.find(opt=>opt.value===String(year.status||'draft'))?.label||'Activo');
  const openFull=(year:Row,tab:DetailTab='overview')=>{setPreviewId(null);onView(year,tab);};
  const edit=(year:Row)=>{setPreviewId(null);onEdit(year);};
  const onReset=()=>{setQuery('');setStatus('');setSource('');setReadiness('');setOrder('newest');};
@@ -320,7 +320,7 @@ export default function SchoolCyclesOverview({items,events,canCreate,canEdit,can
         </span><ChevronRight className="sc-cycle-name-arrow" size={15}/></button></td>
        <td className="sc-cycle-period-cell"><strong>{formDate(year.starts_on,locale)}</strong>
         <small>{ui('al')} {formDate(year.ends_on,locale)}</small></td>
-       <td><span className={'sc-cycle-status status-'+String(year.status||'active')}>{statusName(year)}</span></td>
+       <td><span className={'sc-cycle-status status-'+String(year.status||'draft')}>{statusName(year)}</span></td>
        <td><div className="sc-cycle-term-cell"><div className="sc-cycle-term-bars" aria-label={termCount+' '+ui('de 3 trimestres configurados')}>
         {terms.map(t=><span key={t} className={year[t+'_term_starts_on']&&year[t+'_term_ends_on']?'is-ready':''}/>)}</div>
         <strong>{termCount}/3 {ui('trimestres')}</strong>
