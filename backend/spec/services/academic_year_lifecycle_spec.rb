@@ -51,7 +51,10 @@ RSpec.describe AcademicYearLifecycle do
     expect(year.update(status: "closed")).to be(false)
     expect(year.errors[:status]).to be_present
     year.reload
-    create(:admission, academic_year: year)
+    # This fixture exercises the integrity guard independently of the
+    # admission window and lifecycle, which are validated in their own specs.
+    admission = build(:admission, academic_year: year, status: "draft")
+    admission.save!(validate: false)
     expect(year.update(starts_on: Date.new(2026, 9, 1))).to be(false)
     expect(year.errors[:base]).to be_present
   end
