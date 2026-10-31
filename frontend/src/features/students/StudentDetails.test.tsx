@@ -3,6 +3,7 @@ import {afterEach,expect,it,vi} from 'vitest';
 import {cleanup,render,screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 vi.mock('../../api',()=>({api:vi.fn(async()=>[])}));
+vi.mock('../../notifications',()=>({notify:vi.fn(),confirmDanger:vi.fn(async()=>true)}));
 import StudentDetails from './StudentDetails';
 afterEach(cleanup);
 it('renders a complete student record page instead of a dialog',async()=>{
