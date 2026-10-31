@@ -41,7 +41,7 @@ module Api
       authorize student, :report?
       enrollments = enrollments_scope.where(student: student).includes(:academic_year, :group).order(:academic_year_id)
       render json: { student: present(student), years: enrollments.map { |enrollment|
-        { enrollment: present(enrollment), grades: report_grades(enrollment).includes(course: :subject).map { |grade| present(grade) },
+        { enrollment: present(enrollment), evaluation_periods: enrollment.academic_year.evaluation_periods, grades: report_grades(enrollment).includes(course: :subject).order(:course_id, :term).map { |grade| present(grade) },
           attendance: enrollment.attendances.group(:status).count }
       } }
     end

@@ -81,15 +81,14 @@ module DemoAcademics
 
   def self.seed_grades!(enrollment, courses, index)
     courses.each do |course|
-      terms = [ 1 ]
-      terms << 2 if SECOND_TERM.include?(course.subject.code)
-      terms << 3 if THIRD_TERM.include?(course.subject.code) && index.even?
-      terms.each do |term|
+      (1..3).each do |term|
         Grade.find_or_create_by!(enrollment: enrollment, course: course, term: term) do |record|
           score = 6 + ((enrollment.id + course.id + term) % 9) * 0.5
-          state = if term == 3 then "draft"
-          elsif term == 2 then index % 4 == 0 ? "reviewed" : "draft"
-          else index % 5 == 0 ? "draft" : "published"
+          period = enrollment.academic_year.evaluation_period(term)
+          state = if period[:ends_on] && period[:ends_on] < Date.current
+            index % 5 == 0 ? "reviewed" : "published"
+          else
+            "draft"
           end
           record.assign_attributes(score: score, status: state,
             feedback: "Evaluación ficticia del periodo #{term}: avance en #{course.subject.name}.")

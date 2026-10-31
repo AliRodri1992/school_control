@@ -23,7 +23,8 @@ class RecordPresenter
     when ScheduleSlot
       record.as_json.merge(course_label: record.course.label, teacher_name: record.course.teacher.name, group_id: record.course.group_id)
     when Grade
-      record.as_json.merge(subject_name: record.course.subject.name, student_name: record.enrollment.student.full_name)
+      record.as_json.merge(subject_name: record.course.subject.name, student_name: record.enrollment.student.full_name,
+        evaluation_period: record.enrollment.academic_year.evaluation_period(record.term))
     when Attendance
       record.as_json.merge(student_name: record.enrollment.student.full_name)
     else
