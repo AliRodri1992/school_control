@@ -25,6 +25,14 @@ if ENV["DEMO_SEEDS"] == "true"
     record.reenrollment_open_on = Date.current - 30
     record.reenrollment_close_on = Date.current + 60
   end
+  # Keep administrator-adjusted dates; initialize only unconfigured periods.
+  boundaries = [year.starts_on, Date.new(start_year, 11, 28), Date.new(start_year + 1, 3, 27), year.ends_on]
+  %w[first second third].each_with_index do |part, index|
+    from = "#{part}_term_starts_on"
+    to = "#{part}_term_ends_on"
+    next if year.public_send(from).present? || year.public_send(to).present?
+    year.update!(from => boundaries[index] + (index.zero? ? 0 : 1), to => boundaries[index + 1])
+  end
   guardian = User.find_or_create_by!(email: "familia@school.test") { |record| record.assign_attributes(name: "Familia de ejemplo", role: "guardian", password: password) }
   learner = User.find_or_create_by!(email: "alumno@school.test") { |record| record.assign_attributes(name: "Alex Ejemplo", role: "student", password: password) }
   require_relative "demo_academics"

@@ -2,17 +2,23 @@ import {useEffect,useRef,useState,type FormEvent} from 'react';
 import {ArrowLeft,CalendarDays,GraduationCap,Save,Users,RefreshCcw} from 'lucide-react';
 import type {Row} from '../../modules';
 import {useSchoolLocale} from '../../shared/i18n/LocaleContext';
-type FieldKey='name'|'starts_on'|'ends_on'|'admissions_open_on'|'admissions_close_on'|'reenrollment_open_on'|'reenrollment_close_on';
-const labels:Record<FieldKey,string>={name:'Nombre del ciclo',starts_on:'Inicio de clases',ends_on:'Fin de clases',admissions_open_on:'Inscripciones: apertura',admissions_close_on:'Inscripciones: cierre',reenrollment_open_on:'Reinscripciones: apertura',reenrollment_close_on:'Reinscripciones: cierre'};
+type FieldKey='name'|'starts_on'|'ends_on'|'admissions_open_on'|'admissions_close_on'|'reenrollment_open_on'|'reenrollment_close_on'|'first_term_starts_on'|'first_term_ends_on'|'second_term_starts_on'|'second_term_ends_on'|'third_term_starts_on'|'third_term_ends_on';
+const labels:Record<FieldKey,string>={name:'Nombre del ciclo',starts_on:'Inicio de clases',ends_on:'Fin de clases',admissions_open_on:'Inscripciones: apertura',admissions_close_on:'Inscripciones: cierre',reenrollment_open_on:'Reinscripciones: apertura',reenrollment_close_on:'Reinscripciones: cierre',first_term_starts_on:'Primer trimestre: inicio',first_term_ends_on:'Primer trimestre: cierre',second_term_starts_on:'Segundo trimestre: inicio',second_term_ends_on:'Segundo trimestre: cierre',third_term_starts_on:'Tercer trimestre: inicio',third_term_ends_on:'Tercer trimestre: cierre'};
 const keys=Object.keys(labels) as FieldKey[];
 export function validateCycle(values:Record<FieldKey,string>):Partial<Record<FieldKey,string>>{
  const errors:Partial<Record<FieldKey,string>>={};
  keys.forEach(key=>{if(!values[key]?.trim())errors[key]=labels[key]+' no puede estar vacío.';});
- const ranges:[FieldKey,FieldKey][]=[['starts_on','ends_on'],['admissions_open_on','admissions_close_on'],['reenrollment_open_on','reenrollment_close_on']];
+ const ranges:[FieldKey,FieldKey][]=[['starts_on','ends_on'],['admissions_open_on','admissions_close_on'],['reenrollment_open_on','reenrollment_close_on'],['first_term_starts_on','first_term_ends_on'],['second_term_starts_on','second_term_ends_on'],['third_term_starts_on','third_term_ends_on']];
  for(const [start,end] of ranges){
   if(values[start]&&values[end]&&values[start]>values[end])errors[end]=labels[end]+' debe ser igual o posterior a '+labels[start].toLowerCase()+'.';
  }
  if(values.starts_on&&values.ends_on&&values.starts_on===values.ends_on)errors.ends_on=labels.ends_on+' debe ser posterior al inicio de clases.';
+ const terms:[FieldKey,FieldKey][]=[['first_term_starts_on','first_term_ends_on'],['second_term_starts_on','second_term_ends_on'],['third_term_starts_on','third_term_ends_on']];
+ terms.forEach(([start,end],index)=>{
+  if(values[start]&&values.starts_on&&values[start]<values.starts_on)errors[start]=labels[start]+' debe estar dentro del ciclo escolar.';
+  if(values[end]&&values.ends_on&&values[end]>values.ends_on)errors[end]=labels[end]+' debe estar dentro del ciclo escolar.';
+  if(index&&values[start]&&values[terms[index-1][1]]&&values[start]<=values[terms[index-1][1]])errors[start]=labels[start]+' debe ser posterior al cierre del trimestre anterior.';
+ });
  return errors;
 }
 export default function CycleForm({initial,onCancel,onSave}:{initial?:Row|null;onCancel:()=>void;onSave:(data:Record<FieldKey,string>)=>Promise<void>}){
@@ -58,6 +64,8 @@ export default function CycleForm({initial,onCancel,onSave}:{initial?:Row|null;o
    <div className="sc-cycle-form-name">{field('name','text')}</div><div className="sc-cycle-form-grid">{field('starts_on')}{field('ends_on')}</div></section>
    {section('02 · Convocatoria de nuevo ingreso','Periodo en el que las familias pueden presentar solicitudes de admisión.',Users,'admissions_open_on','admissions_close_on')}
    {section('03 · Periodo de reinscripciones','Fechas para solicitar la continuidad de alumnos del ciclo anterior.',RefreshCcw,'reenrollment_open_on','reenrollment_close_on')}
+   <section className="sc-cycle-form-section"><div className="sc-cycle-form-section-heading"><span className="sc-cycle-form-section-icon"><CalendarDays size={21}/></span><div><h3>{ui('04 · Periodos de evaluación')}</h3><p>{ui('Configura el inicio y cierre de cada trimestre. Las calificaciones se registran por materia y trimestre.')}</p></div></div>
+    <div className="sc-cycle-form-term-list">{(['first','second','third'] as const).map((part,index)=><div key={part} className="sc-cycle-form-term"><h4>{ui(['Primer trimestre','Segundo trimestre','Tercer trimestre'][index])}</h4><div className="sc-cycle-form-grid">{field((part+'_term_starts_on') as FieldKey)}{field((part+'_term_ends_on') as FieldKey)}</div></div>)}</div></section>
    {initial&&<p className="sc-cycle-form-notice">{ui('Los cambios en las fechas pueden modificar la disponibilidad de las convocatorias para las familias.')}</p>}
    {generalError&&<p role="alert" className="sc-cycle-form-general-error">{generalError}</p>}
    <footer className="sc-cycle-form-actions"><button type="button" className="secondary" disabled={saving} onClick={onCancel}>{ui('Cancelar')}</button>

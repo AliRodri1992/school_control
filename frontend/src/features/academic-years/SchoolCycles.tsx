@@ -41,8 +41,8 @@ export default function SchoolCycles({items,onSave,canCreate,canEdit,error}:{ite
    <label className="sc-cycles-search"><Search size={18}/><input aria-label={ui('Buscar ciclo escolar')} placeholder={ui('Buscar por nombre del ciclo…')} value={query} onChange={event=>setQuery(event.target.value)}/></label>
    {error?<TableEmptyState mode="error" description={error}/>:rows.length?<div className="sc-cycles-list">{rows.map(item=><article className="sc-cycle-card" key={item.id}>
     <div className="sc-cycle-card-heading"><div><span className="sc-cycle-card-icon"><CalendarDays size={20}/></span><div><h4>{item.name}</h4><small>{ui('Periodo lectivo')}: {format(item.starts_on)} — {format(item.ends_on)}</small></div></div>
-    {canEdit&&<button type="button" className="secondary sc-cycle-edit" onClick={()=>setEditor(item)}><Pencil size={15}/>{ui('Editar fechas')}</button>}</div>
-    <div className="sc-cycle-periods">{period('Inscripciones · nuevo ingreso',item.admissions_open_on,item.admissions_close_on)}{period('Reinscripciones',item.reenrollment_open_on,item.reenrollment_close_on)}{period('Clases',item.starts_on,item.ends_on,'school')}</div>
+    {canEdit&&<button type="button" className="secondary sc-cycle-edit" onClick={()=>setEditor(item)}><Pencil size={15}/>{ui('Editar ciclo y trimestres')}</button>}</div>
+    <div className="sc-cycle-periods">{period('Inscripciones · nuevo ingreso',item.admissions_open_on,item.admissions_close_on)}{period('Reinscripciones',item.reenrollment_open_on,item.reenrollment_close_on)}{period('Clases',item.starts_on,item.ends_on,'school')}{period('Primer trimestre',item.first_term_starts_on,item.first_term_ends_on)}{period('Segundo trimestre',item.second_term_starts_on,item.second_term_ends_on)}{period('Tercer trimestre',item.third_term_starts_on,item.third_term_ends_on)}</div>
    </article>)}</div>:<TableEmptyState mode={query?'filtered':'empty'} canCreate={canCreate}/>}
   </section>
  </section>;

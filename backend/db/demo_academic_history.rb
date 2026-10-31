@@ -39,6 +39,17 @@ module DemoAcademicHistory
         enrollment.status == "completed"
     end
 
+    year = group.academic_year
+    unless year.evaluation_periods.all? { |period| period[:starts_on] && period[:ends_on] }
+      first = year.starts_on
+      last = year.ends_on
+      width = (last - first).to_i
+      boundaries = [first, first + width / 3, first + width * 2 / 3, last]
+      %w[first second third].each_with_index do |part, index|
+        year.update!("#{part}_term_starts_on" => boundaries[index] + (index.zero? ? 0 : 1), "#{part}_term_ends_on" => boundaries[index + 1])
+      end
+    end
+
     courses = DemoAcademics::CORE_SUBJECTS.map do |code, (_, periods)|
       subject = subjects.fetch(code)
       Course.find_or_create_by!(group: group, subject: subject) do |course|
@@ -60,7 +71,7 @@ module DemoAcademicHistory
 
   def self.historical_mark(enrollment, course, term)
     year = enrollment.academic_year
-    day = year.starts_on + ((year.ends_on - year.starts_on).to_i * term / 3)
+    day = year.evaluation_period(term).fetch(:ends_on)
     published_at = Time.zone.local(day.year, day.month, day.day, 16)
     offset = (enrollment.student_id * 7 + course.subject_id * 3 + enrollment.group.grade_level + term * 5) % 9
     {

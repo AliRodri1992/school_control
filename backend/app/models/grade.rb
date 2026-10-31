@@ -12,6 +12,15 @@ class Grade < ApplicationRecord
   validates :term, inclusion: { in: 1..3 }, uniqueness: { scope: [ :enrollment_id, :course_id ] }
   validates :score, numericality: { in: 0..10 }
   validate :same_group
+  validate :configured_evaluation_period
+
+  def configured_evaluation_period
+    return unless enrollment && term
+    year = enrollment.academic_year
+    return unless year && year.evaluation_periods.any? { |period| period[:starts_on].present? }
+    period = year.evaluation_period(term)
+    errors.add(:term, "no está configurado en el ciclo escolar") unless period[:starts_on] && period[:ends_on]
+  end
 
   def protect_published_mark
     if persisted? && status_in_database == "published" && has_changes_to_save? && !correction_authorized

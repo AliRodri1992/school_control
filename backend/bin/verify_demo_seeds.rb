@@ -5,6 +5,7 @@ require_relative "../db/demo_academics"
 
 start_year = Date.current.month >= 8 ? Date.current.year : Date.current.year - 1
 year = AcademicYear.find_by!(name: "#{start_year}–#{start_year + 1}")
+raise "Current academic year requires three configured evaluation periods" unless year.evaluation_periods.all? { |period| period[:starts_on] && period[:ends_on] }
 groups = year.groups.where(grade_level: 1..6, section: %w[A B])
 raise "Expected 12 school groups; found #{groups.count}" unless groups.count == 12
 
