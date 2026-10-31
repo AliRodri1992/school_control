@@ -11,7 +11,7 @@ RSpec.describe FormativeEvaluation do
 
   it "does not invent a final result when the third trimester is missing" do
     enrollment = create(:enrollment)
-    marks = [8, 9].each_with_index.map do |score, index|
+    marks = [ 8, 9 ].each_with_index.map do |score, index|
       described_class.new(enrollment: enrollment, field_code: "languages", term: index + 1, score: score, status: "published")
     end
     expect(described_class.summary(marks).find { |field| field[:code] == "languages" }[:final]).to be_nil
@@ -19,7 +19,7 @@ RSpec.describe FormativeEvaluation do
 
   it "calculates the displayed final example only when all three terms are published" do
     enrollment = create(:enrollment)
-    marks = [8, 9, 10].each_with_index.map do |score, index|
+    marks = [ 8, 9, 10 ].each_with_index.map do |score, index|
       described_class.new(enrollment: enrollment, field_code: "languages", term: index + 1, score: score, status: "published")
     end
     expect(described_class.summary(marks).find { |field| field[:code] == "languages" }[:final]).to eq(9.0)

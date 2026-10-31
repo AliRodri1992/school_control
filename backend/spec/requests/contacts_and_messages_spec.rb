@@ -193,5 +193,4 @@ RSpec.describe "Family contacts and institutional messages", type: :request do
     get "/api/student_contacts/#{contact.id}"
     expect(response).to have_http_status(:not_found)
   end
-
 end

@@ -51,5 +51,4 @@ RSpec.describe StudentContact, type: :model do
     expect(contact.reload.name).to eq("María García")
     expect(Contact.find_by!(legacy_student_contact_id: contact.id).name).to eq("María García")
   end
-
 end

@@ -26,7 +26,7 @@ if ENV["DEMO_SEEDS"] == "true"
     record.reenrollment_close_on = Date.current + 60
   end
   # Keep administrator-adjusted dates; initialize only unconfigured periods.
-  boundaries = [year.starts_on, Date.new(start_year, 11, 28), Date.new(start_year + 1, 3, 27), year.ends_on]
+  boundaries = [ year.starts_on, Date.new(start_year, 11, 28), Date.new(start_year + 1, 3, 27), year.ends_on ]
   %w[first second third].each_with_index do |part, index|
     from = "#{part}_term_starts_on"
     to = "#{part}_term_ends_on"

@@ -12,7 +12,7 @@ class CreateFormativeEvaluations < ActiveRecord::Migration[8.1]
       t.integer :lock_version, null: false, default: 0
       t.timestamps
     end
-    add_index :formative_evaluations, [:enrollment_id, :field_code, :term], unique: true,
+    add_index :formative_evaluations, [ :enrollment_id, :field_code, :term ], unique: true,
       name: "idx_formative_evaluations_enrollment_field_term"
     add_check_constraint :formative_evaluations, "field_code IN ('languages','science','ethics','community')",
       name: "formative_evaluation_field"

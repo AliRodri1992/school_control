@@ -44,7 +44,7 @@ module DemoAcademicHistory
       first = year.starts_on
       last = year.ends_on
       width = (last - first).to_i
-      boundaries = [first, first + width / 3, first + width * 2 / 3, last]
+      boundaries = [ first, first + width / 3, first + width * 2 / 3, last ]
       %w[first second third].each_with_index do |part, index|
         year.update!("#{part}_term_starts_on" => boundaries[index] + (index.zero? ? 0 : 1), "#{part}_term_ends_on" => boundaries[index + 1])
       end
