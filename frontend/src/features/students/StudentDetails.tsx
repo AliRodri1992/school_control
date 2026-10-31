@@ -5,6 +5,7 @@ import {ArrowLeft,BookOpen,FileText,GraduationCap,IdCard,MapPin,Phone,Plus,Users
 import {api} from '../../api';
 import RecordForm from '../../shared/components/RecordForm';
 import StudentPhoneForm from './StudentPhoneForm';
+import StudentAddressForm from './StudentAddressForm';
 import StudentContactForm from './StudentContactForm';
 import {familyContactDisplayName,hasFamilyContactIdentityColumns,verifyFamilyContactSaved} from '../contacts/familyContactPersistence';
 import DetailCollectionControls,{DetailCollectionPagination,collectionParams,initialCollectionFilters,type CollectionFilters,type CollectionMeta} from './DetailCollectionControls';
@@ -274,11 +275,16 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
        {writable&&!creating&&!editing&&!loading&&items.length>0&&<button className="primary" type="button" onClick={()=>{setCreating(true);setEditing(null);}}>
          <Plus size={17}/>{ui(kindDescriptions[kind as DataKind].add)}</button>}
      </div>
-     {error&&kind!=='contacts'&&<div className="error" role="alert">{error}</div>}
+     {error&&kind!=='contacts'&&kind!=='addresses'&&<div className="error" role="alert">{error}</div>}
+       {error&&kind==='addresses'&&!creating&&!editing&&<div className="error" role="alert">{error}</div>}
       {error&&kind==='contacts'&&!creating&&!editing&&<div className="error" role="alert">{error}</div>}
      {(creating||editing)&&<div className="sc-details-form sc-dossier-form-shell sc-dossier-composed">
-       <header className="sc-dossier-form-hero"><span className="sc-dossier-form-hero-icon">{kind==='addresses'?<MapPin size={24}/>:kind==='phones'?<Phone size={24}/>:kind==='contacts'?<Users size={24}/>:<StickyNote size={24}/>}</span><div><span>{ui(editing?'EDITAR INFORMACIÓN':'NUEVO REGISTRO')}</span><h3>{ui(editing?'Editar ':'Agregar ')+ui({addresses:'dirección',phones:'teléfono',contacts:'contacto',notes:'nota'}[kind as DataKind])}</h3><p>{ui('Completa los datos del expediente. Los campos obligatorios están identificados.')}</p></div></header>
-       <div className="sc-dossier-form-body">{kind==='contacts'?<StudentContactForm key={'contact-'+(editing?.id||'new')}
+       <header className="sc-dossier-form-hero"><span className="sc-dossier-form-hero-icon">{kind==='addresses'?<MapPin size={24}/>:kind==='phones'?<Phone size={24}/>:kind==='contacts'?<Users size={24}/>:<StickyNote size={24}/>}</span><div><span>{ui(editing?'EDITAR INFORMACIÓN':'NUEVO REGISTRO')}</span><h3>{ui(editing?'Editar ':'Agregar ')+ui({addresses:'dirección',phones:'teléfono',contacts:'contacto',notes:'nota'}[kind as DataKind])}</h3><p>{ui(kind==='addresses'?'Actualiza la ubicación, las referencias y el domicilio principal del alumno.':'Completa los datos del expediente. Los campos obligatorios están identificados.')}</p></div></header>
+       <div className="sc-dossier-form-body">{kind==='addresses'?<StudentAddressForm
+         key={'address-'+(editing?.id||'new')} initial={editing||{}} studentName={String(student.full_name||student.name||'alumno')}
+         busy={busy} error={error} fieldErrors={fieldErrors} onSubmit={values=>void save(values)}
+         onCancel={()=>{setEditing(null);setCreating(false);setError('');setFieldErrors({});}}/>:
+        kind==='contacts'?<StudentContactForm key={'contact-'+(editing?.id||'new')}
         initial={editing||{}} studentName={String(student.full_name||student.name||'Alumno')} busy={busy} error={error} fieldErrors={fieldErrors}
         onSave={values=>void save(values)} onCancel={()=>{setEditing(null);setCreating(false);setError('');}}/>:
         kind==='phones'?<StudentPhoneForm key={'phone-'+(editing?.id||'new')} initial={editing||{}} onSubmit={values=>void save(values)} onCancel={()=>{setEditing(null);setCreating(false);setError('');}} busy={busy} error={error} fieldErrors={fieldErrors}/>:<RecordForm layout={kind as Exclude<DataKind,'phones'>} key={kind+'-'+(editing?.id||'new')}
