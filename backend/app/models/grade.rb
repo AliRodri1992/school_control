@@ -15,7 +15,7 @@ class Grade < ApplicationRecord
   validate :configured_evaluation_period
 
   def configured_evaluation_period
-    return unless enrollment && term
+    return unless enrollment && (1..3).cover?(term.to_i)
     year = enrollment.academic_year
     return unless year && year.evaluation_periods.any? { |period| period[:starts_on].present? }
     period = year.evaluation_period(term)

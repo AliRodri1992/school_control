@@ -6,3 +6,12 @@ describe('school cycle form validations',()=>{
  it('shows errors under each empty field using field labels',()=>{const errors=validateCycle({...good,name:'',admissions_open_on:''});expect(errors.name).toBe('Nombre del ciclo no puede estar vacío.');expect(errors.admissions_open_on).toBe('Inscripciones: apertura no puede estar vacío.');});
  it('rejects inverted periods and a one-day school year',()=>{const errors=validateCycle({...good,ends_on:good.starts_on,reenrollment_close_on:'2026-04-01'});expect(errors.ends_on).toBe('Fin de clases debe ser posterior al inicio de clases.');expect(errors.reenrollment_close_on).toContain('Reinscripciones: cierre');});
 });
+
+describe('evaluation trimesters',()=>{
+ it('rejects overlapping evaluation dates',()=>{
+  expect(validateCycle({...good,second_term_starts_on:'2026-11-28'}).second_term_starts_on).toContain('posterior');
+ });
+ it('rejects a trimester outside the school year',()=>{
+  expect(validateCycle({...good,third_term_ends_on:'2027-08-01'}).third_term_ends_on).toContain('dentro del ciclo escolar');
+ });
+});

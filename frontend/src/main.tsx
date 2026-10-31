@@ -24,6 +24,7 @@ import './styles/dossier-collection-controls.css';
 import './styles/enrollment-journey.css';
 import './styles/school-cycles.css';
 import './styles/cycle-form.css';
+import './styles/formative-evaluations.css';
 import './styles/dashboard-context.css';
 import './styles/dashboard-charts.css';
 import './styles/dashboard-kpis.css';
