@@ -5,7 +5,9 @@ module Api
 
     def index
       enrollment = access.enrollments.find(params.require(:enrollment_id))
-      render json: enrollment.formative_evaluations.order(:field_code, :term).map { |record| present_record(record) }
+      records = enrollment.formative_evaluations
+      records = records.published unless access.educator?
+      render json: records.order(:field_code, :term).map { |record| present_record(record) }
     end
 
     def create

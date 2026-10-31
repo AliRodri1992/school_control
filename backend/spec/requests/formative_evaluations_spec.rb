@@ -33,6 +33,10 @@ RSpec.describe "Formative field evaluations", type: :request do
     login(enrollment.student.guardian)
     get "/api/students/#{enrollment.student_id}/report"
     expect(response).to have_http_status(:ok)
+    get "/api/formative_evaluations", params: { enrollment_id: enrollment.id }, as: :json
+    expect(response).to have_http_status(:ok)
+    expect(response.parsed_body).to eq([])
+    get "/api/students/#{enrollment.student_id}/report"
     fields = response.parsed_body.fetch("years").sole.fetch("formative_fields")
     expect(fields.find { |field| field["code"] == "languages" }["terms"]).to eq([ nil, nil, nil ])
   end
