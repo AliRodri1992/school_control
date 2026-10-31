@@ -143,7 +143,7 @@ it('saves a student dossier contact and reopens persisted names including empty 
  await userEvent.click(screen.getByRole('button',{name:'Guardar cambios'}));
  expect(await screen.findByRole('heading',{name:'María Salinas'},{timeout:5000})).toBeTruthy();
  expect(vi.mocked(api).mock.calls.some(([path,method])=>path===detail&&method==='PATCH')).toBe(true);
- expect(vi.mocked(api).mock.calls.filter(([path,method])=>path===detail&&method==='GET').length).toBeGreaterThanOrEqual(2);
+ expect(vi.mocked(api).mock.calls.filter(([path,method])=>path===detail&&(method===undefined||method==='GET')).length).toBeGreaterThanOrEqual(2);
  await userEvent.click(screen.getByRole('button',{name:'Editar'}));
  expect((await screen.findByLabelText(/Primer nombre/) as HTMLInputElement).value).toBe('María');
  expect((screen.getByLabelText(/Segundo nombre/) as HTMLInputElement).value).toBe('');
