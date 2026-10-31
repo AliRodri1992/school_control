@@ -1,6 +1,7 @@
 # Development-only, deterministic school-wide dataset.
 # Creates students and their genuine promotion history instead of bypassing enrollment validation.
 require_relative "demo_family_identities"
+require_relative "demo_school_cycles"
 
 module DemoBulk
   FIRST_NAMES = %w[Ana Luis Sofia Mateo Elisa Diego Carla Pablo Irene Hugo Julia Bruno Lucia Tomas Elena Ivan].freeze

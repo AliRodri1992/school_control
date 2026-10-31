@@ -2,6 +2,7 @@
 # Identifiers, names and uploaded one-pixel images are entirely fictional.
 require "base64"
 require "stringio"
+require_relative "demo_school_cycles"
 
 module DemoAdmissions
   PNG = Base64.decode64(
