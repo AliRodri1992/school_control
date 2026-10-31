@@ -72,7 +72,7 @@ RSpec.describe DemoAcademicHistory do
   let(:historical_group) { create(:group, academic_year: historical_year, grade_level: 5) }
   let(:enrollment) do
     admission = create(:admission, student: student, academic_year: historical_year,
-      grade_level: 5, status: "approved")
+      grade_level: 5, kind: "reenrollment", status: "approved")
     create(:enrollment, admission: admission, group: historical_group,
       status: "completed", outcome: "promoted")
   end
