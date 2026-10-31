@@ -6,7 +6,7 @@ function apiError(message:string,status?:number,fieldErrors?:Record<string,strin
   return Object.assign(new Error(message),{status,fieldErrors});
 }
 
-function unexpectedResponse(path:string,status:number):ApiError {
+function unexpectedResponse(path:string,status:number,method:string):ApiError {
   if(path==='notifications/read_all'&&status===404){
     return apiError(
       'La API de School Control no reconoce la acción de marcar todas las notificaciones como leídas. '+
@@ -18,7 +18,8 @@ function unexpectedResponse(path:string,status:number):ApiError {
     );
   }
   return apiError(
-    'El servidor no devolvió una respuesta JSON para /api/'+path+' (HTTP '+status+'). '+
+    'El servidor no devolvió una respuesta JSON para '+method+' /api/'+path+' (HTTP '+status+'). '+
+    (status===400?'La solicitud fue rechazada o el proxy devolvió una respuesta inesperada. ':'')+
     'Comprueba que abriste School Control en el puerto configurado (predeterminado http://localhost:5173). '+
     'Revisa el error original del backend con: docker compose logs --tail=100 backend. '+
     'Comprueba también docker compose ps.',
@@ -45,7 +46,7 @@ export async function api(path:string,method='GET',data?:unknown):Promise<any> {
   // Do not reveal raw HTML or debug traces on the login screen.
   const type=response.headers.get('content-type')?.toLowerCase()||'';
   if(!type.includes('application/json')&&!type.includes('+json')){
-    throw unexpectedResponse(path,response.status);
+    throw unexpectedResponse(path,response.status,method);
   }
 
   let result:any;
@@ -53,7 +54,7 @@ export async function api(path:string,method='GET',data?:unknown):Promise<any> {
     result=await response.json();
     if(result===null||typeof result!=='object')throw new Error('Invalid JSON response');
   } catch {
-    throw unexpectedResponse(path,response.status);
+    throw unexpectedResponse(path,response.status,method);
   }
 
   if(!Array.isArray(result)&&typeof result.csrf_token==='string')csrf=result.csrf_token;

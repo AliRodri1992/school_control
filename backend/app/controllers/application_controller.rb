@@ -9,6 +9,7 @@ class ApplicationController < ActionController::Base
   rescue_from ActiveRecord::RecordNotUnique, with: -> { render json: { error: "El registro ya existe" }, status: :conflict }
   rescue_from ArgumentError, with: ->(error) { render json: { error: error.message }, status: :unprocessable_content }
   rescue_from ActionController::InvalidAuthenticityToken, with: -> { render json: { error: "La sesión expiró. Recarga la página." }, status: :unprocessable_content }
+  rescue_from ActionController::BadRequest, with: -> { render json: { error: "La solicitud contiene parámetros inválidos." }, status: :bad_request }
 
   private
 

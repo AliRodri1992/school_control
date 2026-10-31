@@ -14,7 +14,7 @@ module Api
 
     def create
       attrs = params.permit(:first_name, :last_name, :curp, :birth_date, :second_last_name, :birth_place, :birth_state, :nationality, :sex, :emergency_phone, :address)
-      attrs[:guardian_id] = institution_access? ? params.require(:guardian_id) : current_user.id
+      attrs[:guardian_id] = institution_access? ? params[:guardian_id] : current_user.id
       student = Student.new(attrs)
       authorize student, :create?
       student.transaction do
