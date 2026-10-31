@@ -7,7 +7,7 @@ class AcademicYearLifecycleJob
 
   def perform
     AcademicYearLifecycle.run_all!(today: Time.zone.today)
-  ensure
+    # Schedule the next run only after success; Sidekiq handles retries on failure.
     self.class.perform_at(Time.zone.tomorrow.beginning_of_day + 10.minutes)
   end
 end
