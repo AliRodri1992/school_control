@@ -3,7 +3,7 @@ import {afterEach,expect,it,vi} from 'vitest';
 import {cleanup,render,screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Swal from 'sweetalert2';
-import EditFamilyContactForm,{validateFamilyContact} from './EditFamilyContactForm';
+import EditFamilyContactForm,{familyContactFullName,validateFamilyContact} from './EditFamilyContactForm';
 
 vi.mock('sweetalert2',()=>({default:{fire:vi.fn(async()=>({isConfirmed:true}))}}));
 afterEach(()=>{cleanup();vi.clearAllMocks();});
@@ -88,4 +88,22 @@ it('checks lengths without inventing names',()=>{
   maternal_surname:'',curp:withDigit('SALS850720MDFLLF0'),relationship:'Tía',
   phone:'5512345678',email:'',student_id:'7',emergency:true,pickup_authorized:false};
  expect(validateFamilyContact(values)).toHaveProperty('first_name');
+});
+
+
+it('renders the generated full name live, omitting empty optional names',async()=>{
+ const row={...initial,middle_name:null,maternal_surname:null,name:'Sofía Salinas'};
+ render(<EditFamilyContactForm {...props} initial={row}/>);
+ expect(screen.getByText('Nombre completo generado')).toBeTruthy();
+ expect(screen.getAllByText('Sofía Salinas').length).toBeGreaterThan(0);
+ await userEvent.type(screen.getByLabelText(/Segundo nombre/),'Elena');
+ expect(screen.getAllByText('Sofía Elena Salinas').length).toBeGreaterThan(0);
+ await userEvent.type(screen.getByLabelText(/Apellido materno/),'Lara');
+ expect(screen.getAllByText('Sofía Elena Salinas Lara').length).toBeGreaterThan(0);
+});
+
+it('composes a name with precisely the available optional fields',()=>{
+ expect(familyContactFullName({first_name:'Juan',middle_name:'',paternal_surname:'García',maternal_surname:''})).toBe('Juan García');
+ expect(familyContactFullName({first_name:'Ana',middle_name:'  Lucía ',paternal_surname:'Del Río',maternal_surname:''})).toBe('Ana Lucía Del Río');
+ expect(familyContactFullName({first_name:'Ana',middle_name:'',paternal_surname:'Torres',maternal_surname:'Flores'})).toBe('Ana Torres Flores');
 });

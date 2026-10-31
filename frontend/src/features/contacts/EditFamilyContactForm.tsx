@@ -25,6 +25,10 @@ export function familyContactValues(initial:Row):ContactValues{
   email:String(initial.email??''),student_id:String(initial.student_id??''),
   emergency:enabled(initial.emergency),pickup_authorized:enabled(initial.pickup_authorized)};
 }
+export function familyContactFullName(values:Pick<ContactValues,'first_name'|'middle_name'|'paternal_surname'|'maternal_surname'>):string{
+ return [values.first_name,values.middle_name,values.paternal_surname,values.maternal_surname]
+  .map(part=>part.trim().replace(/\s+/g,' ')).filter(Boolean).join(' ');
+}
 export function validateFamilyContact(values:ContactValues,creating=false):Partial<Record<EditableKey,string>>{
  const errors:Partial<Record<EditableKey,string>>={};
  if(creating&&!values.student_id)errors.student_id='Alumno selecciona un alumno.';
@@ -59,7 +63,8 @@ export default function EditFamilyContactForm({initial,students=[],studentName='
   return typeof a==='string'&&typeof b==='string'?a.trim()!==b.trim():a!==b;
  });
  const legacy=Boolean(initial.id&&!initial.curp);
- const displayName=String(initial.name||'Nuevo contacto familiar').trim();
+ const calculatedName=familyContactFullName(values);
+ const displayName=calculatedName||String(initial.name||'Nuevo contacto familiar').trim();
  const initials=displayName.split(/\s+/).slice(0,2).map(part=>part.charAt(0)).join('').toUpperCase();
  const fieldError=(key:EditableKey)=>errors[key]||(!dismissed[key]&&fieldErrors[key]?.[0]?
   labels[key]+' '+fieldErrors[key][0].replace(/\.$/,'')+'.':'');
@@ -141,6 +146,11 @@ export default function EditFamilyContactForm({initial,students=[],studentName='
       {field('paternal_surname','Ej. Hernández',UserRound)}
       {field('maternal_surname','Ej. López',UserRound)}
       {field('curp','18 caracteres',IdCard,'La fecha de nacimiento y el sexo registrado se obtienen internamente de la CURP. No confirma su validez ante RENAPO.')}
+     </div>
+     <div className="sc-family-edit-name-preview" aria-live="polite">
+      <span>{ui('Nombre completo generado')}</span>
+      <strong>{calculatedName||ui('Completa los nombres y apellidos')}</strong>
+      <small>{ui('Se construye automáticamente, omitiendo los campos opcionales vacíos.')}</small>
      </div>
     </section>
     <section className="sc-family-edit-section" aria-labelledby="family-edit-contact-title">

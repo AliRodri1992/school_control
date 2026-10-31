@@ -33,6 +33,7 @@ const EmailTemplateDesigner=lazy(()=>import('./features/mail/EmailTemplateDesign
 const ApiDocs=lazy(()=>import('./features/api/ApiDocs'));
 import RecordForm from './shared/components/RecordForm';
 import EditFamilyContactForm from './features/contacts/EditFamilyContactForm';
+import {verifyFamilyContactSaved,hasFamilyContactIdentityColumns} from './features/contacts/familyContactPersistence';
 const LanguageManager=lazy(()=>import('./features/languages/LanguageManager'));
 import {useLocation,useNavigate} from 'react-router-dom';
 const ImportWizard=lazy(()=>import('./features/imports/ImportWizard'));
@@ -200,6 +201,19 @@ export default function App(){
    return data[source]||[];
  }
  const optionName = (row:Row) => row.label||row.full_name||row.name||row.title||String(row.id);
+ // Query the database when opening the editor, not the cached card row.
+ async function openFamilyContactEditor(record:Row){
+   try {
+     const fresh=await api('student_contacts/'+record.id);
+     if(!fresh||String(fresh.id)!==String(record.id))throw new Error('No fue posible cargar el contacto.');
+     if(!hasFamilyContactIdentityColumns(fresh))throw new Error('El backend no devuelve los campos separados del familiar. Comprueba la migración de identidad y recrea los contenedores del backend.');
+     createOrEdit(fresh);
+   }catch(cause){
+     setError((cause as Error).message);
+     void notify('No se pudo cargar el contacto. Comprueba el backend y la migración.', 'error');
+   }
+ }
+
  function createOrEdit(record?:Row){
    const module = translatedModules[page];
    let fields = module.fields.filter(f=>!(f.key==='guardian_id'&&user?.role==='guardian'));
@@ -207,7 +221,13 @@ export default function App(){
    if(page==='users'&&record)fields=fields.filter(f=>['name','email'].includes(f.key));
    setFieldErrors({});setError('');setDialog({title:`${ui(record?'Editar':'Registrar')} ${module.singular}`,fields,values:record||{},...(page==='student_contacts'?{variant:'family-contact' as const}:{}),submit:async(values)=>{
      const updateAsCreate=['attendances','grades'].includes(page);
-     await api(record&&!updateAsCreate?`${page}/${record.id}`:page,record&&!updateAsCreate?'PATCH':'POST',values);setDialog(null);
+     const result=await api(record&&!updateAsCreate?`${page}/${record.id}`:page,record&&!updateAsCreate?'PATCH':'POST',values);
+     if(page==='student_contacts'){
+       verifyFamilyContactSaved(result,values);
+       const persisted=await api('student_contacts/'+result.id);
+       verifyFamilyContactSaved(persisted,values);
+     }
+     setDialog(null);
    }});
  }
  function approve(record:Row){
@@ -322,7 +342,7 @@ export default function App(){
    canCreate={can('student_contacts.create')} canEdit={can('student_contacts.update')} canDelete={can('student_contacts.destroy')}
    busy={busy} loading={data.student_contacts===undefined&&!moduleLoadErrors.student_contacts}
    error={moduleLoadErrors.student_contacts?.message} onRetry={()=>void refresh()}
-   onCreate={()=>createOrEdit()} onEdit={createOrEdit}
+   onCreate={()=>createOrEdit()} onEdit={row=>void openFamilyContactEditor(row)}
    onDelete={row=>{void deleteFamilyContact(row);}}/>:
   page==='dashboard'?<PortalHome user={user} summary={summary} data={data} can={can}
   onNavigate={go} selectedChildId={selectedChild} onSelectChild={selectChild}/>:
@@ -410,7 +430,7 @@ export default function App(){
 
    {dialog&&<div className="overlay"><section role="dialog" aria-modal="true" aria-labelledby="dialog-title" className={'dialog'+(dialog.variant==='family-contact'?' sc-family-edit-dialog':'')}>
     {dialog.variant==='family-contact'?
-     <EditFamilyContactForm initial={dialog.values} students={data.students||[]}
+     <EditFamilyContactForm key={'family-contact-'+(dialog.values.id||'new')} initial={dialog.values} students={data.students||[]}
       studentName={String(dialog.values.student_name||(data.students||[]).find(student=>String(student.id)===String(dialog.values.student_id))?.full_name||'Alumno sin identificar')}
       busy={busy} error={error} fieldErrors={fieldErrors} onCancel={()=>setDialog(null)} onSubmit={values=>void perform(()=>dialog.submit(values))}/>:
      <><header><div><span className="eyebrow">CONTROL ESCOLAR</span><h2 id="dialog-title">{dialog.title}</h2></div><button aria-label="Cerrar formulario" onClick={()=>setDialog(null)}><X/></button></header>

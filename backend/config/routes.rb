@@ -51,7 +51,7 @@ Rails.application.routes.draw do
       get :download, on: :member
       post :review, on: :member
     end
-    resources :student_contacts, only: %i[index create update destroy]
+    resources :student_contacts, only: %i[index show create update destroy]
     resources :messages, only: %i[index create] do
       get :recipients, on: :collection
       post :read, on: :member

@@ -156,4 +156,42 @@ RSpec.describe "Family contacts and institutional messages", type: :request do
     expect(response).to have_http_status(:unprocessable_content)
     expect(StudentContact.where(student: student).count).to eq(0)
   end
+
+  it "returns structured identity in a fresh GET after editing and clearing optional names" do
+    login(guardian)
+    part = "SALS850720MDFLLF0"
+    sum = part.chars.each_with_index.sum { |char, i| FamilyCurp::VALUES.index(char) * (18 - i) }
+    curp = part + ((10 - sum % 10) % 10).to_s
+    post "/api/student_contacts", params: { student_id: student.id, first_name: "Sofía",
+      middle_name: "Elena", paternal_surname: "Salinas", maternal_surname: "Lara",
+      curp: curp, relationship: "Madre", phone: "5512345678" }, as: :json
+    expect(response).to have_http_status(:created)
+    id = response.parsed_body.fetch("id")
+
+    patch "/api/student_contacts/#{id}", params: { first_name: "Sofía",
+      middle_name: "", paternal_surname: "Salinas", maternal_surname: "",
+      curp: curp, relationship: "Madre", phone: "5512345678" }, as: :json
+    expect(response).to have_http_status(:ok)
+    expect(response.parsed_body).to include("name" => "Sofía Salinas", "first_name" => "Sofía",
+      "paternal_surname" => "Salinas", "middle_name" => nil, "maternal_surname" => nil, "curp" => curp)
+
+    get "/api/student_contacts/#{id}"
+    expect(response).to have_http_status(:ok)
+    expect(response.parsed_body).to include("name" => "Sofía Salinas", "first_name" => "Sofía",
+      "middle_name" => nil, "paternal_surname" => "Salinas", "maternal_surname" => nil, "curp" => curp)
+    get "/api/student_contacts"
+    expect(response).to have_http_status(:ok)
+    expect(response.parsed_body.find { |row| row["id"] == id }).to include(
+      "name" => "Sofía Salinas", "first_name" => "Sofía", "paternal_surname" => "Salinas")
+  end
+
+  it "does not allow unrelated families to open another contact via the detail endpoint" do
+    other = create(:student)
+    contact = StudentContact.create!(student: other, name: "Otra persona",
+      relationship: "Tía", phone: "5512345678")
+    login(guardian)
+    get "/api/student_contacts/#{contact.id}"
+    expect(response).to have_http_status(:not_found)
+  end
+
 end

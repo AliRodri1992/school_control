@@ -30,3 +30,12 @@ it('renders student filter as branded combobox with search only for larger lists
  await userEvent.click(screen.getByRole('combobox',{name:'Filtrar contactos por alumno'}));
  expect(screen.getByRole('searchbox',{name:'Buscar en Filtrar contactos por alumno'})).toBeTruthy();
 });
+
+it('shows the structured generated name from all four fields in the contact list',()=>{
+ const row={id:88,student_id:2,student_name:'Ana Gómez',name:'Nombre obsoleto',first_name:'María',
+  middle_name:'Elena',paternal_surname:'Rivera',maternal_surname:'García',phone:'5512345678',
+  relationship:'Madre',emergency:false,pickup_authorized:false};
+ render(<FamilyContacts {...base} contacts={[row]}/>);
+ expect(screen.getByRole('heading',{name:'María Elena Rivera García'})).toBeTruthy();
+ expect(screen.queryByText('Nombre obsoleto')).toBeNull();
+});

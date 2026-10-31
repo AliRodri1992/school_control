@@ -40,4 +40,16 @@ RSpec.describe StudentContact, type: :model do
     contact.update!(phone: "5512345679")
     expect(contact.name).to eq("Persona registrada")
   end
+
+  it "rebuilds the generated full name with all four parts after edits" do
+    contact = described_class.create!(student: student, name: "Antiguo nombre",
+      relationship: "Abuela", phone: "5512345678")
+    contact.update!(first_name: "María", middle_name: "Fernanda", paternal_surname: "García",
+      maternal_surname: "Torres", curp: curp_for("SALS850720MDFLLF0"))
+    expect(contact.reload.name).to eq("María Fernanda García Torres")
+    contact.update!(middle_name: nil, maternal_surname: nil)
+    expect(contact.reload.name).to eq("María García")
+    expect(Contact.find_by!(legacy_student_contact_id: contact.id).name).to eq("María García")
+  end
+
 end

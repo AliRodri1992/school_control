@@ -134,3 +134,10 @@
 .sc-family-edit-legacy{display:flex;align-items:flex-start;gap:10px;padding:13px 15px;background:#fff8e8;border:1px solid #f2dba5;border-radius:12px;color:#8e6726;font-size:12px;line-height:1.5}
 .sc-family-edit-legacy svg{flex:none}
 @media(max-width:760px){.sc-family-edit-student-select{width:100%;max-width:none}.sc-family-edit-curp-field .sc-family-edit-input-wrap{max-width:100%}}
+
+
+/* Live full-name preview built from the four identity fields. */
+.sc-family-edit-name-preview{display:grid;gap:4px;margin-top:18px;padding:14px 16px;border:1px solid #cbd9f4;border-radius:12px;background:#f1f5ff}
+.sc-family-edit-name-preview>span{font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#4c65b0}
+.sc-family-edit-name-preview strong{font-size:15px;color:#213b73;overflow-wrap:anywhere;line-height:1.4}
+.sc-family-edit-name-preview small{font-size:11px;line-height:1.4;color:#7183a2}

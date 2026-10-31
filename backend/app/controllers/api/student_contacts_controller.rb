@@ -8,6 +8,12 @@ module Api
       render json: policy_scope(StudentContact).includes(:student).order(:name).map { |record| serialize(record) }
     end
 
+    def show
+      record = collection.find(params[:id])
+      authorize record, :update?
+      render json: serialize(record)
+    end
+
     def create
       student = students_scope.find(params.require(:student_id))
       record = student.student_contacts.new(attributes)
