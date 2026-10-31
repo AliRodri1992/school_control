@@ -3,10 +3,12 @@ require "prawn/table"
 
 # School-issued CONSULTATION PDF, not the SEP's signed/certified national form.
 class PrimaryReportCardPdf
-  def initialize(enrollment:, term: 0)
+  def initialize(enrollment:, term: 0, layout: "school")
     @enrollment = enrollment
     @term = Integer(term)
     raise ArgumentError, "Trimestre inválido" unless (0..3).cover?(@term)
+    @layout = layout
+    raise ArgumentError, "Formato de boleta inválido" unless %w[school sep_reference].include?(@layout)
   end
 
   def snapshot
@@ -22,7 +24,11 @@ class PrimaryReportCardPdf
       student_name: @enrollment.student.full_name,
       curp: @enrollment.student.curp,
       school_name: school&.name.presence || "Escuela sin configurar",
-      school_code: school&.code, year_name: @enrollment.academic_year.name,
+      school_code: school&.code, federal_entity: school&.federal_entity,
+      shift: school&.shift, director_name: school&.director_name,
+      indigenous_language: school&.indigenous_language, issue_place: school&.issue_place,
+      layout: @layout, layout_reference: @layout == "sep_reference" ? "DGAIR SEP primaria 2025-2026" : nil,
+      year_name: @enrollment.academic_year.name,
       grade: @enrollment.group.grade_level, group: @enrollment.group.label,
       term: @term, fields: fields, annual_average: summary[:annual_average],
       accredited: summary[:accredited], recommendation: summary[:recommendation],
@@ -35,6 +41,7 @@ class PrimaryReportCardPdf
   end
 
   def render(data = snapshot)
+    return SepPrimaryReportCardPdf.new(data).render if @layout == "sep_reference"
     pdf = Prawn::Document.new(page_size: "A4", margin: 35)
     pdf.font_families.update("School" => {
       normal: "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",

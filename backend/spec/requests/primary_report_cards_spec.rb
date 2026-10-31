@@ -39,6 +39,29 @@ RSpec.describe "Versioned primary report cards", type: :request do
     expect(issues.first.reload.snapshot.fetch("annual_average")).to be_present
   end
 
+  it "generates the SEP layout as a non-certified school copy with grade-specific fields" do
+    login(admin)
+    School.first.update!(federal_entity: "México", shift: "Matutino", director_name: "Dirección Escolar")
+    post "/api/students/#{student.id}/issue_report_card",
+      params: { enrollment_id: enrollment.id, term: 0, layout: "sep_reference" }, as: :json
+    expect(response).to have_http_status(:created)
+    issue = enrollment.primary_report_card_issues.last
+    expect(issue.layout).to eq("sep_reference")
+    expect(issue.snapshot.fetch("federal_entity")).to eq("México")
+    expect(issue.snapshot.fetch("shift")).to eq("Matutino")
+    expect(issue.snapshot.fetch("layout_reference")).to include("2025-2026")
+    expect(issue.file.download).to start_with("%PDF")
+    expect(issue.sha256).to eq(Digest::SHA256.hexdigest(issue.file.download))
+  end
+
+  it "rejects unrecognized layout values without storing an issue" do
+    login(admin)
+    post "/api/students/#{student.id}/issue_report_card",
+      params: { enrollment_id: enrollment.id, term: 0, layout: "official_certified" }, as: :json
+    expect(response).to have_http_status(:unprocessable_content)
+    expect(enrollment.primary_report_card_issues).to be_empty
+  end
+
   it "allows the guardian to acknowledge a issued card only for their student" do
     login(admin)
     post "/api/students/#{student.id}/issue_report_card",

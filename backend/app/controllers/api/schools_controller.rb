@@ -9,7 +9,7 @@ module Api
 
     def update
       school = School.first!
-      school.update!(params.permit(:name, :code, :address, :phone, :logo))
+      school.update!(params.permit(:name, :code, :address, :phone, :logo, :federal_entity, :shift, :director_name, :indigenous_language, :issue_place))
       audit(school, "school.updated")
       render json: present(school)
     end

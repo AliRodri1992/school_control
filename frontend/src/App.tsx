@@ -99,11 +99,11 @@ export default function App(){
     .catch(e=>{if(active)setError((e as Error).message);});
   return()=>{active=false;};
  },[report?.student?.id]);
- async function issueReportCard(enrollmentId:number|string,term:number){
+ async function issueReportCard(enrollmentId:number|string,term:number,layout:'school'|'sep_reference'='school'){
   if(!report?.student?.id)return;
   setBusy(true);setError('');
   try{
-   const issue=await api('students/'+report.student.id+'/issue_report_card','POST',{enrollment_id:enrollmentId,term});
+   const issue=await api('students/'+report.student.id+'/issue_report_card','POST',{enrollment_id:enrollmentId,term,layout});
    setIssuedCards(await api('students/'+report.student.id+'/report_card_issues'));
    setNotice('Boleta de consulta v'+issue.version+' emitida con copia inmutable.');
    window.location.href='/api/students/'+report.student.id+'/report_cards/'+issue.id+'/download';
@@ -493,12 +493,15 @@ export default function App(){
     onClick={()=>void issueReportCard(year.enrollment.id,term)}>Emitir T{term} PDF</button>)}
    <button className="primary" type="button" disabled={busy||!year.academic_result?.complete}
     onClick={()=>void issueReportCard(year.enrollment.id,0)}>Emitir boleta final PDF</button>
+   <button className="secondary" type="button" disabled={busy||!year.academic_result?.complete}
+    title="Basada en el modelo DGAIR SEP 2025-2026, sin certificación oficial"
+    onClick={()=>void issueReportCard(year.enrollment.id,0,'sep_reference')}>Formato SEP de referencia PDF</button>
   </div>}
   {issuedCards.filter(item=>String(item.enrollment_id)===String(year.enrollment.id)).length===0?
    <p>Sin boletas PDF emitidas.</p>:
    issuedCards.filter(item=>String(item.enrollment_id)===String(year.enrollment.id)).map(item=><div className="sc-issued-card-row" key={item.id}>
     <a href={'/api/students/'+report.student.id+'/report_cards/'+item.id+'/download'}>
-     {Number(item.term)===0?'Boleta final':'Trimestre '+item.term} · v{item.version} · Descargar PDF
+     {Number(item.term)===0?'Boleta final':'Trimestre '+item.term} · {item.layout==='sep_reference'?'formato SEP referencial':'formato escolar'} · v{item.version} · Descargar PDF
     </a><span>{item.acknowledged_at?'Consulta reconocida':'Sin acuse'}</span>
     {user.role==='guardian'&&!item.acknowledged_at&&<button className="secondary" type="button" disabled={busy}
      onClick={()=>void acknowledgeReportCard(item.id)}>Confirmar consulta</button>}
@@ -510,5 +513,5 @@ function SchoolSettings({school,onSave,busy}:{school:Row;onSave:(form:FormData)=
  const [preview,setPreview]=useState<string>();
  const [logoFile,setLogoFile]=useState<File|null>(null);
  useEffect(()=>()=>{if(preview)URL.revokeObjectURL(preview);},[preview]);
- return <><div className="page-heading"><div><div className="eyebrow">IDENTIDAD Y COMUNIDAD</div><h1>Mi escuela</h1><p>Haz que cada portal refleje la identidad de tu escuela.</p></div></div><form className="panel settings sc-school-settings" onSubmit={e=>{e.preventDefault();const form=new FormData(e.currentTarget);if(logoFile)form.set('logo',logoFile);onSave(form);}}><div className="sc-school-settings-header"><span>CONFIGURACIÓN INSTITUCIONAL</span><h2>Identidad institucional</h2><p>Personaliza la información oficial y la presentación de tu escuela.</p></div><section className="sc-school-settings-section"><div className="sc-school-settings-caption"><GraduationCap size={18}/><div><h3>Imagen de la escuela</h3><p>Selecciona el logotipo que aparecerá en el portal.</p></div></div><div className="logo-upload">{preview||school.logo_url?<img src={preview||school.logo_url} alt="Vista previa del logotipo"/>:<div className="logo-placeholder"><GraduationCap size={38}/></div>}<LogoUploader onChange={file=>{setLogoFile(file);setPreview(file?URL.createObjectURL(file):undefined);}}/></div></section><section className="sc-school-settings-section"><div className="sc-school-settings-caption"><FileText size={18}/><div><h3>Datos institucionales</h3><p>Revisa cuidadosamente la información que se utilizará en documentos y comunicaciones.</p></div></div><div className="form-grid">{[['name','Nombre de la escuela'],['code','Clave del centro de trabajo'],['address','Domicilio'],['phone','Teléfono']].map(([key,label])=><label key={key}>{label}<input name={key} defaultValue={school[key]} required={key==='name'} placeholder={label}/></label>)}</div></section><div className="info">Configura las fechas de inscripción y reinscripción en <strong>Ciclos escolares</strong>. Programa exámenes y actividades en <strong>Calendario</strong>.</div><div className="form-actions"><button className="primary" disabled={busy}>{busy?'Guardando…':'Guardar configuración'}</button></div></form></>;
+ return <><div className="page-heading"><div><div className="eyebrow">IDENTIDAD Y COMUNIDAD</div><h1>Mi escuela</h1><p>Haz que cada portal refleje la identidad de tu escuela.</p></div></div><form className="panel settings sc-school-settings" onSubmit={e=>{e.preventDefault();const form=new FormData(e.currentTarget);if(logoFile)form.set('logo',logoFile);onSave(form);}}><div className="sc-school-settings-header"><span>CONFIGURACIÓN INSTITUCIONAL</span><h2>Identidad institucional</h2><p>Personaliza la información oficial y la presentación de tu escuela.</p></div><section className="sc-school-settings-section"><div className="sc-school-settings-caption"><GraduationCap size={18}/><div><h3>Imagen de la escuela</h3><p>Selecciona el logotipo que aparecerá en el portal.</p></div></div><div className="logo-upload">{preview||school.logo_url?<img src={preview||school.logo_url} alt="Vista previa del logotipo"/>:<div className="logo-placeholder"><GraduationCap size={38}/></div>}<LogoUploader onChange={file=>{setLogoFile(file);setPreview(file?URL.createObjectURL(file):undefined);}}/></div></section><section className="sc-school-settings-section"><div className="sc-school-settings-caption"><FileText size={18}/><div><h3>Datos institucionales</h3><p>Revisa cuidadosamente la información que se utilizará en documentos y comunicaciones.</p></div></div><div className="form-grid">{[['name','Nombre de la escuela'],['code','Clave del centro de trabajo'],['address','Domicilio'],['phone','Teléfono'],['federal_entity','Entidad federativa'],['shift','Turno'],['director_name','Nombre de la directora o director'],['indigenous_language','Lengua indígena (si aplica)'],['issue_place','Lugar de expedición']].map(([key,label])=><label key={key}>{label}<input name={key} defaultValue={school[key]} required={key==='name'} placeholder={label}/></label>)}</div></section><div className="info">Configura las fechas de inscripción y reinscripción en <strong>Ciclos escolares</strong>. Programa exámenes y actividades en <strong>Calendario</strong>.</div><div className="form-actions"><button className="primary" disabled={busy}>{busy?'Guardando…':'Guardar configuración'}</button></div></form></>;
 }

@@ -54,7 +54,7 @@ module Api
       authorize student, :report?
       issues = PrimaryReportCardIssue.joins(:enrollment)
         .where(enrollments: { student_id: student.id }).order(created_at: :desc)
-      render json: issues.map { |issue| issue.as_json(only: %i[id enrollment_id term version rule_version sha256 created_at]).merge(
+      render json: issues.map { |issue| issue.as_json(only: %i[id enrollment_id term version layout rule_version sha256 created_at]).merge(
         acknowledged_at: issue.report_card_acknowledgments.find_by(guardian_id: current_user.id)&.acknowledged_at) }
     end
 
@@ -66,12 +66,13 @@ module Api
       term = Integer(params.fetch(:term, 0))
       issue = nil
       enrollment.with_lock do
-        generator = PrimaryReportCardPdf.new(enrollment: enrollment, term: term)
+        layout = params.fetch(:layout, "school").to_s
+        generator = PrimaryReportCardPdf.new(enrollment: enrollment, term: term, layout: layout)
         snapshot = generator.snapshot
         pdf = generator.render(snapshot)
         next_version = enrollment.primary_report_card_issues.where(term: term).maximum(:version).to_i + 1
         issue = enrollment.primary_report_card_issues.create!(
-          term: term, version: next_version, issued_by: current_user,
+          term: term, version: next_version, layout: layout, issued_by: current_user,
           rule_version: snapshot.fetch(:rule_version), snapshot: snapshot,
           sha256: Digest::SHA256.hexdigest(pdf)
         )
@@ -79,7 +80,7 @@ module Api
           content_type: "application/pdf")
         audit(issue, "primary_report_card.issued")
       end
-      render json: issue.as_json(only: %i[id enrollment_id term version sha256 created_at]), status: :created
+      render json: issue.as_json(only: %i[id enrollment_id term version layout sha256 created_at]), status: :created
     end
 
     def download_report_card

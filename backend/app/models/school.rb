@@ -5,6 +5,8 @@ class School < ApplicationRecord
   has_many :notes, as: :notable, dependent: :restrict_with_error
   has_one_attached :logo
   validates :name, presence: true
+  validates :federal_entity, :shift, :director_name, :indigenous_language, :issue_place,
+    length: { maximum: 180 }, allow_blank: true
   validate :valid_logo
 
   def valid_logo

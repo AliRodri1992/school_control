@@ -35,3 +35,11 @@ docker compose exec backend bundle exec rspec spec/services/primary_school_gradi
 ```
 
 No borrar la base de datos. Verificar la autoridad educativa local antes de usar documentos para decisiones oficiales.
+
+## Boleta visual basada en SEP (DGAIR primaria 2025-2026)
+
+Referencia oficial utilizada para la presentación: https://dgair.sep.gob.mx/storage/recursos/CE/primaria_autografas_26.pdf (firma autógrafa), y https://dgair.sep.gob.mx/storage/recursos/CE/primaria_electronicas_26.pdf (firma electrónica). A fecha 2026-10-31 no se comprobó una publicación DGAIR de diseños 2026-2027. La versión visual de la aplicación se mantiene explícitamente identificada como **formato referencial** de 2025-2026; no supone vigencia ni aprobación para otro ciclo.
+
+`POST /api/students/:id/issue_report_card` recibe `layout: "school"` (predeterminado) o `layout: "sep_reference"`. La variante SEP muestra horizontalmente tabla de cuatro campos × tres trimestres y final, nombre, CURP, CCT, grupo, turno, lengua indígena, asistencia, promedio, folio pendiente, observaciones por periodo y espacios para firmas. En primer grado **no** presenta los apartados de promovida/no promovida; de segundo a sexto sí, marcados solo a partir del resultado de cierre autorizado. La versión visual, campos institucionales y PDF íntegro quedan congelados en el snapshot y SHA-256 al emitir.
+
+Los campos opcionales `federal_entity`, `shift`, `director_name`, `indigenous_language`, `issue_place` se registran en **Mi escuela**, y nunca se inventan cuando faltan. No se falsifican escudos ni logotipos oficiales, QR de validación, sellos, firma electrónica ni folios de la SEP. Las líneas de firma permanecen como espacios para sus firmas reales; el documento siempre dice **SIN VALIDEZ OFICIAL**. El objetivo es permitir la revisión visual y operativa antes de integrar la expedición a una plataforma oficial autorizada.
