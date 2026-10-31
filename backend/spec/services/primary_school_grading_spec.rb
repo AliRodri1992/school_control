@@ -33,7 +33,7 @@ RSpec.describe PrimarySchoolGrading do
   end
 
   it "detects nonaccreditation in grades two to six without overriding school authority" do
-    allow(enrollment.group).to receive(:grade_level).and_return(3)
+    enrollment.group.update_column(:grade_level, 3)
     state = described_class.report(enrollment: enrollment, records: evaluated([[5, 5, 5], [7, 7, 7], [8, 8, 8], [8, 8, 8]]))
     expect(state).to include(accredited: false, recommendation: "repeat")
     expect(state[:annual_average]).to eq(BigDecimal("7.0"))
@@ -52,7 +52,7 @@ RSpec.describe PrimarySchoolGrading do
     expect(record).not_to be_valid
     record.score = 6
     expect(record).to be_valid
-    allow(enrollment.group).to receive(:grade_level).and_return(3)
+    enrollment.group.update_column(:grade_level, 3)
     record.score = 5
     expect(record).to be_valid
   end

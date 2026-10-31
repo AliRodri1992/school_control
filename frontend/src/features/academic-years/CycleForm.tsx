@@ -13,6 +13,9 @@ export const cycleLabels:Record<string,string>={
  reenrollment_open_on:'Reinscripciones: apertura',reenrollment_close_on:'Reinscripciones: cierre',
  calendar_source:'Origen del calendario',calendar_source_url:'URL de publicación oficial',
  calendar_source_reference:'Acuerdo o referencia',calendar_published_on:'Fecha de publicación',notes:'Notas y observaciones',
+ grading_rule_version:'Versión de reglas de calificación',
+ average_decimal_mode:'Tratamiento de los promedios',
+ grading_rule_reference:'Referencia normativa de calificación',
  ...Object.fromEntries(terms.flatMap((term,index)=>[
   [term+'_term_starts_on',['Primer','Segundo','Tercer'][index]+' trimestre: inicio'],
   [term+'_term_ends_on',['Primer','Segundo','Tercer'][index]+' trimestre: cierre'],
@@ -80,6 +83,8 @@ export default function CycleForm({initial,onCancel,onSave}:{initial?:Row|null;o
  const [values,setValues]=useState<Record<string,string>>(()=>{
   const data=Object.fromEntries(Object.keys(cycleLabels).map(key=>[key,String(initial?.[key]??'').slice(0,key==='notes'?4000:255)]));
   data.calendar_source=String(initial?.calendar_source||'manual');
+  data.grading_rule_version=String(initial?.grading_rule_version||'sep_10_09_23_v1');
+  data.average_decimal_mode=String(initial?.average_decimal_mode||'truncate');
   return data;
  });
  const [errors,setErrors]=useState<Record<string,string>>({});
@@ -149,6 +154,11 @@ export default function CycleForm({initial,onCancel,onSave}:{initial?:Row|null;o
       {field(term+'_term_capture_opens_on')}{field(term+'_term_capture_closes_on')}
       {field(term+'_term_review_on')}{field(term+'_term_reports_on')}</div>
     </div>)}</div>
+    {section('Reglas académicas del ciclo','La versión y los decimales se conservan históricamente. No podrán cambiarse cuando existan evaluaciones.',<>
+     <div className="sc-cycle-form-grid">{field('grading_rule_version','text','Identificador de la disposición aplicable.')}
+      {selectField('average_decimal_mode',[{value:'truncate',label:'Truncar a un decimal'},{value:'round_half_up',label:'Redondear al decimal más cercano'}])}
+      {field('grading_rule_reference','text','Documento, acuerdo o lineamiento de la autoridad educativa.')}</div>
+    </>)}
     <p className="sc-cycle-form-notice"><Info size={16}/>{ui('Las fechas de captura y publicación son administrativas. Deben respetar los periodos y disposiciones oficiales aplicables.')}</p>
    </>)}
    {tab==='applications'&&<>

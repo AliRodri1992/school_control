@@ -90,6 +90,34 @@ export default function App(){
  const [dialog,setDialog] = useState<{title:string;fields:Field[];values:Row;variant?:'family-contact';submit:(values:Row)=>Promise<void>}|null>(null);
  const {report,loadingStudentId:reportLoadingStudentId,error:reportError,
   open:openStudentReport,close:closeStudentReport,clearError:clearStudentReportError} = useStudentReport(id=>api(`students/${id}/report`));
+ const [issuedCards,setIssuedCards]=useState<Row[]>([]);
+ useEffect(()=>{
+  const id=report?.student?.id;
+  if(!id){setIssuedCards([]);return;}
+  let active=true;
+  void api('students/'+id+'/report_card_issues').then((rows:Row[])=>{if(active)setIssuedCards(rows);})
+    .catch(e=>{if(active)setError((e as Error).message);});
+  return()=>{active=false;};
+ },[report?.student?.id]);
+ async function issueReportCard(enrollmentId:number|string,term:number){
+  if(!report?.student?.id)return;
+  setBusy(true);setError('');
+  try{
+   const issue=await api('students/'+report.student.id+'/issue_report_card','POST',{enrollment_id:enrollmentId,term});
+   setIssuedCards(await api('students/'+report.student.id+'/report_card_issues'));
+   setNotice('Boleta de consulta v'+issue.version+' emitida con copia inmutable.');
+   window.location.href='/api/students/'+report.student.id+'/report_cards/'+issue.id+'/download';
+  }catch(e){setError((e as Error).message);}finally{setBusy(false);}
+ }
+ async function acknowledgeReportCard(issueId:number|string){
+  if(!report?.student?.id)return;
+  setBusy(true);setError('');
+  try{
+   await api('students/'+report.student.id+'/report_cards/'+issueId+'/acknowledge','POST');
+   setIssuedCards(await api('students/'+report.student.id+'/report_card_issues'));
+   setNotice('Acuse de consulta registrado; no afecta la acreditación.');
+  }catch(e){setError((e as Error).message);}finally{setBusy(false);}
+ }
  const [groupFilter,setGroupFilter] = useState('');
  const [sorting,setSorting]=useState('');
  const [ascending,setAscending]=useState(true),[pageNumber,setPageNumber]=useState(0),[pageSize,setPageSize]=useState(15),[statusFilter,setStatusFilter]=useState(''),[advanced,setAdvanced]=useState(false);
@@ -246,9 +274,19 @@ export default function App(){
    }});
  }
  function reject(record:Row){setDialog({title:ui('Rechazar solicitud'),fields:[{key:'reason',label:ui('Motivo para la familia'),type:'textarea'}],values:{},submit:async values=>{await api(`admissions/${record.id}/reject`,'POST',values);setDialog(null);}});}
- function complete(record:Row){
+ async function complete(record:Row){
+  setError('');
+  try{
+   const grading=await api('formative_evaluations/summary?enrollment_id='+record.id);
+   if(!grading.complete){setError('Faltan '+grading.missing_evaluations+' evaluaciones oficiales publicadas antes de cerrar el expediente.');return;}
    const group=(data.groups||[]).find(g=>g.id===record.group_id);
-   setDialog({title:`Cerrar ciclo · ${record.student_name}`,fields:[{key:'outcome',label:ui('Resultado académico'),options:group?.grade_level===6?[['graduated',ui('Egresado')],['repeat',ui('Repite sexto')]]:[['promoted',ui('Promovido al siguiente grado')],['repeat',ui('Repite grado')]]}],values:{},submit:async values=>{await api(`enrollments/${record.id}/complete`,'POST',values);setDialog(null);}});
+   setDialog({title:`Cerrar ciclo · ${record.student_name} · promedio ${grading.annual_average} · propuesta ${grading.recommendation}`,
+    fields:[{key:'outcome',label:ui('Resultado académico'),options:group?.grade_level===6?[['graduated',ui('Egresado')],['repeat',ui('Repite sexto')]]:[['promoted',ui('Promovido al siguiente grado')],['repeat',ui('Repite grado')]]},
+     {key:'reason',label:ui('Justificación de excepción'),type:'textarea',optional:true}],
+    values:{outcome:grading.recommendation},submit:async values=>{
+     await api(`enrollments/${record.id}/complete`,'POST',values);setDialog(null);
+    }});
+  }catch(e){setError((e as Error).message);}
  }
  function manualSlot(){setDialog({title:ui('Agregar sesión al horario'),fields:[{key:'course_id',label:ui('Clase'),source:'courses'},{key:'weekday',label:ui('Día'),options:['Lunes','Martes','Miércoles','Jueves','Viernes'].map((x,i)=>[String(i+1),ui(x)])},{key:'start',label:ui('Inicio'),type:'time'},{key:'end',label:ui('Fin'),type:'time'},{key:'room',label:ui('Aula')}],values:{},submit:async values=>{
    const minute=(value:string)=>{const [h,m]=value.split(':').map(Number);return h*60+m;};
@@ -438,13 +476,34 @@ export default function App(){
      <><header><div><span className="eyebrow">CONTROL ESCOLAR</span><h2 id="dialog-title">{dialog.title}</h2></div><button aria-label="Cerrar formulario" onClick={()=>setDialog(null)}><X/></button></header>
       <RecordForm fields={dialog.fields} initial={dialog.values} busy={busy} options={options} optionName={optionName} error={error} fieldErrors={fieldErrors} onCancel={()=>setDialog(null)} onSubmit={values=>perform(()=>dialog.submit(values))}/></>}
    </section></div>}
- {report&&<div className="overlay"><section role="dialog" aria-modal="true" aria-label="Boleta e historial" className="dialog report"><header><div><span className="eyebrow">{school.name}</span><h2>{report.student.full_name}</h2><p>Historial de evaluaciones por trimestre · {report.student.curp}</p></div><div className="actions"><button onClick={()=>window.print()} aria-label="Imprimir boleta"><Printer/></button><button onClick={closeStudentReport} aria-label="Cerrar boleta"><X/></button></div></header>
+ {report&&<div className="overlay"><section role="dialog" aria-modal="true" aria-label="Boleta e historial" className="dialog report"><header><div><span className="eyebrow">{school.name}</span><h2>{report.student.full_name}</h2><p>Historial de evaluaciones por trimestre · {report.student.curp}</p><p>Promedio de primaria (seis grados): <strong>{report.primary_average??'Pendiente de historial completo'}</strong></p></div><div className="actions"><button onClick={()=>window.print()} aria-label="Imprimir boleta"><Printer/></button><button onClick={closeStudentReport} aria-label="Cerrar boleta"><X/></button></div></header>
  {report.years.map((year:Row)=><article key={year.enrollment.id}><h3>{year.enrollment.group_label}</h3><p>{display(year.enrollment.status)} · {display(year.enrollment.outcome)}</p>
  <div className="info">Periodos: {(year.evaluation_periods||[]).map((period:Row)=>'Trimestre '+period.term+': '+(period.starts_on||'sin configurar')+' – '+(period.ends_on||'sin configurar')).join(' · ')}</div>
- <h4>Evaluaciones de los campos formativos</h4><div className="table-scroll"><table><thead><tr><th>Campo formativo</th><th>Primer trimestre</th><th>Segundo trimestre</th><th>Tercer trimestre</th><th>Promedio de referencia</th></tr></thead><tbody>{(year.formative_fields||[]).map((field:Row)=><tr key={field.code}><th scope="row">{field.name}</th>{[0,1,2].map(index=><td key={index}>{field.terms[index]??'Pendiente'}{field.observations[index]&&<small> · {field.observations[index]}</small>}</td>)}<td>{field.final??'Pendiente'}</td></tr>)}</tbody></table></div><h4>Desglose interno por materia</h4>
+ <div className="sc-card-result"><strong>Promedio anual: {year.academic_result?.annual_average??'Pendiente'}</strong>
+  <span>Evaluaciones pendientes: {year.academic_result?.missing_evaluations??12} · Propuesta: {year.academic_result?.recommendation==='pending'?'Pendiente':year.academic_result?.recommendation==='repeat'?'No acreditado':'Acreditado'}</span>
+  <small>Versión de reglas: {year.academic_result?.rule_version} · Decimales: {year.academic_result?.average_decimal_mode}</small></div>
+  <h4>Evaluaciones de los campos formativos</h4><div className="table-scroll"><table><thead><tr><th>Campo formativo</th><th>Primer trimestre</th><th>Segundo trimestre</th><th>Tercer trimestre</th><th>Promedio de referencia</th></tr></thead><tbody>{(year.formative_fields||[]).map((field:Row)=><tr key={field.code}><th scope="row">{field.name}</th>{[0,1,2].map(index=><td key={index}>{field.terms[index]??'Pendiente'}{field.observations[index]&&<small> · {field.observations[index]}</small>}</td>)}<td>{field.final??'Pendiente'}</td></tr>)}</tbody></table></div><h4>Desglose interno por materia</h4>
  <div className="table-scroll"><table><thead><tr><th>Materia</th><th>1.er trimestre</th><th>2.º trimestre</th><th>3.er trimestre</th><th>Promedio interno</th></tr></thead><tbody>{Object.values((year.grades as Row[]).reduce((acc:Record<string,Row>,g:Row)=>{const key=String(g.course_id);const row=acc[key]||{id:key,name:g.subject_name,grades:{}};row.grades[g.term]=g;acc[key]=row;return acc;},{})).map((subject:Row)=><tr key={subject.id}><th scope="row">{subject.name}</th>{[1,2,3].map(term=><td key={term}>{subject.grades[term]?<span title={subject.grades[term].feedback||''}>{subject.grades[term].score} {subject.grades[term].status==='published'?'✓':''}</span>:'—'}</td>)}<td>{[1,2,3].every(term=>subject.grades[term]?.status==='published')?mean([1,2,3].map(term=>Number(subject.grades[term].score))):'Pendiente'}</td></tr>)}</tbody></table></div>
  <p className="info">Estos resultados corresponden a materias internas. La boleta oficial de primaria debe registrar evaluaciones por los cuatro campos formativos, con observaciones y resultados finales conforme a las reglas SEP. No se ha inferido una calificación oficial a partir de las materias.</p>
- <div className="actions">{Object.entries(year.attendance).map(([status,total])=><span className="badge" key={status}>{display(status)}: {String(total)}</span>)}</div></article>)}{!report.years.length&&<TableEmptyState canCreate={false}/>}<p className="footnote">Documento de consulta interna. No sustituye la boleta oficial ni una certificación.</p></section></div>}
+ <div className="actions">{Object.entries(year.attendance).map(([status,total])=><span className="badge" key={status}>{display(status)}: {String(total)}</span>)}</div>
+ <section className="sc-issued-report-cards" aria-label="Boletas emitidas">
+  <h4>Emisiones y acuses de boleta</h4>
+  {can('students.update')&&<div className="sc-issued-card-actions">
+   {[1,2,3].map(term=><button className="secondary" type="button" key={term} disabled={busy||(year.formative_fields||[]).some((field:Row)=>field.terms[term-1]===null)}
+    onClick={()=>void issueReportCard(year.enrollment.id,term)}>Emitir T{term} PDF</button>)}
+   <button className="primary" type="button" disabled={busy||!year.academic_result?.complete}
+    onClick={()=>void issueReportCard(year.enrollment.id,0)}>Emitir boleta final PDF</button>
+  </div>}
+  {issuedCards.filter(item=>String(item.enrollment_id)===String(year.enrollment.id)).length===0?
+   <p>Sin boletas PDF emitidas.</p>:
+   issuedCards.filter(item=>String(item.enrollment_id)===String(year.enrollment.id)).map(item=><div className="sc-issued-card-row" key={item.id}>
+    <a href={'/api/students/'+report.student.id+'/report_cards/'+item.id+'/download'}>
+     {Number(item.term)===0?'Boleta final':'Trimestre '+item.term} · v{item.version} · Descargar PDF
+    </a><span>{item.acknowledged_at?'Consulta reconocida':'Sin acuse'}</span>
+    {user.role==='guardian'&&!item.acknowledged_at&&<button className="secondary" type="button" disabled={busy}
+     onClick={()=>void acknowledgeReportCard(item.id)}>Confirmar consulta</button>}
+   </div>)}
+ </section></article>)}{!report.years.length&&<TableEmptyState canCreate={false}/>}<p className="footnote">Documento de consulta interna. No sustituye la boleta oficial ni una certificación.</p></section></div>}
  </Suspense></PortalChrome>;
 }
 function SchoolSettings({school,onSave,busy}:{school:Row;onSave:(form:FormData)=>void;busy:boolean}){
