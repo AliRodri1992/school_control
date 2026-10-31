@@ -40,15 +40,12 @@ module DemoAcademicHistory
     end
 
     year = group.academic_year
-    unless year.evaluation_periods.all? { |period| period[:starts_on] && period[:ends_on] }
-      first = year.starts_on
-      last = year.ends_on
-      width = (last - first).to_i
-      boundaries = [ first, first + width / 3, first + width * 2 / 3, last ]
-      %w[first second third].each_with_index do |part, index|
-        year.update!("#{part}_term_starts_on" => boundaries[index] + (index.zero? ? 0 : 1), "#{part}_term_ends_on" => boundaries[index + 1])
-      end
-    end
+    # Historical seed data may predate evaluation-period configuration.
+    # Derive missing boundaries in memory; never mutate a year after its
+    # admissions and enrollments have been attached to the academic record.
+    width = (year.ends_on - year.starts_on).to_i
+    fallback_ends = [ year.starts_on + width / 3, year.starts_on + width * 2 / 3, year.ends_on ]
+    term_ends = (1..3).map { |term| year.evaluation_period(term)[:ends_on] || fallback_ends.fetch(term - 1) }
 
     courses = DemoAcademics::CORE_SUBJECTS.map do |code, (_, periods)|
       subject = subjects.fetch(code)
@@ -74,9 +71,8 @@ module DemoAcademicHistory
           values = courses.select { |course| details.fetch(:subjects).include?(course.subject.code) }
             .filter_map { |course| Grade.find_by(enrollment: enrollment, course: course, term: term)&.score }
           next if values.empty?
-          published_at = Time.zone.local(group.academic_year.evaluation_period(term)[:ends_on].year,
-            group.academic_year.evaluation_period(term)[:ends_on].month,
-            group.academic_year.evaluation_period(term)[:ends_on].day, 16)
+          day = term_ends.fetch(term - 1)
+          published_at = Time.zone.local(day.year, day.month, day.day, 16)
           { enrollment_id: enrollment.id, field_code: code, term: term,
             score: (values.sum / values.length).round(1, :half_up).clamp(5, 10),
             status: "published", feedback: "Valoración histórica ficticia: #{details[:name]}, trimestre #{term}.",

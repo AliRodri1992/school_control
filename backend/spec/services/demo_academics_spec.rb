@@ -89,6 +89,7 @@ RSpec.describe DemoAcademicHistory do
         teacher: teacher, subjects: subjects)
     end
 
+    expect(historical_year.reload.evaluation_periods.all? { |period| period[:starts_on].nil? }).to be(true)
     expect(historical_group.courses.count).to eq(10)
     expect(enrollment.grades.count).to eq(30)
     expect(enrollment.grades.distinct.count(:course_id)).to eq(10)
