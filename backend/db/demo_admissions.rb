@@ -70,7 +70,10 @@ module DemoAdmissions
     prior = DemoSchoolCycles.historical!(current: year, offset: 1)
     previous_group = Group.find_or_create_by!(academic_year: prior, grade_level: 1, section: "A")
     previous = Admission.find_or_create_by!(student: student, academic_year: prior) do |admission|
-      admission.assign_attributes(kind: "new", grade_level: 1, status: "approved")
+      admission.assign_attributes(kind: "new", grade_level: 1, status: "draft")
+    end
+    if previous.status == "draft"
+      previous.update!(status: "approved", folio: "ESC-DEMO-#{student.id}-#{prior.id}")
     end
     Enrollment.find_or_create_by!(admission: previous) do |enrollment|
       enrollment.assign_attributes(student: student, academic_year: prior, group: previous_group,

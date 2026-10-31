@@ -64,7 +64,7 @@ module DemoSchoolCycles
       [ "Vacaciones de invierno · ejemplo", "vacation",
         Date.new(year.starts_on.year, 12, 21), Date.new(year.starts_on.year + 1, 1, 3) ],
       [ "Vacaciones de primavera · ejemplo", "vacation",
-        Date.new(year.starts_on.year + 1, 3, 22), Date.new(year.starts_on.year + 1, 3, 28) ]
+        Date.new(year.starts_on.year + 1, 4, 12), Date.new(year.starts_on.year + 1, 4, 18) ]
     ].each do |title, kind, first_day, last_day|
       year.calendar_events.find_or_create_by!(title: title) do |event|
         event.assign_attributes(kind: kind, all_day: true, source_type: "manual",
@@ -88,7 +88,7 @@ module DemoSchoolCycles
   def self.finalize!(current:, upcoming:)
     # Never assign statuses directly. All historical cycles must finish before
     # activating the current year: a single active cycle is enforced in PostgreSQL.
-    historical = AcademicYear.where("name LIKE ?", "Demo histórico %")
+    historical = AcademicYear.where("name LIKE ? OR name LIKE ?", "Demo histórico %", "Demo archivado %")
       .order(:starts_on, :id)
     historical.each do |year|
       while %w[draft active closing closed].include?(year.reload.status)
@@ -102,8 +102,19 @@ module DemoSchoolCycles
       end
     end
 
-    AcademicYearLifecycle.advance!(current, trigger: "demo_seed")
-    raise "El ciclo de demostración debe quedar Activo" unless current.reload.status == "active"
+    # During the July/August summer break the previous year may be closing
+    # and the upcoming year is still in preparation; do not invent an active one.
+    2.times do
+      break unless AcademicYearLifecycle.advance!(current, trigger: "demo_seed")
+    end
+    expected = if Date.current < current.starts_on
+      "draft"
+    elsif Date.current >= current.ends_on
+      "closing"
+    else
+      "active"
+    end
+    raise "El ciclo de demostración debe estar #{expected}" unless current.reload.status == expected
     raise "El siguiente ciclo debe permanecer En preparación" unless upcoming.reload.status == "draft"
   end
 end

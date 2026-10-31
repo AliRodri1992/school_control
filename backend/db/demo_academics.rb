@@ -31,7 +31,12 @@ module DemoAcademics
     last_day = [ year.ends_on, Date.current ].min
     return [] if last_day < year.starts_on
 
-    (year.starts_on..last_day).select { |day| (1..5).cover?(day.wday) }.last(ATTENDANCE_DAYS)
+    blocked = year.calendar_events.where(kind: %w[holiday vacation suspension cte], all_day: true)
+      .flat_map do |event|
+        (event.starts_at.to_date...event.ends_at.to_date).to_a
+      end.to_set
+    (year.starts_on..last_day).select { |day| (1..5).cover?(day.wday) && !blocked.include?(day) }
+      .last(ATTENDANCE_DAYS)
   end
 
   def self.seed_group!(group:, admin:, days: school_days(group.academic_year))

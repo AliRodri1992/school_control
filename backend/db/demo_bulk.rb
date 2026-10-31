@@ -112,8 +112,7 @@ module DemoBulk
   end
 
   def self.seed_classroom(year, students)
-    calendar_day = [ year.starts_on, Date.current - 14.days ].max
-    school_days = (calendar_day..[ year.ends_on, Date.current ].min).select { |d| (1..5).cover?(d.wday) }.first(3)
+    school_days = DemoAcademics.school_days(year).first(3)
     students.each_with_index do |student, i|
       enrollment = student.enrollments.find_by!(academic_year: year)
       course = enrollment.group.courses.order(:id).first!
@@ -123,8 +122,11 @@ module DemoBulk
         end
       end
       Grade.find_or_create_by!(enrollment: enrollment, course: course, term: 1) do |record|
-        record.assign_attributes(score: 7 + (i % 4), status: i.even? ? "published" : "draft",
-          reviewer: i.even? ? course.teacher : nil)
+        published = year.evaluation_period(1)[:ends_on] < Date.current && i.even?
+        record.assign_attributes(score: 7 + (i % 4), status: published ? "published" : "draft",
+          reviewer: published ? course.teacher : nil,
+          reviewed_at: published ? Time.current : nil,
+          published_at: published ? Time.current : nil)
       end
       [ "Lectura guiada", "Investigación breve", "Resolución de problemas" ].each_with_index do |topic, task_index|
         assignment = Assignment.find_or_create_by!(course: course, title: "#{topic} de demostración") do |record|
@@ -138,7 +140,10 @@ module DemoBulk
       end
       next unless i < MIN_RECORDS
 
-      GradeChangeRequest.find_or_create_by!(grade: enrollment.grades.find_by!(course: course, term: 1),
+      first_grade = enrollment.grades.find_by!(course: course, term: 1)
+      next unless first_grade.status == "published"
+
+      GradeChangeRequest.find_or_create_by!(grade: first_grade,
         requester: course.teacher, status: "pending") do |record|
         record.assign_attributes(reason: "Revisión de calificación ficticia #{i + 1}", score: 9,
           previous_score: 7 + (i % 4), expected_version: 0)

@@ -20,6 +20,11 @@ if ENV["DEMO_SEEDS"] == "true"
   start_year = Date.current.month >= 8 ? Date.current.year : Date.current.year - 1
   year = DemoSchoolCycles.current!(start_year: start_year)
   upcoming = DemoSchoolCycles.next!(current: year)
+  archive_start = start_year - 7
+  DemoSchoolCycles.create_year!(name: "Demo archivado #{archive_start}–#{archive_start + 1}",
+    start_year: archive_start,
+    admissions: [ Date.new(archive_start, 2, 1), Date.new(archive_start, 4, 30) ],
+    reenrollments: [ Date.new(archive_start, 5, 1), Date.new(archive_start, 7, 30) ])
   DemoSchoolCycles.seed_calendar!(year)
   guardian = User.find_or_create_by!(email: "familia@school.test") { |record| record.assign_attributes(name: "Familia de ejemplo", role: "guardian", password: password) }
   learner = User.find_or_create_by!(email: "alumno@school.test") { |record| record.assign_attributes(name: "Alex Ejemplo", role: "student", password: password) }

@@ -27,12 +27,15 @@ module DemoModules
     [ 1, 2, 3 ].each do |term|
       Grade.find_or_create_by!(enrollment: enrollment, course: course, term: term) do |record|
         record.score = 8 + (term % 2)
-        record.status = term == 3 ? "draft" : "published"
-        record.reviewer = teacher if term != 3
+        closed_period = year.evaluation_period(term)[:ends_on] < Date.current
+        record.status = closed_period ? "published" : "draft"
+        record.reviewer = teacher if closed_period
+        record.reviewed_at = Time.current if closed_period
+        record.published_at = Time.current if closed_period
       end
     end
-    grade = Grade.find_by!(enrollment: enrollment, course: course, term: 3)
-    if teacher
+    grade = Grade.find_by!(enrollment: enrollment, course: course, term: 1)
+    if teacher && grade.status == "published"
       GradeChangeRequest.find_or_create_by!(grade: grade, requester: teacher, status: "pending") do |record|
         record.reason = "Revisar calificación de demostración."
         record.score = 9
@@ -43,7 +46,8 @@ module DemoModules
     first_day = [ year.starts_on, Date.current - 7.days ].max
     last_day = [ year.ends_on, Date.current ].min
     if first_day <= last_day
-      (first_day..last_day).select { |day| (1..5).cover?(day.wday) }.first(4).each_with_index do |day, index|
+      DemoAcademics.school_days(year).select { |day| day >= first_day && day <= last_day }
+        .first(4).each_with_index do |day, index|
         Attendance.find_or_create_by!(enrollment: enrollment, on: day) do |record|
           record.status = %w[present present late justified][index]
         end
