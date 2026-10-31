@@ -194,3 +194,34 @@ it('edits a mirrored family contact through the family API and reloads the dossi
  expect((screen.getByLabelText(/Apellido paterno/) as HTMLInputElement).value).toBe('Salinas');
  expect((screen.getByLabelText(/Apellido materno/) as HTMLInputElement).value).toBe('');
 });
+
+it('edits a saved address using the dedicated form and persists its primary flag',async()=>{
+ const {api}=await import('../../api');
+ let address={id:21,country_code:'MX',purpose:'home',line1:'Calle Cedros 10',
+  line2:'Interior 3',neighborhood:'Centro',locality:'Cuautitlán Izcalli',
+  region:'Estado de México',postal_code:'54700',primary:true};
+ const base='students/512/details/addresses';
+ vi.mocked(api).mockImplementation(async(path,method='GET',payload)=>{
+  if(path.startsWith(base+'?'))return {items:[{...address}],total:1,page:1,per_page:8,total_pages:1};
+  if(path===base+'/21'&&method==='PATCH'){
+   address={...address,...(payload as typeof address)};
+   return {...address};
+  }
+  return [];
+ });
+ render(<StudentDetails student={{id:512,full_name:'Ana Pérez'}} onClose={vi.fn()} canEdit canWriteNotes/>);
+ await userEvent.click(screen.getByRole('button',{name:'Direcciones'}));
+ expect(await screen.findByRole('heading',{name:'Calle Cedros 10'})).toBeTruthy();
+ await userEvent.click(screen.getByRole('button',{name:'Editar'}));
+ expect(screen.getByRole('heading',{name:'Editar dirección'})).toBeTruthy();
+ expect(screen.getByRole('heading',{name:'Ubicación del alumno'})).toBeTruthy();
+ expect((screen.getByLabelText(/Calle y número/) as HTMLInputElement).value).toBe('Calle Cedros 10');
+ expect((screen.getByRole('switch',{name:'Domicilio principal'}) as HTMLInputElement).checked).toBe(true);
+ await userEvent.clear(screen.getByLabelText(/Calle y número/));
+ await userEvent.type(screen.getByLabelText(/Calle y número/),'Calle Cedros 20');
+ await userEvent.click(screen.getByRole('button',{name:'Guardar cambios'}));
+ expect(await screen.findByRole('heading',{name:'Calle Cedros 20'})).toBeTruthy();
+ expect(api).toHaveBeenCalledWith(base+'/21','PATCH',expect.objectContaining({
+  line1:'Calle Cedros 20',country_code:'MX',purpose:'home',primary:true
+ }));
+});
