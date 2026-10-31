@@ -1,7 +1,7 @@
 import Swal from 'sweetalert2';
 import type {Row} from '../../modules';
 
-type ContactRow=Pick<Row,'id'|'student_id'|'student_name'|'name'|'relationship'|'phone'|'emergency'|'pickup_authorized'>;
+type ContactRow=Partial<Pick<Row,'id'|'student_id'|'student_name'|'name'|'relationship'|'phone'|'emergency'|'pickup_authorized'>>;
 const enabled=(value:unknown)=>value===true||value===1||value==='true'||value==='1';
 
 function node<K extends keyof HTMLElementTagNameMap>(tag:K,className:string,text?:string){

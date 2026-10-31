@@ -42,7 +42,7 @@ it('omits irrelevant risk labels when the contact has no authorizations',()=>{
 it('only executes the API mutation after a successful explicit confirmation',async()=>{
  const action=vi.fn().mockResolvedValue(undefined);
  vi.mocked(Swal.fire).mockImplementation(async options=>{
-  const opts=options as {preConfirm:()=>Promise<unknown>};
+  const opts=options as unknown as {preConfirm:()=>Promise<unknown>};
   expect(opts.preConfirm).toBeTypeOf('function');
   expect(action).not.toHaveBeenCalled();
   await opts.preConfirm();
@@ -50,7 +50,7 @@ it('only executes the API mutation after a successful explicit confirmation',asy
  });
  expect(await confirmFamilyContactDelete(sample,[sample],'Ana Gómez',action)).toBe(true);
  expect(action).toHaveBeenCalledTimes(1);
- const opts=vi.mocked(Swal.fire).mock.calls[0][0] as {focusCancel:boolean;showLoaderOnConfirm:boolean;confirmButtonText:string;cancelButtonText:string};
+ const opts=vi.mocked(Swal.fire).mock.calls[0][0] as unknown as {focusCancel:boolean;showLoaderOnConfirm:boolean;confirmButtonText:string;cancelButtonText:string};
  expect(opts.focusCancel).toBe(true);
  expect(opts.showLoaderOnConfirm).toBe(true);
  expect(opts.confirmButtonText).toBe('Sí, eliminar contacto');
@@ -60,7 +60,7 @@ it('only executes the API mutation after a successful explicit confirmation',asy
 it('keeps the alert open and displays the API error on failure',async()=>{
  const action=vi.fn().mockRejectedValue(new Error('El contacto está protegido.'));
  vi.mocked(Swal.fire).mockImplementation(async options=>{
-  const result=await (options as {preConfirm:()=>Promise<boolean>}).preConfirm();
+  const result=await (options as unknown as {preConfirm:()=>Promise<boolean>}).preConfirm();
   expect(result).toBe(false);
   return {isConfirmed:false} as Awaited<ReturnType<typeof Swal.fire>>;
  });

@@ -40,4 +40,4 @@
 .sc-family-delete-actions .sc-family-delete-cancel{background:#f0f4fb!important;color:#334666!important}
 .sc-family-delete-actions .sc-family-delete-confirm{background:#c7364e!important;color:#fff!important}
 .sc-family-delete-dialog .swal2-validation-message{margin:12px 0 0!important;border-radius:9px;text-align:left;font-size:12px;line-height:1.5}
-@media(max-width:480px){.school-dialog.sc-family-delete-dialog{padding:17px 15px 18px!important}.sc-family-delete-identity{padding:12px}.sc-family-delete-actions.swal2-actions{grid-template-columns:1fr}.sc-family-delete-actions .sc-family-delete-confirm{order:1}.sc-family-delete-actions .sc-family-delete-cancel{order:2}}
+@media(max-width:480px){.school-dialog.sc-family-delete-dialog{padding:17px 15px 18px!important}.sc-family-delete-identity{padding:12px}.sc-family-delete-actions.swal2-actions{grid-template-columns:1fr}}
