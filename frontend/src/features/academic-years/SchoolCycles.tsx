@@ -1,5 +1,5 @@
 import {useEffect,useState,type FormEvent} from 'react';
-import {ArrowLeft,CalendarDays,ClipboardList,FileDown,GraduationCap,Info,Plus,Search,Save,ShieldCheck,Users,X} from 'lucide-react';
+import {ArrowLeft,CalendarDays,CheckCircle2,ClipboardList,FileDown,GraduationCap,Info,Plus,Search,Save,ShieldCheck,Users,X} from 'lucide-react';
 import SchoolCyclesOverview from './SchoolCyclesOverview';
 import type {Row} from '../../modules';
 import {api} from '../../api';
