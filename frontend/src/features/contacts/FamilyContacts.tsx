@@ -8,7 +8,7 @@ type Props={contacts:Row[];students:Row[];canCreate:boolean;canEdit:boolean;canD
 export const isEnabled=(value:unknown)=>value===true||value===1||value==='true'||value==='1';
 export const filterFamilyContacts=(contacts:Row[],search:string,filter:string,student:string)=>contacts.filter(row=>{
  const query=search.trim().toLocaleLowerCase();
- const match=!query||[row.name,row.student_name,row.relationship,row.phone,row.email].some(value=>String(value??'').toLocaleLowerCase().includes(query));
+ const match=!query||[row.name,row.first_name,row.middle_name,row.paternal_surname,row.maternal_surname,row.curp,row.student_name,row.relationship,row.phone,row.email].some(value=>String(value??'').toLocaleLowerCase().includes(query));
  return match&&(!student||String(row.student_id)===student)&&
  (filter==='all'||(filter==='emergency'&&isEnabled(row.emergency))||(filter==='pickup'&&isEnabled(row.pickup_authorized)));
 });

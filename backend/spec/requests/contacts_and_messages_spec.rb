@@ -156,5 +156,4 @@ RSpec.describe "Family contacts and institutional messages", type: :request do
     expect(response).to have_http_status(:unprocessable_content)
     expect(StudentContact.where(student: student).count).to eq(0)
   end
-
 end

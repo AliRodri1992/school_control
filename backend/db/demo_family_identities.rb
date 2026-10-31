@@ -14,7 +14,7 @@ module DemoFamilyIdentities
     paternal = SURNAMES[(serial * 7) % SURNAMES.size]
     maternal = SURNAMES[(serial * 3 + 2) % SURNAMES.size]
     born = Date.new(1973 + serial % 23, 1 + serial % 12, 1 + serial % 27)
-    letters = [paternal, maternal, first].map { |n| unaccent(n) }
+    letters = [ paternal, maternal, first ].map { |n| unaccent(n) }
     p, m, f = letters
     vowel = p[1..].to_s[/[AEIOU]/] || "X"
     consonants = letters.map { |n| n[1..].to_s[/[BCDFGHJKLMNPQRSTVWXYZ]/] || "X" }.join

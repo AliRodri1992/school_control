@@ -60,7 +60,7 @@ it('allows registering contacts with student dropdown and structured identity',a
  await userEvent.type(screen.getByLabelText(/Primer nombre/),'Sofia');
  await userEvent.type(screen.getByLabelText(/Apellido paterno/),'Salinas');
  await userEvent.type(screen.getByLabelText(/CURP/),withDigit('SALS850720MDFLLF0'));
- await userEvent.type(screen.getByLabelText(/Parentesco/),'Madre');
+ await userEvent.type(screen.getByRole('textbox',{name:/^Parentesco/}),'Madre');
  await userEvent.type(screen.getByLabelText(/Teléfono/),'5512345678');
  await userEvent.click(screen.getByRole('button',{name:'Registrar contacto'}));
  expect(submit).toHaveBeenCalledWith(expect.objectContaining({student_id:'7',first_name:'Sofia',paternal_surname:'Salinas'}));
