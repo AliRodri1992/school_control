@@ -39,7 +39,7 @@ const fields:Record<DataKind,Field[]>={
   {key:'primary',label:'Principal',options:[['true','Sí'],['false','No']],optional:true}
  ],
  contacts:[
-  {key:'name',label:'Nombre de contacto'}, {key:'relationship',label:'Parentesco',optional:true,options:FAMILY_RELATIONSHIPS.map(name=>[name,name])},
+  {key:'name',label:'Nombre de contacto'}, {key:'relationship',label:'Parentesco',optional:true,options:FAMILY_RELATIONSHIPS.map(name=>[name,name] as [string,string])},
   {key:'email',label:'Correo electrónico',type:'email',optional:true},
   {key:'emergency',label:'Contacto de emergencia',options:[['true','Sí'],['false','No']],optional:true},
   {key:'pickup_authorized',label:'Autorización de recogida',options:[['true','Sí'],['false','No']],optional:true},

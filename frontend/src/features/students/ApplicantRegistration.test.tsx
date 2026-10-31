@@ -34,7 +34,8 @@ it('saves applicant stages on the server before submitting their application',as
  await userEvent.click(screen.getByRole('button',{name:'Guardar y continuar'}));
  expect(await screen.findByRole('heading',{name:'Familiares'})).toBeTruthy();
  await userEvent.type(screen.getByLabelText('Nombre del familiar *'),'Tutor de prueba');
- await userEvent.type(screen.getByLabelText('Parentesco *'),'Madre');
+ await userEvent.click(screen.getByRole('combobox',{name:'Parentesco'}));
+ await userEvent.click(screen.getByRole('option',{name:'Madre'}));
  await userEvent.type(screen.getByLabelText('Teléfono de contacto *'),'5512345678');
  await userEvent.click(screen.getByRole('button',{name:'Guardar y continuar'}));
  expect(await screen.findByRole('heading',{name:'Documentos'})).toBeTruthy();
