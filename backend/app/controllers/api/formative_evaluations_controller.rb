@@ -10,13 +10,18 @@ module Api
       render json: records.order(:field_code, :term).map { |record| present_record(record) }
     end
 
+    def summary
+      enrollment = access.enrollments.find(params.require(:enrollment_id))
+      render json: PrimarySchoolGrading.report(enrollment: enrollment)
+    end
+
     def create
       enrollment = access.enrollments.find(params.require(:enrollment_id))
       enrollment.with_lock do
         record = enrollment.formative_evaluations.find_or_initialize_by(
           field_code: params.require(:field_code), term: params.require(:term))
         raise ArgumentError, "La evaluación publicada no puede modificarse" if record.persisted? && record.status == "published"
-        record.assign_attributes(params.permit(:score, :feedback).merge(status: "draft"))
+        record.assign_attributes(params.permit(:score, :feedback, :source_kind, :source_school, :source_document_ref).merge(status: "draft"))
         record.save!
         audit(record, "formative_evaluation.saved")
         render json: present_record(record)

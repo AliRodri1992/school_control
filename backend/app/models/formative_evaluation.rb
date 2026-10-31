@@ -24,6 +24,14 @@ class FormativeEvaluation < ApplicationRecord
     end
   end
   validates :status, inclusion: { in: %w[draft published] }
+  validates :source_kind, inclusion: { in: %w[school transfer] }
+  validate :transfer_reference
+
+  def transfer_reference
+    return unless source_kind == "transfer"
+    errors.add(:source_school, "es obligatoria para evaluaciones de otra escuela") if source_school.blank?
+    errors.add(:source_document_ref, "es obligatoria para conservar el soporte del traslado") if source_document_ref.blank?
+  end
   validate :protect_published_record
   validate :protect_closed_cycle
 

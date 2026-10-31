@@ -19,7 +19,9 @@ class RecordPresenter
       record.as_json.merge(student_name: record.student.full_name, year_name: record.academic_year.name,
         enrollment_id: record.enrollment&.id)
     when Enrollment
-      record.as_json.merge(student_name: record.student.full_name, group_label: record.group.label)
+      record.as_json.merge(student_name: record.student.full_name, group_label: record.group.label, grade_level: record.group.grade_level,
+        grading_rule_version: record.academic_year.grading_rule_version,
+        average_decimal_mode: record.academic_year.average_decimal_mode)
     when ScheduleSlot
       record.as_json.merge(course_label: record.course.label, teacher_name: record.course.teacher.name, group_id: record.course.group_id)
     when Grade

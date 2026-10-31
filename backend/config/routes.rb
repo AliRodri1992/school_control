@@ -80,6 +80,10 @@ Rails.application.routes.draw do
     delete "students/:student_id/details/:kind/:id", to: "student_details#destroy"
     resources :students, only: %i[index show create update] do
       get :report, on: :member
+      get :report_card_issues, on: :member
+      post :issue_report_card, on: :member
+      get "report_cards/:issue_id/download", on: :member, action: :download_report_card
+      post "report_cards/:issue_id/acknowledge", on: :member, action: :acknowledge_report_card
     end
     resources :admission_document_requirements, only: %i[index create destroy]
     resources :admissions, only: %i[index create] do
@@ -96,7 +100,9 @@ Rails.application.routes.draw do
       post :complete, on: :member
     end
     resources :attendances, only: %i[index create]
+    resources :formative_evidences, only: %i[index create update destroy]
     resources :formative_evaluations, only: %i[index create] do
+      get :summary, on: :collection
       post :publish, on: :member
       post :correct, on: :member
     end

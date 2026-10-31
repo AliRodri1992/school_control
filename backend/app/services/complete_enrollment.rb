@@ -6,9 +6,10 @@ class CompleteEnrollment
       allowed = enrollment.group.grade_level == 6 ? %w[graduated repeat] : %w[promoted repeat]
       raise ArgumentError, "Resultado incompatible con el grado" unless allowed.include?(outcome)
       courses = enrollment.group.courses
-      raise ArgumentError, "Configure las materias antes de cerrar" if courses.empty?
-      expected = courses.count * 3
-      raise ArgumentError, "Faltan calificaciones trimestrales publicadas" unless enrollment.grades.published.where(course: courses).count == expected
+      if courses.exists?
+        expected = courses.count * 3
+        raise ArgumentError, "Faltan calificaciones trimestrales publicadas" unless enrollment.grades.published.where(course: courses).count == expected
+      end
       grading = PrimarySchoolGrading.report(enrollment: enrollment)
       raise ArgumentError, "Faltan evaluaciones oficiales publicadas de los cuatro campos formativos" unless grading[:complete]
       if outcome != grading[:recommendation]
