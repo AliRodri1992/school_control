@@ -5,6 +5,7 @@ class Enrollment < ApplicationRecord
   belongs_to :admission
   has_many :attendances, dependent: :restrict_with_error
   has_many :grades, dependent: :restrict_with_error
+  has_many :formative_evaluations, dependent: :restrict_with_error
   validates :student_id, uniqueness: { scope: :academic_year_id }
   validates :admission_id, uniqueness: true
   validates :status, inclusion: { in: %w[active completed] }

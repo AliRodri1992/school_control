@@ -93,6 +93,9 @@ Rails.application.routes.draw do
       post :complete, on: :member
     end
     resources :attendances, only: %i[index create]
+    resources :formative_evaluations, only: %i[index create] do
+      post :publish, on: :member
+    end
     resources :grades, only: %i[index create] do
       post :review, on: :member
       post :publish, on: :member

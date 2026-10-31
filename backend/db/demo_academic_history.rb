@@ -67,7 +67,28 @@ module DemoAcademicHistory
     # Only generated, closed-year demo enrollments reach this development-only bulk insert.
     Grade.insert_all(rows, unique_by: :index_grades_on_enrollment_id_and_course_id_and_term,
       returning: false) if rows.any?
+
+    field_rows = enrollments.flat_map do |enrollment|
+      FormativeEvaluation::FIELDS.flat_map do |code, details|
+        (1..3).map do |term|
+          values = courses.select { |course| details.fetch(:subjects).include?(course.subject.code) }
+            .filter_map { |course| Grade.find_by(enrollment: enrollment, course: course, term: term)&.score }
+          next if values.empty?
+          published_at = Time.zone.local(group.academic_year.evaluation_period(term)[:ends_on].year,
+            group.academic_year.evaluation_period(term)[:ends_on].month,
+            group.academic_year.evaluation_period(term)[:ends_on].day, 16)
+          { enrollment_id: enrollment.id, field_code: code, term: term,
+            score: (values.sum / values.length).round(1, :half_up).clamp(5, 10),
+            status: "published", feedback: "Valoración histórica ficticia: #{details[:name]}, trimestre #{term}.",
+            reviewer_id: course_teacher_id(courses), published_at: published_at,
+            created_at: published_at, updated_at: published_at }
+        end
+      end
+    end.compact
+    FormativeEvaluation.insert_all(field_rows, unique_by: :idx_formative_evaluations_enrollment_field_term, returning: false) if field_rows.any?
   end
+
+  def self.course_teacher_id(courses) = courses.first.teacher_id
 
   def self.historical_mark(enrollment, course, term)
     year = enrollment.academic_year

@@ -44,6 +44,7 @@ module DemoAcademics
     enrollments.each_with_index do |enrollment, index|
       seed_attendance!(enrollment, days, index)
       seed_grades!(enrollment, courses, index)
+      seed_formative_evaluations!(enrollment, courses, index)
       seed_student_note!(enrollment, admin, index) if index < 3
     end
     seed_assignments!(courses, enrollments)
@@ -96,6 +97,26 @@ module DemoAcademics
             record.reviewer = course.teacher
             record.reviewed_at = Time.current
             record.published_at = Time.current if state == "published"
+          end
+        end
+      end
+    end
+  end
+
+  def self.seed_formative_evaluations!(enrollment, courses, index)
+    FormativeEvaluation::FIELDS.each do |code, details|
+      (1..3).each do |term|
+        period = enrollment.academic_year.evaluation_period(term)
+        marks = Grade.where(enrollment: enrollment, course: courses.select { |course| details[:subjects].include?(course.subject.code) }, term: term).pluck(:score)
+        next if marks.empty?
+        score = (marks.sum / marks.length).round(1, :half_up).clamp(5, 10)
+        state = period[:ends_on] && period[:ends_on] < Date.current && index % 5 != 0 ? "published" : "draft"
+        FormativeEvaluation.find_or_create_by!(enrollment: enrollment, field_code: code, term: term) do |record|
+          record.assign_attributes(score: score, status: state,
+            feedback: "Valoración ficticia del campo #{details[:name]} en el trimestre #{term}.")
+          if state == "published"
+            record.reviewer = courses.first.teacher
+            record.published_at = Time.current
           end
         end
       end

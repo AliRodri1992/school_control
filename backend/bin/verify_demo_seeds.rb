@@ -25,6 +25,7 @@ groups.each do |group|
   active.find_each do |enrollment|
     grades = enrollment.grades.joins(:course).where(courses: { group_id: group.id })
     raise "Enrollment #{enrollment.id} needs more subject grades" if grades.count < DemoAcademics::CORE_SUBJECTS.size
+    raise "Enrollment #{enrollment.id} needs 12 field/term evaluations" unless enrollment.formative_evaluations.count == 12
     expected_days = DemoAcademics.school_days(year).length
     actual_days = enrollment.attendances.where(on: DemoAcademics.school_days(year)).count
     raise "Enrollment #{enrollment.id} is missing attendance history" if actual_days < expected_days
@@ -67,6 +68,7 @@ historical_counts = Grade.where(enrollment_id: historical.select(:id)).group(:en
 historical.find_each do |enrollment|
   count = historical_counts.fetch(enrollment.id, 0)
   raise "Incomplete #{enrollment.group.label} history for student #{enrollment.student_id}: #{count}/30 marks" if count < 30
+  raise "Missing formative evaluations for historical enrollment #{enrollment.id}" unless enrollment.formative_evaluations.published.count == 12
 end
 year.groups.where(grade_level: 6, section: %w[A B]).each do |group|
   group.enrollments.find_each do |enrollment|
