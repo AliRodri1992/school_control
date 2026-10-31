@@ -14,6 +14,7 @@ export default function LanguageManager(){
  const [name,setName]=useState(''),[nativeName,setNativeName]=useState(''),[code,setCode]=useState('');
  const [key,setKey]=useState(''),[value,setValue]=useState(''),[entryStatus,setEntryStatus]=useState('draft');
  const [error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
+ const [translationSearch,setTranslationSearch]=useState(''),[translationFilter,setTranslationFilter]=useState(''),[translationPage,setTranslationPage]=useState(0);
  async function refresh(){setLanguages(await api('languages'));}
  async function loadEntries(id:number){setSelected(id);setEntries(await api('translation_entries?language_id='+id));}
  useEffect(()=>{void refresh().catch(e=>setError(e.message));},[]);
@@ -27,6 +28,8 @@ export default function LanguageManager(){
   setKey('');setValue('');
  });}
  const current=languages.find(l=>l.id===selected);
+ const visibleEntries=entries.filter(entry=>(!translationFilter||entry.status===translationFilter)&&[entry.key,entry.text].some(v=>v.toLocaleLowerCase().includes(translationSearch.toLocaleLowerCase())));
+ const translationPages=Math.max(1,Math.ceil(visibleEntries.length/10)),activeTranslationPage=Math.min(translationPage,translationPages-1);
  return <section className="sc-language-manager">
   <div className="page-heading"><div><div className="eyebrow">{ui("ADMINISTRACIÓN / LOCALIZACIÓN")}</div><h1>{ui("Idiomas y traducciones")}</h1><p>{ui("Administra idiomas y revisa las traducciones antes de publicarlas. El sistema conserva el español como respaldo.")}</p></div></div>
   {error&&<p className="error" role="alert">{error}</p>}
@@ -47,10 +50,13 @@ export default function LanguageManager(){
     {!current?<p>{ui("Selecciona un idioma para revisar sus traducciones.")}</p>:<>
       <div className="sc-language-header"><strong>{current.native_name}</strong><span className="badge">{current.status}</span></div>
       {current.status==='draft'&&<button className="secondary" disabled={busy} onClick={()=>void perform(async()=>{await api('languages/'+current.id,'PATCH',{status:'active'});})}><Check size={16}/>{ui("Activar idioma")}</button>}
-      <div className="sc-locale-entries">{entries.map(entry=><div className="sc-locale-entry" key={entry.id}>
+      <div className="sc-locale-toolbar"><label>{ui('Buscar traducciones')}<input type="search" value={translationSearch} placeholder={ui('Clave o texto…')} onChange={e=>{setTranslationSearch(e.target.value);setTranslationPage(0);}}/></label><div><label>{ui('Estado de las traducciones')}</label><Combobox label={ui('Filtrar traducciones por estado')} value={translationFilter} searchable={false} placeholder={ui('Todos los estados')} onChange={v=>{setTranslationFilter(v);setTranslationPage(0);}} options={[{value:'draft',label:ui('Borrador')},{value:'published',label:ui('Publicada')}]} /></div><span>{visibleEntries.length} {ui('resultados')}</span></div>
+      <div className="sc-locale-entries">{visibleEntries.slice(activeTranslationPage*10,(activeTranslationPage+1)*10).map(entry=><div className="sc-locale-entry" key={entry.id}>
        <strong>{entry.key}</strong><p>{entry.text}</p><small>{entry.status}</small>
        {entry.status==='draft'&&<button className="text-button" disabled={busy} onClick={()=>void perform(async()=>{await api('translation_entries/'+entry.id,'PATCH',{status:'published'});})}>{ui("Publicar")}</button>}
       </div>)}</div>
+      {visibleEntries.length===0&&<div className="sc-locale-empty"><BookOpen size={23}/><strong>{ui(entries.length?'No hay traducciones con esos filtros':'Todavía no hay traducciones registradas')}</strong><p>{ui('Cambia los filtros o registra una traducción para comenzar.')}</p></div>}
+      {visibleEntries.length>10&&<nav className="sc-collection-pager" aria-label={ui('Paginación de traducciones')}><span>{ui('Página')} {activeTranslationPage+1} / {translationPages}</span><div><button type="button" className="secondary" disabled={activeTranslationPage===0} onClick={()=>setTranslationPage(n=>Math.max(0,n-1))}>{ui('Anterior')}</button><button type="button" className="secondary" disabled={activeTranslationPage===translationPages-1} onClick={()=>setTranslationPage(n=>Math.min(translationPages-1,n+1))}>{ui('Siguiente')}</button></div></nav>}
       <form className="sc-locale-form" onSubmit={addTranslation}>
        <h3>{ui("Nueva traducción")}</h3>
        <label>{ui("Clave")}<input value={key} placeholder={ui("nav.home")} required pattern="[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+" onChange={e=>setKey(e.target.value)}/></label>
