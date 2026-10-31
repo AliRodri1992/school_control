@@ -52,7 +52,7 @@ function CycleEventForm({cycleId,existing,onClose,onSaved}:{cycleId:number;exist
  const [official,setOfficial]=useState(Boolean(existing?.official));
  const [allDay,setAllDay]=useState(existing?.all_day!==false);
  const [start,setStart]=useState(existing?.all_day!==false?datePart(existing?.starts_at):localDatetime(existing?.starts_at));
- const [end,setEnd]=useState(existing?.all_day!==false?previousDay(datePart(existing?.ends_at)):localDatetime(existing?.ends_at));
+ const [end,setEnd]=useState(existing?.all_day!==false?(existing?.ends_at?previousDay(datePart(existing.ends_at)):''):localDatetime(existing?.ends_at));
  const [error,setError]=useState(''),[saving,setSaving]=useState(false);
  async function submit(event:FormEvent){
   event.preventDefault();if(saving)return;

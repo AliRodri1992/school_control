@@ -7,3 +7,30 @@
 .sc-cycle-form-field input{height:47px;box-sizing:border-box;min-width:0}
 .sc-cycle-form-field .sc-cycle-form-error{margin:0;line-height:1.45}
 @media(max-width:650px){.sc-cycle-form-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* Professional staged cycle editor */
+.sc-cycle-form-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border-bottom:1px solid var(--border,#dce4f0)}
+.sc-cycle-form-tabs button{display:flex;align-items:center;text-align:left;gap:10px;padding:18px;background:transparent;border-right:1px solid var(--border,#e5eaf4);border-bottom:3px solid transparent;min-width:0;color:var(--text-muted,#66758e)}
+.sc-cycle-form-tabs button:last-child{border-right:0}
+.sc-cycle-form-tabs button.is-selected{background:var(--surface-soft,#f6f9ff);border-bottom-color:#4868bd;color:var(--text,#304979)}
+.sc-cycle-form-tabs button>svg{flex-shrink:0;color:#5675c1}
+.sc-cycle-form-tabs button>span:not(.sc-cycle-tab-warning){min-width:0;display:grid;gap:4px}
+.sc-cycle-form-tabs strong{font-size:12px;line-height:1.4}
+.sc-cycle-form-tabs small{font-size:10px;color:var(--text-muted,#748099);line-height:1.4}
+.sc-cycle-tab-warning{margin-left:auto;border-radius:50%;background:#aa3349;color:#fff;padding:2px 6px;font-size:11px}
+.sc-cycle-form-field textarea{border:1px solid var(--border,#d2ddec);background:var(--surface,#fff);border-radius:10px;padding:12px;resize:vertical;min-height:105px;color:var(--text,#29375a);font:inherit}
+.sc-cycle-form-field .sc-combobox-trigger{min-height:47px}
+.sc-cycle-form-field .sc-combobox{min-width:0}
+.sc-cycle-form-field input[type=number]{appearance:textfield}
+.sc-cycle-form-field input[type=number]::-webkit-inner-spin-button{display:none}
+.sc-cycle-form-field:has(textarea){grid-template-rows:auto auto}
+.sc-cycle-form-note-field{margin-top:18px}
+.sc-cycle-form-term{border:1px solid var(--border,#e0e8f2);border-radius:12px;padding:18px;margin-bottom:13px}
+.sc-cycle-form-term h4{display:flex;align-items:center;gap:10px;font-size:14px;margin:0 0 18px;color:var(--text,#31426c)}
+.sc-cycle-form-term h4 span{display:grid;place-items:center;width:26px;height:26px;background:#e7eeff;border-radius:50%;color:#3158ad}
+.sc-cycle-form-notice{display:flex;align-items:start;gap:8px}
+.sc-cycle-form-notice svg{flex-shrink:0}
+.sc-cycle-field-help{font-size:11px;line-height:1.5;color:var(--text-muted,#64748b);margin:0}
+.sc-cycle-form-actions{position:sticky;bottom:0;background:var(--surface,#fff);z-index:5;border-top:1px solid var(--border,#e1e6ef)}
+@media(max-width:1050px){.sc-cycle-form-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.sc-cycle-form-tabs button{padding:12px}.sc-cycle-form-tabs small{display:none}.sc-cycle-form-tabs strong{font-size:11px}.sc-cycle-form-term{padding:13px}}

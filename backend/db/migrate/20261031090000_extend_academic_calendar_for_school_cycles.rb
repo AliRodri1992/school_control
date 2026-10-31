@@ -38,8 +38,8 @@ class ExtendAcademicCalendarForSchoolCycles < ActiveRecord::Migration[8.1]
     reversible do |direction|
       direction.up do
         execute <<~SQL
-          INSERT INTO role_permissions (access_role_id, key, data_scope, created_at, updated_at)
-          SELECT id, action_key, 'institution', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+          INSERT INTO role_permissions (access_role_id, key, data_scope)
+          SELECT id, action_key, 'institution'
           FROM access_roles
           CROSS JOIN (VALUES ('academic_years.show'), ('academic_years.destroy'), ('academic_years.pdf')) AS actions(action_key)
           WHERE default_profile = 'admin'

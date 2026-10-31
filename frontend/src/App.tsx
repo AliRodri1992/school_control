@@ -358,7 +358,7 @@ export default function App(){
   page==='preferences'?<Preferences onSaved={prefs=>setPageSize(prefs.rows_per_page)}/>:
   page==='profile'?<Profile onChange={setUser} onSignedOut={signedOut} onNavigate={go}/>:
  page==='notifications'?<Notifications navigate={target=>{if(target==='profile'||target==='notifications'||target==='messages'||modules[target]||['dashboard','reports','classroom','documents','schedule','school','access_roles'].includes(target))go(target);}}/>:
- page==='academic_years'?<SchoolCycles items={data.academic_years||[]} canCreate={can('academic_years.create')} canEdit={can('academic_years.update')}
+ page==='academic_years'?<SchoolCycles items={data.academic_years||[]} events={data.calendar_events||[]} canCreate={can('academic_years.create')} canEdit={can('academic_years.update')} canDelete={can('academic_years.destroy')} canPdf={can('academic_years.pdf')} canManageEvents={can('calendar_events.create')&&can('calendar_events.update')&&can('calendar_events.destroy')} onRefresh={async()=>{await refresh();}}
   onSave={async(values,existing)=>{await api(existing?'academic_years/'+existing.id:'academic_years',existing?'PATCH':'POST',values);await refresh();void notify('Cambios guardados correctamente.');}}
   error={moduleLoadErrors.academic_years?.message}/>:
   page==='enrollments'?<EnrollmentJourney items={data.enrollments||[]} groups={data.groups||[]} years={data.academic_years||[]} canComplete={can('enrollments.complete')} onComplete={complete} error={moduleLoadErrors.enrollments?.message}/>:
