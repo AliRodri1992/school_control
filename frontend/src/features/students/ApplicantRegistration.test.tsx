@@ -56,7 +56,17 @@ it('fills birth date automatically from a complete valid CURP',async()=>{
  render(<ApplicantRegistration years={[{id:5,name:'2026-2027'}]} admissions={[]} onClose={vi.fn()} onSaved={vi.fn(async()=>undefined)}/>);
  await userEvent.type(screen.getByLabelText('CURP *'),'DEMO200101MDFRNN01');
  expect(screen.getByLabelText('Fecha de nacimiento *')).toHaveProperty('value','2020-01-01');
- expect(screen.getByText(/Fecha de nacimiento obtenida automáticamente/)).toBeTruthy();
+ const dateInput=screen.getByLabelText('Fecha de nacimiento *');
+ const dateGroup=dateInput.closest('.sc-applicant-birthdate-group');
+ const curpGroup=screen.getByLabelText('CURP *').closest('.sc-applicant-curp-group');
+ const dateHint=screen.getByText(/Fecha de nacimiento obtenida automáticamente/);
+ expect(dateGroup).not.toBeNull();
+ expect(curpGroup).not.toBeNull();
+ expect(dateGroup?.contains(dateHint)).toBe(true);
+ expect(dateGroup?.parentElement).toBe(curpGroup?.parentElement);
+ expect(dateInput.getAttribute('aria-describedby')).toContain('applicant-birthdate-feedback');
+ expect(screen.getByLabelText('CURP *').getAttribute('aria-describedby')).toContain('applicant-curp-feedback');
+ expect(dateGroup?.parentElement?.querySelector(':scope > .sc-applicant-curp-hint')).toBeNull();
 });
 
 it('shows Auli guidance and a progress indicator for the first step',()=>{

@@ -174,9 +174,9 @@ export default function ApplicantRegistration({years,existing,admissions,onClose
   }
   return {...current,[key]:key==='contact_curp'?value.toUpperCase().trim():value};
  });};
- const field=(key:string,label:string,type='text',required=true)=> <label key={key} className="sc-applicant-field"><span>{ui(label)}{required?' *':''}</span><input type={type} value={form[key]||''}
+ const field=(key:string,label:string,type='text',required=true,helpId?:string)=> <label key={key} className="sc-applicant-field"><span>{ui(label)}{required?' *':''}</span><input type={type} value={form[key]||''}
   onChange={event=>set(key,event.target.value)} required={required} disabled={!editable||busy} aria-invalid={!!errors[key]}
-  aria-describedby={errors[key]?'applicant-error-'+key:undefined}/>{errors[key]&&<small id={'applicant-error-'+key} className="sc-applicant-field-error" role="alert">{ui(label)}: {ui(errors[key])}</small>}</label>;
+  aria-describedby={[errors[key]?'applicant-error-'+key:null,helpId].filter(Boolean).join(' ')||undefined}/>{errors[key]&&<small id={'applicant-error-'+key} className="sc-applicant-field-error" role="alert">{ui(label)}: {ui(errors[key])}</small>}</label>;
  async function persistCurrent():Promise<boolean>{
   if(busy||loadingRecord)return false;
   if(step>=4)return true;
@@ -309,7 +309,18 @@ export default function ApplicantRegistration({years,existing,admissions,onClose
     <span className="sc-applicant-step-badge">{progressLabel}% {ui('guardado')}</span></div>
    <div className="sc-applicant-step-description"><Info size={16}/><p>{ui(tips[step])}</p></div>
    {step===0&&<><div className="sc-applicant-subheading"><IdCard size={17}/>{ui('Datos personales')}</div><div className="sc-applicant-grid">{field('first_name','Nombre(s)')}{field('last_name','Primer apellido')}
-    {field('second_last_name','Segundo apellido','text',false)}<div className="sc-applicant-curp-group">{field('curp','CURP')}<small className={'sc-applicant-curp-indicator'+(curpDate?' is-valid':'')}>{ui('CURP')}: {ui(curpStatus)}</small></div>{field('birth_date','Fecha de nacimiento','date')}{birthDateFromCurp(form.curp)&&<p className="sc-applicant-curp-hint" role="status">{ui('Fecha de nacimiento obtenida automáticamente de la CURP. Puedes corregirla si es necesario.')}</p>}{field('birth_place','Lugar de nacimiento','text',false)}
+    {field('second_last_name','Segundo apellido','text',false)}
+    <div className="sc-applicant-curp-group">
+     {field('curp','CURP','text',true,'applicant-curp-feedback')}
+     <small id="applicant-curp-feedback" className={'sc-applicant-curp-indicator'+(curpDate?' is-valid':'')}>{ui('CURP')}: {ui(curpStatus)}</small>
+    </div>
+    <div className="sc-applicant-birthdate-group">
+     {field('birth_date','Fecha de nacimiento','date',true,curpDate?'applicant-birthdate-feedback':undefined)}
+     {curpDate&&<small id="applicant-birthdate-feedback" className="sc-applicant-curp-hint" role="status">
+      {ui('Fecha de nacimiento obtenida automáticamente de la CURP. Verifica que coincida con el acta de nacimiento.')}
+     </small>}
+    </div>
+    {field('birth_place','Lugar de nacimiento','text',false)}
     {field('birth_state','Entidad de nacimiento','text',false)}{field('nationality','Nacionalidad','text',false)}
     <label className="sc-applicant-field"><span>{ui('Sexo (opcional)')}</span>
      <Combobox label={ui('Sexo')} value={form.sex||''} onChange={value=>set('sex',value)} searchable={false}
