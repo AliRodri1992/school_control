@@ -47,6 +47,10 @@ module Api
 
     private
 
+    # Editing a family contact may fetch its latest state before saving.
+    # Use the existing update permission instead of requiring a new show grant.
+    def permission_key = action_name == "show" ? "student_contacts.update" : super
+
     def require_family_or_admin
       authorize_permission
     end
