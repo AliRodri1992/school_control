@@ -54,7 +54,7 @@ RSpec.describe DemoAcademics do
     seed_course("ESP")
     7.times { seed_student }
     described_class.seed_group!(group: group, admin: admin)
-    assignment = group.courses.first.assignments.find_by!(title: "Actividad de Español · demostración")
+    assignment = Assignment.find_by!(course: group.courses.first, title: "Actividad de Español · demostración")
     expect(assignment.published).to be(true)
     expect(assignment.assignment_submissions.count).to eq(5)
     expect(assignment.assignment_submissions.where.not(score: nil).count).to be_positive
