@@ -42,6 +42,7 @@ Al activar `DEMO_SEEDS=true` en desarrollo, las semillas crean un expediente esc
 
 - **Materias:** diez troncales (Español, Matemáticas, Ciencias naturales, Historia, Geografía, Artes, Educación física, Inglés, Formación cívica y ética y Vida saludable), además de los talleres del catálogo.
 - **Grupos y clases:** doce grupos, del 1.º A al 6.º B, con al menos diez alumnos y una clase por materia troncal; el horario respeta espacios, aulas, docentes y cargas semanales.
+- **Historial de 1.º a 6.º:** los alumnos con trayectoria avanzada tienen clases de diez materias y tres calificaciones publicadas por cada materia de cada grado anterior (30 por grado concluido), vinculadas a su inscripción y ciclo original.
 - **Calificaciones:** evaluaciones de distintas materias y periodos, con estados de borrador, revisada y publicada, sin modificar calificaciones existentes.
 - **Asistencia:** hasta quince días hábiles recientes por alumno activo, sin registrar fechas futuras o fines de semana; incluye asistencias, retardos, ausencias y justificantes.
 - **Aula virtual:** tareas publicadas, entregas pendientes, revisadas y calificadas. También añade notas institucionales ficticias para dar contenido a los expedientes.

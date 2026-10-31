@@ -89,6 +89,8 @@ if ENV["DEMO_SEEDS"] == "true"
   require_relative "demo_bulk"
   DemoBulk.seed!(year: year, admin: admin, password: password)
   DemoAcademics.seed!(year: year, admin: admin)
+  require_relative "demo_academic_history"
+  DemoAcademicHistory.seed!(year: year)
   puts "Datos ficticios preparados sin duplicar registros."
 end
 

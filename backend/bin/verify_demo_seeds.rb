@@ -58,5 +58,24 @@ raise "Expected at least 1,200 evaluations" if Grade.joins(course: :group).where
 raise "Expected at least 12 attendance days per enrolled pupil" if
   DemoAcademics.school_days(year).length >= 12 && Attendance.joins(enrollment: :group)
     .where(groups: { academic_year_id: year.id }).count < 1_440
+# A sixth-grader's history must contain courses and all three terms for every prior grade.
+historical = Enrollment.joins(:academic_year)
+  .where("academic_years.name LIKE ?", "Demo histórico %")
+  .where(status: "completed")
+historical_counts = Grade.where(enrollment_id: historical.select(:id)).group(:enrollment_id).count
+historical.find_each do |enrollment|
+  count = historical_counts.fetch(enrollment.id, 0)
+  raise "Incomplete #{enrollment.group.label} history for student #{enrollment.student_id}: #{count}/30 marks" if count < 30
+end
+year.groups.where(grade_level: 6, section: %w[A B]).each do |group|
+  group.enrollments.find_each do |enrollment|
+    prior = Enrollment.where(student_id: enrollment.student_id, status: "completed")
+      .joins(:academic_year).where("academic_years.name LIKE ?", "Demo histórico %")
+      .joins(:group).order("groups.grade_level")
+    raise "Sixth grader #{enrollment.student_id} needs five previous grades" unless prior.count == 5
+    raise "Incomplete grade progression for #{enrollment.student_id}" unless prior.map { |entry| entry.group.grade_level } == (1..5).to_a
+  end
+end
 puts "Demo verified: 12 groups with at least 10 pupils each."
+puts "  Historical grade records: #{historical_counts.values.sum} in #{historical.count} prior enrollments"
 minimums.each { |name, count| puts "  #{name}: #{count}" }
