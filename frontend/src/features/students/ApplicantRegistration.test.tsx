@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import ApplicantRegistration,{applicantStepIssues,preferredApplicantRecord,applicantDocumentState} from './ApplicantRegistration';
 import {api} from '../../api';
 import {readFileSync} from 'node:fs';
-const applicantStyles=readFileSync(new URL('../../styles/applicant-registration.css',import.meta.url),'utf8');
+const applicantStyles=readFileSync('src/styles/applicant-registration.css','utf8');
 vi.mock('../../api',()=>({api:vi.fn()}));
 vi.mock('../../notifications',()=>({confirmDanger:vi.fn(async()=>true)}));
 afterEach(()=>{cleanup();vi.mocked(api).mockReset();});
