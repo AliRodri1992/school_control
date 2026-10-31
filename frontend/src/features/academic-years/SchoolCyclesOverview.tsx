@@ -133,7 +133,7 @@ function CyclePreview({year,events,today,locale,onClose,onView,onEdit,canEdit,ca
     <button className="primary" type="button" onClick={()=>onView(year)}><ClipboardList size={16}/>{ui('Ver expediente completo')}</button>
     <button className="secondary" type="button" onClick={()=>onView(year,'calendar')}><CalendarDays size={16}/>{ui('Calendario escolar')}</button>
     <div className="sc-cycle-preview-extra">
-     {canEdit&&<button className="secondary" type="button" onClick={()=>onEdit(year)}><Pencil size={15}/>{ui('Editar')}</button>}
+     {canEdit&&!['closed','archived'].includes(String(year.status))&&<button className="secondary" type="button" onClick={()=>onEdit(year)}><Pencil size={15}/>{ui('Editar')}</button>}
      {canPdf&&<a className="secondary sc-cycle-action-link" href={pdfLink(year)}><FileDown size={15}/>{ui('Generar PDF')}</a>}
     </div>
    </footer>
@@ -174,7 +174,7 @@ function CycleMoreActions({year,canPdf,canDelete,working,pdfLink,onDelete}:{
   {open&&placement&&createPortal(<div ref={panel} role="menu" aria-label={ui('Acciones del ciclo ')+year.name}
     className="sc-cycle-row-menu sc-cycle-row-menu-portal" style={placement}>
     {canPdf&&<a role="menuitem" href={pdfLink(year)} onClick={()=>setOpen(false)}><FileDown size={16}/>{ui('Generar PDF')}</a>}
-    {canDelete&&<button role="menuitem" type="button" className="danger" disabled={working}
+    {canDelete&&!['closed','archived'].includes(String(year.status))&&<button role="menuitem" type="button" className="danger" disabled={working}
      onClick={()=>{setOpen(false);onDelete(year);}}><Trash2 size={16}/>{ui('Eliminar ciclo')}</button>}
    </div>,document.body)}
  </div>;
@@ -250,7 +250,7 @@ export default function SchoolCyclesOverview({items,events,canCreate,canEdit,can
      <div className="sc-cycle-featured-actions">
       <button className="primary" type="button" onClick={()=>openFull(current)}>{ui('Ver expediente')}<ArrowRight size={17}/></button>
       <button className="secondary" type="button" onClick={()=>openFull(current,'calendar')}><CalendarDays size={16}/>{ui('Calendario')}</button>
-      {canEdit&&<button className="sc-cycle-featured-link" type="button" onClick={()=>edit(current)}><Pencil size={15}/>{ui('Editar')}</button>}
+      {canEdit&&!['closed','archived'].includes(String(current.status))&&<button className="sc-cycle-featured-link" type="button" onClick={()=>edit(current)}><Pencil size={15}/>{ui('Editar')}</button>}
      </div>
     </div>
     <div className="sc-cycle-featured-aside">
@@ -333,7 +333,7 @@ export default function SchoolCyclesOverview({items,events,canCreate,canEdit,can
         <small>{future.length?ui('Próximo: ')+formDate(future[0].starts_at,locale):ui('Sin eventos próximos')}</small></div></td>
        <td><div className="sc-cycle-home-row-actions">
         <TableAction kind="view" ariaLabel={ui('Ver expediente de ')+year.name} onClick={()=>openFull(year)}/>
-        {canEdit&&<TableAction kind="edit" ariaLabel={ui('Editar ciclo ')+year.name} onClick={()=>edit(year)}/>}
+        {canEdit&&!['closed','archived'].includes(String(year.status))&&<TableAction kind="edit" ariaLabel={ui('Editar ciclo ')+year.name} onClick={()=>edit(year)}/>}
         {(canPdf||canDelete)&&<CycleMoreActions year={year} canPdf={canPdf} canDelete={canDelete}
          working={working} pdfLink={pdfLink} onDelete={onDelete}/>}</div></td>
       </tr>;

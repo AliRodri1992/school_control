@@ -135,7 +135,7 @@ export default function SchoolCycles({items,events=[],onSave,canCreate,canEdit,c
   <header className="sc-cycle-detail-hero"><div><span>{ui('EXPEDIENTE DEL CICLO ESCOLAR')}</span>
    <h2>{selected.name}</h2><p>{format(selected.starts_on)} — {format(selected.ends_on)} · {statusLabel(selected.status)}</p></div>
    <div className="sc-cycle-detail-actions">{canPdf&&<a className="secondary sc-cycle-action-link" href={pdfLink(selected)}><FileDown size={17}/>{ui('Generar PDF')}</a>}
-    {canEdit&&<button className="primary" type="button" onClick={()=>setEditor(selected)}>{ui('Editar ciclo')}</button>}</div></header>
+    {canEdit&&!['closed','archived'].includes(String(selected.status))&&<button className="primary" type="button" onClick={()=>setEditor(selected)}>{ui('Editar ciclo')}</button>}</div></header>
   <div className="sc-cycle-detail-tabs" role="tablist" aria-label={ui('Información del ciclo')}>
    <button type="button" role="tab" aria-selected={detailTab==='overview'} className={detailTab==='overview'?'active':''} onClick={()=>setDetailTab('overview')}><ClipboardList size={17}/>{ui('Resumen y evaluaciones')}</button>
    <button type="button" role="tab" aria-selected={detailTab==='calendar'} className={detailTab==='calendar'?'active':''} onClick={()=>setDetailTab('calendar')}><CalendarDays size={17}/>{ui('Calendario y eventos')} <span>{events.filter(x=>String(x.academic_year_id)===selectedId).length}</span></button>
@@ -180,13 +180,13 @@ export default function SchoolCycles({items,events=[],onSave,canCreate,canEdit,c
       {summary('Publicación',format(selected.calendar_published_on))}</div>
      {selected.calendar_source_url&&<p className="sc-cycle-source-link"><a target="_blank" rel="noopener noreferrer" href={String(selected.calendar_source_url)}>{ui('Consultar fuente del calendario')}</a></p>}
      {selected.notes&&<p className="sc-cycle-detail-notes">{selected.notes}</p>}</article>
-    {canDelete&&<div className="sc-cycle-delete-zone"><Info size={17}/><span>{ui('Los ciclos con información académica vinculada no pueden eliminarse.')}</span>
+    {canDelete&&!['closed','archived'].includes(String(selected.status))&&<div className="sc-cycle-delete-zone"><Info size={17}/><span>{ui('Los ciclos con información académica vinculada no pueden eliminarse.')}</span>
       <button type="button" className="secondary" disabled={working} onClick={()=>void removeCycle(selected)}>{ui('Eliminar ciclo')}</button></div>}
    </div>:<div className="sc-cycle-detail-panel sc-cycle-events-panel">
     <div className="sc-cycle-events-heading"><div><h3>{ui('Fechas y eventos del calendario')}</h3><p>{ui('Registra suspensiones, vacaciones, sesiones de CTE y actividades. Sin importador automático.')}</p></div>
-     {canManageEvents&&<button type="button" className="primary" onClick={()=>setEventEditor(null)}><Plus size={17}/>{ui('Registrar evento')}</button>}</div>
+     {canManageEvents&&!['closed','archived'].includes(String(selected.status))&&<button type="button" className="primary" onClick={()=>setEventEditor(null)}><Plus size={17}/>{ui('Registrar evento')}</button>}</div>
     <div className="sc-cycle-events-note"><Info size={17}/>{ui('Los eventos oficiales deben capturarse conforme a las publicaciones vigentes de las autoridades educativas.')}</div>
-    {eventEditor!==false&&canManageEvents&&<CycleEventForm key={eventEditor?.id||'new-event'} cycleId={Number(selected.id)}
+    {eventEditor!==false&&canManageEvents&&!['closed','archived'].includes(String(selected.status))&&<CycleEventForm key={eventEditor?.id||'new-event'} cycleId={Number(selected.id)}
        existing={eventEditor||undefined} onClose={()=>setEventEditor(false)} onSaved={async()=>{await onRefresh?.();}}/>}
     <label className="sc-cycles-search"><Search size={17}/><input aria-label={ui('Buscar evento del calendario')}
      placeholder={ui('Buscar por fecha, concepto o fuente…')} value={eventQuery} onChange={e=>setEventQuery(e.target.value)}/></label>
@@ -197,7 +197,7 @@ export default function SchoolCycles({items,events=[],onSave,canCreate,canEdit,c
      <td><strong>{event.title}</strong>{event.description&&<small>{event.description}</small>}</td>
      <td>{ui(eventKinds.find(k=>k.value===event.kind)?.label||event.kind)}</td>
      <td><span className="sc-cycle-source-tag">{ui(sourceOptions.find(s=>s.value===event.source_type)?.label||'Manual')}</span>{event.official&&<small>{ui('Oficial')}</small>}</td>
-     <td className="sc-cycle-row-actions">{canManageEvents&&<><TableAction kind="edit" ariaLabel={ui('Editar '+event.title)} onClick={()=>setEventEditor(event)}/>
+     <td className="sc-cycle-row-actions">{canManageEvents&&!['closed','archived'].includes(String(selected.status))&&<><TableAction kind="edit" ariaLabel={ui('Editar '+event.title)} onClick={()=>setEventEditor(event)}/>
       <TableAction kind="delete" ariaLabel={ui('Eliminar '+event.title)} disabled={working} onClick={()=>void removeEvent(event)}/></>}</td>
     </tr>)}</tbody></table></div>:<TableEmptyState mode={eventQuery?'filtered':'empty'} canCreate={canManageEvents}/>}
    </div>}
