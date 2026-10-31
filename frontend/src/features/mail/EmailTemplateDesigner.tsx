@@ -12,6 +12,7 @@ export default function EmailTemplateDesigner({schoolName}:{schoolName:string}){
  const [items,setItems]=useState<Template[]>([]),[draft,setDraft]=useState<Template>(blank);
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[success,setSuccess]=useState('');
  const [preview,setPreview]=useState(true);
+ const [templateSearch,setTemplateSearch]=useState(''),[templateStatus,setTemplateStatus]=useState(''),[templatePage,setTemplatePage]=useState(0);
  async function refresh(){const result:Template[]=await api('email_templates');setItems(result);}
  useEffect(()=>{void refresh().catch(e=>setError(e.message));},[]);
  function change<K extends keyof Template>(key:K,value:Template[K]){setDraft(v=>({...v,[key]:value}));setError('');setSuccess('');}
@@ -21,17 +22,21 @@ export default function EmailTemplateDesigner({schoolName}:{schoolName:string}){
     setDraft(result);await refresh();setSuccess('Plantilla guardada y versionada correctamente.');
   }catch(error){setError((error as Error).message);}finally{setBusy(false);}
  }
+ const matching=items.filter(item=>(!templateStatus||item.status===templateStatus)&&[kinds[item.key]||item.key,item.subject,item.locale].some(value=>String(value||'').toLocaleLowerCase().includes(templateSearch.toLocaleLowerCase())));
+ const totalPages=Math.max(1,Math.ceil(matching.length/8)),page=Math.min(templatePage,totalPages-1);
  return <section className="sc-mail-designer">
   <div className="page-heading"><div><span className="eyebrow">{ui("ADMINISTRACIÓN / COMUNICACIÓN")}</span><h1>{ui("Diseñador de correos institucionales")}</h1>
    <p>{ui("Edita plantillas guardadas en PostgreSQL y verifica cómo se mostrarán a las familias.")}</p></div>
    <button className="secondary" type="button" onClick={()=>{setDraft(blank());setError('');setSuccess('');}}><FilePlus2 size={17}/>{ui("Nueva plantilla")}</button></div>
   {error&&<p className="error" role="alert">{error}</p>}{success&&<p className="success" role="status"><CheckCircle2 size={17}/>{success}</p>}
   <div className="sc-mail-layout">
-   <aside className="panel sc-mail-templates"><h2><Mail size={18}/> {ui("Plantillas")}</h2>
-    {items.map(template=><button className={'sc-mail-list-item'+(template.id===draft.id?' active':'')} type="button"
+   <aside className="panel sc-mail-templates"><h2><Mail size={18}/> {ui("Plantillas")}</h2><div className="sc-mail-library-filters"><label>{ui('Buscar plantillas')}<input type="search" value={templateSearch} onChange={event=>{setTemplateSearch(event.target.value);setTemplatePage(0);}} placeholder={ui('Tipo, asunto o idioma…')}/></label><div><label>{ui('Estado')}</label><Combobox label={ui('Filtrar plantillas por estado')} value={templateStatus} searchable={false} placeholder={ui('Todas')} onChange={value=>{setTemplateStatus(value);setTemplatePage(0);}} options={[{value:'draft',label:ui('Borrador')},{value:'published',label:ui('Publicada')},{value:'archived',label:ui('Archivada')}]}/></div><small>{matching.length} {ui('resultados')}</small></div>
+    {matching.slice(page*8,(page+1)*8).map(template=><button className={'sc-mail-list-item'+(template.id===draft.id?' active':'')} type="button"
       onClick={()=>{setDraft({...template,html_body:template.html_body||''});setError('');setSuccess('');}} key={template.id}>
       <strong>{kinds[template.key]||template.key}</strong><span>{template.locale.toUpperCase()} · {template.status} · v{template.revision||1}</span>
     </button>)}
+    {matching.length===0&&<p className="sc-mail-list-empty">{ui(items.length?'No hay plantillas con esos filtros.':'Todavía no hay plantillas guardadas.')}</p>}
+    {matching.length>8&&<nav className="sc-collection-pager" aria-label={ui('Paginación de plantillas')}><span>{ui('Página')} {page+1} / {totalPages}</span><div><button type="button" className="secondary" disabled={page===0} onClick={()=>setTemplatePage(n=>Math.max(0,n-1))}>{ui('Anterior')}</button><button type="button" className="secondary" disabled={page===totalPages-1} onClick={()=>setTemplatePage(n=>Math.min(totalPages-1,n+1))}>{ui('Siguiente')}</button></div></nav>}
    </aside>
    <div className="panel sc-mail-edit-panel"><div className="sc-mail-edit-head"><h2>{ui("Contenido del mensaje")}</h2>
     <button className="text-button" type="button" onClick={()=>setPreview(v=>!v)}><PanelRight size={16}/>{preview?'Ocultar vista previa':'Mostrar vista previa'}</button></div>
