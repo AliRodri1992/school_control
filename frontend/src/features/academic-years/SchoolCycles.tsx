@@ -1,5 +1,6 @@
-import {useEffect,useMemo,useState,type FormEvent} from 'react';
-import {ArrowLeft,CalendarDays,CalendarRange,CheckCircle2,ClipboardList,FileDown,GraduationCap,Info,Plus,Search,Save,ShieldCheck,Users,X} from 'lucide-react';
+import {useState,type FormEvent} from 'react';
+import {ArrowLeft,CalendarDays,ClipboardList,FileDown,GraduationCap,Info,Plus,Search,Save,ShieldCheck,Users,X} from 'lucide-react';
+import SchoolCyclesOverview from './SchoolCyclesOverview';
 import type {Row} from '../../modules';
 import {api} from '../../api';
 import {confirmDanger,notify} from '../../notifications';
@@ -88,18 +89,10 @@ function CycleEventForm({cycleId,existing,onClose,onSaved}:{cycleId:number;exist
 }
 export default function SchoolCycles({items,events=[],onSave,canCreate,canEdit,canDelete=false,canPdf=false,canManageEvents=false,onRefresh,error}:Props){
  const {ui,locale}=useSchoolLocale();
- const [query,setQuery]=useState(''),[filter,setFilter]=useState(''),[page,setPage]=useState(0),[pageSize,setPageSize]=useState('10');
  const [editor,setEditor]=useState<Row|null|false>(false),[selectedId,setSelectedId]=useState<string|null>(null);
  const [detailTab,setDetailTab]=useState<'overview'|'calendar'>('overview'),[eventEditor,setEventEditor]=useState<Row|null|false>(false);
  const [eventQuery,setEventQuery]=useState(''),[operationError,setOperationError]=useState(''),[working,setWorking]=useState(false);
- const today=new Date().toLocaleDateString('en-CA');
- const stats=useMemo(()=>schoolYearStats(items,today),[items,today]);
  const selected=items.find(x=>String(x.id)===selectedId);
- const rows=useMemo(()=>items.filter(x=>(!filter||String(x.status||'active')===filter)
-  &&String(x.name||'').toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()))
-  .sort((a,b)=>String(b.starts_on||'').localeCompare(String(a.starts_on||''))),[items,query,filter]);
- const visible=rows.slice(page*Number(pageSize),(page+1)*Number(pageSize));
- useEffect(()=>setPage(0),[query,filter,pageSize]);
  const format=(date?:string)=>date?new Date(datePart(date)+'T12:00:00').toLocaleDateString(locale.startsWith('en')?'en-US':'es-MX',{day:'numeric',month:'short',year:'numeric'}):ui('Sin configurar');
  const statusLabel=(value?:string)=>ui(statusOptions.find(s=>s.value===(value||'active'))?.label||'Sin estado');
  const linkedEvents=events.filter(x=>String(x.academic_year_id)===selectedId)
@@ -183,42 +176,9 @@ export default function SchoolCycles({items,events=[],onSave,canCreate,canEdit,c
     </tr>)}</tbody></table></div>:<TableEmptyState mode={eventQuery?'filtered':'empty'} canCreate={canManageEvents}/>}
    </div>}
  </section>;
- return <section className="sc-cycles" aria-label={ui('Ciclos escolares')}>
-  <header className="sc-cycles-hero"><div><span>{ui('ADMINISTRACIÓN ACADÉMICA')}</span><h2>{ui('Ciclos escolares')}</h2>
-   <p>{ui('Controla vigencias, trimestres, convocatorias y fechas oficiales en un solo lugar.')}</p></div><CalendarDays size={46} aria-hidden="true"/></header>
-  <div className="sc-cycles-kpis">{[
-   {title:'Ciclos registrados',value:stats.total,icon:CalendarDays},{title:'Inscripciones abiertas',value:stats.admissions,icon:Users},
-   {title:'Reinscripciones abiertas',value:stats.reenrollments,icon:CheckCircle2},{title:'Próximas convocatorias',value:stats.upcoming,icon:CalendarRange}
-  ].map(metric=>{const Icon=metric.icon;return <article key={metric.title}><div><Icon size={17}/><span>{ui(metric.title)}</span></div><strong>{metric.value}</strong></article>;})}</div>
-  <section className="sc-cycles-workspace">
-   <div className="sc-cycles-heading"><div><h3>{ui('Administrar ciclos escolares')}</h3><p>{ui('Consulta, registra, edita y genera la ficha PDF de cada ciclo.')}</p></div>
-    {canCreate&&<button className="primary" type="button" onClick={()=>setEditor(null)}><Plus size={17}/>{ui('Registrar ciclo')}</button>}</div>
-   <div className="sc-cycle-toolbar">
-    <label className="sc-cycles-search"><Search size={18}/><input aria-label={ui('Buscar ciclo escolar')} placeholder={ui('Buscar por nombre del ciclo…')} value={query} onChange={event=>setQuery(event.target.value)}/></label>
-    <div className="sc-cycle-filter"><span>{ui('Estado')}</span><Combobox label={ui('Filtrar por estado')} value={filter} onChange={setFilter} options={statusOptions.map(x=>({...x,label:ui(x.label)}))} placeholder={ui('Todos los estados')} searchable={false}/></div>
-    {(query||filter)&&<button type="button" className="secondary" onClick={()=>{setQuery('');setFilter('');}}>{ui('Limpiar filtros')}</button>}
-   </div>
-   {operationError&&<p role="alert" className="sc-cycle-form-general-error">{operationError}</p>}
-   {error?<TableEmptyState mode="error" description={error}/>:rows.length?<div className="sc-cycle-table-wrap"><table className="sc-cycle-table"><thead><tr>
-    <th>{ui('Ciclo escolar')}</th><th>{ui('Periodo de clases')}</th><th>{ui('Estado')}</th><th>{ui('Trimestres')}</th><th>{ui('Origen')}</th><th>{ui('Acciones')}</th>
-   </tr></thead><tbody>{visible.map(item=><tr key={item.id}>
-    <td><strong>{item.name}</strong><small>{item.planned_school_days?item.planned_school_days+' '+ui('días lectivos'):'Sin días configurados'}</small></td>
-    <td>{format(item.starts_on)}<small>{ui('al')} {format(item.ends_on)}</small></td>
-    <td><span className={'sc-cycle-status status-'+String(item.status||'active')}>{statusLabel(item.status)}</span></td>
-    <td>{(['first','second','third'] as const).filter(t=>item[t+'_term_starts_on']&&item[t+'_term_ends_on']).length} / 3</td>
-    <td>{ui(sourceOptions.find(s=>s.value===item.calendar_source)?.label||'Captura manual')}</td>
-    <td className="sc-cycle-row-actions"><TableAction kind="view" ariaLabel={ui('Ver ciclo '+item.name)} onClick={()=>{setSelectedId(String(item.id));setDetailTab('overview');setOperationError('');}}/>
-     {canEdit&&<TableAction kind="edit" ariaLabel={ui('Editar ciclo '+item.name)} onClick={()=>setEditor(item)}/>}
-     {canPdf&&<TableAction kind="download" ariaLabel={ui('Generar PDF de '+item.name)} href={pdfLink(item)}/>}
-     {canDelete&&<TableAction kind="delete" ariaLabel={ui('Eliminar ciclo '+item.name)} disabled={working} onClick={()=>void removeCycle(item)}/>}</td>
-   </tr>)}</tbody></table></div>:<TableEmptyState mode={query||filter?'filtered':'empty'} canCreate={canCreate}/>}
-   {rows.length>0&&<footer className="sc-cycle-pagination">
-    <div><span>{ui('Mostrar')}</span><Combobox label={ui('Filas por página')} value={pageSize} onChange={setPageSize}
-       options={['10','20','50'].map(n=>({value:n,label:n}))} searchable={false}/><span>{ui('por página')}</span></div>
-    <div><span>{page*Number(pageSize)+1}–{Math.min((page+1)*Number(pageSize),rows.length)} {ui('de')} {rows.length}</span>
-     <button type="button" className="secondary" disabled={page===0} onClick={()=>setPage(p=>p-1)}>{ui('Anterior')}</button>
-     <button type="button" className="secondary" disabled={(page+1)*Number(pageSize)>=rows.length} onClick={()=>setPage(p=>p+1)}>{ui('Siguiente')}</button></div>
-   </footer>}
-  </section>
- </section>;
+ return <SchoolCyclesOverview items={items} events={events} error={error} working={working}
+  canCreate={canCreate} canEdit={canEdit} canDelete={canDelete} canPdf={canPdf}
+  onCreate={()=>setEditor(null)} onEdit={year=>setEditor(year)}
+  onView={(year,tab='overview')=>{setSelectedId(String(year.id));setDetailTab(tab);setOperationError('');}}
+  onDelete={year=>void removeCycle(year)} pdfLink={pdfLink}/>;
 }
