@@ -6,9 +6,11 @@ class GradeWorkflow
   end
 
   def self.publish(grade:, actor:)
-    transition(grade, actor, "reviewed", "published") do
+    result = transition(grade, actor, "reviewed", "published") do
       grade.published_at = Time.current
     end
+    AcademicYearLifecycle.advance!(result.enrollment.academic_year, trigger: "grade_published")
+    result
   end
 
   def self.correct(grade:, actor:, attributes:, reason:, expected_version:, permission: "grades.correct")

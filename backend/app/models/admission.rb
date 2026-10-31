@@ -10,6 +10,13 @@ class Admission < ApplicationRecord
   validates :status, inclusion: { in: %w[draft submitted correction_requested approved rejected cancelled] }
   validates :grade_level, inclusion: { in: 1..6 }
   validate :eligible, on: :create
+  validate :prevent_closed_cycle_change, on: :update
+
+  def prevent_closed_cycle_change
+    if academic_year&.closed_for_academics? && has_changes_to_save?
+      errors.add(:base, "El ciclo escolar está cerrado; la solicitud es de solo lectura")
+    end
+  end
 
   def missing_requirements(for_formalization: false)
     return [ "Identidad y ciclo escolar" ] unless student && academic_year

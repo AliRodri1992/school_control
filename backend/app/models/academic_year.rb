@@ -52,7 +52,11 @@ class AcademicYear < ApplicationRecord
     return unless (enrollments.exists? || admissions.exists?)
     watched = %w[starts_on ends_on first_term_starts_on first_term_ends_on second_term_starts_on
                  second_term_ends_on third_term_starts_on third_term_ends_on]
-    if watched.any? { |attribute| will_save_change_to_attribute?(attribute) }
+    # Filling a previously unknown trimester is safe for historical/demo import.
+    # Changing an already established date with linked records requires a
+    # separate administrative rectification, never a regular edit form.
+    if watched.any? { |attribute| will_save_change_to_attribute?(attribute) &&
+      attribute_change_to_be_saved(attribute)&.first.present? }
       errors.add(:base, "Hay expedientes vinculados; las fechas académicas requieren una rectificación autorizada")
     end
   end

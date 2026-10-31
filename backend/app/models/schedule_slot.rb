@@ -1,5 +1,11 @@
 class ScheduleSlot < ApplicationRecord
   belongs_to :course
+  validate :cycle_is_editable
+
+  def cycle_is_editable
+    errors.add(:base, "El ciclo escolar está cerrado") if course&.group&.academic_year&.closed_for_academics?
+  end
+
   validates :weekday, inclusion: { in: 1..5 }
   validates :starts_minute, numericality: { only_integer: true, greater_than_or_equal_to: 420 }
   validates :ends_minute, numericality: { only_integer: true, less_than_or_equal_to: 1200 }

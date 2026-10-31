@@ -32,6 +32,7 @@ module Api
         audit(record, "formative_evaluation.published")
         render json: present_record(record)
       end
+      AcademicYearLifecycle.advance!(enrollment.academic_year, trigger: "formative_evaluation_published")
     end
 
     private

@@ -12,5 +12,6 @@ class CompleteEnrollment
       enrollment.update!(status: "completed", outcome: outcome)
       AuditEvent.create!(user: actor, action: "enrollment.completed", record_type: "Enrollment", record_id: enrollment.id, changes_summary: { outcome: outcome })
     end
+    AcademicYearLifecycle.advance!(enrollment.academic_year, trigger: "enrollment_completed")
   end
 end

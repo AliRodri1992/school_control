@@ -4,6 +4,12 @@ class Course < ApplicationRecord
   belongs_to :teacher, class_name: "User"
   has_many :schedule_slots, dependent: :destroy
   has_many :grades, dependent: :restrict_with_error
+  validate :cycle_is_editable
+
+  def cycle_is_editable
+    errors.add(:base, "El ciclo escolar está cerrado") if group&.academic_year&.closed_for_academics?
+  end
+
   validates :subject_id, uniqueness: { scope: :group_id }
   validates :weekly_periods, numericality: { only_integer: true, in: 1..20 }
   validate :valid_teacher
