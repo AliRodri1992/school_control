@@ -9,8 +9,8 @@ module Api
     end
 
     def show
-      record = collection.find(params[:id])
-      authorize record, :update?
+      record = StudentContact.where(student_id: SchoolAccess.new(current_user, "student_contacts.index").students.select(:id)).find(params[:id])
+      authorize record, :show?
       render json: serialize(record)
     end
 
@@ -47,9 +47,8 @@ module Api
 
     private
 
-    # Editing a family contact may fetch its latest state before saving.
-    # Use the existing update permission instead of requiring a new show grant.
-    def permission_key = action_name == "show" ? "student_contacts.update" : super
+    # The fresh detail GET is read-only and follows the same grants as the index.
+    def permission_key = action_name == "show" ? "student_contacts.index" : super
 
     def require_family_or_admin
       authorize_permission

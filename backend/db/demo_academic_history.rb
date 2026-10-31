@@ -92,7 +92,9 @@ module DemoAcademicHistory
 
   def self.historical_mark(enrollment, course, term)
     year = enrollment.academic_year
-    day = year.evaluation_period(term).fetch(:ends_on)
+    # Historical enrollments may hold a cached year before its periods were initialized.
+    day = year.evaluation_period(term)[:ends_on] ||
+      year.starts_on + ((year.ends_on - year.starts_on).to_i * term / 3)
     published_at = Time.zone.local(day.year, day.month, day.day, 16)
     offset = (enrollment.student_id * 7 + course.subject_id * 3 + enrollment.group.grade_level + term * 5) % 9
     {

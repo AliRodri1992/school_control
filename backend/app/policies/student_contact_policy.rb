@@ -1,6 +1,8 @@
 class StudentContactPolicy < ApplicationPolicy
   def index? = user.can?("student_contacts.index")
 
+  def show? = allowed_student?("student_contacts.index")
+
   def create?
     allowed_student?("student_contacts.create")
   end

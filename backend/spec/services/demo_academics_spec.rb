@@ -35,11 +35,12 @@ RSpec.describe DemoAcademics do
 
     expect(spanish.schedule_slots.count).to eq(2)
     expect(maths.schedule_slots.count).to eq(2)
-    expect(student.grades.count).to eq(5) # 2 periods of evaluation and a third draft for Spanish
+    expect(student.grades.count).to eq(6) # Every subject has one mark in each trimester.
     expect(student.attendances.count).to eq(15)
     expect(existing.reload.status).to eq("justified") if existing
     expect(student.grades.where(term: 1).count).to eq(2)
-    expect(student.grades.where(term: 3).count).to eq(1)
+    expect(student.grades.where(term: 3).count).to eq(2)
+    expect(student.formative_evaluations.count).to eq(12)
     expect(Assignment.where(course: [ spanish, maths ]).count).to eq(2)
     expect(student.student.notes.count).to be >= 1
   end
