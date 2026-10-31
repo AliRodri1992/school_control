@@ -4,6 +4,7 @@ import {api} from '../../api';
 import Combobox from '../../shared/components/Combobox';
 import type {Row} from '../../modules';
 import {useSchoolLocale} from '../../shared/i18n/LocaleContext';
+import {birthDateFromCurp} from './curpBirthDate';
 
 type Props={years:Row[];existing?:Row|null;admissions:Row[];onClose:()=>void;onSaved:()=>Promise<void>};
 const stages=['Identidad','Domicilio','Teléfonos','Familiares','Documentos','Revisión y envío'];
@@ -87,7 +88,14 @@ export default function ApplicantRegistration({years,existing,admissions,onClose
   }catch(cause){setError((cause as Error).message);}finally{setBusy(false);}
  }
 
- const set=(key:string,value:string)=>setForm(current=>({...current,[key]:value}));
+ const set=(key:string,value:string)=>setForm(current=>{
+  if(key==='curp'){
+   const normalized=value.toUpperCase().trim();
+   const extracted=birthDateFromCurp(normalized);
+   return {...current,curp:normalized,...(extracted?{birth_date:extracted}:{})};
+  }
+  return {...current,[key]:value};
+ });
  const field=(key:string,label:string,type='text',required=true)=> <label key={key} className="sc-applicant-field"><span>{ui(label)}{required?' *':''}</span><input type={type} value={form[key]||''}
   onChange={event=>set(key,event.target.value)} required={required}/></label>;
  async function proceed(){
@@ -160,7 +168,7 @@ export default function ApplicantRegistration({years,existing,admissions,onClose
     <span>{index<step?<CheckCircle2 size={16}/>:index+1}</span><small>{ui(name)}</small></button></li>)}</ol>
   <div className="sc-applicant-step"><div className="sc-applicant-step-title"><span>{ui('PASO')} {step+1} / 6</span><h2>{ui(stages[step])}</h2></div>
    {step===0&&<div className="sc-applicant-grid">{field('first_name','Nombre(s)')}{field('last_name','Primer apellido')}
-    {field('second_last_name','Segundo apellido','text',false)}{field('curp','CURP')}{field('birth_date','Fecha de nacimiento','date')}{field('birth_place','Lugar de nacimiento','text',false)}
+    {field('second_last_name','Segundo apellido','text',false)}{field('curp','CURP')}{field('birth_date','Fecha de nacimiento','date')}{birthDateFromCurp(form.curp)&&<p className="sc-applicant-curp-hint" role="status">{ui('Fecha de nacimiento obtenida automáticamente de la CURP. Puedes corregirla si es necesario.')}</p>}{field('birth_place','Lugar de nacimiento','text',false)}
     {field('birth_state','Entidad de nacimiento','text',false)}{field('nationality','Nacionalidad','text',false)}
     <label className="sc-applicant-field"><span>{ui('Ciclo escolar')} *</span><Combobox label={ui('Ciclo escolar')} value={form.academic_year_id} onChange={value=>set('academic_year_id',value)} options={years.map(year=>({value:String(year.id),label:year.name}))}/></label>
     <label className="sc-applicant-field"><span>{ui('Grado solicitado')}</span><Combobox label={ui('Grado solicitado')} value={form.grade_level} onChange={value=>set('grade_level',value)} options={[{value:'1',label:ui('Primero de primaria')}]}/></label>
