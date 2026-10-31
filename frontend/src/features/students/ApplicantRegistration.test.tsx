@@ -44,3 +44,11 @@ it('saves applicant stages on the server before submitting their application',as
  expect(api).toHaveBeenCalledWith('admissions/34/submit','POST');
  expect(onClose).toHaveBeenCalled();
 });
+
+it('fills birth date automatically from a complete valid CURP',async()=>{
+ vi.mocked(api).mockResolvedValue([]);
+ render(<ApplicantRegistration years={[{id:5,name:'2026-2027'}]} admissions={[]} onClose={vi.fn()} onSaved={vi.fn(async()=>undefined)}/>);
+ await userEvent.type(screen.getByLabelText('CURP *'),'DEMO200101MDFRNN01');
+ expect(screen.getByLabelText('Fecha de nacimiento *')).toHaveProperty('value','2020-01-01');
+ expect(screen.getByText(/Fecha de nacimiento obtenida automáticamente/)).toBeTruthy();
+});
