@@ -32,6 +32,7 @@ import {useStudentReport} from './features/students/useStudentReport';
 const EmailTemplateDesigner=lazy(()=>import('./features/mail/EmailTemplateDesigner'));
 const ApiDocs=lazy(()=>import('./features/api/ApiDocs'));
 import RecordForm from './shared/components/RecordForm';
+import EditFamilyContactForm from './features/contacts/EditFamilyContactForm';
 const LanguageManager=lazy(()=>import('./features/languages/LanguageManager'));
 import {useLocation,useNavigate} from 'react-router-dom';
 const ImportWizard=lazy(()=>import('./features/imports/ImportWizard'));
@@ -84,7 +85,7 @@ export default function App(){
  const [error,setError] = useState(''),[notice,setNotice] = useState(''),[query,setQuery] = useState(''),[mobile,setMobile] = useState(false),[busy,setBusy] = useState(false);
  const [detailStudent,setDetailStudent]=useState<Row|null>(null);
  const [studentRecordLoading,setStudentRecordLoading]=useState(false);
- const [dialog,setDialog] = useState<{title:string;fields:Field[];values:Row;submit:(values:Row)=>Promise<void>}|null>(null);
+ const [dialog,setDialog] = useState<{title:string;fields:Field[];values:Row;variant?:'family-contact-edit';submit:(values:Row)=>Promise<void>}|null>(null);
  const {report,loadingStudentId:reportLoadingStudentId,error:reportError,
   open:openStudentReport,close:closeStudentReport,clearError:clearStudentReportError} = useStudentReport(id=>api(`students/${id}/report`));
  const [groupFilter,setGroupFilter] = useState('');
@@ -204,7 +205,7 @@ export default function App(){
    let fields = module.fields.filter(f=>!(f.key==='guardian_id'&&user?.role==='guardian'));
    if(page==='student_contacts'&&record)fields=fields.filter(f=>f.key!=='student_id');
    if(page==='users'&&record)fields=fields.filter(f=>['name','email'].includes(f.key));
-   setFieldErrors({});setDialog({title:`${ui(record?'Editar':'Registrar')} ${module.singular}`,fields,values:record||{},submit:async(values)=>{
+   setFieldErrors({});setError('');setDialog({title:`${ui(record?'Editar':'Registrar')} ${module.singular}`,fields,values:record||{},...(page==='student_contacts'&&record?{variant:'family-contact-edit' as const}:{}),submit:async(values)=>{
      const updateAsCreate=['attendances','grades'].includes(page);
      await api(record&&!updateAsCreate?`${page}/${record.id}`:page,record&&!updateAsCreate?'PATCH':'POST',values);setDialog(null);
    }});
@@ -407,7 +408,14 @@ export default function App(){
   </div>}</section></>}
  </div>
 
-  {dialog&&<div className="overlay"><section role="dialog" aria-modal="true" aria-labelledby="dialog-title" className="dialog"><header><div><span className="eyebrow">CONTROL ESCOLAR</span><h2 id="dialog-title">{dialog.title}</h2></div><button aria-label="Cerrar formulario" onClick={()=>setDialog(null)}><X/></button></header><RecordForm fields={dialog.fields} initial={dialog.values} busy={busy} options={options} optionName={optionName} error={error} fieldErrors={fieldErrors} onCancel={()=>setDialog(null)} onSubmit={values=>perform(()=>dialog.submit(values))}/></section></div>}
+   {dialog&&<div className="overlay"><section role="dialog" aria-modal="true" aria-labelledby="dialog-title" className={'dialog'+(dialog.variant==='family-contact-edit'?' sc-family-edit-dialog':'')}>
+    {dialog.variant==='family-contact-edit'?
+     <EditFamilyContactForm initial={dialog.values}
+      studentName={String(dialog.values.student_name||(data.students||[]).find(student=>String(student.id)===String(dialog.values.student_id))?.full_name||'Alumno sin identificar')}
+      busy={busy} error={error} fieldErrors={fieldErrors} onCancel={()=>setDialog(null)} onSubmit={values=>void perform(()=>dialog.submit(values))}/>:
+     <><header><div><span className="eyebrow">CONTROL ESCOLAR</span><h2 id="dialog-title">{dialog.title}</h2></div><button aria-label="Cerrar formulario" onClick={()=>setDialog(null)}><X/></button></header>
+      <RecordForm fields={dialog.fields} initial={dialog.values} busy={busy} options={options} optionName={optionName} error={error} fieldErrors={fieldErrors} onCancel={()=>setDialog(null)} onSubmit={values=>perform(()=>dialog.submit(values))}/></>}
+   </section></div>}
  {report&&<div className="overlay"><section role="dialog" aria-modal="true" aria-label="Boleta e historial" className="dialog report"><header><div><span className="eyebrow">{school.name}</span><h2>{report.student.full_name}</h2><p>Boleta de consulta · {report.student.curp}</p></div><div className="actions"><button onClick={()=>window.print()} aria-label="Imprimir boleta"><Printer/></button><button onClick={closeStudentReport} aria-label="Cerrar boleta"><X/></button></div></header>{report.years.map((year:Row)=><article key={year.enrollment.id}><h3>{year.enrollment.group_label}</h3><p>{display(year.enrollment.status)} · {display(year.enrollment.outcome)}</p><table><thead><tr><th>Materia</th><th>Trimestre</th><th>Calificación</th><th>Observación</th></tr></thead><tbody>{year.grades.map((g:Row)=><tr key={g.id}><td>{g.subject_name}</td><td>{g.term}</td><td>{g.score}</td><td>{g.feedback}</td></tr>)}</tbody></table><p>{ui('Promedio registrado: ')}<strong>{mean(year.grades.map((g:Row)=>Number(g.score)))}</strong></p><div className="actions">{Object.entries(year.attendance).map(([status,total])=><span className="badge" key={status}>{display(status)}: {String(total)}</span>)}</div></article>)}{!report.years.length&&<TableEmptyState canCreate={false}/>}<p className="footnote">Documento de consulta interna. No sustituye una certificación oficial.</p></section></div>}
  </Suspense></PortalChrome>;
 }
