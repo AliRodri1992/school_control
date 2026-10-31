@@ -50,6 +50,7 @@ RSpec.describe AcademicYearLifecycle do
   it "rejects changing status manually and established dates with linked records" do
     expect(year.update(status: "closed")).to be(false)
     expect(year.errors[:status]).to be_present
+    year.reload
     create(:admission, academic_year: year)
     expect(year.update(starts_on: Date.new(2026, 9, 1))).to be(false)
     expect(year.errors[:base]).to be_present
