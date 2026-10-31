@@ -28,3 +28,14 @@ Verificación sin divulgar ningún dato personal:
     docker compose exec backend bundle exec rails runner 'abort "Migración de contactos pendiente" unless %w[first_name middle_name paternal_surname maternal_surname curp birth_date sex].all? { |column| StudentContact.column_names.include?(column) }; puts "Columnas de identidad instaladas"'
 
 No es necesario borrar la base de datos. Si el backend no tiene la versión nueva o la migración está pendiente, la interfaz mostrará un error en lugar de presentar como guardados campos ignorados.
+
+
+## Ver alumno → Contactos
+
+El expediente usa la tabla \`contacts\` y el formulario \`StudentContactForm\`. Se capturan primer nombre, segundo nombre (opcional), apellido paterno, apellido materno (opcional), CURP, parentesco, teléfono y correo opcional; los permisos de emergencia, recogida y principal son independientes. El nombre completo se calcula automáticamente, sin inventar componentes opcionales.
+
+Al editar se lee la identidad persistida antes de mostrar el formulario. Tras el guardado, se comprueba el resultado de la escritura y se realiza un nuevo GET; si faltan nombres o apellidos, no se indica éxito. Un contacto espejo de \`student_contacts\` se modifica mediante su API de origen para mantener ambos módulos sincronizados; nunca se actualiza directamente la fila espejo.
+
+La migración \`20261031070000_extend_family_contact_identity.rb\` incluye tanto \`student_contacts\` como \`contacts\`. La derivación de fecha de nacimiento y del sexo codificado en CURP se realiza en el backend y no se puede sobrescribir desde este formulario. Los contactos históricos sin campos estructurados conservan su nombre original hasta que se complete su identidad.
+
+Las pruebas de regresión de \`StudentDetails.test.tsx\` cubren guardar, volver a leer y reabrir contactos normales y contactos espejo con los nombres opcionales vacíos.
