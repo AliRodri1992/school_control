@@ -32,7 +32,11 @@ it('saves applicant stages on the server before submitting their application',as
  await userEvent.click(screen.getByRole('button',{name:'Guardar y continuar'}));
  expect(await screen.findByRole('heading',{name:'Teléfonos'})).toBeTruthy();
  await userEvent.type(screen.getByLabelText('Teléfono de emergencia con código internacional *'),'+525555555555');
+ await userEvent.click(screen.getByRole('combobox',{name:'País y prefijo'}));
+ await userEvent.click(screen.getByRole('option',{name:/Estados Unidos/}));
+ expect(screen.getByLabelText('Teléfono de emergencia con código internacional *')).toHaveProperty('value','+15555555555');
  await userEvent.click(screen.getByRole('button',{name:'Guardar y continuar'}));
+ expect(api).toHaveBeenCalledWith('students/12/details/phones','POST',expect.objectContaining({country_code:'US',number_e164:'+15555555555'}));
  expect(await screen.findByRole('heading',{name:'Familiares'})).toBeTruthy();
  await userEvent.type(screen.getByLabelText('Nombre del familiar *'),'Tutor de prueba');
  await userEvent.click(screen.getByRole('combobox',{name:'Parentesco'}));
@@ -129,7 +133,7 @@ it('deletes persisted secondary family contacts through the API',async()=>{
  vi.mocked(api).mockImplementation(async(path,method)=>{
   if(path.endsWith('/details/addresses'))return [{id:11,purpose:'home',primary:true,line1:'Calle 1'}];
   if(path.endsWith('/details/phones'))return [{id:12,purpose:'emergency',primary:true,country_code:'MX',number_e164:'+525512345678'}];
-  if(path==='student_contacts'&&method==='GET')return [
+  if(path==='student_contacts'&&(!method||method==='GET'))return [
    {id:15,student_id:10,name:'Madre',relationship:'Madre',phone:'5512345678',emergency:true},
    {id:16,student_id:10,name:'Tía',relationship:'Tía',phone:'5512349999',emergency:false}];
   if(path==='student_documents')return [];
