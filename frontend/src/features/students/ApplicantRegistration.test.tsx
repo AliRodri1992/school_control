@@ -2,7 +2,7 @@
 import {afterEach,expect,it,vi} from 'vitest';
 import {cleanup,fireEvent,render,screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import ApplicantRegistration from './ApplicantRegistration';
+import ApplicantRegistration,{applicantStepIssues} from './ApplicantRegistration';
 import {api} from '../../api';
 vi.mock('../../api',()=>({api:vi.fn()}));
 afterEach(()=>{cleanup();vi.mocked(api).mockReset();});
@@ -76,4 +76,21 @@ it('offers an international phone country dropdown and field-specific errors',as
  await userEvent.type(screen.getByLabelText(/CURP \*/),'DEMO200101MDFRNN01');
  await userEvent.click(screen.getByRole('button',{name:'Guardar y continuar'}));
  expect(await screen.findByRole('heading',{name:'Domicilio'})).toBeTruthy();
+});
+
+it('shows a private academic record, a six-stage stepper and an accessible draft state',()=>{
+ vi.mocked(api).mockResolvedValue([]);
+ render(<ApplicantRegistration years={[{id:5,name:'2026-2027'}]} admissions={[]} onClose={vi.fn()} onSaved={vi.fn(async()=>undefined)}/>);
+ expect(screen.getByRole('heading',{name:'Registro de aspirante'})).toBeTruthy();
+ expect(screen.getByText('Tu expediente')).toBeTruthy();
+ expect(screen.getByText('Expediente privado')).toBeTruthy();
+ expect(screen.getByRole('navigation',{name:'Etapas del registro'})).toBeTruthy();
+ expect(screen.getByRole('button',{name:'Ir a Revisión y envío'})).toHaveProperty('disabled',true);
+ expect(screen.getByRole('progressbar',{name:'Avance del registro'}).getAttribute('aria-valuenow')).toBe('1');
+});
+it('validates fields by the active section, without mixing data from other steps',()=>{
+ expect(applicantStepIssues(0,{first_name:'',last_name:'',curp:'',birth_date:'',academic_year_id:''},null)).toMatchObject({first_name:'Es obligatorio',last_name:'Es obligatorio',curp:'Es obligatorio'});
+ expect(applicantStepIssues(1,{line1:'Calle 1',locality:'México',region:'México',postal_code:'12'},null)).toMatchObject({postal_code:'Introduce un código postal de 5 dígitos'});
+ expect(applicantStepIssues(2,{number_e164:'5512345678'},null)).toMatchObject({number_e164:'Introduce un número internacional válido'});
+ expect(applicantStepIssues(3,{contact_name:'Madre',relationship:'madre',contact_phone:'5551234567',contact_email:'wrong'},null)).toMatchObject({contact_email:'Introduce un correo válido'});
 });
