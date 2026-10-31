@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
 import {afterEach,expect,it,vi} from 'vitest';
-import {cleanup,fireEvent,render,screen} from '@testing-library/react';
+import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import ApplicantRegistration,{applicantStepIssues} from './ApplicantRegistration';
+import ApplicantRegistration,{applicantStepIssues,preferredApplicantRecord,applicantDocumentState} from './ApplicantRegistration';
 import {api} from '../../api';
 vi.mock('../../api',()=>({api:vi.fn()}));
+vi.mock('../../notifications',()=>({confirmDanger:vi.fn(async()=>true)}));
 afterEach(()=>{cleanup();vi.mocked(api).mockReset();});
 it('saves applicant stages on the server before submitting their application',async()=>{
  vi.mocked(api).mockImplementation(async (path,method)=>{
@@ -58,7 +59,7 @@ it('shows Auli guidance and a progress indicator for the first step',()=>{
  vi.mocked(api).mockResolvedValue([]);
  render(<ApplicantRegistration years={[{id:5,name:'2026-2027'}]} admissions={[]} onClose={vi.fn()} onSaved={vi.fn(async()=>undefined)}/>);
  expect(screen.getByAltText('Auli, mascota de School Control')).toBeTruthy();
- expect(screen.getByRole('progressbar').getAttribute('aria-valuenow')).toBe('1');
+ expect(screen.getByRole('progressbar').getAttribute('aria-valuenow')).toBe('0');
  expect(screen.getByText('Datos personales')).toBeTruthy();
  expect(screen.getByText('Auli recomienda')).toBeTruthy();
 });
@@ -86,11 +87,62 @@ it('shows a private academic record, a six-stage stepper and an accessible draft
  expect(screen.getByText('Expediente privado')).toBeTruthy();
  expect(screen.getByRole('navigation',{name:'Etapas del registro'})).toBeTruthy();
  expect(screen.getByRole('button',{name:'Ir a Revisión y envío'})).toHaveProperty('disabled',true);
- expect(screen.getByRole('progressbar',{name:'Avance del registro'}).getAttribute('aria-valuenow')).toBe('1');
+ expect(screen.getByRole('progressbar',{name:'Avance guardado del registro'}).getAttribute('aria-valuenow')).toBe('0');
 });
 it('validates fields by the active section, without mixing data from other steps',()=>{
  expect(applicantStepIssues(0,{first_name:'',last_name:'',curp:'',birth_date:'',academic_year_id:''},null)).toMatchObject({first_name:'Es obligatorio',last_name:'Es obligatorio',curp:'Es obligatorio'});
  expect(applicantStepIssues(1,{line1:'Calle 1',locality:'México',region:'México',postal_code:'12'},null)).toMatchObject({postal_code:'Introduce un código postal de 5 dígitos'});
  expect(applicantStepIssues(2,{number_e164:'5512345678'},null)).toMatchObject({number_e164:'Introduce un número internacional válido'});
  expect(applicantStepIssues(3,{contact_name:'Madre',relationship:'madre',contact_phone:'5551234567',contact_email:'wrong'},null)).toMatchObject({contact_email:'Introduce un correo válido'});
+});
+
+it('prevents a CURP and birth date mismatch before creating the record',()=>{
+ expect(applicantStepIssues(0,{
+  first_name:'Sara',last_name:'Prueba',curp:'DEMO200101MDFRNN01',
+  birth_date:'2021-01-01',academic_year_id:'5'
+ },'2020-01-01')).toMatchObject({birth_date:'La fecha no coincide con la CURP'});
+});
+it('chooses primary purpose records and preserves reviewed document statuses',()=>{
+ const rows=[{id:1,purpose:'work',primary:false},{id:2,purpose:'home',primary:true}];
+ expect(preferredApplicantRecord(rows,'home')?.id).toBe(2);
+ expect(applicantDocumentState([
+  {id:1,title:'Acta',status:'correction_requested'},
+  {id:2,title:'Acta',status:'approved'}], 'Acta')?.status).toBe('approved');
+});
+it('saves a filled identity before exiting instead of silently losing changes',async()=>{
+ vi.mocked(api).mockImplementation(async(path,method)=>{
+  if(path==='students'&&method==='POST')return {id:12,full_name:'Sara Prueba'};
+  if(path==='admissions'&&method==='POST')return {id:34,student_id:12,academic_year_id:5,grade_level:1,status:'draft'};
+  return [];
+ });
+ const close=vi.fn();
+ render(<ApplicantRegistration years={[{id:5,name:'2026-2027'}]} admissions={[]} onClose={close} onSaved={vi.fn(async()=>{})}/>);
+ await userEvent.type(screen.getByLabelText('Nombre(s) *'),'Sara');
+ await userEvent.type(screen.getByLabelText('Primer apellido *'),'Prueba');
+ await userEvent.type(screen.getByLabelText('CURP *'),'DEMO200101MDFRNN01');
+ await userEvent.click(screen.getByRole('button',{name:'Guardar borrador y salir'}));
+ await waitFor(()=>expect(close).toHaveBeenCalledTimes(1));
+ expect(api).toHaveBeenCalledWith('students','POST',expect.objectContaining({first_name:'Sara',birth_date:'2020-01-01'}));
+ expect(api).toHaveBeenCalledWith('admissions','POST',expect.objectContaining({draft:true}));
+});
+it('deletes persisted secondary family contacts through the API',async()=>{
+ vi.mocked(api).mockImplementation(async(path,method)=>{
+  if(path.endsWith('/details/addresses'))return [{id:11,purpose:'home',primary:true,line1:'Calle 1'}];
+  if(path.endsWith('/details/phones'))return [{id:12,purpose:'emergency',primary:true,country_code:'MX',number_e164:'+525512345678'}];
+  if(path==='student_contacts'&&method==='GET')return [
+   {id:15,student_id:10,name:'Madre',relationship:'Madre',phone:'5512345678',emergency:true},
+   {id:16,student_id:10,name:'Tía',relationship:'Tía',phone:'5512349999',emergency:false}];
+  if(path==='student_documents')return [];
+  if(path.startsWith('admission_document_requirements'))return [];
+  return {};
+ });
+ render(<ApplicantRegistration existing={{id:10,first_name:'Sara',last_name:'Prueba',curp:'DEMO200101MDFRNN01',birth_date:'2020-01-01'}}
+  admissions={[{id:25,student_id:10,academic_year_id:5,grade_level:1,status:'draft'}]}
+  years={[{id:5,name:'2026-2027'}]} onClose={vi.fn()} onSaved={vi.fn(async()=>{})}/>);
+ await waitFor(()=>expect(screen.getByRole('button',{name:'Ir a Familiares'}).hasAttribute('disabled')).toBe(false));
+ await userEvent.click(screen.getByRole('button',{name:'Ir a Familiares'}));
+ expect(await screen.findByText('Familiar adicional 1')).toBeTruthy();
+ await userEvent.click(screen.getByRole('button',{name:'Eliminar familiar adicional 1'}));
+ await waitFor(()=>expect(api).toHaveBeenCalledWith('student_contacts/16','DELETE'));
+ await waitFor(()=>expect(screen.queryByText('Familiar adicional 1')).toBeNull());
 });
