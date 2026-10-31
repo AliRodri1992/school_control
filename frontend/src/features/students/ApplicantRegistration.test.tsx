@@ -59,7 +59,7 @@ it('fills birth date automatically from a complete valid CURP',async()=>{
  const dateInput=screen.getByLabelText('Fecha de nacimiento *');
  const dateGroup=dateInput.closest('.sc-applicant-birthdate-group');
  const curpGroup=screen.getByLabelText('CURP *').closest('.sc-applicant-curp-group');
- const dateHint=screen.getByText(/Fecha de nacimiento obtenida automáticamente/);
+ const dateHint=screen.getByText(/Fecha sugerida por la CURP/);
  expect(dateGroup).not.toBeNull();
  expect(curpGroup).not.toBeNull();
  expect(dateGroup?.contains(dateHint)).toBe(true);
