@@ -6,6 +6,7 @@ import type {Row} from '../../modules';
 import {useSchoolLocale} from '../../shared/i18n/LocaleContext';
 import {birthDateFromCurp} from './curpBirthDate';
 import {PHONE_COUNTRIES} from './StudentPhoneForm';
+import {relationshipChoices} from '../../shared/relationships';
 
 type Props={years:Row[];existing?:Row|null;admissions:Row[];onClose:()=>void;onSaved:()=>Promise<void>};
 const stages=['Identidad','Domicilio','Teléfonos','Familiares','Documentos','Revisión y envío'];
@@ -195,7 +196,7 @@ export default function ApplicantRegistration({years,existing,admissions,onClose
    {step===2&&<div className="sc-applicant-grid"><div className="sc-applicant-field"><span>{ui('País y prefijo')}</span><Combobox label={ui('País y prefijo')} searchable={PHONE_COUNTRIES.length>7} value={phoneCountry} onChange={value=>{setPhoneCountry(value);set('number_e164',PHONE_COUNTRIES.find(c=>c.value===value)?.dial||'+52');}} options={PHONE_COUNTRIES.map(c=>({value:c.value,label:c.label}))}/></div>{field('number_e164','Teléfono de emergencia con código internacional','tel')}
     <p className="sc-applicant-hint">{ui('Puedes agregar teléfonos adicionales desde el expediente del aspirante.')}</p></div>}
    {step===3&&<div className="sc-applicant-family">
-    <div className="sc-applicant-grid">{field('contact_name','Nombre del familiar')}{field('relationship','Parentesco')}
+    <div className="sc-applicant-grid">{field('contact_name','Nombre del familiar')}<label className="sc-applicant-field"><span>{ui('Parentesco')} *</span><Combobox label={ui('Parentesco')} value={form.relationship||''} onChange={value=>set('relationship',value)} options={relationshipChoices(form.relationship)} searchable placeholder={ui('Selecciona un parentesco')}/>{errors.relationship&&<small className="sc-applicant-field-error" role="alert">{ui('Parentesco')}: {ui(errors.relationship)}</small>}</label>
      {field('contact_phone','Teléfono de contacto','tel')}{field('contact_email','Correo electrónico','email',false)}
      <label className="sc-applicant-switch"><input type="checkbox" checked={pickupAuthorized} onChange={e=>setPickupAuthorized(e.target.checked)}/><span className="sc-applicant-switch-track"/><span>{ui('Autorizado para recoger al menor')}</span></label>
     </div>
@@ -203,7 +204,7 @@ export default function ApplicantRegistration({years,existing,admissions,onClose
      {family.map((person,index)=><fieldset key={person.id||index} className="sc-applicant-family-entry"><legend>{ui('Familiar adicional')} {index+1}</legend><button type="button" className="sc-applicant-remove-family" aria-label={ui('Eliminar familiar adicional')+' '+(index+1)} onClick={()=>setFamily(current=>current.filter((_,i)=>i!==index))}><Trash2 size={15}/>{ui('Eliminar')}</button>
       <div className="sc-applicant-grid">{([
        ['name','Nombre completo'],['relationship','Parentesco'],['phone','Teléfono'],['email','Correo electrónico']
-      ] as const).map(([key,label])=><label key={key} className="sc-applicant-field"><span>{ui(label)}</span><input type={key==='email'?'email':'text'} value={person[key]} onChange={e=>setFamily(previous=>previous.map((entry,i)=>i===index?{...entry,[key]:e.target.value}:entry))}/></label>)}</div>
+      ] as const).map(([key,label])=><label key={key} className="sc-applicant-field"><span>{ui(label)}</span>{key==='relationship'?<Combobox label={ui('Parentesco')+' '+(index+1)} value={person.relationship} options={relationshipChoices(person.relationship)} searchable placeholder={ui('Selecciona un parentesco')} onChange={value=>setFamily(previous=>previous.map((entry,i)=>i===index?{...entry,relationship:value}:entry))}/>:<input type={key==='email'?'email':'text'} value={person[key]} onChange={e=>setFamily(previous=>previous.map((entry,i)=>i===index?{...entry,[key]:e.target.value}:entry))}/>}</label>)}</div>
       <div className="sc-applicant-family-flags"><label className="sc-applicant-switch"><input type="checkbox" checked={person.emergency} onChange={e=>setFamily(previous=>previous.map((entry,i)=>i===index?{...entry,emergency:e.target.checked}:entry))}/><span className="sc-applicant-switch-track"/><span>{ui('Contacto de emergencia')}</span></label>
       <label className="sc-applicant-switch"><input type="checkbox" checked={person.pickup_authorized} onChange={e=>setFamily(previous=>previous.map((entry,i)=>i===index?{...entry,pickup_authorized:e.target.checked}:entry))}/><span className="sc-applicant-switch-track"/><span>{ui('Autorizado para recoger')}</span></label></div>
      </fieldset>)}

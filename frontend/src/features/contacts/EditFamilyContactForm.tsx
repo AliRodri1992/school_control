@@ -3,6 +3,7 @@ import Swal from 'sweetalert2';
 import {AlertCircle,ContactRound,IdCard,LoaderCircle,Mail,Phone,Save,ShieldCheck,UserRound,UsersRound,X} from 'lucide-react';
 import type {Row} from '../../modules';
 import Combobox from '../../shared/components/Combobox';
+import {relationshipChoices} from '../../shared/relationships';
 import {useSchoolLocale} from '../../shared/i18n/LocaleContext';
 import {parseFamilyCurp} from './familyCurp';
 
@@ -156,7 +157,14 @@ export default function EditFamilyContactForm({initial,students=[],studentName='
     <section className="sc-family-edit-section" aria-labelledby="family-edit-contact-title">
      <div className="sc-family-edit-section-heading"><span className="sc-family-edit-section-icon"><Phone size={19}/></span><div><h3 id="family-edit-contact-title">{ui('Parentesco y medios de contacto')}</h3><p>{ui('Mantén estos datos vigentes para una comunicación oportuna.')}</p></div></div>
      <div className="sc-family-edit-fields">
-      {field('relationship','Ej. Madre, padre, abuelo o tutor',UsersRound)}
+      <div className="sc-family-edit-field">
+       <label htmlFor="family-edit-relationship">{ui('Parentesco')} <span className="required" aria-hidden="true">*</span></label>
+       <Combobox id="family-edit-relationship" label={ui('Parentesco')} value={values.relationship} onChange={value=>update('relationship',value)}
+        options={relationshipChoices(values.relationship)} searchable placeholder={ui('Selecciona un parentesco')}
+        disabled={busy} invalid={!!fieldError('relationship')}
+        describedBy={fieldError('relationship')?'family-edit-relationship-error':undefined}/>
+       {fieldError('relationship')&&<p id="family-edit-relationship-error" className="sc-field-error" role="alert">{ui(fieldError('relationship'))}</p>}
+      </div>
       {field('phone','Ej. 55 1234 5678',Phone)}
       {field('email','correo@ejemplo.com',Mail)}
      </div>

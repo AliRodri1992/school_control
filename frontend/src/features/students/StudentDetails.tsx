@@ -9,6 +9,7 @@ import StudentContactForm from './StudentContactForm';
 import {familyContactDisplayName,hasFamilyContactIdentityColumns,verifyFamilyContactSaved} from '../contacts/familyContactPersistence';
 import DetailCollectionControls,{DetailCollectionPagination,collectionParams,initialCollectionFilters,type CollectionFilters,type CollectionMeta} from './DetailCollectionControls';
 import type {Field,Row} from '../../modules';
+import {FAMILY_RELATIONSHIPS} from '../../shared/relationships';
 import {confirmDanger,notify} from '../../notifications';
 
 type DataKind='addresses'|'phones'|'contacts'|'notes';
@@ -38,7 +39,7 @@ const fields:Record<DataKind,Field[]>={
   {key:'primary',label:'Principal',options:[['true','Sí'],['false','No']],optional:true}
  ],
  contacts:[
-  {key:'name',label:'Nombre de contacto'}, {key:'relationship',label:'Parentesco',optional:true},
+  {key:'name',label:'Nombre de contacto'}, {key:'relationship',label:'Parentesco',optional:true,options:FAMILY_RELATIONSHIPS.map(name=>[name,name])},
   {key:'email',label:'Correo electrónico',type:'email',optional:true},
   {key:'emergency',label:'Contacto de emergencia',options:[['true','Sí'],['false','No']],optional:true},
   {key:'pickup_authorized',label:'Autorización de recogida',options:[['true','Sí'],['false','No']],optional:true},

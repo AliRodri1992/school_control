@@ -5,6 +5,8 @@ import type {Row} from '../../modules';
 import {useSchoolLocale} from '../../shared/i18n/LocaleContext';
 import {familyContactFullName} from '../contacts/EditFamilyContactForm';
 import {parseFamilyCurp} from '../contacts/familyCurp';
+import Combobox from '../../shared/components/Combobox';
+import {relationshipChoices} from '../../shared/relationships';
 
 type Key='first_name'|'middle_name'|'paternal_surname'|'maternal_surname'|'curp'|'relationship'|'legacy_phone'|'email';
 type Values=Record<Key,string>&{emergency:boolean;pickup_authorized:boolean;primary:boolean};
@@ -144,7 +146,13 @@ export default function StudentContactForm({initial,studentName,busy,error,field
     <h4 id="sc-student-contact-connection">{ui('Parentesco y comunicación')}</h4>
     <p>{ui('Estos datos ayudan a contactar a la persona cuando la escuela lo necesite.')}</p></div></header>
    <div className="sc-student-contact-grid">
-    {field('relationship','Ej. Madre, padre, tutor o abuela',UsersRound)}
+    <div className="sc-student-contact-field">
+     <label htmlFor="student-contact-relationship">{ui('Parentesco')} <span aria-hidden="true" className="required">*</span></label>
+     <Combobox id="student-contact-relationship" label={ui('Parentesco')} value={values.relationship} onChange={value=>update('relationship',value)}
+      options={relationshipChoices(values.relationship)} searchable disabled={busy} placeholder={ui('Selecciona un parentesco')}
+      invalid={!!feedback('relationship')} describedBy={feedback('relationship')?'student-contact-relationship-error':undefined}/>
+     {feedback('relationship')&&<small id="student-contact-relationship-error" className="sc-student-contact-error" role="alert">{ui(feedback('relationship'))}</small>}
+    </div>
     {field('legacy_phone','Ej. 55 1234 5678',Phone)}
     {field('email','correo@ejemplo.com',Mail,true)}
    </div>
