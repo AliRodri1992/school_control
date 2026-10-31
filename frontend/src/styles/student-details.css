@@ -86,34 +86,6 @@
 .sc-student-stage-label{font-size:10px;color:#3655c2;font-weight:750}
 .sc-applicant-notice{background:#f2f6ff;border:1px solid #cbd9ff;color:#30457b;border-radius:12px;padding:18px;font-size:13px;line-height:1.5}
 
-.sc-applicant-wizard{display:grid;gap:18px;min-width:0;max-width:1120px;margin:auto;width:100%}
-.sc-applicant-wizard-header{background:linear-gradient(120deg,#142349,#2b4a8f);padding:26px 30px;border-radius:18px;color:white}
-.sc-applicant-wizard-header h1{font-size:clamp(24px,3vw,32px);margin:16px 0 10px;color:white}
-.sc-applicant-wizard-header p{color:#d7e3ff;margin:0 0 10px}
-.sc-applicant-wizard-header .eyebrow{margin-top:20px;color:#c0d1ff}
-.sc-applicant-folio{font-size:12px;color:#d7e3ff}
-.sc-applicant-progress{margin:0;padding:15px;background:#fff;border:1px solid #e0e6f2;border-radius:14px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;list-style:none}
-.sc-applicant-progress li{display:grid;justify-items:center;text-align:center;gap:7px;color:#74809b;font-size:11px;min-width:0}
-.sc-applicant-progress li>span{width:28px;height:28px;border:1px solid #b8c3db;border-radius:100%;display:grid;place-items:center;font-weight:700}
-.sc-applicant-progress li[aria-current=step],.sc-applicant-progress li.is-done{color:#2d4bb7;font-weight:750}
-.sc-applicant-progress li[aria-current=step]>span,.sc-applicant-progress li.is-done>span{background:#3554ce;border-color:#3554ce;color:white}
-.sc-applicant-step{background:white;border:1px solid #e0e6f2;padding:clamp(20px,3vw,36px);border-radius:16px;min-height:350px}
-.sc-applicant-step-title span{font-size:11px;letter-spacing:1.5px;color:#405cc2;font-weight:800}
-.sc-applicant-step-title h2{margin:9px 0 26px}
-.sc-applicant-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}
-.sc-applicant-field{display:grid;gap:8px;min-width:0}
-.sc-applicant-field>span{font-size:12px;font-weight:700;color:#263750}
-.sc-applicant-field input,.sc-applicant-field select{min-height:46px;border:1px solid #bdcbe0;border-radius:10px;width:100%;padding:10px 12px;background:#fff;color:#172b48}
-.sc-applicant-field input:focus-visible,.sc-applicant-field select:focus-visible{outline:2px solid #3554ce;outline-offset:1px}
-.sc-applicant-hint{display:flex;gap:10px;align-items:flex-start;color:#64738b;font-size:12px;line-height:1.6}
-.sc-applicant-documents,.sc-applicant-review{display:grid;justify-items:start;gap:13px;padding:26px;border:1px dashed #b9c8e6;background:#f8faff;border-radius:12px}
-.sc-applicant-documents>svg,.sc-applicant-review>svg{color:#405cc2}
-.sc-applicant-error{color:#a52632;background:#fff0f0;padding:13px;border-radius:9px}
-.sc-applicant-step-actions{margin-top:28px;display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap}
-.sc-applicant-step-actions button{display:inline-flex;align-items:center;gap:9px;min-height:44px}
-.sc-applicant-resume{font-size:11px}
-@media(max-width:750px){.sc-applicant-grid{grid-template-columns:1fr}.sc-applicant-progress li small{font-size:9px}.sc-applicant-wizard-header{padding:22px}.sc-applicant-progress{padding:10px;gap:4px}.sc-applicant-step{padding:18px}.sc-applicant-step-actions button{flex:1;justify-content:center}}
-
 /* Admissions rule editor: compact administrative controls with explicit scope. */
 .sc-admission-requirements{display:grid;gap:16px;background:white;border:1px solid #dce4f1;border-radius:16px;padding:22px;margin-bottom:20px;min-width:0}
 .sc-admission-requirements-intro{display:flex;align-items:center;gap:14px}
@@ -134,14 +106,6 @@
 .sc-admission-requirements-list>div button{min-height:38px;min-width:38px;display:grid;place-items:center}
 .sc-admission-requirements-list>p{padding:16px;margin:0;background:#f7f9fd;border-radius:10px;color:#66748c;font-size:12px}
 @media(max-width:680px){.sc-admission-requirements{padding:15px}.sc-admission-requirements-toolbar label{flex:1}.sc-admission-requirements-add>label:first-child{flex-basis:100%}.sc-admission-requirements-add .primary{width:100%;justify-content:center}}
-
-.sc-applicant-progress li>button{border:0;background:transparent;display:grid;justify-items:center;gap:7px;color:inherit;width:100%;cursor:pointer}
-.sc-applicant-progress li>button:disabled{cursor:default;opacity:.8}
-.sc-applicant-progress li>button>span{width:28px;height:28px;border:1px solid #b8c3db;border-radius:50%;display:grid;place-items:center;font-weight:700}
-.sc-applicant-progress li[aria-current=step]>button>span,.sc-applicant-progress li.is-done>button>span{background:#3554ce;border-color:#3554ce;color:#fff}
-.sc-applicant-progress li>button:focus-visible{outline:2px solid #405cf5;outline-offset:3px;border-radius:9px}
-.sc-applicant-missing{border:1px solid #edcd81;background:#fff9ec;color:#755419;border-radius:10px;padding:16px;width:100%;font-size:12px}
-.sc-applicant-missing ul{margin:10px 0 0;padding-left:20px}
 
 .sc-admission-file{display:grid;gap:18px;min-width:0}
 .sc-admission-file-hero{padding:27px clamp(19px,3vw,36px);border-radius:18px;background:linear-gradient(115deg,#172750,#2e4c8d);color:white}
@@ -192,16 +156,6 @@
 .sc-admission-overview-filters button{min-height:42px}
 @media(max-width:1120px){.sc-admission-overview-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.sc-admission-overview-kpis{gap:8px}.sc-admission-overview-kpis article{padding:12px}.sc-admission-overview-icon{width:34px;height:34px}.sc-admission-overview-filters label{flex-basis:100%}.sc-admission-overview-filters button{width:100%}}
-
-/* Grouped family contacts in applicant registration. */
-.sc-applicant-family{display:grid;gap:18px}
-.sc-applicant-family-entry{border:1px solid #d7e0f1;border-radius:12px;padding:17px;min-width:0;background:#f8faff}
-.sc-applicant-family-entry legend{font-weight:750;font-size:13px;color:#263d77;padding:0 7px}
-.sc-applicant-family-flags{display:flex;flex-wrap:wrap;gap:18px;margin-top:14px}
-.sc-applicant-family-flags label,.sc-applicant-check{display:flex;align-items:center;gap:9px;font-size:12px;color:#334d70;font-weight:650}
-.sc-applicant-family-flags input,.sc-applicant-check input{accent-color:#405cf5;width:17px;height:17px}
-.sc-applicant-family-extras{display:grid;gap:13px}
-.sc-applicant-family>.secondary{justify-self:start}
 
 /* Admissions: strong separation between application review and formalized enrollment. */
 .sc-admission-overview{display:grid;gap:16px;min-width:0}
@@ -348,79 +302,6 @@
 .sc-record-academic-empty{display:flex;align-items:center;gap:19px;background:#f7faff;border:1px dashed #c2d1e9;border-radius:16px;padding:22px}.sc-record-academic-empty img{width:94px;height:94px;object-fit:contain;flex:none}.sc-record-academic-empty strong{color:#254268;font-size:15px}.sc-record-academic-empty p{color:#70839d;font-size:12px;line-height:1.6;margin-top:7px}
 @media(max-width:850px){.sc-record-academic-stats{grid-template-columns:1fr}.sc-record-academic-stats>div{padding:11px 13px}}
 @media(max-width:520px){.sc-record-academic-timeline{padding-left:30px}.sc-record-academic-timeline:before{left:10px}.sc-record-academic-step{left:-30px;width:23px;height:23px}.sc-record-academic-card-head,.sc-record-academic-stats,.sc-record-academic-attendance{padding:13px}.sc-record-academic-empty{flex-direction:column;text-align:center}}
-
-
-/* Applicant enrollment journey: Auli, step progress and refined responsive form surfaces */
-.sc-applicant-wizard{max-width:1220px;gap:18px}
-.sc-applicant-wizard-header{position:relative;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:24px 33px;overflow:hidden;background:linear-gradient(120deg,#142a57 0%,#294e94 65%,#435db0 100%);box-shadow:0 12px 30px #17326720}
-.sc-applicant-hero-copy{position:relative;z-index:1;flex:1;min-width:0}
-.sc-applicant-wizard-header .eyebrow{margin-top:22px;letter-spacing:1.2px}
-.sc-applicant-wizard-header h1{margin:10px 0;font-size:clamp(23px,3vw,32px)}
-.sc-applicant-wizard-header p{max-width:550px;line-height:1.6;font-size:13px}
-.sc-applicant-hero-stage{display:inline-flex;margin-top:9px;border:1px solid #ffffff40;background:#ffffff1b;border-radius:22px;padding:8px 12px;color:#fff;font-size:11px;font-weight:750}
-.sc-applicant-hero-mascot{align-self:stretch;display:grid;place-items:center;justify-items:center;flex:0 0 198px;gap:0;z-index:1}
-.sc-applicant-hero-mascot img{display:block;object-fit:contain;width:168px;height:155px;filter:drop-shadow(0 9px 12px #091a4538)}
-.sc-applicant-hero-mascot strong{font-size:11px;text-align:center;color:#e7edff;max-width:170px}
-.sc-applicant-mobile-progress{display:none}
-.sc-applicant-progress{padding:16px;gap:5px;box-shadow:0 3px 15px #1c37640a}
-.sc-applicant-progress li{position:relative}
-.sc-applicant-progress li:not(:last-child):after{content:"";position:absolute;height:2px;background:#d6e1f3;top:15px;left:calc(50% + 20px);width:calc(100% - 40px)}
-.sc-applicant-progress li.is-done:not(:last-child):after{background:#3d62ba}
-.sc-applicant-progress li>button{min-height:54px}
-.sc-applicant-progress li>button>span{height:32px;width:32px;border-width:2px;font-size:12px;z-index:1;background:#fff}
-.sc-applicant-progress li small{font-size:11px;font-weight:650;line-height:1.4}
-.sc-applicant-body{display:grid;grid-template-columns:minmax(0,1fr) 225px;gap:17px;align-items:start;min-width:0}
-.sc-applicant-step{padding:0;min-height:370px;overflow:hidden;box-shadow:0 7px 25px #1c3c6c0b}
-.sc-applicant-step-title{display:flex;align-items:center;gap:14px;background:linear-gradient(110deg,#eff4ff,#fff);border-bottom:1px solid #e1e9f5;padding:22px 24px;margin-bottom:24px}
-.sc-applicant-step-title .sc-applicant-step-icon{width:47px;height:47px;border-radius:13px;display:grid;place-items:center;color:#3e5daf;background:#e0eaff;flex:none}
-.sc-applicant-step-title h2{font-size:21px;margin:5px 0;color:#1e3862}
-.sc-applicant-step-title p{font-size:12px;color:#6a7f9e;margin:0;line-height:1.5}
-.sc-applicant-step>.sc-applicant-grid,.sc-applicant-step>.sc-applicant-family,.sc-applicant-step>.sc-applicant-documents,.sc-applicant-step>.sc-applicant-review,.sc-applicant-step>.sc-applicant-subheading,.sc-applicant-step>.sc-applicant-phone-section{margin-left:24px;margin-right:24px}
-.sc-applicant-step>.sc-applicant-grid{margin-bottom:23px}
-.sc-applicant-step .sc-applicant-subheading{display:flex;align-items:center;gap:9px;padding-bottom:11px;border-bottom:1px solid #e8edf6;color:#385aa0;font-weight:800;font-size:13px;margin-top:14px;margin-bottom:16px}
-.sc-applicant-grid{gap:19px}
-.sc-applicant-field input:focus-visible{outline:2px solid #526cd6;outline-offset:1px}
-.sc-applicant-field input[aria-invalid=true]{border-color:#d13b55;box-shadow:0 0 0 3px #d13b551a}
-.sc-applicant-field-error{color:#b33248;font-size:11px;line-height:1.5}
-.sc-applicant-curp-group{min-width:0;display:grid;gap:6px}
-.sc-applicant-curp-indicator{font-size:11px;font-weight:750;color:#8c673d}
-.sc-applicant-curp-indicator.is-valid{color:#217354}
-.sc-applicant-curp-hint{font-size:11px;color:#277c60;background:#eaf8f0;border-radius:8px;padding:8px 10px;line-height:1.5}
-.sc-applicant-auli-tip{position:sticky;top:16px;display:grid;justify-items:center;gap:12px;padding:18px;background:linear-gradient(160deg,#edf3ff,#fff);border:1px solid #dce6f5;border-radius:15px;text-align:center}
-.sc-applicant-auli-tip img{width:140px;height:146px;object-fit:contain}
-.sc-applicant-auli-tip strong{color:#2a4e85;font-size:14px}
-.sc-applicant-auli-tip p{color:#70839c;line-height:1.7;font-size:12px;margin:8px 0 0}
-.sc-applicant-step-actions{padding:20px 24px;margin-top:26px;border-top:1px solid #e7edf7;background:#fafcff}
-.sc-applicant-step-actions button{min-height:44px;border-radius:10px}
-.sc-applicant-phone-section{display:grid;gap:18px}
-.sc-applicant-phone-section>.sc-applicant-grid{margin:0}
-.sc-applicant-documents,.sc-applicant-review{border:0;background:transparent;padding:0;justify-items:stretch}
-.sc-applicant-dropzone{display:grid;justify-items:center;text-align:center;gap:10px;width:100%;padding:23px 16px;border:2px dashed #b7cbed;border-radius:14px;background:#f5f8ff;color:#4b66a7;cursor:pointer;transition:background .15s,border-color .15s}
-.sc-applicant-dropzone:hover,.sc-applicant-dropzone.is-dragging{background:#eaf1ff;border-color:#546cca}
-.sc-applicant-dropzone strong{color:#234576;font-size:13px;overflow-wrap:anywhere}
-.sc-applicant-dropzone small{font-size:11px;color:#778ba6}
-.sc-applicant-dropzone input{max-width:100%;font-size:11px}
-.sc-applicant-doc-list{width:100%;display:grid;gap:9px}
-.sc-applicant-doc-list article{display:flex;gap:9px;align-items:center;flex-wrap:wrap;padding:13px;border:1px solid #e3ebf5;border-radius:10px}
-.sc-applicant-doc-list strong{flex:1;min-width:110px;font-size:12px;color:#30476c}
-.sc-applicant-doc-list span{font-size:11px;font-weight:700;color:#506fa1}
-.sc-applicant-uploaded{display:inline-flex;align-items:center;gap:7px;color:#27765a;font-size:12px}
-.sc-applicant-review-grid{width:100%;display:grid;gap:11px}
-.sc-applicant-review-grid article{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 16px;border:1px solid #e0e8f4;border-radius:12px;background:#f8faff}
-.sc-applicant-review-grid strong{color:#29446c;font-size:13px}
-.sc-applicant-review-grid p{color:#687d9a;font-size:12px;margin:6px 0 0;overflow-wrap:anywhere}
-.sc-applicant-review-grid button{flex:none;min-height:34px;font-size:11px}
-.sc-applicant-family-entry{position:relative;border-radius:14px;background:#fbfcff;padding:19px}
-.sc-applicant-remove-family{display:inline-flex;align-items:center;gap:6px;color:#a23b4f;font-size:11px;font-weight:750;padding:6px 8px;margin-bottom:12px}
-.sc-applicant-switch{display:flex;align-items:center;gap:10px;position:relative;font-size:12px;color:#334d70;font-weight:650;cursor:pointer}
-.sc-applicant-switch input{position:absolute;width:1px;height:1px;opacity:0}
-.sc-applicant-switch-track{position:relative;width:39px;height:23px;background:#c9d4e4;border-radius:20px;flex:none;transition:background .15s}
-.sc-applicant-switch-track:after{content:"";position:absolute;top:3px;left:3px;width:17px;height:17px;background:#fff;border-radius:50%;box-shadow:0 1px 4px #13284d27;transition:transform .15s}
-.sc-applicant-switch input:checked+.sc-applicant-switch-track{background:#4265c1}
-.sc-applicant-switch input:checked+.sc-applicant-switch-track:after{transform:translateX(16px)}
-.sc-applicant-switch input:focus-visible+.sc-applicant-switch-track{outline:2px solid #344db8;outline-offset:3px}
-@media(max-width:990px){.sc-applicant-body{grid-template-columns:1fr}.sc-applicant-auli-tip{position:static;display:flex;text-align:left;align-items:center;padding:13px 18px}.sc-applicant-auli-tip img{width:76px;height:82px;flex:none}}
-@media(max-width:660px){.sc-applicant-wizard-header{padding:19px}.sc-applicant-hero-mascot{flex-basis:100px}.sc-applicant-hero-mascot img{width:95px;height:105px}.sc-applicant-hero-mascot strong{display:none}.sc-applicant-progress{display:none}.sc-applicant-mobile-progress{display:grid;gap:10px;background:#fff;border:1px solid #dce6f4;border-radius:13px;padding:14px;color:#365591;font-size:12px}.sc-applicant-mobile-progress>div{height:7px;border-radius:8px;background:#e5ecf8;overflow:hidden}.sc-applicant-mobile-progress>div span{display:block;height:100%;background:#4264c0;border-radius:8px}.sc-applicant-step-title{padding:17px}.sc-applicant-step>.sc-applicant-grid,.sc-applicant-step>.sc-applicant-family,.sc-applicant-step>.sc-applicant-documents,.sc-applicant-step>.sc-applicant-review,.sc-applicant-step>.sc-applicant-subheading,.sc-applicant-step>.sc-applicant-phone-section{margin-left:15px;margin-right:15px}.sc-applicant-step-actions{padding:15px;flex-direction:column-reverse}.sc-applicant-step-actions button{width:100%;justify-content:center}.sc-applicant-review-grid article{flex-wrap:wrap}.sc-applicant-auli-tip img{width:65px;height:72px}}
 
 
 /* Student dossier contact form — structured identity and accessible authorizations. */

@@ -160,3 +160,57 @@ it('deletes persisted secondary family contacts through the API',async()=>{
  await waitFor(()=>expect(api).toHaveBeenCalledWith('student_contacts/16','DELETE'));
  await waitFor(()=>expect(screen.queryByText('Familiar adicional 1')).toBeNull());
 });
+
+it('keeps the untouched CURP field clean, without a redundant empty status',()=>{
+ vi.mocked(api).mockResolvedValue([]);
+ render(<ApplicantRegistration years={[{id:5,name:'2026-2027'}]} admissions={[]} onClose={vi.fn()} onSaved={vi.fn(async()=>{})}/>);
+ expect(screen.getByLabelText('CURP *')).toBeTruthy();
+ expect(screen.queryByText(/CURP: Sin capturar/)).toBeNull();
+ expect(screen.queryByText(/Sin capturar/)).toBeNull();
+ expect(screen.queryByText(/Fecha identificada/)).toBeNull();
+ expect(screen.getByLabelText('CURP *').getAttribute('aria-describedby')).toBeNull();
+});
+it('keeps CURP validation specific and only shows feedback after typing',async()=>{
+ vi.mocked(api).mockResolvedValue([]);
+ render(<ApplicantRegistration years={[{id:5,name:'2026-2027'}]} admissions={[]} onClose={vi.fn()} onSaved={vi.fn(async()=>{})}/>);
+ const field=screen.getByLabelText('CURP *');
+ await userEvent.type(field,'DEMO');
+ expect(screen.getByText('Faltan 14 caracteres')).toBeTruthy();
+ expect(screen.queryByText(/CURP: Faltan/)).toBeNull();
+ expect(field.getAttribute('aria-describedby')).toContain('applicant-curp-feedback');
+ await userEvent.type(field,'200101MDFRNN01');
+ expect(screen.getByText('Fecha identificada')).toBeTruthy();
+ const hint=screen.getByText(/Fecha sugerida por la CURP/);
+ expect(hint.closest('.sc-applicant-birthdate-group')).not.toBeNull();
+});
+it('uses one complete six-stage navigation at all widths with descriptive states',()=>{
+ vi.mocked(api).mockResolvedValue([]);
+ render(<ApplicantRegistration years={[{id:5,name:'2026-2027'}]} admissions={[]} onClose={vi.fn()} onSaved={vi.fn(async()=>{})}/>);
+ const navigation=screen.getByRole('navigation',{name:'Etapas del registro'});
+ expect(navigation.querySelectorAll('ol > li')).toHaveLength(6);
+ expect(navigation.querySelectorAll('ol > li.is-current')).toHaveLength(1);
+ expect(navigation.querySelectorAll('ol > li.is-locked')).toHaveLength(5);
+ expect(navigation.querySelectorAll('ol > li.is-done')).toHaveLength(0);
+ expect(screen.getAllByRole('progressbar',{name:'Avance guardado del registro'})).toHaveLength(1);
+ expect(screen.queryByRole('navigation',{name:'Navegar entre las etapas del registro'})).toBeNull();
+ expect(screen.getByRole('button',{name:'Ir a Identidad'}).hasAttribute('disabled')).toBe(false);
+ expect(screen.getByRole('button',{name:'Ir a Domicilio'}).hasAttribute('disabled')).toBe(true);
+});
+it('does not mark the document stage as saved before the user visits it',async()=>{
+ vi.mocked(api).mockImplementation(async(path,method)=>{
+  if(path==='students'&&method==='POST')return{id:12,full_name:'Sara Prueba'};
+  if(path==='admissions'&&method==='POST')return{id:34,student_id:12,academic_year_id:5,grade_level:1,status:'draft'};
+  if(path.startsWith('admission_document_requirements'))return[];
+  return{id:30};
+ });
+ render(<ApplicantRegistration years={[{id:5,name:'2026-2027'}]} admissions={[]} onClose={vi.fn()} onSaved={vi.fn(async()=>{})}/>);
+ await userEvent.type(screen.getByLabelText('Nombre(s) *'),'Sara');
+ await userEvent.type(screen.getByLabelText('Primer apellido *'),'Prueba');
+ await userEvent.type(screen.getByLabelText('CURP *'),'DEMO200101MDFRNN01');
+ await userEvent.click(screen.getByRole('button',{name:'Guardar y continuar'}));
+ expect(await screen.findByRole('heading',{name:'Domicilio'})).toBeTruthy();
+ expect(screen.getByRole('progressbar',{name:'Avance guardado del registro'}).getAttribute('aria-valuenow')).toBe('17');
+ const nav=screen.getByRole('navigation',{name:'Etapas del registro'});
+ expect(nav.querySelectorAll('li.is-done')).toHaveLength(1);
+ expect(screen.getByRole('button',{name:'Ir a Documentos'}).closest('li')?.className).toContain('is-locked');
+});
