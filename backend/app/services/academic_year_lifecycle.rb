@@ -41,6 +41,11 @@ class AcademicYearLifecycle
                   ok: FormativeEvaluation::FIELDS.size == 4, blocking: true }
       checks << { key: "active_conflict", label: "Sin otro ciclo activo",
                   ok: !AcademicYear.where(status: "active").where.not(id: year.id).exists?, blocking: true }
+      overlap = AcademicYear.where.not(id: year.id)
+        .where(status: %w[active closing closed archived])
+        .where("starts_on <= ? AND ends_on >= ?", year.ends_on, year.starts_on).exists?
+      checks << { key: "calendar_overlap", label: "Sin vigencias escolares superpuestas",
+                  ok: !overlap, blocking: true }
       checks << { key: "school", label: "Escuela configurada", ok: School.exists?, blocking: true }
       checks << { key: "groups", label: "Grupos preparados (recomendado)",
                   ok: year.groups.exists?, blocking: false }

@@ -47,6 +47,20 @@ RSpec.describe AcademicYearLifecycle do
     expect(second.reload.status).to eq("draft")
   end
 
+  it "blocks activating overlapping school calendars even if the older one is closing" do
+    described_class.advance!(year, today: Date.new(2026, 9, 1))
+    described_class.advance!(year, today: Date.new(2027, 7, 9))
+    second = create(:academic_year, starts_on: Date.new(2027, 7, 1),
+      ends_on: Date.new(2028, 7, 9),
+      first_term_starts_on: Date.new(2027, 7, 1), first_term_ends_on: Date.new(2027, 11, 30),
+      second_term_starts_on: Date.new(2027, 12, 1), second_term_ends_on: Date.new(2028, 3, 31),
+      third_term_starts_on: Date.new(2028, 4, 1), third_term_ends_on: Date.new(2028, 7, 9))
+    expect(described_class.advance!(second, today: Date.new(2027, 7, 10))).to be(false)
+    check = described_class.preview(second, today: Date.new(2027, 7, 10))[:critical]
+      .find { |item| item[:key] == "calendar_overlap" }
+    expect(check[:ok]).to be(false)
+  end
+
   it "rejects changing status manually and established dates with linked records" do
     expect(year.update(status: "closed")).to be(false)
     expect(year.errors[:status]).to be_present
