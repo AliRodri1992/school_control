@@ -62,6 +62,11 @@ module DemoAcademicHistory
     end
     # A unique database index skips existing marks, including manually corrected ones.
     # Only generated, closed-year demo enrollments reach this development-only bulk insert.
+    grade_keys = Grade.where(enrollment_id: enrollments.map(&:id))
+      .pluck(:enrollment_id, :course_id, :term).to_set
+    rows.reject! do |row|
+      grade_keys.include?([ row[:enrollment_id], row[:course_id], row[:term] ])
+    end
     Grade.insert_all(rows, unique_by: :index_grades_on_enrollment_id_and_course_id_and_term,
       returning: false) if rows.any?
 
@@ -81,7 +86,13 @@ module DemoAcademicHistory
         end
       end
     end.compact
-    FormativeEvaluation.insert_all(field_rows, unique_by: :idx_formative_evaluations_enrollment_field_term, returning: false) if field_rows.any?
+    field_keys = FormativeEvaluation.where(enrollment_id: enrollments.map(&:id))
+      .pluck(:enrollment_id, :field_code, :term).to_set
+    field_rows.reject! do |row|
+      field_keys.include?([ row[:enrollment_id], row[:field_code], row[:term] ])
+    end
+    FormativeEvaluation.insert_all(field_rows,
+      unique_by: :idx_formative_evaluations_enrollment_field_term, returning: false) if field_rows.any?
   end
 
   def self.course_teacher_id(courses) = courses.first.teacher_id

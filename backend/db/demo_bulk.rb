@@ -23,7 +23,7 @@ module DemoBulk
         break if group.enrollments.count >= TARGET_PER_GROUP
         serial = group_index * 20 + index + 1
         guardian = guardians[(serial - 1) % guardians.length]
-        birth = Date.new(2019 - group.grade_level, 1, 1) + serial.days
+        birth = Date.new(year.starts_on.year - 5 - group.grade_level, 1, 1) + serial.days
         curp = "DEMO#{birth.strftime('%y%m%d')}HDFRNN#{serial % 10}#{serial % 10}"
         student = Student.find_or_create_by!(curp: curp) do |record|
           record.assign_attributes(first_name: FIRST_NAMES[serial % FIRST_NAMES.length],

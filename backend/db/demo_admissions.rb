@@ -63,9 +63,10 @@ module DemoAdmissions
   end
 
   def self.seed_reenrollment!(year:, guardian:, admin:)
-    student = Student.find_or_create_by!(curp: "DEMO200911HDFRNN09") do |person|
+    birth = Date.new(year.starts_on.year - 7, 9, 11)
+    student = Student.find_or_create_by!(curp: "DEMO#{birth.strftime('%y%m%d')}HDFRNN09") do |person|
       person.assign_attributes(first_name: "Diego", last_name: "Demostración",
-        birth_date: Date.new(2020, 9, 11), guardian: guardian)
+        birth_date: birth, guardian: guardian)
     end
     complete_record!(student)
     prior = DemoSchoolCycles.historical!(current: year, offset: 1)

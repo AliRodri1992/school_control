@@ -11,6 +11,6 @@ RSpec.describe DemoAdmissions do
     expect(Admission.where(academic_year: year).pluck(:status)).to include("draft", "submitted", "correction_requested", "approved", "rejected")
     described_class.seed!(year: year, guardian: guardian, admin: admin)
     expect([ Student.count, Admission.count, Enrollment.count, StudentDocument.count ]).to eq(counts)
-    expect(Student.find_by!(curp: "DEMO200911HDFRNN09").enrollment_stage).to eq("enrolled")
+    expect(Student.find_by!(first_name: "Diego", last_name: "Demostración").enrollment_stage).to eq("enrolled")
   end
 end
