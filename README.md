@@ -36,6 +36,27 @@ Con `DEMO_SEEDS=true`, se crean datos ficticios y estos accesos, cuya contraseñ
 
 Las semillas son idempotentes: ejecutar `docker compose run --rm backend bundle exec rails db:seed` nuevamente conserva las cuentas, contraseñas y datos existentes. No usar datos demo en producción.
 
+### Datos académicos de demostración
+
+Al activar `DEMO_SEEDS=true` en desarrollo, las semillas crean un expediente escolar completo y relacionado:
+
+- **Materias:** diez troncales (Español, Matemáticas, Ciencias naturales, Historia, Geografía, Artes, Educación física, Inglés, Formación cívica y ética y Vida saludable), además de los talleres del catálogo.
+- **Grupos y clases:** doce grupos, del 1.º A al 6.º B, con al menos diez alumnos y una clase por materia troncal; el horario respeta espacios, aulas, docentes y cargas semanales.
+- **Calificaciones:** evaluaciones de distintas materias y periodos, con estados de borrador, revisada y publicada, sin modificar calificaciones existentes.
+- **Asistencia:** hasta quince días hábiles recientes por alumno activo, sin registrar fechas futuras o fines de semana; incluye asistencias, retardos, ausencias y justificantes.
+- **Aula virtual:** tareas publicadas, entregas pendientes, revisadas y calificadas. También añade notas institucionales ficticias para dar contenido a los expedientes.
+- **Otros módulos:** se mantienen los datos demo de solicitudes, reinscripciones, contactos, documentos, comunicados, calendario, mensajes, reportes e importaciones.
+
+Para crear o completar los datos **sin eliminar tu base de datos**:
+
+```bash
+docker compose exec backend bundle exec rails db:seed
+docker compose exec backend bundle exec rails runner bin/verify_demo_seeds.rb
+```
+
+La verificación comprueba matrícula, materias, horarios, calificaciones y asistencia. Si ya existe una calificación, un horario o una asistencia, se conserva; las semillas solo crean los registros ficticios que falten. Para evitar la creación de datos de demostración en una instalación real, usa `DEMO_SEEDS=false`. No necesitas migraciones adicionales.
+
+
 ## Vista previa y diagnóstico de la pantalla «Preparando tu escuela»
 
 La pantalla de preparación **no muestra el sidebar ni el navbar**: se presenta
