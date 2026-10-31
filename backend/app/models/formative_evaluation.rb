@@ -14,8 +14,15 @@ class FormativeEvaluation < ApplicationRecord
 
   validates :field_code, inclusion: { in: FIELDS.keys }
   validates :term, inclusion: { in: 1..3 }, uniqueness: { scope: %i[enrollment_id field_code] }
-  validates :score, numericality: { only_integer: true, greater_than_or_equal_to: 5, less_than_or_equal_to: 10 }
+  validates :score, numericality: { greater_than_or_equal_to: 5, less_than_or_equal_to: 10 }
+  validate :whole_number_score
   validate :grade_specific_scale
+
+  # Decimal columns reload 8 as 8.0. Check its numeric fractional part
+  # rather than the pre-cast string, especially on publication updates.
+  def whole_number_score
+    errors.add(:score, "debe ser un número entero") if score.present? && score.frac.nonzero?
+  end
 
   def grade_specific_scale
     return unless enrollment && score.present?

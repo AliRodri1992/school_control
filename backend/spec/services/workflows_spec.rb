@@ -81,6 +81,12 @@ RSpec.describe "Academic workflows" do
       GradeWorkflow.review(grade: grade, actor: admin)
       GradeWorkflow.publish(grade: grade, actor: admin)
     end
+    FormativeEvaluation::FIELDS.each_key do |field|
+      (1..3).each do |term|
+        FormativeEvaluation.create!(enrollment: enrollment, field_code: field,
+          term: term, score: 9, status: "published", reviewer: admin, published_at: Time.current)
+      end
+    end
     CompleteEnrollment.call(enrollment: enrollment, outcome: "promoted", actor: admin)
     expect(enrollment.reload.outcome).to eq("promoted")
     expect(enrollment.grades.count).to eq(3)

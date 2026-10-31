@@ -22,7 +22,7 @@ module DemoSchoolCycles
   end
 
   def self.create_year!(name:, start_year:, admissions:, reenrollments:)
-    raise "Los ciclos de demostración solo están disponibles en desarrollo" unless Rails.env.development?
+    raise "Los ciclos de demostración no pueden ejecutarse en producción" unless Rails.env.development? || Rails.env.test?
 
     AcademicYear.find_or_create_by!(name: name) do |record|
       starts_on = Date.new(start_year, 8, 31)
