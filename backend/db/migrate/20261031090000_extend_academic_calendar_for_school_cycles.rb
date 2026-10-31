@@ -28,7 +28,13 @@ class ExtendAcademicCalendarForSchoolCycles < ActiveRecord::Migration[8.1]
       t.string :source_reference
       t.string :external_uid
     end
-    remove_check_constraint :calendar_events, "starts_at < ends_at AND kind IN ('exam','holiday','meeting','activity')"
+    legacy_check = connection.check_constraints(:calendar_events).find do |check|
+      check.expression.include?("starts_at") && check.expression.include?("kind")
+    end
+    raise "No se encontró la restricción original del calendario" unless legacy_check
+    remove_check_constraint :calendar_events,
+                            "starts_at < ends_at AND kind IN ('exam','holiday','meeting','activity')",
+                            name: legacy_check.name
     add_check_constraint :calendar_events, "starts_at < ends_at AND kind IN ('exam','holiday','meeting','activity','suspension','vacation','cte','evaluation','report_delivery','administrative')", name: "calendar_event_dates_and_kind"
     add_check_constraint :calendar_events, "source_type IN ('manual','sep','state','school')", name: "calendar_event_source_allowed"
     add_index :calendar_events, [ :academic_year_id, :kind, :starts_at ], name: "idx_calendar_events_year_kind_date"

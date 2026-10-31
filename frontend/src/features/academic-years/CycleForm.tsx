@@ -51,7 +51,8 @@ export function validateCycle(values:Partial<Record<FieldKey,string>>):Partial<R
   const start=term+'_term_starts_on',end=term+'_term_ends_on';
   if(values[start]&&values.starts_on&&values[start]<values.starts_on)errors[start]=cycleLabels[start]+' debe estar dentro del ciclo escolar.';
   if(values[end]&&values.ends_on&&values[end]>values.ends_on)errors[end]=cycleLabels[end]+' debe estar dentro del ciclo escolar.';
-  if(index&&values[start]&&values[terms[index-1]+'_term_ends_on']&&values[start]<=values[terms[index-1]+'_term_ends_on'])
+  const currentStart=values[start], previousEnd=index>0?values[terms[index-1]+'_term_ends_on']:undefined;
+  if(index>0&&currentStart&&previousEnd&&currentStart<=previousEnd)
    errors[start]=cycleLabels[start]+' debe ser posterior al cierre del trimestre anterior.';
   const captureEnd=values[term+'_term_capture_closes_on'],review=values[term+'_term_review_on'],reports=values[term+'_term_reports_on'];
   if(captureEnd&&review&&review<captureEnd)errors[term+'_term_review_on']=cycleLabels[term+'_term_review_on']+' no puede ser anterior al cierre de captura.';
@@ -85,7 +86,7 @@ export default function CycleForm({initial,onCancel,onSave}:{initial?:Row|null;o
  async function submit(event:FormEvent){
   event.preventDefault();
   if(saving)return;
-  const next=validateCycle(values);setErrors(next);
+  const next=validateCycle(values);setErrors(next as Record<string,string>);
   if(Object.keys(next).length){setTab(groupOf(Object.keys(next)[0]));return;}
   setSaving(true);setGeneralError('');
   try{
