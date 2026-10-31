@@ -23,6 +23,7 @@ export default function ImportWizard(){
  const [error,setError]=useState(''),[fieldError,setFieldError]=useState(''),[busy,setBusy]=useState(false);
  const [history,setHistory]=useState<Batch[]>([]);
  const [historyLoaded,setHistoryLoaded]=useState(false);
+ const [historyQuery,setHistoryQuery]=useState(''),[historyStatus,setHistoryStatus]=useState(''),[historyPage,setHistoryPage]=useState(0);
  const [templates,setTemplates]=useState<MappingTemplate[]>([]);
  const [templateName,setTemplateName]=useState('');
  useEffect(()=>{
@@ -83,7 +84,9 @@ export default function ImportWizard(){
  });}
  function restart(){setStep(0);setFile(null);setBatch(null);setPreview(null);setMapping({});setError('');setFieldError('');}
  const errors=batch?.row_errors||[];
- return <section className="sc-import">
+ const visibleHistory=history.filter(item=>(!historyStatus||item.status===historyStatus)&&[item.kind,item.status,String(item.id)].some(value=>value.toLocaleLowerCase().includes(historyQuery.toLocaleLowerCase())));
+ const historyPages=Math.max(1,Math.ceil(visibleHistory.length/10)),currentHistoryPage=Math.min(historyPage,historyPages-1);
+  return <section className="sc-import">
   <div className="page-heading"><div><div className="eyebrow">{ui("GESTIÓN ESCOLAR / IMPORTACIONES")}</div><h1>{ui("Importación guiada")}</h1>
    <p>{ui("Importa registros desde Excel o CSV, asocia las columnas y verifica los datos antes de guardarlos.")}</p></div>
   </div>
@@ -146,9 +149,9 @@ export default function ImportWizard(){
    </div>
    <aside className="panel sc-import-assistant"><AuliGuide title={ui("Auli te acompaña")} mood={step===2?"warning":step===3?"success":"explain"} text={step===0?'Prepara una hoja con los encabezados en la primera fila. Puedes importar CSV o Excel.':step===1?'Relaciona cada columna con el campo correcto. No necesitas que los encabezados tengan nombres idénticos.':step===2?'Revisa los problemas detectados antes de continuar. Ningún registro se importó todavía.' :'Revisa el resumen antes de confirmar. Los cambios solo se realizan después de tu autorización.'}/></aside>
   </div>
-  <section className="panel sc-import-history"><h2>{ui("Importaciones recientes")}</h2>{history.length>0&&<div className="table-scroll"><table><thead><tr><th>{ui("Fecha")}</th><th>{ui("Tipo")}</th><th>{ui("Estado")}</th><th>{ui("Registros")}</th><th className="sc-table-action-col">{ui("Acciones")}</th></tr></thead><tbody>
-   {history.map(item=><tr key={item.id}><td>{new Date((item as Batch & {created_at:string}).created_at).toLocaleString('es-MX')}</td><td>{item.kind}</td><td>{item.status}</td><td>{item.imported_rows} / {item.total_rows}</td><td className="sc-table-action-cell">{(item.status==='failed'||(item.status==='completed'&&item.row_errors?.length>0))&&
+  <section className="panel sc-import-history"><h2>{ui("Importaciones recientes")}</h2><div className="sc-import-history-controls"><label>{ui('Buscar importaciones')}<input type="search" placeholder={ui('Tipo, estado o identificador…')} value={historyQuery} onChange={event=>{setHistoryQuery(event.target.value);setHistoryPage(0);}}/></label><div><label>{ui('Estado')}</label><Combobox label={ui('Filtrar importaciones por estado')} searchable={false} value={historyStatus} onChange={value=>{setHistoryStatus(value);setHistoryPage(0);}} placeholder={ui('Todos los estados')} options={[{value:'uploaded',label:'Subida'},{value:'validated',label:'Validada'},{value:'completed',label:'Completada'},{value:'failed',label:'Fallida'}]}/></div><strong>{visibleHistory.length} {ui('resultados')}</strong></div>{visibleHistory.length>0&&<div className="table-scroll"><table><thead><tr><th>{ui("Fecha")}</th><th>{ui("Tipo")}</th><th>{ui("Estado")}</th><th>{ui("Registros")}</th><th className="sc-table-action-col">{ui("Acciones")}</th></tr></thead><tbody>
+   {visibleHistory.slice(currentHistoryPage*10,(currentHistoryPage+1)*10).map(item=><tr key={item.id}><td>{new Date((item as Batch & {created_at:string}).created_at).toLocaleString('es-MX')}</td><td>{item.kind}</td><td>{item.status}</td><td>{item.imported_rows} / {item.total_rows}</td><td className="sc-table-action-cell">{(item.status==='failed'||(item.status==='completed'&&item.row_errors?.length>0))&&
    <div className="sc-table-action-group"><TableAction kind="retry" disabled={busy} ariaLabel={`Reintentar pendientes de importación ${item.id}`} onClick={()=>retry(item)}/></div>}</td></tr>)}
-  </tbody></table></div>}{!history.length&&<TableEmptyState mode={historyLoaded?'empty':'loading'} canCreate={false}/>}</section>
+  </tbody></table></div>}{!visibleHistory.length&&<TableEmptyState mode={!historyLoaded?'loading':historyQuery||historyStatus?'filtered':'empty'} canCreate={false}/>}{visibleHistory.length>10&&<nav className="sc-collection-pager" aria-label={ui('Paginación de importaciones')}><span>{ui('Página')} {currentHistoryPage+1} / {historyPages}</span><div><button type="button" className="secondary" disabled={currentHistoryPage===0} onClick={()=>setHistoryPage(n=>Math.max(0,n-1))}>{ui('Anterior')}</button><button type="button" className="secondary" disabled={currentHistoryPage===historyPages-1} onClick={()=>setHistoryPage(n=>Math.min(historyPages-1,n+1))}>{ui('Siguiente')}</button></div></nav>}</section>
  </section>;
 }
