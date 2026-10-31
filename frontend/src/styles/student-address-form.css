@@ -1,0 +1,81 @@
+/* Editar / registrar dirección: expediente escolar.
+   Dedicated styles avoid changing the rest of the CRUD forms. */
+.sc-student-details .sc-dossier-form-body:has(.sc-student-address-form){background:var(--surface-soft,#f6f8fc);padding:23px 26px}
+.sc-student-address-form{--address-ink:var(--text,#253654);--address-muted:var(--text-muted,#72829c);--address-line:var(--border,#dfe6f0);display:grid;gap:17px;min-width:0;color:var(--address-ink)}
+.sc-student-address-intro{display:flex;gap:13px;align-items:center;border:1px solid #dbe6fa;border-radius:14px;background:linear-gradient(112deg,#edf3ff,#fff);padding:16px 19px}
+.sc-student-address-intro-icon{flex:none;display:grid;place-items:center;width:47px;height:47px;border-radius:14px;background:#dfe9ff;color:#3e61ba}
+.sc-student-address-intro>div:nth-child(2){min-width:0;flex:1}
+.sc-student-address-intro h4{font-size:15px;font-weight:850;color:var(--address-ink);margin:0 0 6px;letter-spacing:-.015em}
+.sc-student-address-intro p{font-size:12px;line-height:1.55;color:var(--address-muted);margin:0}
+.sc-student-address-intro-tag{white-space:nowrap;display:inline-flex;align-items:center;border-radius:40px;font-size:10px;font-weight:800;background:#e2f2e9;color:#1b7752;padding:8px 11px}
+.sc-student-address-layout{display:grid;grid-template-columns:minmax(0,1fr) 244px;gap:14px;align-items:start;min-width:0}
+.sc-student-address-fields{display:grid;gap:14px;min-width:0}
+.sc-student-address-panel{border:1px solid var(--address-line);background:var(--surface,#fff);border-radius:15px;overflow:visible;min-width:0;box-shadow:0 3px 15px #253b6405}
+.sc-student-address-panel>header{display:flex;gap:12px;align-items:center;padding:17px 19px;background:var(--surface-soft,#f9fbff);border-radius:15px 15px 0 0;border-bottom:1px solid var(--address-line)}
+.sc-student-address-section-icon{flex:0 0 39px;width:39px;height:39px;display:grid;place-items:center;border-radius:11px;color:#4465b0;background:#e7eeff}
+.sc-student-address-panel>header>div{min-width:0}
+.sc-student-address-panel h4{font-size:14px;font-weight:830;color:var(--address-ink);letter-spacing:-.014em;margin:0 0 5px}
+.sc-student-address-panel>header p{font-size:11px;line-height:1.5;color:var(--address-muted);margin:0}
+.sc-student-address-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px 18px;padding:20px}
+.sc-student-address-grid>.is-wide{grid-column:1/-1}
+.sc-student-address-field{display:grid;align-content:start;gap:7px;min-width:0}
+.sc-student-address-field>label{display:flex;align-items:center;gap:4px;min-height:18px;font-size:11px;font-weight:750;color:var(--address-ink)}
+.sc-student-address-field .required{color:#c43a50;font-size:13px}
+.sc-student-address-optional{margin-left:auto;border-radius:5px;padding:3px 5px;background:var(--surface-soft,#f4f6fb);color:var(--address-muted);font-size:9px;font-weight:650}
+.sc-student-address-input{display:flex;align-items:center;gap:9px;min-width:0;min-height:45px;border:1px solid #cdd9eb;background:var(--surface,#fff);border-radius:10px;padding:0 12px;transition:border-color .15s,box-shadow .15s}
+.sc-student-address-input svg{flex:0 0 17px;color:#889abc}
+.sc-student-address-input input{width:100%;height:43px;min-width:0;min-height:0;padding:0;border:0;outline:0!important;background:transparent;color:var(--address-ink);font-size:12px;box-shadow:none!important}
+.sc-student-address-input input::placeholder{color:#9caac0}
+.sc-student-address-input:focus-within{border-color:#5577c3;box-shadow:0 0 0 3px #5b80cd20}
+.sc-student-address-field.has-error .sc-student-address-input{border-color:#c84e61;box-shadow:0 0 0 3px #d0475915}
+.sc-student-address-field .sc-combobox-trigger{min-height:45px;border:1px solid #cdd9eb;background:var(--surface,#fff);border-radius:10px;color:var(--address-ink);font-size:12px}
+.sc-student-address-field .sc-combobox-trigger:focus-visible{outline:2px solid #7091d0;outline-offset:2px}
+.sc-student-address-field .sc-combobox.is-invalid .sc-combobox-trigger{border-color:#c84e61}
+.sc-student-address-error{font-size:11px;line-height:1.5;color:#b13d51;overflow-wrap:anywhere;margin:0}
+.sc-student-address-help{font-size:10px;line-height:1.55;color:var(--address-muted)}
+.sc-student-address-preference .sc-student-address-primary{display:flex;gap:12px;align-items:center;margin:17px 20px 19px;border:1px solid var(--address-line);border-radius:12px;background:var(--surface-soft,#f8faff);padding:13px 14px;cursor:pointer}
+.sc-student-address-primary-icon{flex:0 0 36px;display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:#e9efff;color:#5471b5}
+.sc-student-address-primary-copy{display:grid;gap:5px;flex:1;min-width:0}
+.sc-student-address-primary-copy strong{font-size:12px;font-weight:800;color:var(--address-ink)}
+.sc-student-address-primary-copy small{font-size:10px;color:var(--address-muted);line-height:1.5}
+.sc-student-address-switch{display:inline-flex;flex:none;position:relative;width:42px;height:25px}
+.sc-student-address-switch input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;z-index:2}
+.sc-student-address-switch>span{width:42px;height:25px;background:#a9b7c9;border-radius:20px;transition:background .15s;position:relative}
+.sc-student-address-switch>span:after{content:"";position:absolute;top:3px;left:3px;border-radius:50%;width:19px;height:19px;background:#fff;box-shadow:0 2px 5px #1d335026;transition:transform .15s}
+.sc-student-address-switch input:checked+span{background:#3d65b8}
+.sc-student-address-switch input:checked+span:after{transform:translateX(17px)}
+.sc-student-address-switch input:focus-visible+span{outline:3px solid #7a9ed9;outline-offset:3px}
+.sc-student-address-switch input:disabled{cursor:not-allowed}
+.sc-student-address-preview{position:sticky;top:15px;min-width:0;background:var(--surface,#fff);border:1px solid var(--address-line);border-radius:15px;overflow:hidden;box-shadow:0 6px 21px #213d7008}
+.sc-student-address-preview-top{display:flex;align-items:center;gap:9px;padding:16px 17px 11px}
+.sc-student-address-preview-top>span:first-child{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;color:#4769b3;background:#e9efff}
+.sc-student-address-preview-kicker{font-size:10px;font-weight:850;letter-spacing:.11em;color:#5a75ae}
+.sc-student-address-preview>h4{font-size:14px;font-weight:800;color:var(--address-ink);margin:0 17px 14px;line-height:1.35}
+.sc-student-address-preview-map{position:relative;display:grid;place-items:center;margin:0 16px 15px;height:111px;border-radius:11px;overflow:hidden;background:linear-gradient(150deg,#e6effe,#f4f8ff);isolation:isolate}
+.sc-student-address-preview-map:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 48%,#cddcf4 49%,#cddcf4 51%,transparent 52%),linear-gradient(0deg,transparent 43%,#d1e0f5 44%,#d1e0f5 47%,transparent 48%);opacity:.75}
+.sc-student-address-preview-road{position:absolute;transform:rotate(-35deg);height:9px;left:-20px;right:-20px;background:#fff;opacity:.8;z-index:-1}
+.sc-student-address-preview-road.road-one{top:28px}
+.sc-student-address-preview-road.road-two{bottom:13px}
+.sc-student-address-preview-map>span{z-index:1;display:grid;place-items:center;width:50px;height:50px;border-radius:50%;background:#fff;color:#456cbf;box-shadow:0 9px 22px #32548a20}
+.sc-student-address-preview-copy{padding:0 17px 14px;display:grid;gap:6px}
+.sc-student-address-preview-copy strong{color:var(--address-ink);font-size:12px;overflow-wrap:anywhere;line-height:1.5}
+.sc-student-address-preview-copy p{font-size:11px;line-height:1.6;color:var(--address-muted);overflow-wrap:anywhere}
+.sc-student-address-preview-meta{display:flex;flex-wrap:wrap;gap:6px;padding:0 17px 16px}
+.sc-student-address-preview-meta>span{display:inline-flex;align-items:center;gap:5px;border-radius:7px;font-size:10px;font-weight:700;padding:7px 8px;background:var(--surface-soft,#f0f4fc);color:#526989}
+.sc-student-address-preview-meta>span.is-primary{color:#1b7852;background:#e7f5ec}
+.sc-student-address-preview-note{display:flex;gap:8px;align-items:flex-start;border-top:1px solid var(--address-line);padding:13px 16px;background:var(--surface-soft,#f9fbff)}
+.sc-student-address-preview-note svg{color:#5876b8;flex:0 0 16px}
+.sc-student-address-preview-note p{font-size:10px;line-height:1.55;color:var(--address-muted);margin:0}
+.sc-student-address-general-error{display:flex;gap:10px;align-items:flex-start;padding:14px 16px;border:1px solid #f0c7ce;background:#fff1f2;color:#9f3346;border-radius:11px}
+.sc-student-address-general-error svg{flex:0 0 18px}
+.sc-student-address-general-error p{font-size:12px;color:inherit;line-height:1.55;margin:0}
+.sc-student-address-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:17px 4px 0;border-top:1px solid var(--address-line)}
+.sc-student-address-actions>span{display:inline-flex;align-items:center;gap:7px;font-size:11px;color:var(--address-muted)}
+.sc-student-address-actions>span svg{color:#6380bb}
+.sc-student-address-actions>div{display:flex;align-items:center;gap:9px}
+.sc-student-address-actions button{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:750;padding:0 17px;min-height:42px;border-radius:10px}
+.sc-student-address-actions .primary{background:#365db2;color:#fff}
+@media(max-width:1130px){.sc-student-address-layout{grid-template-columns:minmax(0,1fr)}.sc-student-address-preview{position:static;display:grid;grid-template-columns:1fr 1fr;align-items:center;column-gap:14px;padding:13px 16px}.sc-student-address-preview-top,.sc-student-address-preview>h4{grid-column:1/-1;padding:0;margin:0 0 8px}.sc-student-address-preview-map{margin:0;grid-row:3/span 3;height:123px}.sc-student-address-preview-copy,.sc-student-address-preview-meta{padding:0}.sc-student-address-preview-note{grid-column:1/-1;margin-top:14px;border-radius:9px;border:0}}
+@media(max-width:650px){.sc-student-details .sc-dossier-form-body:has(.sc-student-address-form){padding:14px}.sc-student-address-intro{padding:14px}.sc-student-address-intro-icon{width:40px;height:40px;flex-basis:40px}.sc-student-address-intro-tag{display:none}.sc-student-address-panel>header{padding:15px}.sc-student-address-grid{grid-template-columns:1fr;padding:16px;gap:15px}.sc-student-address-grid>.is-wide{grid-column:1}.sc-student-address-preference .sc-student-address-primary{margin:15px}.sc-student-address-preview{display:block;padding:15px}.sc-student-address-preview>h4{margin:8px 0 13px}.sc-student-address-preview-map{height:95px;margin-bottom:14px}.sc-student-address-preview-copy{margin-bottom:12px}.sc-student-address-preview-meta{margin-bottom:8px}.sc-student-address-preview-note{margin:0;padding:12px}.sc-student-address-actions{align-items:stretch;flex-direction:column}.sc-student-address-actions>div{display:grid;grid-template-columns:1fr 1fr;width:100%}.sc-student-address-actions button{justify-content:center;padding:0 10px}}
+@media(max-width:400px){.sc-student-address-primary-icon{display:none}.sc-student-address-actions>div{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.sc-student-address-input,.sc-student-address-switch>span,.sc-student-address-switch>span:after{transition:none}}

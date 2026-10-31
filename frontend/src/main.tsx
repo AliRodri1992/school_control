@@ -20,6 +20,7 @@ import './styles/module-workbench.css';
 import './styles/api-docs.css';
 import './styles/mail-designer.css';
 import './styles/student-details.css';
+import './styles/student-address-form.css';
 import './styles/applicant-registration.css';
 import './styles/dossier-collection-controls.css';
 import './styles/enrollment-journey.css';
