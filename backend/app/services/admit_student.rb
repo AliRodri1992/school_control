@@ -1,6 +1,7 @@
 class AdmitStudent
   def self.call(admission:, group:, actor:)
     admission.with_lock do
+      raise ArgumentError, "El ciclo escolar está cerrado" if admission.academic_year.closed_for_academics?
       raise ArgumentError, "La solicitud ya fue formalizada o no está aprobada" unless admission.status == "approved" && !admission.enrollment
       admission.student.with_lock do
         admission.errors.clear

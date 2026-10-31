@@ -31,6 +31,6 @@ class Grade < ApplicationRecord
   def same_group
     return unless course && enrollment
     errors.add(:course, "no pertenece al grupo del alumno") unless course.group_id == enrollment.group_id
-    errors.add(:base, "El ciclo del alumno está cerrado") unless enrollment.status == "active" || correction_authorized
+    errors.add(:base, "El ciclo del alumno está cerrado") if (enrollment.academic_year.closed_for_academics? || enrollment.status != "active") && !correction_authorized
   end
 end

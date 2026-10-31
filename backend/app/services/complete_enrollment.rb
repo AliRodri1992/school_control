@@ -1,6 +1,7 @@
 class CompleteEnrollment
   def self.call(enrollment:, outcome:, actor:)
     enrollment.with_lock do
+      raise ArgumentError, "El ciclo escolar está cerrado" if enrollment.academic_year.closed_for_academics?
       raise ArgumentError, "La inscripción ya está cerrada" unless enrollment.status == "active"
       allowed = enrollment.group.grade_level == 6 ? %w[graduated repeat] : %w[promoted repeat]
       raise ArgumentError, "Resultado incompatible con el grado" unless allowed.include?(outcome)

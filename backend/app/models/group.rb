@@ -7,6 +7,11 @@ class Group < ApplicationRecord
   validates :capacity, numericality: { only_integer: true, greater_than: 0 }
   validate :capacity_covers_enrollments
   validate :preserve_history
+  validate :cycle_is_editable
+
+  def cycle_is_editable
+    errors.add(:base, "El ciclo escolar está cerrado") if academic_year&.closed_for_academics?
+  end
 
   def preserve_history
     return unless persisted? && (academic_year_id_changed? || grade_level_changed? || section_changed?)

@@ -39,6 +39,7 @@ class Admission < ApplicationRecord
 
   def eligible
     return unless academic_year && student
+    errors.add(:base, "El ciclo escolar está cerrado") if academic_year.closed_for_academics?
     errors.add(:base, "El periodo de solicitudes está cerrado") unless status == "draft" || academic_year.open_for?(kind)
     eligible_history
   end

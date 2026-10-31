@@ -3,6 +3,9 @@ class AcademicYear < ApplicationRecord
   STATUSES = %w[draft active closing closed archived].freeze
   SOURCES = %w[manual sep state school].freeze
 
+  attr_accessor :lifecycle_transition_authorized
+
+  has_many :status_transitions, class_name: "AcademicYearStatusTransition", dependent: :restrict_with_error
   has_many :admission_document_requirements, dependent: :restrict_with_error
   has_many :groups, dependent: :restrict_with_error
   has_many :admissions, dependent: :restrict_with_error
@@ -21,6 +24,38 @@ class AcademicYear < ApplicationRecord
   validate :ordered_dates
   validate :ordered_evaluation_periods
   validate :ordered_capture_windows
+  validate :ordered_lifecycle_dates
+  validate :protect_lifecycle_status, on: :update
+  validate :protect_academic_dates, on: :update
+
+  def closed_for_academics? = %w[closed archived].include?(status)
+
+  def administrative_close_date = administrative_closes_on || ends_on + 30.days
+  def archive_date = archive_on || ends_on + 5.years
+
+  def ordered_lifecycle_dates
+    if administrative_closes_on && ends_on && administrative_closes_on < ends_on
+      errors.add(:administrative_closes_on, "no puede ser anterior al fin de clases")
+    end
+    if archive_on && archive_on < (administrative_closes_on || ends_on)
+      errors.add(:archive_on, "no puede ser anterior al cierre administrativo")
+    end
+  end
+
+  def protect_lifecycle_status
+    if will_save_change_to_status? && !lifecycle_transition_authorized
+      errors.add(:status, "solo puede cambiar mediante la automatización del ciclo escolar")
+    end
+  end
+
+  def protect_academic_dates
+    return unless (enrollments.exists? || admissions.exists?)
+    watched = %w[starts_on ends_on first_term_starts_on first_term_ends_on second_term_starts_on
+                 second_term_ends_on third_term_starts_on third_term_ends_on]
+    if watched.any? { |attribute| will_save_change_to_attribute?(attribute) }
+      errors.add(:base, "Hay expedientes vinculados; las fechas académicas requieren una rectificación autorizada")
+    end
+  end
 
   def evaluation_period(term)
     prefix = EVALUATION_PERIODS.fetch(Integer(term) - 1)

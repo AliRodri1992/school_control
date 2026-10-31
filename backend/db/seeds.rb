@@ -33,6 +33,7 @@ if ENV["DEMO_SEEDS"] == "true"
     next if year.public_send(from).present? || year.public_send(to).present?
     year.update!(from => boundaries[index] + (index.zero? ? 0 : 1), to => boundaries[index + 1])
   end
+  AcademicYearLifecycle.advance!(year, trigger: "demo_seed")
   guardian = User.find_or_create_by!(email: "familia@school.test") { |record| record.assign_attributes(name: "Familia de ejemplo", role: "guardian", password: password) }
   learner = User.find_or_create_by!(email: "alumno@school.test") { |record| record.assign_attributes(name: "Alex Ejemplo", role: "student", password: password) }
   require_relative "demo_academics"

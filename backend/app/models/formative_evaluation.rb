@@ -15,6 +15,13 @@ class FormativeEvaluation < ApplicationRecord
   validates :score, numericality: { greater_than_or_equal_to: 5, less_than_or_equal_to: 10 }
   validates :status, inclusion: { in: %w[draft published] }
   validate :protect_published_record
+  validate :protect_closed_cycle
+
+  def protect_closed_cycle
+    if enrollment && enrollment.academic_year.closed_for_academics?
+      errors.add(:base, "El ciclo escolar está cerrado; solicite una rectificación autorizada")
+    end
+  end
 
   def protect_published_record
     return unless persisted? && status_in_database == "published" && has_changes_to_save?
