@@ -36,7 +36,8 @@ module DemoModules
     end
     grade = Grade.find_by!(enrollment: enrollment, course: course, term: 1)
     if teacher && grade.status == "published"
-      GradeChangeRequest.find_or_create_by!(grade: grade, requester: teacher, status: "pending") do |record|
+      GradeChangeRequest.find_or_create_by!(grade: grade, status: "pending") do |record|
+        record.requester = teacher
         record.reason = "Revisar calificación de demostración."
         record.score = 9
         record.previous_score = grade.score

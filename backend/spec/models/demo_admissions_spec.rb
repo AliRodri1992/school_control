@@ -3,7 +3,9 @@ require_relative "../../db/demo_admissions"
 
 RSpec.describe DemoAdmissions do
   it "creates each applicant scenario without duplicating records on repeated seeds" do
-    year = create(:academic_year)
+    # An actual school year starts after its previous historical year ends.
+    year = create(:academic_year, starts_on: Date.new(2026, 8, 31),
+      ends_on: Date.new(2027, 7, 9))
     guardian = create(:user)
     admin = create(:user, role: "admin")
     described_class.seed!(year: year, guardian: guardian, admin: admin)

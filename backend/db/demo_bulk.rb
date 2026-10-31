@@ -144,8 +144,8 @@ module DemoBulk
       first_grade = enrollment.grades.find_by!(course: course, term: 1)
       next unless first_grade.status == "published"
 
-      GradeChangeRequest.find_or_create_by!(grade: first_grade,
-        requester: course.teacher, status: "pending") do |record|
+      GradeChangeRequest.find_or_create_by!(grade: first_grade, status: "pending") do |record|
+        record.requester = course.teacher
         record.assign_attributes(reason: "Revisión de calificación ficticia #{i + 1}", score: 9,
           previous_score: 7 + (i % 4), expected_version: 0)
       end
