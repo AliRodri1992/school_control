@@ -210,6 +210,9 @@ jobs:
               assert status == 200 and active_session.get("user", {}).get("role") == "admin", (origin, status)
               status, school = send("GET", "/api/school")
               assert status == 200 and school.get("name"), (origin, status)
+              status, students = send("GET", "/api/students")
+              assert status == 200 and isinstance(students, list) and len(students) >= 10, (
+                  origin, status, type(students).__name__)
               status, notifications = send("GET", "/api/notifications")
               assert status == 200 and isinstance(notifications.get("unread_count"), int), (
                   origin, status, notifications)
@@ -221,7 +224,7 @@ jobs:
               status, refreshed = send("GET", "/api/notifications")
               assert status == 200 and refreshed.get("unread_count") == 0, (
                   origin, status, refreshed)
-              print(origin, "JSON login, school and mark-all-notifications verified")
+              print(origin, "JSON login, students listing, school and mark-all-notifications verified")
           PY
       - run: docker compose run --rm backend bundle exec rails runner script/verify_worker.rb
       - run: docker compose --project-name school-staging --env-file .env.staging -f compose.yml -f compose.staging.yml build
