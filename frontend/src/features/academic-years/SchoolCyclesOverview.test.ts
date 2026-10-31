@@ -18,7 +18,7 @@ describe('cycle overview derived information',()=>{
  it('does not imply SEP compliance from a progress score',()=>{
   expect(cycleProgress(base,1)).toMatchObject({completed:5,total:5,percentage:100,missing:[]});
   expect(cycleProgress({...base,third_term_ends_on:null,planned_school_days:null},0)).toMatchObject({
-   completed:3,total:5,percentage:60,
+   completed:2,total:5,percentage:40,
    missing:['Tres trimestres','Días lectivos','Eventos del calendario']
   });
  });
