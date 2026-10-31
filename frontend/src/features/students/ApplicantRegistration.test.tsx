@@ -4,6 +4,7 @@ import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ApplicantRegistration,{applicantStepIssues,preferredApplicantRecord,applicantDocumentState} from './ApplicantRegistration';
 import {api} from '../../api';
+import applicantStyles from '../../styles/applicant-registration.css?raw';
 vi.mock('../../api',()=>({api:vi.fn()}));
 vi.mock('../../notifications',()=>({confirmDanger:vi.fn(async()=>true)}));
 afterEach(()=>{cleanup();vi.mocked(api).mockReset();});
@@ -229,4 +230,10 @@ it('uses clear step numbers and no circular progress symbols or decorative heade
  expect(screen.getByRole('button',{name:'Ir a Domicilio'}).textContent).toContain('Pendiente');
  expect(document.querySelectorAll('.sc-applicant-eyebrow-dot')).toHaveLength(0);
  expect(document.querySelectorAll('.sc-applicant-hero-state > span')).toHaveLength(0);
+});
+
+it('does not style arbitrary step content as a circular progress marker',()=>{
+ expect(applicantStyles).not.toMatch(/\.sc-applicant-progress\s+li\s*>\s*button\s*>\s*span\s*\{/);
+ expect(applicantStyles).not.toMatch(/\.sc-applicant-progress\s+li\s*>\s*span\s*\{/);
+ expect(applicantStyles).toContain('.sc-applicant-progress li>button>.sc-applicant-progress-text');
 });

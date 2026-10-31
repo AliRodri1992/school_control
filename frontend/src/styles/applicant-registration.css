@@ -7,9 +7,7 @@
 .sc-applicant-folio{font-size:12px;color:#d7e3ff}
 .sc-applicant-progress{margin:0;padding:15px;background:#fff;border:1px solid #e0e6f2;border-radius:14px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;list-style:none}
 .sc-applicant-progress li{display:grid;justify-items:center;text-align:center;gap:7px;color:#74809b;font-size:11px;min-width:0}
-.sc-applicant-progress li>span{width:28px;height:28px;border:1px solid #b8c3db;border-radius:100%;display:grid;place-items:center;font-weight:700}
 .sc-applicant-progress li[aria-current=step],.sc-applicant-progress li.is-done{color:#2d4bb7;font-weight:750}
-.sc-applicant-progress li[aria-current=step]>span,.sc-applicant-progress li.is-done>span{background:#3554ce;border-color:#3554ce;color:white}
 .sc-applicant-step{background:white;border:1px solid #e0e6f2;padding:clamp(20px,3vw,36px);border-radius:16px;min-height:350px}
 .sc-applicant-step-title span{font-size:11px;letter-spacing:1.5px;color:#405cc2;font-weight:800}
 .sc-applicant-step-title h2{margin:9px 0 26px}
@@ -30,8 +28,6 @@
 
 .sc-applicant-progress li>button{border:0;background:transparent;display:grid;justify-items:center;gap:7px;color:inherit;width:100%;cursor:pointer}
 .sc-applicant-progress li>button:disabled{cursor:default;opacity:.8}
-.sc-applicant-progress li>button>span{width:28px;height:28px;border:1px solid #b8c3db;border-radius:50%;display:grid;place-items:center;font-weight:700}
-.sc-applicant-progress li[aria-current=step]>button>span,.sc-applicant-progress li.is-done>button>span{background:#3554ce;border-color:#3554ce;color:#fff}
 .sc-applicant-progress li>button:focus-visible{outline:2px solid #405cf5;outline-offset:3px;border-radius:9px}
 .sc-applicant-missing{border:1px solid #edcd81;background:#fff9ec;color:#755419;border-radius:10px;padding:16px;width:100%;font-size:12px}
 .sc-applicant-missing ul{margin:10px 0 0;padding-left:20px}
@@ -62,10 +58,7 @@
 .sc-applicant-mobile-progress{display:none}
 .sc-applicant-progress{padding:16px;gap:5px;box-shadow:0 3px 15px #1c37640a}
 .sc-applicant-progress li{position:relative}
-.sc-applicant-progress li:not(:last-child):after{content:"";position:absolute;height:2px;background:#d6e1f3;top:15px;left:calc(50% + 20px);width:calc(100% - 40px)}
-.sc-applicant-progress li.is-done:not(:last-child):after{background:#3d62ba}
 .sc-applicant-progress li>button{min-height:54px}
-.sc-applicant-progress li>button>span{height:32px;width:32px;border-width:2px;font-size:12px;z-index:1;background:#fff}
 .sc-applicant-progress li small{font-size:11px;font-weight:650;line-height:1.4}
 .sc-applicant-body{display:grid;grid-template-columns:minmax(0,1fr) 225px;gap:17px;align-items:start;min-width:0}
 .sc-applicant-step{padding:0;min-height:370px;overflow:hidden;box-shadow:0 7px 25px #1c3c6c0b}
@@ -543,4 +536,12 @@
  .sc-applicant-redesign .sc-applicant-progress li.is-current>button{padding-left:6px}
  .sc-applicant-redesign .sc-applicant-progress-text strong{font-size:11.5px}
  .sc-applicant-redesign .sc-applicant-progress-text small{font-size:10.5px}
+}
+
+/* Guard against retired broad span selectors leaking circular markers into
+   the current step title. This is text, not a progress bubble. */
+.sc-applicant-redesign .sc-applicant-progress li>button>.sc-applicant-progress-text{
+ display:grid;position:static;min-width:0;width:100%;height:auto;min-height:0;
+ margin:0;padding:0;border:0;border-radius:0;box-shadow:none;
+ background:transparent;color:inherit;
 }
