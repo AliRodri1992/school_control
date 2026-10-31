@@ -151,7 +151,7 @@ export default function StudentContactForm({initial,studentName,busy,error,field
      <Combobox id="student-contact-relationship" label={ui('Parentesco')} value={values.relationship} onChange={value=>update('relationship',value)}
       options={relationshipChoices(values.relationship)} searchable disabled={busy} placeholder={ui('Selecciona un parentesco')}
       invalid={!!feedback('relationship')} describedBy={feedback('relationship')?'student-contact-relationship-error':undefined}/>
-     {feedback('relationship')&&<small id="student-contact-relationship-error" className="sc-student-contact-error" role="alert">{ui(feedback('relationship'))}</small>}
+     {feedback('relationship')&&<small id="student-contact-relationship-error" className="sc-student-contact-error" role="alert">{ui(feedback('relationship')||'')}</small>}
     </div>
     {field('legacy_phone','Ej. 55 1234 5678',Phone)}
     {field('email','correo@ejemplo.com',Mail,true)}
