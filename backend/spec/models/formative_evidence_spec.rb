@@ -12,7 +12,7 @@ RSpec.describe FormativeEvidence do
         field_code: "languages", term: 1, kind: "exam", title: "Examen de lectura", weight: 40, score: 8)
     ]
     expect(described_class.reference(evidences)).to eq(BigDecimal("8.6"))
-    expect(described_class.reference([evidences.first])).to be_nil
+    expect(described_class.reference([ evidences.first ])).to be_nil
     expect(enrollment.formative_evaluations).to be_empty
   end
 

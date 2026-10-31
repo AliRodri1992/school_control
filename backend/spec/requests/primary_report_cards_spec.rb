@@ -29,7 +29,7 @@ RSpec.describe "Versioned primary report cards", type: :request do
       expect(response).to have_http_status(:created)
     end
     issues = enrollment.primary_report_card_issues.order(:version)
-    expect(issues.pluck(:version)).to eq([1, 2])
+    expect(issues.pluck(:version)).to eq([ 1, 2 ])
     expect(issues.first.file.download).to start_with("%PDF")
     expect(issues.first.sha256).to eq(Digest::SHA256.hexdigest(issues.first.file.download))
     get "/api/students/#{student.id}/report_cards/#{issues.first.id}/download"
