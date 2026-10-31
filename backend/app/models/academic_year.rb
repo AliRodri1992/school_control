@@ -49,7 +49,7 @@ class AcademicYear < ApplicationRecord
   end
 
   def protect_academic_dates
-    return unless (enrollments.exists? || admissions.exists?)
+    return unless enrollments.exists? || admissions.exists?
     watched = %w[starts_on ends_on first_term_starts_on first_term_ends_on second_term_starts_on
                  second_term_ends_on third_term_starts_on third_term_ends_on]
     # Filling a previously unknown trimester is safe for historical/demo import.
