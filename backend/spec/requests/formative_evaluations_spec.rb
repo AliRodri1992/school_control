@@ -27,6 +27,25 @@ RSpec.describe "Formative field evaluations", type: :request do
     expect(record.reload.score.to_f).to eq(8.0)
   end
 
+  it "rectifies an already published evaluation with permission, version and an audit reason" do
+    login(admin)
+    record = FormativeEvaluation.create!(enrollment: enrollment, field_code: "languages",
+      term: 1, score: 8, status: "draft")
+    post "/api/formative_evaluations/#{record.id}/publish", as: :json
+    expect(response).to have_http_status(:ok)
+
+    post "/api/formative_evaluations/#{record.id}/correct",
+      params: { score: 9, reason: "Error de captura verificado", lock_version: record.reload.lock_version }, as: :json
+    expect(response).to have_http_status(:ok)
+    expect(record.reload.score.to_f).to eq(9.0)
+    expect(AuditEvent.where(record_type: "FormativeEvaluation", record_id: record.id,
+      action: "formative_evaluation.corrected").count).to eq(1)
+    post "/api/formative_evaluations/#{record.id}/correct",
+      params: { score: 7, reason: "Nueva rectificación autorizada", lock_version: 0 }, as: :json
+    expect(response).to have_http_status(:unprocessable_content)
+    expect(record.reload.score.to_f).to eq(9.0)
+  end
+
   it "keeps draft formative evaluations hidden from guardians" do
     create(:course, group: enrollment.group)
     FormativeEvaluation.create!(enrollment: enrollment, field_code: "languages", term: 1, score: 8)

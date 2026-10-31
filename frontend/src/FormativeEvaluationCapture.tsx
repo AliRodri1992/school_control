@@ -1,4 +1,5 @@
 import {useEffect,useState} from 'react';
+import Swal from 'sweetalert2';
 import {api,mean} from './api';
 import Combobox from './shared/components/Combobox';
 import type {Row} from './modules';
@@ -11,7 +12,7 @@ const FIELDS=[
 ] as const;
 const keyFor=(code:string,term:number)=>code+':'+term;
 
-export default function FormativeEvaluationCapture({enrollments,canCreate,canPublish}:{enrollments:Row[];canCreate:boolean;canPublish:boolean}){
+export default function FormativeEvaluationCapture({enrollments,canCreate,canPublish,canCorrect=false}:{enrollments:Row[];canCreate:boolean;canPublish:boolean;canCorrect?:boolean}){
  const [enrollmentId,setEnrollmentId]=useState('');
  const [items,setItems]=useState<Row[]>([]);
  const [drafts,setDrafts]=useState<Record<string,{score:string;feedback:string}>>({});
@@ -47,6 +48,32 @@ export default function FormativeEvaluationCapture({enrollments,canCreate,canPub
    setNotice('Evaluación guardada en borrador.');
   }catch(e){setError((e as Error).message);}finally{setBusy('');}
  }
+ async function correct(record:Row){
+  const key=keyFor(record.field_code,Number(record.term));
+  const response=await Swal.fire({
+   title:'Rectificar evaluación publicada',
+   html:'<p>La rectificación quedará auditada. Captura la calificación y el motivo.</p>',
+   input:'textarea',inputLabel:'Motivo de la rectificación',inputPlaceholder:'Describe por qué se rectifica esta evaluación…',
+   showCancelButton:true,confirmButtonText:'Continuar',cancelButtonText:'Cancelar',reverseButtons:true
+  });
+  if(!response.isConfirmed)return;
+  const reason=String(response.value||'').trim();
+  if(reason.length<10){setError('El motivo de la rectificación debe tener al menos 10 caracteres.');return;}
+  const scoreInput=await Swal.fire({title:'Calificación rectificada',input:'number',
+   inputAttributes:{min:'5',max:'10',step:'0.1'},inputValue:String(record.score),
+   showCancelButton:true,confirmButtonText:'Guardar rectificación',cancelButtonText:'Cancelar'});
+  if(!scoreInput.isConfirmed)return;
+  const score=Number(scoreInput.value);
+  if(!Number.isFinite(score)||score<5||score>10){setError('La calificación debe estar entre 5 y 10.');return;}
+  setBusy(key);setError('');setNotice('');
+  try{
+   const updated=await api('formative_evaluations/'+record.id+'/correct','POST',
+    {score,feedback:record.feedback,reason,lock_version:record.lock_version});
+   setItems(prev=>prev.map(item=>item.id===updated.id?updated:item));
+   setDrafts(prev=>({...prev,[key]:{score:String(updated.score),feedback:updated.feedback||''}}));
+   setNotice('Rectificación autorizada registrada en la auditoría.');
+  }catch(e){setError((e as Error).message);}finally{setBusy('');}
+ }
  async function publish(record:Row){
   const key=keyFor(record.field_code,Number(record.term));
   setBusy(key);setError('');setNotice('');
@@ -70,6 +97,7 @@ export default function FormativeEvaluationCapture({enrollments,canCreate,canPub
      <label>Observaciones<textarea aria-label={'Observaciones '+field.name+' trimestre '+term} rows={2} value={draft.feedback} disabled={!!published||!canCreate||!!busy} onChange={e=>update(field.code,term,'feedback',e.target.value)}/></label>
      <small>{published?'Publicado':record?'Borrador':'Sin capturar'}</small>
      {!published&&canCreate&&<button className="secondary" type="button" disabled={!!busy} onClick={()=>void save(field.code,term)}>{busy===key?'Guardando…':'Guardar borrador'}</button>}
+     {record&&published&&canCorrect&&<button className="secondary" type="button" disabled={!!busy} onClick={()=>void correct(record)}>Rectificar con motivo</button>}
      {record&&!published&&canPublish&&<button className="primary" type="button" disabled={!!busy} onClick={()=>void publish(record)}>Publicar</button>}
     </div></td>;
    })}<td>{[1,2,3].every(term=>find(field.code,term)?.status==='published')?mean([1,2,3].map(term=>Number(find(field.code,term)?.score))):'Pendiente'}</td></tr>)}</tbody></table></div>:<p className="info">Selecciona un alumno para capturar sus tres evaluaciones parciales por campo formativo.</p>}

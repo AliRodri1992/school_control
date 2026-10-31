@@ -6,6 +6,8 @@ class FormativeEvaluation < ApplicationRecord
     "community" => { name: "De lo Humano y lo Comunitario", subjects: %w[EDF VID] }
   }.freeze
 
+  attr_accessor :correction_authorized
+
   belongs_to :enrollment
   belongs_to :reviewer, class_name: "User", optional: true
   scope :published, -> { where(status: "published") }
@@ -18,13 +20,13 @@ class FormativeEvaluation < ApplicationRecord
   validate :protect_closed_cycle
 
   def protect_closed_cycle
-    if enrollment && enrollment.academic_year.closed_for_academics?
+    if enrollment && enrollment.academic_year.closed_for_academics? && !correction_authorized
       errors.add(:base, "El ciclo escolar está cerrado; solicite una rectificación autorizada")
     end
   end
 
   def protect_published_record
-    return unless persisted? && status_in_database == "published" && has_changes_to_save?
+    return unless persisted? && status_in_database == "published" && has_changes_to_save? && !correction_authorized
     errors.add(:base, "La evaluación publicada no puede modificarse directamente")
   end
 

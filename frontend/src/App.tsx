@@ -376,7 +376,7 @@ export default function App(){
  <div className="sc-workbench-story"><span>{ui('CENTRO DE GESTIÓN')}</span><h2>{translatedModules[page].title}</h2><p>{ui('Consulta y administra los registros autorizados con filtros contextuales y seguimiento.')}</p></div>
  <div className="sc-workbench-kpis"><article><span>{ui('Total registrado')}</span><strong>{(data[page]||[]).length}</strong></article><article><span>{ui('Resultados de búsqueda')}</span><strong>{records.length}</strong></article><article><span>{ui('Página actual')}</span><strong>{currentPage+1} / {pages}</strong></article></div></section>}
  {page==='grades'&&<div className="info">{['admin','teacher'].includes(user.role)?ui('Las familias y alumnos solo ven calificaciones publicadas. Promedio visible: ') : ui('Promedio de calificaciones publicadas: ')} <strong>{mean(records.map(x=>Number(x.score)))}</strong> . {ui('La boleta detallada se encuentra en Expedientes.')}</div>}
- {page==='grades'&&(can('grades.create')||can('grades.index'))&&<FormativeEvaluationCapture enrollments={data.enrollments||[]} canCreate={can('grades.create')} canPublish={can('grades.publish')}/>}
+ {page==='grades'&&(can('grades.create')||can('grades.index'))&&<FormativeEvaluationCapture enrollments={data.enrollments||[]} canCreate={can('grades.create')} canPublish={can('grades.publish')} canCorrect={can('grades.correct')}/>}
  {page==='admissions'&&<AdmissionOverview items={data.admissions||[]} years={data.academic_years||[]}
   year={admissionYearFilter} grade={admissionGradeFilter} date={admissionDateFilter}
   status={admissionStatusFilter} kind={admissionKindFilter}
