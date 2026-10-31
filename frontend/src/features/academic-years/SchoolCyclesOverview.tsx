@@ -1,4 +1,5 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
+import {createPortal} from 'react-dom';
 import {
  ArrowRight,BookOpenCheck,CalendarCheck2,CalendarClock,CalendarDays,CalendarRange,
  Check,ChevronRight,ClipboardList,FileDown,FilterX,GraduationCap,Info,
@@ -140,6 +141,45 @@ function CyclePreview({year,events,today,locale,onClose,onView,onEdit,canEdit,ca
  </div>;
 }
 
+function CycleMoreActions({year,canPdf,canDelete,working,pdfLink,onDelete}:{
+ year:Row;canPdf:boolean;canDelete:boolean;working:boolean;pdfLink:(year:Row)=>string;onDelete:(year:Row)=>void;
+}){
+ const {ui}=useSchoolLocale();
+ const [open,setOpen]=useState(false),[placement,setPlacement]=useState<{left:number;top:number}|null>(null);
+ const trigger=useRef<HTMLButtonElement>(null),panel=useRef<HTMLDivElement>(null);
+ useEffect(()=>{
+  if(!open)return;
+  const update=()=>{
+   const rect=trigger.current?.getBoundingClientRect();
+   if(!rect)return;
+   const left=Math.min(Math.max(8,rect.right-184),Math.max(8,window.innerWidth-192));
+   const height=canPdf&&canDelete?92:51;
+   const top=rect.bottom+height+10>window.innerHeight?Math.max(8,rect.top-height-7):rect.bottom+6;
+   setPlacement({left,top});
+  };
+  const dismiss=(event:PointerEvent)=>{
+   const target=event.target as Node;
+   if(!trigger.current?.contains(target)&&!panel.current?.contains(target))setOpen(false);
+  };
+  const escape=(event:KeyboardEvent)=>{if(event.key==='Escape'){setOpen(false);trigger.current?.focus();}};
+  update();window.addEventListener('resize',update);window.addEventListener('scroll',update,true);
+  document.addEventListener('pointerdown',dismiss);document.addEventListener('keydown',escape);
+  return()=>{window.removeEventListener('resize',update);window.removeEventListener('scroll',update,true);
+   document.removeEventListener('pointerdown',dismiss);document.removeEventListener('keydown',escape);};
+ },[open,canPdf,canDelete]);
+ return <div className="sc-cycle-row-more">
+  <button ref={trigger} type="button" className="sc-cycle-row-more-trigger"
+   aria-label={ui('Más acciones de ')+year.name} aria-haspopup="menu" aria-expanded={open}
+   title={ui('Más acciones')} onClick={()=>setOpen(previous=>!previous)}><MoreHorizontal size={19}/></button>
+  {open&&placement&&createPortal(<div ref={panel} role="menu" aria-label={ui('Acciones del ciclo ')+year.name}
+    className="sc-cycle-row-menu sc-cycle-row-menu-portal" style={placement}>
+    {canPdf&&<a role="menuitem" href={pdfLink(year)} onClick={()=>setOpen(false)}><FileDown size={16}/>{ui('Generar PDF')}</a>}
+    {canDelete&&<button role="menuitem" type="button" className="danger" disabled={working}
+     onClick={()=>{setOpen(false);onDelete(year);}}><Trash2 size={16}/>{ui('Eliminar ciclo')}</button>}
+   </div>,document.body)}
+ </div>;
+}
+
 export default function SchoolCyclesOverview({items,events,canCreate,canEdit,canDelete,canPdf,error,working,onCreate,onEdit,onView,onDelete,pdfLink}:Props){
  const {ui,locale}=useSchoolLocale();
  const [query,setQuery]=useState(''),[status,setStatus]=useState(''),[source,setSource]=useState('');
@@ -149,7 +189,7 @@ export default function SchoolCyclesOverview({items,events,canCreate,canEdit,can
  const ownedEvents=useMemo(()=>events.filter(event=>items.some(year=>String(year.id)===String(event.academic_year_id))),[events,items]);
  const current=selectCurrentCycle(items,today);
  const totalEvents=ownedEvents.length;
- const admissionsOpen=items.filter(year=>dateState(year.admissions_open_on,year.admissions_close_on,today)==='open').length;
+ const admissionsOpen=items.filter(year=>!['closed','archived'].includes(String(year.status||'active'))&&dateState(year.admissions_open_on,year.admissions_close_on,today)==='open').length;
  const upcoming= current?upcomingYearEvents(ownedEvents,current.id,today):[];
  const cycleEvents=current?ownedEvents.filter(e=>String(e.academic_year_id)===String(current.id)):[];
  const activeProgress=current?cycleProgress(current,cycleEvents.length):null;
@@ -294,12 +334,8 @@ export default function SchoolCyclesOverview({items,events,canCreate,canEdit,can
        <td><div className="sc-cycle-home-row-actions">
         <TableAction kind="view" ariaLabel={ui('Ver expediente de ')+year.name} onClick={()=>openFull(year)}/>
         {canEdit&&<TableAction kind="edit" ariaLabel={ui('Editar ciclo ')+year.name} onClick={()=>edit(year)}/>}
-        {(canPdf||canDelete)&&<details className="sc-cycle-row-more">
-         <summary aria-label={ui('Más acciones de ')+year.name} title={ui('Más acciones')}><MoreHorizontal size={19}/></summary>
-         <div className="sc-cycle-row-menu">
-          {canPdf&&<a href={pdfLink(year)}><FileDown size={16}/>{ui('Generar PDF')}</a>}
-          {canDelete&&<button type="button" className="danger" disabled={working} onClick={()=>onDelete(year)}><Trash2 size={16}/>{ui('Eliminar ciclo')}</button>}
-         </div></details>}</div></td>
+        {(canPdf||canDelete)&&<CycleMoreActions year={year} canPdf={canPdf} canDelete={canDelete}
+         working={working} pdfLink={pdfLink} onDelete={onDelete}/>}</div></td>
       </tr>;
      })}</tbody></table></div>:
     <div className="sc-cycle-home-empty"><div className="sc-cycle-home-empty-icon"><CalendarDays size={27}/></div>
