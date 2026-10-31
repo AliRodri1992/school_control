@@ -1,4 +1,4 @@
-import {useState,type FormEvent} from 'react';
+import {useEffect,useState,type FormEvent} from 'react';
 import {ArrowLeft,CalendarDays,ClipboardList,FileDown,GraduationCap,Info,Plus,Search,Save,ShieldCheck,Users,X} from 'lucide-react';
 import SchoolCyclesOverview from './SchoolCyclesOverview';
 import type {Row} from '../../modules';
@@ -91,10 +91,19 @@ export default function SchoolCycles({items,events=[],onSave,canCreate,canEdit,c
  const {ui,locale}=useSchoolLocale();
  const [editor,setEditor]=useState<Row|null|false>(false),[selectedId,setSelectedId]=useState<string|null>(null);
  const [detailTab,setDetailTab]=useState<'overview'|'calendar'>('overview'),[eventEditor,setEventEditor]=useState<Row|null|false>(false);
+ const [lifecycle,setLifecycle]=useState<Row|null>(null);
  const [eventQuery,setEventQuery]=useState(''),[operationError,setOperationError]=useState(''),[working,setWorking]=useState(false);
  const selected=items.find(x=>String(x.id)===selectedId);
+ useEffect(()=>{
+  if(!selectedId){setLifecycle(null);return;}
+  let alive=true;
+  setLifecycle(null);
+  void api('academic_years/'+selectedId).then(record=>{if(alive)setLifecycle(record.lifecycle||null);})
+   .catch(()=>{if(alive)setLifecycle(null);});
+  return()=>{alive=false;};
+ },[selectedId,items]);
  const format=(date?:string)=>date?new Date(datePart(date)+'T12:00:00').toLocaleDateString(locale.startsWith('en')?'en-US':'es-MX',{day:'numeric',month:'short',year:'numeric'}):ui('Sin configurar');
- const statusLabel=(value?:string)=>ui(statusOptions.find(s=>s.value===(value||'active'))?.label||'Sin estado');
+ const statusLabel=(value?:string)=>ui(statusOptions.find(s=>s.value===(value||'draft'))?.label||'Sin estado');
  const linkedEvents=events.filter(x=>String(x.academic_year_id)===selectedId)
   .filter(x=>[x.title,x.kind,x.source_reference].some(value=>String(value||'').toLocaleLowerCase().includes(eventQuery.toLocaleLowerCase())))
   .sort((a,b)=>String(a.starts_at).localeCompare(String(b.starts_at)));
@@ -136,7 +145,24 @@ export default function SchoolCycles({items,events=[],onSave,canCreate,canEdit,c
     <article className="sc-cycle-detail-panel"><h3><GraduationCap size={19}/>{ui('Datos generales')}</h3>
      <div className="sc-cycle-detail-facts">{summary('Inicio de clases',format(selected.starts_on))}{summary('Fin de clases',format(selected.ends_on))}
       {summary('Días lectivos previstos',selected.planned_school_days?String(selected.planned_school_days):undefined)}
-      {summary('Estado',statusLabel(selected.status))}</div></article>
+      {summary('Estado automático',statusLabel(selected.status))}{summary('Cierre administrativo',format(selected.administrative_closes_on))}
+      {summary('Archivo histórico',format(selected.archive_on))}</div></article>
+    <article className="sc-cycle-detail-panel sc-cycle-detail-wide sc-cycle-lifecycle">
+     <h3><ShieldCheck size={19}/>{ui('Ciclo de vida y verificaciones')}</h3>
+     <p>{ui('El estatus avanza automáticamente. Las inscripciones del siguiente ciclo pueden abrir durante su preparación.')}</p>
+     {lifecycle?<div><div className="sc-cycle-detail-facts">
+       {summary('Estado actual',statusLabel(lifecycle.status))}
+       {summary('Siguiente estado',lifecycle.next_status?statusLabel(lifecycle.next_status):'Estado final')}
+       {summary('Fecha prevista de transición',format(lifecycle.due_on))}</div>
+      <div className="sc-cycle-lifecycle-checks">{(lifecycle.critical||[]).map((check:Row)=><div key={check.key} className="sc-cycle-lifecycle-check">
+       <CheckCircle2 size={16} color={check.ok?'#15803d':check.blocking?'#b45309':'#64748b'}/>
+       <span>{check.label}</span><strong>{check.ok?'Cumplido':check.blocking?'Bloqueante':'Advertencia'}</strong>
+      </div>)}</div>
+      {!!lifecycle.transitions?.length&&<div className="sc-cycle-lifecycle-history"><h4>{ui('Historial de transiciones')}</h4>
+       {lifecycle.transitions.map((transition:Row,index:number)=><p key={index}><strong>{statusLabel(transition.from_status)} → {statusLabel(transition.to_status)}</strong>
+        {' · '+format(transition.occurred_at)} · {transition.reason}</p>)}</div>}
+     </div>:<p>{ui('Consultando verificaciones del ciclo…')}</p>}
+    </article>
     <article className="sc-cycle-detail-panel"><h3><Users size={19}/>{ui('Convocatorias')}</h3>
      <div className="sc-cycle-detail-facts">{summary('Nuevo ingreso',format(selected.admissions_open_on)+' – '+format(selected.admissions_close_on))}
       {summary('Reinscripciones',format(selected.reenrollment_open_on)+' – '+format(selected.reenrollment_close_on))}</div></article>

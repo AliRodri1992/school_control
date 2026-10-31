@@ -69,3 +69,12 @@
 .sc-cycle-event-form footer button{display:flex;align-items:center;gap:7px}
 @media(max-width:1000px){.sc-cycle-trimester-grid{grid-template-columns:1fr}.sc-cycle-detail-hero{align-items:flex-start;flex-direction:column}}
 @media(max-width:650px){.sc-cycle-detail-grid{grid-template-columns:1fr}.sc-cycle-detail-panel{padding:17px}.sc-cycle-detail-facts,.sc-cycle-event-fields{grid-template-columns:1fr}.sc-cycle-event-fields .sc-cycle-event-wide{grid-column:1}.sc-cycle-detail-hero{padding:22px}.sc-cycle-pagination>div{flex-wrap:wrap}}
+
+.sc-cycle-lifecycle > p{margin:.2rem 0 1rem;line-height:1.6}
+.sc-cycle-lifecycle-checks{display:grid;gap:.55rem;margin-top:1rem}
+.sc-cycle-lifecycle-check{display:flex;align-items:center;gap:.65rem;padding:.7rem .85rem;border-radius:.65rem;background:var(--surface-secondary,#f8fafc)}
+.sc-cycle-lifecycle-check span{flex:1}
+.sc-cycle-lifecycle-check strong{font-size:.77rem;color:var(--text-secondary,#475569)}
+.sc-cycle-lifecycle-history{margin-top:1.5rem;border-top:1px solid var(--border,#e2e8f0);padding-top:1rem}
+.sc-cycle-lifecycle-history h4{margin:0 0 .6rem}
+.sc-cycle-lifecycle-history p{margin:.4rem 0;font-size:.88rem}

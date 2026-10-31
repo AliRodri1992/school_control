@@ -8,6 +8,7 @@ const terms=['first','second','third'] as const;
 export const cycleLabels:Record<string,string>={
  name:'Nombre del ciclo',starts_on:'Inicio de clases',ends_on:'Fin de clases',
  status:'Estado del ciclo',planned_school_days:'Días de clase previstos',
+ administrative_closes_on:'Cierre administrativo previsto',archive_on:'Archivo histórico previsto',
  admissions_open_on:'Inscripciones: apertura',admissions_close_on:'Inscripciones: cierre',
  reenrollment_open_on:'Reinscripciones: apertura',reenrollment_close_on:'Reinscripciones: cierre',
  calendar_source:'Origen del calendario',calendar_source_url:'URL de publicación oficial',
@@ -29,7 +30,7 @@ const dateRanges:[string,string][]=[['starts_on','ends_on'],['admissions_open_on
  [t+'_term_capture_opens_on',t+'_term_capture_closes_on']] as [string,string][])];
 type Tab='general'|'terms'|'applications'|'source';
 const tabs:{id:Tab;title:string;description:string;icon:typeof CalendarDays}[]=[
- {id:'general',title:'Datos generales',description:'Vigencia y estado del ciclo',icon:GraduationCap},
+ {id:'general',title:'Datos generales',description:'Vigencia y cierre administrativo',icon:GraduationCap},
  {id:'terms',title:'Evaluación',description:'Tres trimestres y entregas',icon:ClipboardCheck},
  {id:'applications',title:'Convocatorias',description:'Ingreso y reinscripciones',icon:Users},
  {id:'source',title:'Procedencia',description:'Referencia para la futura importación',icon:ShieldCheck}
@@ -63,6 +64,10 @@ export function validateCycle(values:Partial<Record<FieldKey,string>>):Partial<R
     errors[key]=cycleLabels[key]+' debe quedar dentro del calendario escolar.';
   });
  });
+ if(values.administrative_closes_on&&values.ends_on&&values.administrative_closes_on<values.ends_on)
+  errors.administrative_closes_on='El cierre administrativo no puede ser anterior al fin de clases.';
+ if(values.archive_on&&values.archive_on<(values.administrative_closes_on||values.ends_on||''))
+  errors.archive_on='El archivo histórico no puede preceder al cierre del ciclo.';
  if(values.planned_school_days&&(!/^\d+$/.test(values.planned_school_days)||Number(values.planned_school_days)<1||Number(values.planned_school_days)>366))
   errors.planned_school_days='Días de clase previstos debe estar entre 1 y 366.';
  if(values.calendar_source_url&&!/^https?:\/\/[^\s/]+/i.test(values.calendar_source_url))
@@ -74,7 +79,7 @@ export default function CycleForm({initial,onCancel,onSave}:{initial?:Row|null;o
  const [tab,setTab]=useState<Tab>('general');
  const [values,setValues]=useState<Record<string,string>>(()=>{
   const data=Object.fromEntries(Object.keys(cycleLabels).map(key=>[key,String(initial?.[key]??'').slice(0,key==='notes'?4000:255)]));
-  data.status=String(initial?.status||'active');data.calendar_source=String(initial?.calendar_source||'manual');
+  data.calendar_source=String(initial?.calendar_source||'manual');
   return data;
  });
  const [errors,setErrors]=useState<Record<string,string>>({});
@@ -90,7 +95,7 @@ export default function CycleForm({initial,onCancel,onSave}:{initial?:Row|null;o
   if(Object.keys(next).length){setTab(groupOf(Object.keys(next)[0]));return;}
   setSaving(true);setGeneralError('');
   try{
-   await onSave(Object.fromEntries(Object.entries(values).map(([key,value])=>[key,value.trim()===''?null:value])) as Record<string,string>);
+   await onSave(Object.fromEntries(Object.entries(values).filter(([key])=>key!=='status').map(([key,value])=>[key,value.trim()===''?null:value])) as Record<string,string>);
   }catch(error){
    const e=error as Error & {fieldErrors?:Record<string,string[]>};
    const mapped:Record<string,string>={};
@@ -134,8 +139,8 @@ export default function CycleForm({initial,onCancel,onSave}:{initial?:Row|null;o
    </nav>
    {tab==='general'&&section('Información general','Identidad, vigencia y días previstos de trabajo escolar.',<>
     <div className="sc-cycle-form-name">{field('name','text')}</div>
-    <div className="sc-cycle-form-grid">{field('starts_on')}{field('ends_on')}{field('planned_school_days','number','Captura los días autorizados; no se calculan automáticamente hasta disponer del calendario.')}{selectField('status',[
-     {value:'draft',label:'En preparación'},{value:'active',label:'Activo'},{value:'closing',label:'En cierre'},{value:'closed',label:'Cerrado'},{value:'archived',label:'Archivado'}])}</div>
+    <div className="sc-cycle-form-grid">{field('starts_on')}{field('ends_on')}{field('planned_school_days','number','Captura los días autorizados; no se calculan automáticamente hasta disponer del calendario.')}{field('administrative_closes_on','date','Opcional: por defecto, 30 días después de terminar las clases.')}{field('archive_on','date','Opcional: por defecto, cinco años después del fin de clases. Archivar nunca elimina el historial.')}</div>
+    <p className="sc-cycle-form-notice"><ShieldCheck size={17}/>{ui('El estatus se controla automáticamente:')} <strong>{ui(initial?({draft:'En preparación',active:'Activo',closing:'En cierre',closed:'Cerrado',archived:'Archivado'} as Record<string,string>)[String(initial.status)]||'En preparación':'En preparación')}</strong>. {ui('No puede modificarse manualmente.')}</p>
    </>)}
    {tab==='terms'&&section('Periodos de evaluación','Cada trimestre conserva su vigencia y sus fechas de captura, revisión y entrega.',<>
     <div className="sc-cycle-form-term-list">{terms.map((term,index)=><div className="sc-cycle-form-term" key={term}>

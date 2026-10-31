@@ -15,3 +15,10 @@ describe('evaluation trimesters',()=>{
   expect(validateCycle({...good,third_term_ends_on:'2027-08-01'}).third_term_ends_on).toContain('dentro del ciclo escolar');
  });
 });
+
+describe('administratively controlled lifecycle',()=>{
+ it('checks chronological administrative closure and archival dates',()=>{
+  expect(validateCycle({...good,administrative_closes_on:'2027-07-15'}).administrative_closes_on).toContain('anterior');
+  expect(validateCycle({...good,administrative_closes_on:'2027-08-20',archive_on:'2027-08-01'}).archive_on).toContain('preceder');
+ });
+});
