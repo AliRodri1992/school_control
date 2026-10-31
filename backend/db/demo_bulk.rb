@@ -89,14 +89,7 @@ module DemoBulk
       cycle = if offset.zero?
         current_year
       else
-        AcademicYear.find_or_create_by!(name: "Demo histórico #{current_year.starts_on.year - offset}") do |record|
-          record.assign_attributes(starts_on: current_year.starts_on.prev_year(offset),
-            ends_on: current_year.ends_on.prev_year(offset),
-            admissions_open_on: current_year.starts_on.prev_year(offset) - 60.days,
-            admissions_close_on: current_year.starts_on.prev_year(offset) - 1.day,
-            reenrollment_open_on: current_year.starts_on.prev_year(offset) - 60.days,
-            reenrollment_close_on: current_year.starts_on.prev_year(offset) - 1.day)
-        end
+        DemoSchoolCycles.historical!(current: current_year, offset: offset)
       end
       group = offset.zero? ? current_group :
         Group.find_or_create_by!(academic_year: cycle, grade_level: step, section: current_group.section)

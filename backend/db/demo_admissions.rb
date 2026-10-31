@@ -67,11 +67,7 @@ module DemoAdmissions
         birth_date: Date.new(2020, 9, 11), guardian: guardian)
     end
     complete_record!(student)
-    prior = AcademicYear.find_or_create_by!(name: "Demostración previa a #{year.name}") do |record|
-      record.assign_attributes(starts_on: year.starts_on.prev_year, ends_on: year.starts_on - 1.day,
-        admissions_open_on: Date.current - 30, admissions_close_on: Date.current + 30,
-        reenrollment_open_on: Date.current - 30, reenrollment_close_on: Date.current + 30)
-    end
+    prior = DemoSchoolCycles.historical!(current: year, offset: 1)
     previous_group = Group.find_or_create_by!(academic_year: prior, grade_level: 1, section: "A")
     previous = Admission.find_or_create_by!(student: student, academic_year: prior) do |admission|
       admission.assign_attributes(kind: "new", grade_level: 1, status: "approved")

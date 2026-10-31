@@ -16,26 +16,14 @@ puts "Escuela y administrador disponibles."
 if ENV["DEMO_SEEDS"] == "true"
   raise "Las semillas demo solo se permiten en desarrollo" unless Rails.env.development?
   password = ENV.fetch("DEMO_PASSWORD")
+  require_relative "demo_school_cycles"
   start_year = Date.current.month >= 8 ? Date.current.year : Date.current.year - 1
-  year = AcademicYear.find_or_create_by!(name: "#{start_year}–#{start_year + 1}") do |record|
-    record.starts_on = Date.new(start_year, 8, 24)
-    record.ends_on = Date.new(start_year + 1, 7, 16)
-    record.admissions_open_on = Date.current - 30
-    record.admissions_close_on = Date.current + 60
-    record.reenrollment_open_on = Date.current - 30
-    record.reenrollment_close_on = Date.current + 60
-  end
-  # Keep administrator-adjusted dates; initialize only unconfigured periods.
-  boundaries = [ year.starts_on, Date.new(start_year, 11, 28), Date.new(start_year + 1, 3, 27), year.ends_on ]
-  %w[first second third].each_with_index do |part, index|
-    from = "#{part}_term_starts_on"
-    to = "#{part}_term_ends_on"
-    next if year.public_send(from).present? || year.public_send(to).present?
-    year.update!(from => boundaries[index] + (index.zero? ? 0 : 1), to => boundaries[index + 1])
-  end
-  AcademicYearLifecycle.advance!(year, trigger: "demo_seed")
+  year = DemoSchoolCycles.current!(start_year: start_year)
+  upcoming = DemoSchoolCycles.next!(current: year)
+  DemoSchoolCycles.seed_calendar!(year)
   guardian = User.find_or_create_by!(email: "familia@school.test") { |record| record.assign_attributes(name: "Familia de ejemplo", role: "guardian", password: password) }
   learner = User.find_or_create_by!(email: "alumno@school.test") { |record| record.assign_attributes(name: "Alex Ejemplo", role: "student", password: password) }
+  DemoSchoolCycles.seed_future_application!(year: upcoming, guardian: guardian)
   require_relative "demo_academics"
   DemoAcademics::CORE_SUBJECTS.each do |code, (name, _)|
     Subject.find_or_create_by!(code: code) { |record| record.name = name }
@@ -100,15 +88,7 @@ if ENV["DEMO_SEEDS"] == "true"
   DemoAcademics.seed!(year: year, admin: admin)
   require_relative "demo_academic_history"
   DemoAcademicHistory.seed!(year: year)
-  # Explicit historical-data initialization, not a fabricated sequence of
-  # automatic transitions. Applies only to fictitious completed demo years.
-  AcademicYear.where("name LIKE ?", "Demo histórico %").where(status: "draft")
-    .where("ends_on < ?", Date.current).find_each do |history|
-      history.update_columns(status: "archived", status_changed_at: Time.current)
-      AuditEvent.create!(action: "academic_year.demo_history_imported",
-        record_type: "AcademicYear", record_id: history.id,
-        changes_summary: { from: "draft", to: "archived", reason: "Inicialización de historial ficticio" })
-    end
+  DemoSchoolCycles.finalize!(current: year, upcoming: upcoming)
   puts "Datos ficticios preparados sin duplicar registros."
 end
 

@@ -52,8 +52,14 @@ class AcademicYearLifecycle
     when "closing"
       checks << { key: "enrollments", label: "Alumnos con situación final registrada",
                   ok: !year.enrollments.where.not(status: "completed").exists?, blocking: true }
+      # Approved admissions that already have an enrollment are formalized,
+      # not pending. Only incomplete applications or approvals without
+      # enrollment prevent administrative closure.
+      waiting = year.admissions.where(status: %w[submitted correction_requested])
+      unformalized = year.admissions.where(status: "approved")
+        .where.not(id: year.enrollments.select(:admission_id))
       checks << { key: "admissions", label: "Solicitudes académicas resueltas",
-                  ok: !year.admissions.where(status: %w[submitted correction_requested approved]).exists?, blocking: true }
+                  ok: !waiting.exists? && !unformalized.exists?, blocking: true }
       grades = Grade.where(enrollment_id: year.enrollments.select(:id))
       checks << { key: "corrections", label: "Sin rectificaciones de calificaciones pendientes",
                   ok: !GradeChangeRequest.pending.where(grade_id: grades.select(:id)).exists?, blocking: true }
