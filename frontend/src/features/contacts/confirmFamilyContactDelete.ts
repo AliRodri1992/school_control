@@ -23,8 +23,7 @@ export function familyContactDeleteContent(contact:ContactRow,contacts:ContactRo
  const lastPickup=pickup&&sameStudent.filter(item=>enabled(item.pickup_authorized)).length===1;
 
  const content=node('div','sc-family-delete-content');
- const eyebrow=node('p','sc-family-delete-eyebrow','ACCIÓN DE ELIMINACIÓN');
- const lead=node('p','sc-family-delete-lead','Revisa la información de la persona antes de confirmar.');
+ const summary=node('div','sc-family-delete-summary');
  const identity=node('div','sc-family-delete-identity');
  const initials=name.trim().split(/\s+/).slice(0,2).map(x=>x.charAt(0)).join('').toLocaleUpperCase();
  identity.append(node('span','sc-family-delete-avatar',initials||'?'));
@@ -33,26 +32,25 @@ export function familyContactDeleteContent(contact:ContactRow,contacts:ContactRo
  identity.append(person);
 
  const studentField=node('div','sc-family-delete-student');
- studentField.append(node('span','sc-family-delete-meta-label','EXPEDIENTE DEL ALUMNO'),node('strong','sc-family-delete-student-name',student));
+ studentField.append(node('span','sc-family-delete-meta-label','ALUMNO'),node('strong','sc-family-delete-student-name',student));
+ summary.append(identity,studentField);
+
  const flags=node('div','sc-family-delete-flags');
- if(emergency)flags.append(node('span','sc-family-delete-flag is-emergency','Contacto de emergencia'));
+ if(emergency)flags.append(node('span','sc-family-delete-flag is-emergency','Emergencia'));
  if(pickup)flags.append(node('span','sc-family-delete-flag is-pickup','Recogida autorizada'));
 
  const notice=node('section','sc-family-delete-notice');
- const warning=node('strong','sc-family-delete-notice-title','¿Qué ocurrirá al eliminarlo?');
- const consequence=node('p','sc-family-delete-notice-copy',
-  'La persona se eliminará de Contactos familiares y del expediente del alumno. Sus datos de contacto y autorizaciones asociados dejarán de estar disponibles.');
- notice.append(warning,consequence);
+ notice.append(node('p','sc-family-delete-notice-copy',
+  'Se quitará del expediente y perderá sus autorizaciones. No se puede deshacer.'));
  if(lastEmergency||lastPickup){
-  const warnings=[];
-  if(lastEmergency)warnings.push('único contacto de emergencia');
-  if(lastPickup)warnings.push('única persona autorizada para recoger');
-  notice.append(node('p','sc-family-delete-last-warning',
-   'Atención: es el '+warnings.join(' y la ')+' registrado en este listado para el alumno.'));
+  const warning=lastEmergency&&lastPickup
+   ?'Es el único contacto de emergencia y la única persona autorizada para recoger.'
+   :lastEmergency?'Es el único contacto de emergencia.':'Es la única persona autorizada para recoger.';
+  notice.append(node('p','sc-family-delete-last-warning',warning));
  }
- content.append(eyebrow,lead,identity,studentField);
+ content.append(summary);
  if(flags.childElementCount)content.append(flags);
- content.append(notice,node('p','sc-family-delete-disclaimer','Esta acción no se puede deshacer. Puedes cancelar para conservar el registro.'));
+ content.append(notice);
  return content;
 }
 
@@ -64,8 +62,8 @@ export async function confirmFamilyContactDelete(contact:ContactRow,contacts:Con
   title:'¿Eliminar este contacto?',
   html:familyContactDeleteContent(contact,contacts,studentName),
   imageUrl:'/illustrations/auli-warning.svg',
-  imageWidth:76,imageHeight:76,imageAlt:'Auli advierte antes de eliminar un contacto',
-  width:530,
+  imageWidth:58,imageHeight:58,imageAlt:'Auli advierte antes de eliminar un contacto',
+  width:700,
   showCancelButton:true,
   confirmButtonText:'Sí, eliminar contacto',
   cancelButtonText:'Conservar contacto',

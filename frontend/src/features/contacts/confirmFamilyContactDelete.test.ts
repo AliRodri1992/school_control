@@ -17,12 +17,14 @@ it('identifies the person, pupil, both authorizations and last-contact risks',()
  expect(text).toContain('María López');
  expect(text).toContain('Ana Gómez');
  expect(text).toContain('Madre');
- expect(text).toContain('Contacto de emergencia');
+ expect(text).toContain('Emergencia');
  expect(text).toContain('Recogida autorizada');
  expect(text).toContain('único contacto de emergencia');
  expect(text).toContain('única persona autorizada para recoger');
- expect(text).toContain('expediente del alumno');
- expect(text).toContain('no se puede deshacer');
+ expect(element.querySelector('.sc-family-delete-summary')?.children).toHaveLength(2);
+ expect(text).not.toContain('Revisa la información de la persona');
+ expect(text).toContain('expediente');
+ expect(text).toContain('No se puede deshacer.');
 });
 
 it('does not execute untrusted contact names as HTML',()=>{
@@ -55,6 +57,7 @@ it('only executes the API mutation after a successful explicit confirmation',asy
  expect(opts.showLoaderOnConfirm).toBe(true);
  expect(opts.confirmButtonText).toBe('Sí, eliminar contacto');
  expect(opts.cancelButtonText).toBe('Conservar contacto');
+ expect((opts as typeof opts & {width:number}).width).toBe(700);
 });
 
 it('keeps the alert open and displays the API error on failure',async()=>{

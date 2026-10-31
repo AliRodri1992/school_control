@@ -10,34 +10,42 @@
 .sc-recovery-card{border:1px solid #e3e8f1;border-radius:18px;box-shadow:0 20px 65px rgba(17,29,66,.07)}
 .sc-recovery-card form{display:grid;gap:18px}
 
-/* Family-contact deletion: identity, affected pupil, authorizations and reversible decision. */
-.school-dialog.sc-family-delete-dialog{padding:23px 25px 24px!important;border:1px solid #e2e9f4!important;border-top:4px solid #c7364e!important;max-width:calc(100vw - 24px)!important;box-sizing:border-box!important}
-.sc-family-delete-dialog .swal2-image{object-fit:contain;margin:3px auto 8px!important}
-.school-dialog-title.sc-family-delete-title{padding:0!important;margin:0!important;font-size:clamp(21px,3vw,25px)!important;font-weight:800!important;line-height:1.25!important}
+/* Compact, wide contact-deletion confirmation. */
+.school-dialog.sc-family-delete-dialog{
+ padding:19px 27px 22px!important;
+ border:1px solid #e2e9f4!important;
+ border-top:4px solid #c7364e!important;
+ max-width:calc(100vw - 28px)!important;
+ box-sizing:border-box!important
+}
+.sc-family-delete-dialog .swal2-image{object-fit:contain;margin:0 auto 6px!important}
+.school-dialog-title.sc-family-delete-title{padding:0!important;margin:0!important;font-size:23px!important;font-weight:800!important;line-height:1.25!important}
 .sc-family-delete-html.swal2-html-container{margin:14px 0 0!important;padding:0!important;text-align:left!important;overflow:visible!important}
-.sc-family-delete-content{display:grid;gap:13px;min-width:0;font-size:13px;line-height:1.55;color:#566681}
-.sc-family-delete-eyebrow{font-size:10px;font-weight:850;letter-spacing:1.2px;color:#ad3e50;text-align:center;margin:0}
-.sc-family-delete-lead{font-size:13px;color:#677991;text-align:center;margin:0}
-.sc-family-delete-identity{display:flex;align-items:center;gap:13px;padding:15px;border-radius:13px;border:1px solid #dce5f2;background:#f6f8fd}
-.sc-family-delete-avatar{display:grid;place-items:center;flex-shrink:0;width:47px;height:47px;border-radius:12px;background:#e5ecff;color:#3958b3;font-size:16px;font-weight:850}
-.sc-family-delete-person{display:grid;gap:2px;min-width:0}
-.sc-family-delete-person-name{font-size:15px;line-height:1.35;color:#172e53;overflow-wrap:anywhere}
+.sc-family-delete-content{display:grid;gap:11px;min-width:0;font-size:13px;line-height:1.45;color:#566681}
+.sc-family-delete-summary{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.85fr);align-items:center;gap:0;border:1px solid #dce5f2;background:#f7f9fd;border-radius:12px;overflow:hidden}
+.sc-family-delete-identity{display:flex;align-items:center;gap:11px;padding:13px 15px;min-width:0}
+.sc-family-delete-avatar{display:grid;place-items:center;flex-shrink:0;width:43px;height:43px;border-radius:11px;background:#e5ecff;color:#3958b3;font-size:15px;font-weight:850}
+.sc-family-delete-person{display:grid;gap:3px;min-width:0}
+.sc-family-delete-person-name{font-size:15px;line-height:1.3;color:#172e53;overflow-wrap:anywhere}
 .sc-family-delete-relationship{font-size:12px;color:#6b7d96;overflow-wrap:anywhere}
-.sc-family-delete-student{display:grid;gap:3px;padding:0 4px}
+.sc-family-delete-student{display:grid;gap:3px;min-width:0;padding:13px 15px;border-left:1px solid #dce5f2}
 .sc-family-delete-meta-label{font-size:10px;letter-spacing:.9px;font-weight:800;color:#7a8ba2}
 .sc-family-delete-student-name{font-size:13px;color:#2d456a;overflow-wrap:anywhere}
-.sc-family-delete-flags{display:flex;gap:8px;flex-wrap:wrap}
-.sc-family-delete-flag{display:inline-flex;align-items:center;padding:6px 10px;border-radius:8px;font-size:11px;line-height:1.3;font-weight:750}
+.sc-family-delete-flags{display:flex;gap:7px;flex-wrap:wrap}
+.sc-family-delete-flag{display:inline-flex;align-items:center;padding:5px 9px;border-radius:7px;font-size:11px;line-height:1.3;font-weight:750}
 .sc-family-delete-flag.is-emergency{background:#fff0ea;color:#a94c3e}
 .sc-family-delete-flag.is-pickup{background:#e7f6ef;color:#167052}
-.sc-family-delete-notice{display:grid;gap:7px;border-radius:12px;border:1px solid #f2d6d7;border-left:4px solid #c7364e;background:#fff8f7;padding:14px 16px}
-.sc-family-delete-notice-title{color:#932b40;font-size:13px;line-height:1.4}
-.sc-family-delete-notice-copy{margin:0;font-size:12px;line-height:1.65;color:#71515b}
-.sc-family-delete-last-warning{margin:3px 0 0;padding-top:9px;border-top:1px solid #f4dbdb;color:#a03347;font-size:12px;line-height:1.55;font-weight:750}
-.sc-family-delete-disclaimer{font-size:11px;color:#71819a;line-height:1.5;text-align:center;margin:1px 0 0}
-.sc-family-delete-actions.swal2-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:100%;margin:20px 0 0!important;padding:0!important}
-.sc-family-delete-actions .swal2-styled{width:100%;min-width:0!important;margin:0!important;padding:12px 14px!important;white-space:normal;line-height:1.4}
+.sc-family-delete-notice{display:grid;gap:5px;border-radius:10px;border:1px solid #f2d6d7;background:#fff8f7;padding:11px 13px}
+.sc-family-delete-notice-copy{margin:0;font-size:12px;line-height:1.5;color:#854754}
+.sc-family-delete-last-warning{margin:0;padding-top:6px;border-top:1px solid #f4dbdb;color:#a03347;font-size:12px;line-height:1.45;font-weight:750}
+.sc-family-delete-actions.swal2-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:100%;margin:16px 0 0!important;padding:0!important}
+.sc-family-delete-actions .swal2-styled{width:100%;min-width:0!important;margin:0!important;padding:11px 14px!important;white-space:normal;line-height:1.35}
 .sc-family-delete-actions .sc-family-delete-cancel{background:#f0f4fb!important;color:#334666!important}
 .sc-family-delete-actions .sc-family-delete-confirm{background:#c7364e!important;color:#fff!important}
-.sc-family-delete-dialog .swal2-validation-message{margin:12px 0 0!important;border-radius:9px;text-align:left;font-size:12px;line-height:1.5}
-@media(max-width:480px){.school-dialog.sc-family-delete-dialog{padding:17px 15px 18px!important}.sc-family-delete-identity{padding:12px}.sc-family-delete-actions.swal2-actions{grid-template-columns:1fr}}
+.sc-family-delete-dialog .swal2-validation-message{margin:10px 0 0!important;border-radius:9px;text-align:left;font-size:12px;line-height:1.5}
+@media(max-width:560px){
+ .school-dialog.sc-family-delete-dialog{padding:17px 16px 18px!important}
+ .sc-family-delete-summary{grid-template-columns:minmax(0,1fr)}
+ .sc-family-delete-student{padding:10px 15px;border-left:0;border-top:1px solid #dce5f2}
+ .sc-family-delete-actions.swal2-actions{grid-template-columns:1fr}
+}
