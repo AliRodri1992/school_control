@@ -52,3 +52,27 @@ it('fills birth date automatically from a complete valid CURP',async()=>{
  expect(screen.getByLabelText('Fecha de nacimiento *')).toHaveProperty('value','2020-01-01');
  expect(screen.getByText(/Fecha de nacimiento obtenida automáticamente/)).toBeTruthy();
 });
+
+it('shows Auli guidance and a progress indicator for the first step',()=>{
+ vi.mocked(api).mockResolvedValue([]);
+ render(<ApplicantRegistration years={[{id:5,name:'2026-2027'}]} admissions={[]} onClose={vi.fn()} onSaved={vi.fn(async()=>undefined)}/>);
+ expect(screen.getByAltText('Auli, mascota de School Control')).toBeTruthy();
+ expect(screen.getByRole('progressbar').getAttribute('aria-valuenow')).toBe('1');
+ expect(screen.getByText('Datos personales')).toBeTruthy();
+ expect(screen.getByText('Auli recomienda')).toBeTruthy();
+});
+it('offers an international phone country dropdown and field-specific errors',async()=>{
+ vi.mocked(api).mockImplementation(async (path,method)=>{
+  if(path==='students'&&method==='POST')return {id:12,full_name:'Sara Prueba'};
+  if(path==='admissions'&&method==='POST')return {id:34,student_id:12,academic_year_id:5,grade_level:1,status:'draft'};
+  return [];
+ });
+ render(<ApplicantRegistration years={[{id:5,name:'2026-2027'}]} admissions={[]} onClose={vi.fn()} onSaved={vi.fn(async()=>undefined)}/>);
+ await userEvent.click(screen.getByRole('button',{name:'Guardar y continuar'}));
+ expect(await screen.findByText('Nombre(s): Es obligatorio')).toBeTruthy();
+ await userEvent.type(screen.getByLabelText('Nombre(s) *'),'Sara');
+ await userEvent.type(screen.getByLabelText('Primer apellido *'),'Prueba');
+ await userEvent.type(screen.getByLabelText('CURP *'),'DEMO200101MDFRNN01');
+ await userEvent.click(screen.getByRole('button',{name:'Guardar y continuar'}));
+ expect(await screen.findByRole('heading',{name:'Domicilio'})).toBeTruthy();
+});
