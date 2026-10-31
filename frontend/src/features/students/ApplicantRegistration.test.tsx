@@ -70,9 +70,9 @@ it('offers an international phone country dropdown and field-specific errors',as
  render(<ApplicantRegistration years={[{id:5,name:'2026-2027'}]} admissions={[]} onClose={vi.fn()} onSaved={vi.fn(async()=>undefined)}/>);
  await userEvent.click(screen.getByRole('button',{name:'Guardar y continuar'}));
  expect(await screen.findByText('Nombre(s): Es obligatorio')).toBeTruthy();
- await userEvent.type(screen.getByLabelText('Nombre(s) *'),'Sara');
- await userEvent.type(screen.getByLabelText('Primer apellido *'),'Prueba');
- await userEvent.type(screen.getByLabelText('CURP *'),'DEMO200101MDFRNN01');
+ await userEvent.type(screen.getByLabelText(/Nombre\(s\) \*/),'Sara');
+ await userEvent.type(screen.getByLabelText(/Primer apellido \*/),'Prueba');
+ await userEvent.type(screen.getByLabelText(/CURP \*/),'DEMO200101MDFRNN01');
  await userEvent.click(screen.getByRole('button',{name:'Guardar y continuar'}));
  expect(await screen.findByRole('heading',{name:'Domicilio'})).toBeTruthy();
 });
