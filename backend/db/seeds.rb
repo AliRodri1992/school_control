@@ -27,14 +27,21 @@ if ENV["DEMO_SEEDS"] == "true"
   end
   guardian = User.find_or_create_by!(email: "familia@school.test") { |record| record.assign_attributes(name: "Familia de ejemplo", role: "guardian", password: password) }
   learner = User.find_or_create_by!(email: "alumno@school.test") { |record| record.assign_attributes(name: "Alex Ejemplo", role: "student", password: password) }
-  subjects = { "ESP" => "Español", "MAT" => "Matemáticas", "CIE" => "Ciencias naturales", "HIS" => "Historia", "GEO" => "Geografía", "ART" => "Artes", "EDF" => "Educación física" }
-  subjects.each { |code, name| Subject.find_or_create_by!(code: code) { |record| record.name = name } }
+  require_relative "demo_academics"
+  DemoAcademics::CORE_SUBJECTS.each do |code, (name, _)|
+    Subject.find_or_create_by!(code: code) { |record| record.name = name }
+  end
   (1..6).each do |grade|
     %w[A B].each do |section|
       group = Group.find_or_create_by!(academic_year: year, grade_level: grade, section: section)
       email = grade == 1 && section == "A" ? "docente@school.test" : "docente.#{grade}#{section.downcase}@school.test"
       teacher = User.find_or_create_by!(email: email) { |record| record.assign_attributes(name: "Docente #{grade}#{section}", role: "teacher", password: password) }
-      Subject.find_each { |subject| Course.find_or_create_by!(group: group, subject: subject) { |record| record.assign_attributes(teacher: teacher, weekly_periods: 3) } }
+      Subject.where(code: DemoAcademics::CORE_SUBJECTS.keys).find_each do |subject|
+        Course.find_or_create_by!(group: group, subject: subject) do |record|
+          record.assign_attributes(teacher: teacher,
+            weekly_periods: DemoAcademics::CORE_SUBJECTS.fetch(subject.code).last)
+        end
+      end
     end
   end
   student = Student.find_or_create_by!(curp: "DEMO200101HDFRNN01") do |record|
@@ -81,6 +88,7 @@ if ENV["DEMO_SEEDS"] == "true"
   DemoModules.seed!(year: year, guardian: guardian, admin: admin, learner: learner, student: student)
   require_relative "demo_bulk"
   DemoBulk.seed!(year: year, admin: admin, password: password)
+  DemoAcademics.seed!(year: year, admin: admin)
   puts "Datos ficticios preparados sin duplicar registros."
 end
 
