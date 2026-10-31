@@ -70,6 +70,81 @@ RSpec.describe "polymorphic student details", type: :request do
     get "/api/students/#{student.id}/details/contacts"
     expect(response).to have_http_status(:not_found)
   end
+
+  it "persists a dossier contact's four name fields and derives CURP data on create and edit" do
+    login(admin)
+    part = "SALS850720MDFLLF0"
+    values = FamilyCurp::VALUES
+    sum = part.chars.each_with_index.sum { |char, index| values.index(char) * (18 - index) }
+    curp = part + ((10 - sum % 10) % 10).to_s
+    post "/api/students/#{student.id}/details/contacts", params: {
+      first_name: "Sofía", middle_name: "Elena", paternal_surname: "Salinas",
+      maternal_surname: "Lara", curp: curp.downcase, relationship: "Madre",
+      legacy_phone: "5512345678", email: "Sofia@EXAMPLE.test", emergency: true,
+      pickup_authorized: true, primary: true, birth_date: "2002-01-01", sex: "H"
+    }, as: :json
+    expect(response).to have_http_status(:created)
+    record = Contact.find(response.parsed_body.fetch("id"))
+    expect(record.name).to eq("Sofía Elena Salinas Lara")
+    expect(record.curp).to eq(curp)
+    expect(record.birth_date).to eq(Date.new(1985, 7, 20))
+    expect(record.sex).to eq("M")
+    expect(response.parsed_body).not_to have_key("birth_date")
+    expect(response.parsed_body).not_to have_key("sex")
+    expect(record.email).to eq("sofia@example.test")
+
+    patch "/api/students/#{student.id}/details/contacts/#{record.id}",
+      params: { first_name: "Sofía", middle_name: "", paternal_surname: "Salinas",
+        maternal_surname: "", curp: curp, relationship: "Tutora",
+        legacy_phone: "5512345699", birth_date: "1990-01-01", sex: "H" }, as: :json
+    expect(response).to have_http_status(:ok)
+    get "/api/students/#{student.id}/details/contacts/#{record.id}"
+    expect(response).to have_http_status(:ok)
+    expect(response.parsed_body).to include(
+      "first_name" => "Sofía", "middle_name" => nil, "paternal_surname" => "Salinas",
+      "maternal_surname" => nil, "name" => "Sofía Salinas", "curp" => curp,
+      "legacy_phone" => "5512345699")
+    expect(record.reload.birth_date).to eq(Date.new(1985, 7, 20))
+    expect(record.sex).to eq("M")
+    get "/api/students/#{student.id}/details/contacts", params: { page: 1, q: "Salinas" }
+    expect(response).to have_http_status(:ok)
+    expect(response.parsed_body.fetch("items").first.fetch("name")).to eq("Sofía Salinas")
+    get "/api/students/#{student.id}/details/contacts", params: { page: 1, q: curp }
+    expect(response.parsed_body.fetch("total")).to eq(1)
+  end
+
+  it "rejects malformed CURP and prevents student reassignment from the dossier API" do
+    login(admin)
+    post "/api/students/#{student.id}/details/contacts", params: {
+      first_name: "Sofía", paternal_surname: "Salinas", curp: "INVALIDA",
+      legacy_phone: "5512345678", contactable_id: create(:student).id, contactable_type: "User"
+    }, as: :json
+    expect(response).to have_http_status(:unprocessable_content)
+    expect(student.contacts.where(first_name: "Sofía")).to be_empty
+  end
+
+  it "limits the new contact detail read to the student's authorized dossier" do
+    another = create(:student)
+    person = another.contacts.create!(name: "Persona externa")
+    login(admin)
+    get "/api/students/#{student.id}/details/contacts/#{person.id}"
+    expect(response).to have_http_status(:not_found)
+    login(create(:user, role: "guardian"))
+    get "/api/students/#{student.id}/details/contacts/#{person.id}"
+    expect(response).to have_http_status(:not_found)
+  end
+
+  it "keeps legacy mirrored records protected from direct dossier edits" do
+    legacy = StudentContact.create!(student: student, name: "Familiar previo",
+      phone: "5512345678", relationship: "Tutora")
+    mirror = Contact.find_by!(legacy_student_contact_id: legacy.id)
+    login(admin)
+    patch "/api/students/#{student.id}/details/contacts/#{mirror.id}",
+      params: { first_name: "Inyectada", paternal_surname: "No permitida" }, as: :json
+    expect(response).to have_http_status(:unprocessable_content)
+    expect(mirror.reload.first_name).to be_nil
+  end
+
 end
 
 RSpec.describe "typed student detail notifications", type: :request do

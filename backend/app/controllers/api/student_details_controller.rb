@@ -12,7 +12,7 @@ module Api
     ATTRIBUTES = {
       "addresses" => %i[country_code purpose primary line1 line2 neighborhood locality region postal_code latitude longitude],
       "phones" => %i[number_e164 country_code purpose extension primary],
-      "contacts" => %i[name relationship email emergency pickup_authorized primary priority],
+      "contacts" => %i[name first_name middle_name paternal_surname maternal_surname curp legacy_phone relationship email emergency pickup_authorized primary priority],
       "notes" => %i[body category visibility]
     }.freeze
 
@@ -34,6 +34,12 @@ module Api
         items: records.map { |record| serialize(record) },
         total: total, page: page, per_page: per_page, total_pages: total_pages
       }
+    end
+
+    def show
+      raise ArgumentError, "Tipo de información no permitido" unless resource == "contacts"
+
+      render json: serialize(collection.find(params[:id]))
     end
 
     def create
@@ -92,7 +98,7 @@ module Api
     LIST_SEARCH_COLUMNS = {
       "addresses" => %w[line1 line2 neighborhood locality region postal_code country_code],
       "phones" => %w[number_e164 extension country_code],
-      "contacts" => %w[name relationship email],
+      "contacts" => %w[name first_name middle_name paternal_surname maternal_surname curp legacy_phone relationship email],
       "notes" => %w[body category]
     }.freeze
 
@@ -159,12 +165,12 @@ module Api
     end
 
     def load_student
-      permission = action_name == "index" ? "students.show" : "students.update"
+      permission = %w[index show].include?(action_name) ? "students.show" : "students.update"
       @student = SchoolAccess.new(current_user, permission).students.find(params[:student_id])
     end
 
     def authorize_student
-      authorize @student, action_name == "index" ? :show? : :update?
+      authorize @student, %w[index show].include?(action_name) ? :show? : :update?
       return unless resource == "notes" && action_name != "index"
       return if institutional_student_access?
       raise Pundit::NotAuthorizedError, "Las notas internas requieren acceso administrativo"
@@ -173,6 +179,7 @@ module Api
     def serialize(record)
       fields = record.as_json(except: %i[addressable_type addressable_id phoneable_type phoneable_id
         contactable_type contactable_id notable_type notable_id])
+      fields.except!("birth_date", "sex") if resource == "contacts"
       fields.merge("id" => record.id)
     end
   end

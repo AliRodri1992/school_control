@@ -334,7 +334,7 @@ export default function App(){
    onFormalize={can('admissions.approve')?()=>{formalize(selectedAdmission);setSelectedAdmission(null);}:undefined}
    onCancel={['draft','submitted','correction_requested'].includes(selectedAdmission.status)&&can('admissions.create')?()=>void perform(async()=>{await api('admissions/'+selectedAdmission.id+'/cancel','POST');setSelectedAdmission(null);}):undefined}
  />:page==='students'&&applicantWizard!==false?<ApplicantRegistration existing={applicantWizard} years={data.academic_years||[]} admissions={data.admissions||[]} onClose={()=>setApplicantWizard(false)} onSaved={()=>refresh()}/>:page==='student_details'?(detailStudent?<StudentDetails key={detailStudent.id} student={detailStudent} onClose={()=>go('students')}
-    canEdit={can('students.update')} canWriteNotes={!!user.permissions?.['students.update']?.includes('institution')}
+    canEdit={can('students.update')} canManageFamilyContacts={can('student_contacts.update')} canWriteNotes={!!user.permissions?.['students.update']?.includes('institution')}
     canViewReport={can('students.report')}/>:
     <section className="sc-record-loading" role="status">{studentRecordLoading?ui('Cargando expediente del alumno…'):ui('No fue posible consultar este expediente.')}
       <button className="secondary" onClick={()=>go('students')}>{ui('Volver a alumnos')}</button>

@@ -72,6 +72,7 @@ Rails.application.routes.draw do
     resources :courses, only: %i[index create update]
     resources :schedule_slots, only: %i[index create destroy]
     get "students/:student_id/details/:kind", to: "student_details#index"
+    get "students/:student_id/details/:kind/:id", to: "student_details#show"
     post "students/:student_id/details/:kind", to: "student_details#create"
     patch "students/:student_id/details/:kind/:id", to: "student_details#update"
     delete "students/:student_id/details/:kind/:id", to: "student_details#destroy"

@@ -5,6 +5,8 @@ import {ArrowLeft,BookOpen,FileText,GraduationCap,IdCard,MapPin,Phone,Plus,Users
 import {api} from '../../api';
 import RecordForm from '../../shared/components/RecordForm';
 import StudentPhoneForm from './StudentPhoneForm';
+import StudentContactForm from './StudentContactForm';
+import {familyContactDisplayName,hasFamilyContactIdentityColumns,verifyFamilyContactSaved} from '../contacts/familyContactPersistence';
 import DetailCollectionControls,{DetailCollectionPagination,collectionParams,initialCollectionFilters,type CollectionFilters,type CollectionMeta} from './DetailCollectionControls';
 import type {Field,Row} from '../../modules';
 import {confirmDanger,notify} from '../../notifications';
@@ -57,11 +59,11 @@ const humanPurpose=(value:unknown)=>({home:'Domicilio',fiscal:'Fiscal',other:'Ot
 function title(row:Row,kind:DataKind):string{
  if(kind==='addresses')return row.line1||'Dirección';
  if(kind==='phones')return row.number_e164||'Teléfono';
- if(kind==='contacts')return row.name||'Contacto';
+ if(kind==='contacts')return familyContactDisplayName(row);
  return row.body?.slice(0,65)||'Nota';
 }
-export default function StudentDetails({student,onClose,canEdit,canWriteNotes,canViewReport=false}:{
- student:Row;onClose:()=>void;canEdit:boolean;canWriteNotes:boolean;canViewReport?:boolean;
+export default function StudentDetails({student,onClose,canEdit,canWriteNotes,canManageFamilyContacts=false,canViewReport=false}:{
+ student:Row;onClose:()=>void;canEdit:boolean;canWriteNotes:boolean;canManageFamilyContacts?:boolean;canViewReport?:boolean;
 }){
  const {ui}=useSchoolLocale();
  const [kind,setKind]=useState<Kind>('overview'),[items,setItems]=useState<Row[]>([]);
@@ -121,10 +123,34 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
    void api('students/'+student.id+'/report').then(value=>{if(active)setReport(value);}).catch(()=>undefined);
    return()=>{active=false;};
  },[student.id,canViewReport]);
+ async function editContact(row:Row){
+  setError('');setFieldErrors({});setLoading(true);
+  try{
+   const mirrored=Boolean(row.legacy_student_contact_id);
+   if(mirrored&&!canManageFamilyContacts)throw new Error('No cuentas con permiso para editar este contacto desde Contactos familiares.');
+   const persisted=await api(mirrored?'student_contacts/'+row.legacy_student_contact_id:root+'contacts/'+row.id);
+   if(!hasFamilyContactIdentityColumns(persisted))throw new Error('El backend no tiene disponibles los campos separados del contacto. Comprueba la migración y reconstruye los contenedores.');
+   setEditing(mirrored?{...persisted,id:row.id,legacy_student_contact_id:row.legacy_student_contact_id,
+    legacy_phone:persisted.phone,primary:row.primary}:persisted);
+   setCreating(false);
+  }catch(cause){setError((cause as Error).message);}
+  finally{setLoading(false);}
+ }
  async function save(attrs:Row){setBusy(true);setError('');setFieldErrors({});
   try{
    const wasEditing=Boolean(editing);
-   await api(root+kind+(editing?'/'+editing.id:''),editing?'PATCH':'POST',attrs);
+   if(kind==='contacts'){
+    const mirror=Boolean(editing?.legacy_student_contact_id);
+    const endpoint=mirror?'student_contacts/'+editing!.legacy_student_contact_id:
+      root+'contacts'+(editing?'/'+editing.id:'');
+    const saved=await api(endpoint,editing?'PATCH':'POST',attrs);
+    const normalize=(value:Row):Row=>mirror?value:{...value,phone:value.legacy_phone};
+    const expected=mirror?attrs:{...attrs,phone:attrs.legacy_phone};
+    verifyFamilyContactSaved(normalize(saved),expected);
+    const latest=await api(mirror?'student_contacts/'+editing!.legacy_student_contact_id:
+      root+'contacts/'+saved.id);
+    verifyFamilyContactSaved(normalize(latest),expected);
+   }else await api(root+kind+(editing?'/'+editing.id:''),editing?'PATCH':'POST',attrs);
    const noun=({addresses:'Dirección',phones:'Teléfono',contacts:'Contacto',notes:'Nota'} as Record<DataKind,string>)[kind as DataKind];
    void notify(noun+' '+(wasEditing?'actualizad':'cread')+(kind==='addresses'||kind==='notes'?'a':'o')+' exitosamente.');
    setCreating(false);setEditing(null);await fetchItems(kind);
@@ -189,7 +215,7 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
        <div><HeartHandshake size={18}/><span>{ui('Contactos de emergencia')}</span><strong>{familyContacts.filter(c=>c.emergency===true).length}</strong></div>
        <div><UserRoundCheck size={18}/><span>{ui('Recogida autorizada')}</span><strong>{familyContacts.filter(c=>c.pickup_authorized===true).length}</strong></div></div>
        <div className="sc-family-cards">{familyContacts.map(contact=><article className="sc-family-card" key={contact.id}>
-        <div className="sc-family-card-head"><span className="sc-family-contact-icon"><Users size={19}/></span><div><h4>{contact.name}</h4><small>{contact.relationship||ui('Parentesco sin registrar')}</small></div></div>
+        <div className="sc-family-card-head"><span className="sc-family-contact-icon"><Users size={19}/></span><div><h4>{familyContactDisplayName(contact)}</h4><small>{contact.relationship||ui('Parentesco sin registrar')}</small></div></div>
         <div className="sc-family-badges">{contact.emergency===true&&<span><HeartHandshake size={14}/>{ui('Emergencia')}</span>}
          {contact.pickup_authorized===true&&<span><UserRoundCheck size={14}/>{ui('Recogida autorizada')}</span>}
          {contact.primary===true&&<span><ShieldCheck size={14}/>{ui('Principal')}</span>}</div>
@@ -247,10 +273,14 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
        {writable&&!creating&&!editing&&!loading&&items.length>0&&<button className="primary" type="button" onClick={()=>{setCreating(true);setEditing(null);}}>
          <Plus size={17}/>{ui(kindDescriptions[kind as DataKind].add)}</button>}
      </div>
-     {error&&<div className="error" role="alert">{error}</div>}
+     {error&&kind!=='contacts'&&<div className="error" role="alert">{error}</div>}
+      {error&&kind==='contacts'&&!creating&&!editing&&<div className="error" role="alert">{error}</div>}
      {(creating||editing)&&<div className="sc-details-form sc-dossier-form-shell sc-dossier-composed">
        <header className="sc-dossier-form-hero"><span className="sc-dossier-form-hero-icon">{kind==='addresses'?<MapPin size={24}/>:kind==='phones'?<Phone size={24}/>:kind==='contacts'?<Users size={24}/>:<StickyNote size={24}/>}</span><div><span>{ui(editing?'EDITAR INFORMACIÓN':'NUEVO REGISTRO')}</span><h3>{ui(editing?'Editar ':'Agregar ')+ui({addresses:'dirección',phones:'teléfono',contacts:'contacto',notes:'nota'}[kind as DataKind])}</h3><p>{ui('Completa los datos del expediente. Los campos obligatorios están identificados.')}</p></div></header>
-       <div className="sc-dossier-form-body">{kind==='phones'?<StudentPhoneForm key={'phone-'+(editing?.id||'new')} initial={editing||{}} onSubmit={values=>void save(values)} onCancel={()=>{setEditing(null);setCreating(false);setError('');}} busy={busy} error={error} fieldErrors={fieldErrors}/>:<RecordForm layout={kind as Exclude<DataKind,'phones'>} key={kind+'-'+(editing?.id||'new')}
+       <div className="sc-dossier-form-body">{kind==='contacts'?<StudentContactForm key={'contact-'+(editing?.id||'new')}
+        initial={editing||{}} studentName={String(student.full_name||student.name||'Alumno')} busy={busy} error={error} fieldErrors={fieldErrors}
+        onSave={values=>void save(values)} onCancel={()=>{setEditing(null);setCreating(false);setError('');}}/>:
+        kind==='phones'?<StudentPhoneForm key={'phone-'+(editing?.id||'new')} initial={editing||{}} onSubmit={values=>void save(values)} onCancel={()=>{setEditing(null);setCreating(false);setError('');}} busy={busy} error={error} fieldErrors={fieldErrors}/>:<RecordForm layout={kind as Exclude<DataKind,'phones'>} key={kind+'-'+(editing?.id||'new')}
        fields={fields[kind as DataKind].map(field=>({...field,label:ui(field.label),options:field.options?.map(([id,label])=>[id,ui(label)] as [string,string])}))} initial={editing||{}}
        onSubmit={values=>void save(values)} onCancel={()=>{setEditing(null);setCreating(false);setError('');}} busy={busy}
        options={()=>[]} optionName={row=>String(row.name||row.id)} error={error} fieldErrors={fieldErrors}/>}</div></div>}
@@ -275,12 +305,13 @@ export default function StudentDetails({student,onClose,canEdit,canWriteNotes,ca
            <span className={'sc-details-chip'+(yes(row.emergency)?' is-alert':'')}>{yes(row.emergency)?ui('Contacto de emergencia'):ui('Contacto adicional')}</span>
            {yes(row.pickup_authorized)&&<span className="sc-details-chip is-authorized"><ShieldCheck size={13}/>{ui('Recogida autorizada')}</span>}
            {row.email&&<a className="sc-details-chip is-email" href={'mailto:'+row.email}><Mail size={13}/>{row.email}</a>}
+            {row.legacy_phone&&<a className="sc-details-chip is-phone" href={'tel:'+String(row.legacy_phone).replace(/[^+\d]/g,'')}><Phone size={13}/>{row.legacy_phone}</a>}
           </div>}
           {kind==='notes'&&<div className="sc-details-card-chips"><span className="sc-details-chip"><StickyNote size={13}/>{ui(row.category||'General')}</span><span className="sc-details-chip">{ui(row.visibility==='shared'?'Compartida con la familia':'Nota institucional')}</span></div>}
           {row.legacy_student_contact_id&&<p className="sc-details-linked"><Users size={14}/>{ui('Gestionado desde Contactos familiares')}</p>}
-          {writable&&!row.legacy_student_contact_id&&<div className="sc-details-card-actions">
-           <button className="secondary" type="button" onClick={()=>{setEditing(row);setFieldErrors({});}}><PenLine size={15}/>{ui('Editar')}</button>
-           <button className="secondary danger" type="button" disabled={busy} onClick={()=>void remove(row)}><Trash2 size={15}/>{ui('Eliminar')}</button>
+          {writable&&(!row.legacy_student_contact_id||canManageFamilyContacts)&&<div className="sc-details-card-actions">
+           <button className="secondary" type="button" disabled={busy||loading} onClick={()=>{if(kind==='contacts')void editContact(row);else{setEditing(row);setFieldErrors({});}}}><PenLine size={15}/>{ui('Editar')}</button>
+           {!row.legacy_student_contact_id&&<button className="secondary danger" type="button" disabled={busy} onClick={()=>void remove(row)}><Trash2 size={15}/>{ui('Eliminar')}</button>}
           </div>}
          </article>;
         })}</div><DetailCollectionPagination filters={collection} meta={collectionMeta} onChange={setCollection}/></>:
